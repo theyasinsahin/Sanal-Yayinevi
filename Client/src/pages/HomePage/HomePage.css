@@ -1,5 +1,4 @@
 /* Sidebar genişliği 500px olarak ayarlandığı için, margin-left de 500px olmalı */
 .content {
-    margin-left: 500px;
     padding: 20px;
 }
