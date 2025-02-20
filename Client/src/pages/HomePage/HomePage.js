@@ -2,10 +2,10 @@ import './HomePage.css';
 
 import React, { useState, useEffect, useRef } from "react";
 
-import Navbar from '../../components/Landing/NavBar/NavBar';
-import ContentData from '../../components/Landing/ContentData/ContentData';
-import BookLists from '../../components/Landing/BookLists/BookLists';
-import SearchBar from '../../components/Landing/SearchBar/SearchBar';
+import Navbar from '../../components/NavBar/NavBar';
+import ContentData from '../../components/ContentData/ContentData';
+import BookLists from '../../components/BookLists/BookLists';
+import SearchBar from '../../components/SearchBar/SearchBar';
 
 const HomePage = () => {
 

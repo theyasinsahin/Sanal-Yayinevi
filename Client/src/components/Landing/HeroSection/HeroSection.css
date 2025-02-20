@@ -3,6 +3,7 @@
     align-items: center;
     padding: 4rem 8%;
     background: linear-gradient(to right, #f8f9fa 60%, #2a5c82 40%);
+    margin-top: 3em;
   }
   
   .hero-content {

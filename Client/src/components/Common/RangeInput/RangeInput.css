@@ -1,0 +1,41 @@
+.range-input {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: 20px auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.input-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.range-input__box {
+  width: 100px;
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.range-input__box:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.input-labels {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding-top: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+}

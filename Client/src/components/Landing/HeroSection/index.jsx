@@ -14,7 +14,7 @@ const HeroSection = () => {
       </div>
       <div className="hero-image">
         {/* Resimler public klasörüne atılacak */}
-        <img src="/images/hero-bg.png" alt="Writing process illustration" />
+        <img src="/images/landing/hero-bg.png" alt="Writing process illustration" />
       </div>
     </section>
   );

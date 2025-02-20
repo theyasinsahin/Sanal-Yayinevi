@@ -1,5 +1,5 @@
 import React from 'react';
-import BookLists from '../../components/Landing/BookLists/BookLists';
+import BookLists from '../../components/BookLists/BookLists';
 import './Profile.css'; // CSS dosyasını import edin
 
 const Profile = () => {

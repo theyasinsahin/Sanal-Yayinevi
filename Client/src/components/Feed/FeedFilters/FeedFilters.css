@@ -1,0 +1,101 @@
+/* FeedFilters.css */
+.feed-filters {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    margin-top: 3em;
+  }
+  
+  .filter-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .filter-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+  
+  .filter-section h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+  }
+  
+  /* Kategori Butonları */
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+  
+  .category-pill {
+    display: flex;
+    align-items: center;
+    padding: 0.6rem;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    background: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .category-pill.active {
+    border-color: #2a5c82;
+    background: rgba(42, 92, 130, 0.1);
+  }
+  
+  .category-pill:hover {
+    transform: translateY(-2px);
+  }
+  
+  .category-icon {
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
+  }
+  
+  /* Sıralama Seçenekleri */
+  .sort-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  
+  .sort-option {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    cursor: pointer;
+    color: #666;
+  }
+  
+  input[type="radio"] {
+    display: none;
+  }
+  
+  .radio-custom {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+  
+  input:checked + .radio-custom {
+    border-color: #2a5c82;
+  }
+  
+  input:checked + .radio-custom::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 10px;
+    height: 10px;
+    background: #2a5c82;
+    border-radius: 50%;
+  }

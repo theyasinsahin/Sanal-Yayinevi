@@ -1,0 +1,139 @@
+/* Ana Stiller */
+.navigation-bar {
+    background: #ffffff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+  }
+  
+  .nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    font-family: 'Merriweather', serif;
+    font-size: 1.5rem;
+    color: #2A5C82;
+  }
+  
+  .logo-icon {
+    font-size: 2rem !important;
+    color: #F39C12;
+  }
+  
+  /* Desktop Menu */
+  .desktop-menu {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+  }
+  
+  .nav-link {
+    text-decoration: none;
+    color: #2C3E50;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .nav-link.highlight {
+    background: #27AE60;
+    color: white !important;
+    padding: 0.5rem 1.5rem;
+    border-radius: 25px;
+  }
+  
+  .profile-icon {
+    font-size: 1.8rem !important;
+  }
+  
+  /* Mobile Menu Toggle */
+  .mobile-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: #2A5C82;
+    font-size: 2rem;
+    cursor: pointer;
+  }
+  
+  /* Mobile Menu */
+  .mobile-menu-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+  }
+  
+  .mobile-menu-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.3);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .mobile-menu {
+    position: absolute;
+    right: -300px;
+    top: 0;
+    width: 250px;
+    height: 100%;
+    background: white;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    transition: right 0.3s ease;
+  }
+  
+  .mobile-link {
+    text-decoration: none;
+    color: #2C3E50;
+    font-size: 1.1rem;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: background 0.3s ease;
+  }
+  
+  .mobile-link.highlight {
+    background: #27AE60;
+    color: white !important;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .desktop-menu {
+      display: none;
+    }
+  
+    .mobile-toggle {
+      display: block;
+    }
+  
+    .mobile-menu-wrapper.open .mobile-menu-overlay {
+      opacity: 1;
+      pointer-events: all;
+    }
+  
+    .mobile-menu-wrapper.open .mobile-menu {
+      right: 0;
+    }
+  }

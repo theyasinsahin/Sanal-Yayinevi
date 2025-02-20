@@ -1,27 +1,23 @@
 import './App.css';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import HomePage from './pages/HomePage/HomePage';
-import Login from './pages/Auth/Login/Login';
-import Register from './pages/Auth/Register/Register';
-import BookCreation from './components/BookCreation/BookCreation';
-import Profile from './pages/Profile/Profile';
+import NavigationBar from './components/NavigationBar';
 
 import LandingPage from './components/Landing/';
+import FeedPage from './components/Feed';
+import { FiltersProvider } from './context/FiltersContext';
 
 function App() {
   return (  // Add the return statement here
     <Router>
+      <FiltersProvider>
       <div className='App'>
+        <NavigationBar />
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          {/*
-          <Route path="/" element={<HomePage />} />
-          <Route path="login" element={<Login />} />
-          <Route path="register" element={<Register />} />
-          <Route path="create-book" element={<BookCreation />} />
-          <Route path="profile" element={<Profile />} />*/}
+          <Route path="/feed" element={<FeedPage />} />
         </Routes>
       </div>
+      </FiltersProvider>
     </Router>
   );
 }

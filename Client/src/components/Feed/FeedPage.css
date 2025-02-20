@@ -1,0 +1,19 @@
+/* FeedPage.css */
+.feed-page-container {
+    display: flex;
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+  
+  .filters-sidebar {
+    flex: 0 0 300px;
+    position: sticky;
+    top: 1rem;
+    align-self: flex-start;
+  }
+  
+  .articles-main {
+    flex: 1;
+  }
