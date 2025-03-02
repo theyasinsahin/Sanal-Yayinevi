@@ -19,7 +19,7 @@ const NavigationBar = () => {
 
         {/* Desktop Menu */}
         <div className="desktop-menu">
-          <Link to="/kesfet" className="nav-link">
+          <Link to="/feed" className="nav-link">
             Keşfet
           </Link>
           <Link to="/yaz" className="nav-link highlight">

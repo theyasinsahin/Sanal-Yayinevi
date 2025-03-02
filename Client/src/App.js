@@ -1,24 +1,32 @@
-import './App.css';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import NavigationBar from './components/NavigationBar';
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import NavigationBar from "./components/NavigationBar";
+import LandingPage from "./components/Landing";
+import FeedPage from "./components/Feed";
+import { FiltersProvider } from "./context/FiltersContext";
 
-import LandingPage from './components/Landing/';
-import FeedPage from './components/Feed';
-import { FiltersProvider } from './context/FiltersContext';
+const Layout = ({ children }) => (
+  <div className="App">
+    <NavigationBar />
+    {children}
+  </div>
+);
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Layout><LandingPage /></Layout>,
+  },
+  {
+    path: "/feed",
+    element: <Layout><FeedPage /></Layout>,
+  },
+]);
 
 function App() {
-  return (  // Add the return statement here
-    <Router>
-      <FiltersProvider>
-      <div className='App'>
-        <NavigationBar />
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/feed" element={<FeedPage />} />
-        </Routes>
-      </div>
-      </FiltersProvider>
-    </Router>
+  return (
+    <FiltersProvider>
+      <RouterProvider router={router} future={{ v7_startTransition: true }} />
+    </FiltersProvider>
   );
 }
 

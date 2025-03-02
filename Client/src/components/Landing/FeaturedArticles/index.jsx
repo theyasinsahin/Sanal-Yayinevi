@@ -2,6 +2,8 @@ import React from 'react';
 import './FeaturedArticles.css';
 import ArticleCard from './ArticleCard';
 
+import { Link } from 'react-router-dom';
+
 const FeaturedArticles = () => {
   // Mock data
   const articles = [
@@ -44,7 +46,7 @@ const FeaturedArticles = () => {
     <section className="featured-articles">
       <div className="section-header">
         <h2 className="section-title">Öne Çıkan Yazılar</h2>
-        <button className="see-all-button">Tümünü Gör</button>
+        <Link to='/feed' className="see-all-button">Tümünü Gör</Link>
       </div>
       
       <div className="articles-grid">

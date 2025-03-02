@@ -69,6 +69,7 @@ const FeedFilters = () => {
           ))}
         </div>
       </div>
+      
     </div>
   );
 };

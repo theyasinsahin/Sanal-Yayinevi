@@ -5,6 +5,11 @@
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     margin-top: 3em;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 8rem;
   }
   
   .filter-section {

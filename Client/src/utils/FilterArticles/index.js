@@ -1,5 +1,4 @@
 export const filterArticles = (articles, filters) => {
-    
     return articles.filter(article => {
       // Arama Filtresi
       const matchesSearch = article.title.toLowerCase().includes(
@@ -10,7 +9,7 @@ export const filterArticles = (articles, filters) => {
   
       // Kategori Filtresi
       const matchesCategory = filters.categories.length === 0 || 
-        filters.categories.includes(article.categoryId);
+        filters.categories.includes(article.genreId);
   
       // Bağış Aralığı Filtresi
       const [min, max] = filters.donationRange;
@@ -24,9 +23,9 @@ export const filterArticles = (articles, filters) => {
         case 'newest':
           return new Date(b.createdAt) - new Date(a.createdAt);
         case 'popular':
-          return b.views - a.views;
+          return b.stats.views - a.stats.views;
         case 'closest':
-          return (a.goal - a.currentAmount) - (b.goal - b.currentAmount);
+          return (a.goal / a.currentAmount) - (b.goal / b.currentAmount);
         case 'most-funded':
           return b.currentAmount - a.currentAmount;
         default:

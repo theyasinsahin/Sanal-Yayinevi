@@ -14,7 +14,7 @@ export const sampleArticles = [
       shares: 156,
       comments: 89
     },
-    daysLeft: 15
+    createdAt: "2024-03-02T14:30:00.000Z"
   },
   {
     id: 2,
@@ -31,7 +31,8 @@ export const sampleArticles = [
       shares: 300,
       comments: 120
     },
-    daysLeft: 23
+    createdAt: "2024-03-02T14:30:00.000Z"
+
   },
   {
     id: 3,
@@ -48,7 +49,8 @@ export const sampleArticles = [
       shares: 190,
       comments: 75
     },
-    daysLeft: 40
+    createdAt: "2024-03-02T14:30:00.000Z"
+
   },
   {
     id: 4,
@@ -65,7 +67,8 @@ export const sampleArticles = [
       shares: 120,
       comments: 50
     },
-    daysLeft: 10
+    createdAt: "2024-03-02T14:30:00.000Z"
+
   },
   {
     id: 5,
@@ -82,7 +85,8 @@ export const sampleArticles = [
       shares: 250,
       comments: 130
     },
-    daysLeft: 30
+    createdAt: "2024-03-02T14:30:00.000Z"
+
   },
   {
     id: 6,
@@ -99,7 +103,8 @@ export const sampleArticles = [
       shares: 90,
       comments: 45
     },
-    daysLeft: 12
+    createdAt: "2024-03-02T14:30:00.000Z"
+
   },
   {
     id: 7,
@@ -116,7 +121,8 @@ export const sampleArticles = [
       shares: 190,
       comments: 60
     },
-    daysLeft: 50
+    createdAt: "2024-03-02T14:30:00.000Z"
+
   },
   {
     id: 8,
@@ -133,7 +139,8 @@ export const sampleArticles = [
       shares: 120,
       comments: 40
     },
-    daysLeft: 60
+    createdAt: "2024-03-02T14:30:00.000Z"
+
   },
   {
     id: 9,
@@ -150,7 +157,8 @@ export const sampleArticles = [
       shares: 180,
       comments: 100
     },
-    daysLeft: 35
+    createdAt: "2024-03-02T14:30:00.000Z"
+
   },
   {
     id: 10,
@@ -167,7 +175,8 @@ export const sampleArticles = [
       shares: 210,
       comments: 95
     },
-    daysLeft: 25
+    createdAt: "2024-03-02T14:30:00.000Z"
+
   },
   {
     id: 11,
@@ -184,7 +193,8 @@ export const sampleArticles = [
       shares: 220,
       comments: 110
     },
-    daysLeft: 40
+    createdAt: "2024-03-02T14:30:00.000Z"
+
   },
   {
     id: 12,
@@ -201,7 +211,8 @@ export const sampleArticles = [
       shares: 150,
       comments: 80
     },
-    daysLeft: 55
+    createdAt: "2024-03-02T14:30:00.000Z"
+
   },
   {
     id: 13,
@@ -218,7 +229,8 @@ export const sampleArticles = [
       shares: 190,
       comments: 120
     },
-    daysLeft: 20
+    createdAt: "2024-03-02T14:30:00.000Z"
+
   },
   {
     id: 14,
@@ -235,7 +247,8 @@ export const sampleArticles = [
       shares: 210,
       comments: 100
     },
-    daysLeft: 45
+    createdAt: "2024-03-02T14:30:00.000Z"
+
   },
   {
     id: 15,
@@ -252,6 +265,121 @@ export const sampleArticles = [
       shares: 180,
       comments: 85
     },
-    daysLeft: 30
+    createdAt: "2024-03-02T14:30:00.000Z"
+
+  },
+  {
+    id: 16,
+    title: "Eyrükit Efsanesi",
+    author: "Yasin Şahin",
+    excerpt: "Bir şehrin kaderini kurtarmak için tahmininden daha fazla fedakarlık gerekiyor.",
+    currentAmount: 16000,
+    goal: 35000,
+    imageUrl: "/images/covers/iot-future.jpg",
+    pageCount: 220,
+    genre: "Bilim Kurgu",
+    genreId: 1,
+    stats: {
+      views: 2600,
+      shares: 180,
+      comments: 85
+    },
+    createdAt: "2024-03-02T14:30:00.000Z"
+
+  },
+  {
+    id: 17,
+    title: "Bana İkimizi Anlat",
+    author: "Ahmet Batman",
+    excerpt: "Klasik bir aşk hikayesi",
+    currentAmount: 45000,
+    goal: 60000,
+    imageUrl: "/images/covers/iot-future.jpg",
+    pageCount: 220,
+    genre: "Romantik",
+    genreId: 2,
+    stats: {
+      views: 2600,
+      shares: 180,
+      comments: 85
+    },
+    createdAt: "2024-03-02T14:30:00.000Z"
+
+  },
+  {
+    id: 18,
+    title: "Tesla: Dehanın Gölgesinde",
+    author: "James O'Neill",
+    excerpt: "Elektriğin dahisi Nikola Tesla’nın sıra dışı yaşamını konu alan bu kitap, onun icatları, Edison ile rekabeti, başarıları ve trajik sonunu anlatıyor. Tesla’nın zihnine bir yolculuk yaparak onun bilim dünyasına yaptığı katkıları ve yaşamının bilinmeyen yönlerini keşfedeceksiniz.",
+    currentAmount: 20000,
+    goal: 25000,
+    imageUrl: "/images",
+    pageCount: 300,
+    genre: "biyografi",
+    genreId: 3,
+    stats: {
+      views: 2600,
+      shares: 180,
+      comments: 85,
+    },
+    createdAt: "2024-03-02T14:30:00.000Z"
+
+  },
+  {
+    id: 19,
+    title: "Gölgeler Diyarı",
+    author: "Elenora White",
+    excerpt: "Büyü ve kaosun hüküm sürdüğü bir dünyada, genç bir cadı olan Lyra, yasaklı bir kitabın sayfalarında gizlenmiş kadim bir sırrı keşfeder. Krallıkların kaderini değiştirecek olan bu bilgi, onu hem dostlarıyla hem de en büyük düşmanıyla karşı karşıya getirecektir.",
+    currentAmount: 20000,
+    goal: 25000,
+    imageUrl: "/images",
+    pageCount: 300,
+    genre: "fantastik",
+    genreId: 4,
+    stats: {
+      views: 2600,
+      shares: 180,
+      comments: 85,
+    },
+    createdAt: "2024-03-02T14:30:00.000Z"
+
+  },
+  {
+    id: 20,
+    title: "İmparatorluğun Sonu: Osmanlı’nın Çöküşü",
+    author: "Jonathan Reynolds",
+    excerpt: "Osmanlı İmparatorluğu’nun son yüzyılını detaylı bir şekilde ele alan bu kitap, savaşlar, siyasi entrikalar ve reform süreçlerini inceliyor. Sultanların, paşaların ve halkın gözünden imparatorluğun çöküşüne tanıklık edeceğiniz bu eser, tarih meraklıları için kaçırılmayacak bir kaynak.",
+    currentAmount: 20000,
+    goal: 25000,
+    imageUrl: "/images",
+    pageCount: 300,
+    genre: "tarih",
+    genreId: 5,
+    stats: {
+      views: 2600,
+      shares: 180,
+      comments: 85,
+    },
+    createdAt: "2025-03-02T14:30:00.000Z"
+
+  },
+  {
+    id: 21,
+    title: "Zihnin Gücü: Alışkanlıklarını Değiştir, Hayatını Yeniden Kur",
+    author: "Daniel Carter",
+    excerpt: "Günlük alışkanlıkların hayatımızı nasıl şekillendirdiğini anlatan bu kitap, bilimsel araştırmalarla desteklenmiş tekniklerle okurlarına daha verimli, başarılı ve mutlu bir hayatın kapılarını açıyor. Adım adım uygulamalar ve gerçek hayattan örneklerle dolu bu eser, kendini geliştirmek isteyen herkes için rehber niteliğinde.",
+    currentAmount: 20000,
+    goal: 25000,
+    imageUrl: "/images",
+    pageCount: 300,
+    genre: "kişisel gelişim",
+    genreId: 6,
+    stats: {
+      views: 2600,
+      shares: 180,
+      comments: 85,
+    },
+    createdAt: "2020-03-02T14:30:00.000Z"
+
   }
 ];
