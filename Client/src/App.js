@@ -5,6 +5,7 @@ import FeedPage from "./components/Feed";
 import { FiltersProvider } from "./context/FiltersContext";
 import BookDetailPage from "./components/BookDetailPage";
 import BookReader from "./components/BookReader";
+import CreateBookPage from "./components/CreateBookPage";
 
 const Layout = ({ children }) => (
   <div className="App">
@@ -29,6 +30,10 @@ const router = createBrowserRouter([
   {
     path: "/book-reader",
     element: <Layout><BookReader/></Layout>
+  },
+  {
+    path: "/create-book",
+    element: <Layout><CreateBookPage/></Layout>
   }
 ]);
 
