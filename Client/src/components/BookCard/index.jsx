@@ -1,8 +1,18 @@
 // ArticleCard.js
 import React from 'react';
-import { FavoriteBorder, Paid, Pages, LocalOffer } from '@mui/icons-material';
+import { FavoriteBorder, 
+  Paid, 
+  Pages, 
+  LocalOffer, 
+  Share, 
+  BookmarkBorder, 
+  Visibility as EyeIcon,
+  Comment as CommentIcon  } from '@mui/icons-material';
+import ProgressBar from '../Common/ProgressBar';
 
-const ArticleCard = ({ 
+import './BookCard.css';
+
+const BookCard = ({ 
   title,
   author,
   excerpt,
@@ -10,9 +20,9 @@ const ArticleCard = ({
   goal,
   imageUrl,
   pageCount,
-  genre
+  genre,
+  stats
 }) => {
-  const progress = (currentAmount / goal) * 100;
   
   return (
     <div className="article-card">
@@ -34,31 +44,42 @@ const ArticleCard = ({
         <div className="card-header">
           <h3 className="article-title">{title}</h3>
           <div className="author-info">
-            <span className="by">Yazar:</span>
+            <span className="by">Yazar: </span>
             <span className="author-name">{author}</span>
           </div>
-        </div>
+          <p className="article-excerpt">{excerpt}</p>
 
-        <p className="article-excerpt">{excerpt}</p>
-
-        <div className="progress-container">
-          <div className="progress-bar" style={{ width: `${progress}%` }}></div>
-          <div className="progress-text">
-            <Paid fontSize="small" />
-            <span>{currentAmount.toLocaleString()} TL</span>
-            <span>/ {goal.toLocaleString()} TL</span>
+          {/* İstatistikler */}
+          <div className="stats">
+            <div className="stat-item">
+              <EyeIcon fontSize="small" />
+              <span>{stats.views.toLocaleString()}</span>
+            </div>
+            <div className="stat-item">
+              <CommentIcon fontSize="small" />
+              <span>{stats.comments}</span>
+            </div>
           </div>
+
         </div>
+
+        {/* Progress Bar */}
+        <ProgressBar currentAmount={currentAmount} goal={goal} />
 
         <div className="card-footer">
           <button className="donate-button">
             Destek Ol
             <FavoriteBorder fontSize="small" style={{ marginLeft: '8px' }} />
           </button>
+          <div className="secondary-actions">
+            <BookmarkBorder className="icon" />
+            <Share className="icon" />
+            <FavoriteBorder className="icon" />
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default ArticleCard;
+export default BookCard;

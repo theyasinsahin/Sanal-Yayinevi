@@ -3,13 +3,13 @@ import { useFilters } from '../../context/FiltersContext';
 import FeedFilters from './FeedFilters';
 import ArticleGrid from './ArticleGrid';
 import { filterArticles } from '../../utils/FilterArticles';
-import { sampleArticles } from '../../Data/sampleArticles';
+import { sampleBooks } from '../../Data/sampleBooks';
 const FeedPage = () => {
-  const [articles] = useState(sampleArticles);
+  const [books] = useState(sampleBooks);
   const { filters } = useFilters(); // Context'ten filtreleri al
 
   // Filtrelenmiş makaleleri hesapla
-  const filteredArticles = filterArticles(articles, filters);
+  const filteredBooks = filterArticles(books, filters);
 
   return (
     <div className="feed-page-container">
@@ -18,7 +18,7 @@ const FeedPage = () => {
       </aside>
       
       <main className="articles-main">
-        <ArticleGrid articles={filteredArticles} /> {/* Filtrelenmiş makaleleri gönder */}
+        <ArticleGrid articles={filteredBooks} /> {/* Filtrelenmiş makaleleri gönder */}
       </main>
     </div>
   );

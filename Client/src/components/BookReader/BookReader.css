@@ -1,0 +1,128 @@
+.book-reader {
+    position: relative;
+    min-height: 100vh;
+    background: #f5f3e7;
+    padding: 2rem;
+    margin-top: 3rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+.book-container {
+    display: flex;
+    justify-content: center;
+    max-width: 900px;
+    transform-style: preserve-3d;
+}
+
+.book-page {
+    background: #fffbe6;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    padding: 2rem;
+    width: 50%;
+    min-height: 70vh;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    transform-origin: left center;
+    transition: transform 0.8s ease-in-out;
+    backface-visibility: hidden;
+    font-family: 'Garamond', serif;
+}
+
+.book-page.left {
+    border-right: 2px solid #ccc;
+}
+
+.book-page.right {
+    border-left: 2px solid #ccc;
+}
+
+.book-page .header {
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-align: center;
+    color: #333;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #2A5C82;
+    margin-bottom: 1.5rem;
+}
+
+.book-page .content {
+    line-height: 1.8;
+    font-size: 1rem;
+    color: #444;
+    text-align: justify;
+    hyphens: auto;
+    white-space: pre-line; /* \n karakterini destekler */
+      
+}
+
+.book-page .footer {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.navigation-buttons {
+    position: fixed;
+    top: 50%;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 2rem;
+    transform: translateY(-50%);
+}
+
+.nav-button {
+    background: #8B4513;
+    color: white;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.nav-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.nav-button:hover:not(:disabled) {
+    background: #5A3311;
+    transform: scale(1.1);
+}
+
+.footer {
+    position: absolute;
+    bottom: 1rem;
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  .footer.left {
+    left: 1rem;
+  }
+  
+  .footer.right {
+    right: 1rem;
+  }
+  
+
+@media (max-width: 768px) {
+    .book-page {
+      padding: 1.5rem;
+    }
+    
+    .nav-button {
+      width: 40px;
+      height: 40px;
+    }
+}

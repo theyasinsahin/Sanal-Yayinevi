@@ -1,0 +1,269 @@
+/* Ana Konteyner */
+.book-detail-container {
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    margin-top: 5rem;
+  }
+  
+  /* Navigasyon */
+  .detail-nav {
+    margin-bottom: 2rem;
+  }
+  
+  .back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #2A5C82;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: background 0.3s ease;
+  }
+  
+  .back-button:hover {
+    background: rgba(42, 92, 130, 0.1);
+  }
+  
+  /* Ana İçerik Düzeni */
+  .detail-main {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 3rem;
+  }
+  
+  /* Sol Panel */
+  .left-panel {
+    position: sticky;
+    top: 1rem;
+    align-self: start;
+  }
+  
+  .book-cover {
+    width: 100%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.85);
+    margin-bottom: 1.5rem;
+  }
+  
+  .quick-info {
+    background: #F8F9FA;
+    padding: 1.5rem;
+    border-radius: 12px;
+  }
+  
+  .info-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 0.8rem 0;
+    color: #666;
+  }
+  
+  .label {
+    font-weight: 500;
+  }
+  
+  /* Sağ Panel */
+  .right-panel {
+    padding-right: 2rem;
+  }
+  
+  .book-title {
+    color: #2C3E50;
+    margin-bottom: 1rem;
+    font-size: 2.2rem;
+  }
+  
+  .author-section {
+    color: #666;
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+  }
+  
+  /* Action Butonlar */
+  .action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin: 4rem 0;
+  }
+  
+  .donate-button {
+    flex-grow: 1;
+    background: #27AE60;
+    color: white;
+    padding: 1rem;
+    border: none;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+  }
+  
+  .secondary-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .icon-button {
+    background: #F8F9FA;
+    border: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+  }
+  
+  /* Açıklama Bölümü */
+  .description-section {
+    margin: 3rem 0;
+    line-height: 1.8;
+    color: #444;
+  }
+  
+  /* Yorumlar */
+  .comments-section {
+    background: #F8F9FA;
+    padding: 2rem;
+    border-radius: 12px;
+  }
+  
+  .comment-form {
+    margin-top: 1.5rem;
+  }
+  
+  .comment-form textarea {
+    width: 100%;
+    height: 100px;
+    padding: 1rem;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    resize: vertical;
+  }
+  
+  .submit-comment {
+    background: #2A5C82;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  
+  /* Responsive Tasarım */
+  @media (max-width: 1100px) {
+    .detail-main {
+      grid-template-columns: 1fr;
+    }
+    
+    .left-panel {
+      position: static;
+    }
+    
+    .right-panel {
+      padding-right: 0;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .book-title {
+      font-size: 1.8rem;
+    }
+    
+    .action-buttons {
+      flex-direction: column;
+    }
+  }
+
+  /* Yorum Listesi Stilleri */
+.comment-list {
+  margin-top: 2rem;
+}
+
+.comment-item {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.user-avatar {
+  font-size: 2.5rem !important;
+  color: #2A5C82;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.username {
+  font-weight: 600;
+  color: #2C3E50;
+}
+
+.comment-date {
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.comment-text {
+  color: #444;
+  line-height: 1.6;
+  margin-left: 3.5rem;
+}
+
+.comment-actions {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  margin-left: 3.5rem;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.action-button:hover {
+  color: #2A5C82;
+}
+
+.replies-container {
+  margin-left: 3rem;
+  border-left: 2px solid #eee;
+  padding-left: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+/* Responsive Tasarım */
+@media (max-width: 768px) {
+  .comment-text,
+  .comment-actions {
+    margin-left: 0;
+  }
+  
+  .replies-container {
+    margin-left: 1rem;
+  }
+}

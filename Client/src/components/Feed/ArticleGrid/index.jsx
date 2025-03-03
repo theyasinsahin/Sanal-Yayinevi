@@ -1,14 +1,22 @@
 import React from 'react';
-import ArticleCardExtended from '../ArticleCardExtended';
 import './ArticleGrid.css';
+import BookCard from '../../BookCard';
 
 const ArticleGrid = ({ articles }) => {
   return (
     <div className="article-grid">
       {articles.map(article => (
-        <ArticleCardExtended 
-          key={article.id} 
-          article={article} 
+        <BookCard 
+          key={article.id}
+          title={article.title}
+          author={article.author}
+          excerpt={article.excerpt}
+          currentAmount={article.currentAmount}
+          goal={article.goal}
+          imageUrl={article.imageUrl}
+          pageCount={article.pageCount}
+          genre={article.genre}
+          stats={article.stats}
         />
       ))}
     </div>

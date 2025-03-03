@@ -1,43 +1,5 @@
-.featured-articles {
-    padding: 5rem 8%;
-    background-color: #f8f9fa;
-  }
-  
-  .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 3rem;
-  }
-  
-  .section-title {
-    font-family: 'Merriweather', serif;
-    color: #2C3E50;
-    font-size: 2.2rem;
-  }
-  
-  .see-all-button {
-    background: transparent;
-    border: 2px solid #2A5C82;
-    color: #2A5C82;
-    padding: 8px 25px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  
-  .see-all-button:hover {
-    background: #2A5C82;
-    color: white;
-  }
-  
-  .articles-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-  }
-  
-  /* BookCard.css */
+
+  /* ArticleCard.css */
 .article-card {
   background: #fff;
   border-radius: 12px;
@@ -142,8 +104,6 @@
   overflow: hidden;
 }
 
-
-
 /* Buton Alanı */
 .card-footer {
   margin-top: 3em;
@@ -192,10 +152,6 @@
 
   .article-excerpt {
     font-size: 0.9rem;
-  }
-
-  .progress-text {
-    font-size: 0.85rem;
   }
 
   .donate-button {
