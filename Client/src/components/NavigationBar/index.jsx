@@ -14,7 +14,7 @@ const NavigationBar = () => {
         {/* Logo */}
         <Link to="/" className="logo">
           <Book className="logo-icon" />
-          <span>YazıYolu</span>
+          <span>Writer Wings</span>
         </Link>
 
         {/* Desktop Menu */}

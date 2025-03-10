@@ -1,4 +1,3 @@
-/* CreateBookPage.css */
 .create-book-container {
     max-width: 1200px;
     margin: 6rem auto;
@@ -24,6 +23,12 @@
     margin-bottom: 2.5rem;
     padding-bottom: 2rem;
     border-bottom: 2px solid #f8f9fa;
+  }
+
+  .book-info {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
   }
   
   .cover-upload {
@@ -70,6 +75,12 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1.5rem;
+    margin-left: 3em;
+  }
+
+  .book-description{
+    margin-left: 3em;
+    width: 100%;
   }
   
   .input-group {
@@ -147,6 +158,65 @@
   .submit-btn:hover {
     transform: translateY(-2px);
   }
+
+  /* Etiket Input Grubu */
+.input-group .tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* Tekil Etiket Stili */
+.tag {
+  background: rgba(42, 92, 130, 0.1);
+  color: #2A5C82;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tag:hover {
+  background: rgba(42, 92, 130, 0.2);
+}
+
+.tag::after {
+  content: '×';
+  font-size: 1.1rem;
+  margin-left: 0.3rem;
+  color: #1D4361;
+}
+
+/* Etiket Ekleme Butonu */
+.input-group .add-tag-button {
+  background: #27AE60;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  margin-left: 0.5rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  margin-top: 1em;
+  width: fit-content;
+}
+
+.input-group .add-tag-button:hover {
+  background: #219653;
+}
+
+
+/* Etiket Input'u */
+.input-group input[name="tags"] {
+  flex: 1;
+  min-width: 200px;
+  margin-right: 0.5rem;
+}
   
   @media (max-width: 768px) {
     .basic-info {
@@ -160,5 +230,19 @@
     
     .book-form {
       padding: 1rem;
+    }
+
+    .input-group > div {
+      flex-direction: column;
+    }
+    
+    .input-group button[onClick="handleAddTag"] {
+      margin-left: 0;
+      width: 100%;
+    }
+    
+    .input-group input[name="tags"] {
+      width: 100%;
+      margin-right: 0;
     }
   }

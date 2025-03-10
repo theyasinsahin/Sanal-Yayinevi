@@ -36,27 +36,14 @@ export const sampleBooks = [
       }
     ],
     publishDate: "2024 Mart",
-    content: [
+    chapters: [
       {
-        page: 1,
-        text: "Günümüz dünyasında teknoloji, insan varoluşunun ayrılmaz bir parçası haline geldi... Günümüz dünyasında teknoloji, insan varoluşunun ayrılmaz bir parçası haline geldi...Günümüz dünyasında teknoloji, insan varoluşunun ayrılmaz bir parçası haline geldi...Günümüz dünyasında teknoloji, \ninsan varoluşunun ayrılmaz bir parçası haline geldi...Günümüz dünyasında teknoloji, insan varoluşunun ayrılmaz bir parçası haline geldi...Günümüz dünyasında teknoloji, insan varoluşunun ayrılmaz bir parçası haline geldi...Günümüz dünyasında teknoloji, insan varoluşunun ayrılmaz bir parçası haline geldi...Günümüz dünyasında teknoloji, insan varoluşunun ayrılmaz bir parçası haline geldi...Günümüz dünyasında teknoloji, insan varoluşunun ayrılmaz bir parçası haline geldi... insan varoluşunun ayrılmaz bir parçası haline geldi... insan varoluşunun ayrılmaz bir parçası haline geldi... insan varoluşunun ayrılmaz bir parçası haline geldi... insan varoluşunun ayrılmaz bir parçası haline geldi...",
+        id: 1645623145,
+        title: "Giriş: Dijital Devrim",
+        content: "<p>Teknolojinin insan varoluşunu şekillendirişi...</p>",
+        lastModified: "2024-03-20T14:30:00"
       },
-      {
-        page: 2,
-        text: "Bu hızlı dijital dönüşüm, geleneksel yaşam biçimlerimizi derinden etkilemekte...",
-      },
-      {
-        page: 3,
-        text: "Günümüz dünyasında teknoloji, insan varoluşunun ayrılmaz bir parçası haline geldi...",
-      },
-      {
-        page: 4,
-        text: "Bu hızlı dijital dönüşüm, geleneksel yaşam biçimlerimizi derinden etkilemekte...",
-      }, 
-      {
-        page: 5,
-        text: "Bu hızlı dijital dönüşüm, geleneksel yaşam biçimlerimizi derinden etkilemekte...",
-      },    
+      // Diğer bölümler...
     ]
   },
   {

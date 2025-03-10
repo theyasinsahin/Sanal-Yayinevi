@@ -1,6 +1,6 @@
 import React from 'react';
 import './ArticleGrid.css';
-import BookCard from '../../BookCard';
+import BookCard from '../../../components/BookCard'; 
 
 const ArticleGrid = ({ articles }) => {
   return (

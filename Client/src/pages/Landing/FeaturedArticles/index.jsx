@@ -1,6 +1,6 @@
 import React from 'react';
 import './FeaturedArticles.css';
-import BookCard from '../../BookCard';
+import BookCard from '../../../components/BookCard'
 import { sampleBooks } from '../../../Data/sampleBooks';
 
 import { Link } from 'react-router-dom';

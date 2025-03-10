@@ -1,0 +1,243 @@
+/* BookDashboard.css */
+.book-dashboard {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: calc(100vh - 70px);
+    background: #f8f9fa;
+    margin-top: 5em;
+  }
+  
+  /* Sidebar */
+  .sidebar {
+    background: #fff;
+    padding: 1.25rem;
+    border-right: 1px solid #eee;
+    height: calc(100vh - 70px);
+    overflow-y: auto;
+    position: sticky;
+    top: 70px;
+  }
+
+  
+  
+  .book-info {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    flex-direction: column;
+  }
+  
+  .book-cover {
+    width: 120px;
+    height: 170px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin: 0 auto 1rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+  
+  .book-info h2 {
+    color: #2C3E50;
+    margin: 0.5rem 0;
+    font-size: 1.3rem;
+  }
+  
+  .author {
+    color: #666;
+    font-size: 0.9rem;
+  }
+  
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    color: #666;
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+  }
+  
+  /* Chapter Management */
+  .chapter-management {
+    margin-top: 1.5rem;
+  }
+  
+  .new-chapter {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+  }
+  
+  .new-chapter input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    font-size: 0.9rem;
+  }
+  
+  .new-chapter button {
+    background: #27AE60;
+    color: white;
+    border: none;
+    padding: 0 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+  }
+  
+  .chapter-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    max-height: calc(100vh - 370px);
+    overflow-y: auto;
+  }
+  
+  .chapter-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.7rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #f8f9fa;
+  }
+  
+  .chapter-item:hover {
+    background: rgba(42, 92, 130, 0.05);
+  }
+  
+  .chapter-item.active {
+    background: rgba(42, 92, 130, 0.1);
+    border-left: 3px solid #2A5C82;
+  }
+  
+  .chapter-item .icon {
+    color: #2A5C82;
+    font-size: 1.1rem;
+  }
+  
+  .chapter-item .title {
+    flex: 1;
+    color: #2C3E50;
+    font-weight: 500;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .chapter-item .date {
+    color: #666;
+    font-size: 0.75rem;
+  }
+  
+  /* Editor Area */
+  .editor-area {
+    padding: 1.5rem;
+    background: #fff;
+    margin: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 100px);
+  }
+  
+  .editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  
+  .editor-header h3 {
+    color: #2C3E50;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.15rem;
+  }
+  
+  .save-btn {
+    background: #2A5C82;
+    color: white;
+    border: none;
+    padding: 0.4rem 1.25rem;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: background 0.2s ease;
+    font-size: 0.9rem;
+  }
+  
+  .save-btn:hover {
+    background: #1D4361;
+  }
+  
+  /* Quill Editor Customizations */
+  .custom-quill-editor {
+    border: 1px solid #eee !important;
+    border-radius: 8px !important;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  
+  .custom-quill-editor .ql-toolbar {
+    border: none !important;
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee !important;
+    padding: 0.6rem;
+  }
+  
+  .custom-quill-editor .ql-container {
+    border: none !important;
+    flex: 1;
+    font-family: 'Noto Serif', serif;
+    font-size: 1rem;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .custom-quill-editor .ql-editor {
+    padding: 1.25rem;
+    line-height: 1.7;
+    flex: 1;
+    overflow-y: auto;
+  }
+  
+  .custom-quill-editor .ql-editor p {
+    margin-bottom: 1rem;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .book-dashboard {
+      grid-template-columns: 1fr;
+    }
+  
+    .sidebar {
+      height: auto;
+      max-height: 300px;
+      border-right: none;
+      border-bottom: 1px solid #eee;
+      position: relative;
+      top: 0;
+    }
+  
+    .chapter-list {
+      max-height: 200px;
+    }
+  
+    .editor-area {
+      margin: 0.5rem;
+      height: calc(100vh - 350px);
+    }
+  }

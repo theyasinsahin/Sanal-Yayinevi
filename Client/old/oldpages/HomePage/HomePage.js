@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Navbar from '../../components/NavBar/NavBar';
 import ContentData from '../../components/ContentData/ContentData';
 import BookLists from '../../components/BookLists/BookLists';
-import SearchBar from '../../components/SearchBar/SearchBar';
+import SearchBar from '../../../src/components/SearchBar/SearchBar';
 
 const HomePage = () => {
 

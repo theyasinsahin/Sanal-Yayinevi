@@ -1,11 +1,12 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import NavigationBar from "./components/NavigationBar";
-import LandingPage from "./components/Landing";
-import FeedPage from "./components/Feed";
+import LandingPage from "./pages/Landing";
+import FeedPage from "./pages/Feed";
 import { FiltersProvider } from "./context/FiltersContext";
-import BookDetailPage from "./components/BookDetailPage";
-import BookReader from "./components/BookReader";
-import CreateBookPage from "./components/CreateBookPage";
+import BookDetailPage from "./pages/BookDetailPage";
+import BookReader from "./pages/BookReader";
+import CreateBookPage from "./pages/CreateBookPage";
+import BookDashboard from "./pages/BookDashboard";
 
 const Layout = ({ children }) => (
   <div className="App">
@@ -34,6 +35,10 @@ const router = createBrowserRouter([
   {
     path: "/create-book",
     element: <Layout><CreateBookPage/></Layout>
+  },
+  {
+    path: "/dashboard",
+    element: <Layout><BookDashboard/></Layout>
   }
 ]);
 

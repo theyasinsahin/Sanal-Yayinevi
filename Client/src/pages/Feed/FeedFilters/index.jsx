@@ -2,7 +2,7 @@
 import React from 'react';
 import { useFilters } from '../../../context/FiltersContext';
 import { categories } from '../../../Data/categoriesData';
-import RangeInput from '../../Common/RangeInput';
+import RangeInput from '../../../components/Common/RangeInput'
 import './FeedFilters.css';
 
 const FeedFilters = () => {

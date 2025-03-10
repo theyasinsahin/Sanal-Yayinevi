@@ -104,6 +104,19 @@
   overflow: hidden;
 }
 
+.stats {
+  display: flex;
+  gap: 1.5rem;
+  margin: 1rem 0;
+  color: #666;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 /* Buton Alanı */
 .card-footer {
   margin-top: 3em;

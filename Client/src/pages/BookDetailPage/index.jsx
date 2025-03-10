@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowBack, FavoriteBorder, Share, Comment, Paid, BookmarkBorder } from '@mui/icons-material';
-import ProgressBar from '../Common/ProgressBar';
+import ProgressBar from '../../components/Common/ProgressBar';
 import { sampleBooks } from '../../Data/sampleBooks';
 
 import './BookDetailPage.css';
