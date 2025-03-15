@@ -22,10 +22,10 @@ const NavigationBar = () => {
           <Link to="/feed" className="nav-link">
             Keşfet
           </Link>
-          <Link to="/yaz" className="nav-link highlight">
-            Yazı Yaz
+          <Link to="/create-book" className="nav-link highlight">
+            Kitap Oluştur
           </Link>
-          <Link to="/profil" className="nav-link">
+          <Link to="/profile" className="nav-link">
             <Person className="profile-icon" />
           </Link>
         </div>

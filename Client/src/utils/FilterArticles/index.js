@@ -24,8 +24,10 @@ export const filterArticles = (articles, filters) => {
           return new Date(b.createdAt) - new Date(a.createdAt);
         case 'popular':
           return b.stats.views - a.stats.views;
-        case 'closest':
+        case 'closestpercent':
           return (a.goal / a.currentAmount) - (b.goal / b.currentAmount);
+        case 'closesttl':
+          return (a.goal - a.currentAmount) - (b.goal - b.currentAmount);
         case 'most-funded':
           return b.currentAmount - a.currentAmount;
         default:

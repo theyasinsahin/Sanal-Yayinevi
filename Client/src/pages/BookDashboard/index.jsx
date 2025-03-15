@@ -98,7 +98,7 @@ const BookDashboard = () => {
     <div className="book-dashboard">
       {/* Sidebar */}
       <div className="sidebar">
-        <div className="book-info">
+        <div className="book-info-dashboard">
           <img 
             src={book?.imageUrl || 'https://via.placeholder.com/120x170'} 
             alt={book?.title || 'Book Cover'} 

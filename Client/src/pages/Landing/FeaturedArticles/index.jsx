@@ -17,7 +17,7 @@ const FeaturedArticles = () => {
       <div className="articles-grid">
       {sampleBooks.slice(0, Math.min(3, sampleBooks.length)).map(article => (
         <BookCard
-          key={article.id}
+          id={article.id}
           title={article.title}
           author={article.author}
           excerpt={article.excerpt}

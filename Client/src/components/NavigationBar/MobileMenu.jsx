@@ -10,8 +10,8 @@ const MobileMenu = ({ isOpen, onClose }) => {
         <Link to="/kesfet" className="mobile-link" onClick={onClose}>
           Keşfet
         </Link>
-        <Link to="/yaz" className="mobile-link highlight" onClick={onClose}>
-          Yazı Yaz
+        <Link to="/create-book" className="mobile-link highlight" onClick={onClose}>
+          Kitap Oluştur
         </Link>
         <Link to="/profil" className="mobile-link" onClick={onClose}>
           Profilim

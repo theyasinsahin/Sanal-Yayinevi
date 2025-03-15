@@ -3,10 +3,22 @@ import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { sampleBooks } from '../../Data/sampleBooks';
 import './BookReader.css';
 
+const WORDS_PER_PAGE = 100; // Sayfa başına kelime sınırı
+
+const splitContentIntoPages = (content) => {
+  const words = content.split(' ');
+  const pages = [];
+  for (let i = 0; i < words.length; i += WORDS_PER_PAGE) {
+    pages.push(words.slice(i, i + WORDS_PER_PAGE).join(' '));
+  }
+  return pages;
+};
+
 const BookReader = () => {
   const book = sampleBooks.find(b => b.id === 1);
   const [currentPage, setCurrentPage] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [pages, setPages] = useState([]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -17,7 +29,12 @@ const BookReader = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const pages = book.content;
+  useEffect(() => {
+    if (book && book.chapters) {
+      const allPages = book.chapters.flatMap(chapter => splitContentIntoPages(chapter.content));
+      setPages(allPages);
+    }
+  }, [book]);
 
   const handlePrevPage = () => {
     if (currentPage > 0) setCurrentPage(prev => prev - (isMobile ? 1 : 2));
@@ -40,24 +57,20 @@ const BookReader = () => {
       </div>
 
       <div className="book-container">
-        {!isMobile && (
+        {!isMobile && currentPage < pages.length && (
           <div className="book-page left">
-          <div className="header">{book.title}</div>
-          <div className="content">{pages[currentPage]?.text}</div>
-          <div className={`footer ${pages[currentPage]?.page % 2 === 0 ? 'right' : 'left'}`}>
-            {pages[currentPage]?.page}
+            <div className="header">{book.title}</div>
+            <div className="content" dangerouslySetInnerHTML={{ __html: pages[currentPage] }} />
+            <div className={`footer ${currentPage % 2 === 0 ? 'right' : 'left'}`}>{currentPage + 1}</div>
           </div>
-        </div>
         )}
-        <div className={`book-page ${!isMobile ? 'right' : ''}`}>
-          <div className="header">{!isMobile ? book.author : book.title}</div>
-          <div className="content">
-            {isMobile ? pages[currentPage]?.text : pages[currentPage + 1]?.text}
+        {currentPage + 1 < pages.length && (
+          <div className={`book-page ${!isMobile ? 'right' : ''}`}>
+            <div className="header">{!isMobile ? book.author : book.title}</div>
+            <div className="content" dangerouslySetInnerHTML={{ __html: pages[currentPage + (isMobile ? 0 : 1)] }} />
+            <div className={`footer ${(currentPage + 1) % 2 === 0 ? 'right' : 'left'}`}>{currentPage + (isMobile ? 1 : 2)}</div>
           </div>
-          <div className={`footer ${pages[currentPage + 1]?.page % 2 === 0 ? 'right' : 'left'}`}>
-            {isMobile ? pages[currentPage]?.page : pages[currentPage + 1]?.page}
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

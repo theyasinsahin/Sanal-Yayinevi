@@ -1,7 +1,7 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { useFilters } from '../../context/FiltersContext';
 import FeedFilters from './FeedFilters';
-import ArticleGrid from './ArticleGrid';
+import ArticleGrid from '../../components/ArticleGrid';
 import { filterArticles } from '../../utils/FilterArticles';
 import { sampleBooks } from '../../Data/sampleBooks';
 const FeedPage = () => {

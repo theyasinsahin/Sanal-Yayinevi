@@ -53,7 +53,8 @@ const FeedFilters = () => {
           {[
             { value: 'newest', label: 'En Yeni' },
             { value: 'popular', label: 'En Popüler' },
-            { value: 'closest', label: 'Hedefe Yakın' }
+            { value: 'closesttl', label: 'Hedefe Yakın (TL olarak)' },
+            { value: 'closestpercent', label: 'Hedefe Yakın (% olarak)' },
           ].map(option => (
             <label key={option.value} className="sort-option">
               <input

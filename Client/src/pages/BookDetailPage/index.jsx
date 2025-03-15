@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowBack, FavoriteBorder, Share, Comment, Paid, BookmarkBorder } from '@mui/icons-material';
 import ProgressBar from '../../components/Common/ProgressBar';
@@ -8,8 +8,8 @@ import './BookDetailPage.css';
 import CommentList from './CommentList';
 
 const BookDetailPage = () => {
-  //const { id } = useParams();
-  const book = sampleBooks.find(b => b.id === 1);
+  const { id } = useParams();
+  const book = sampleBooks.find(b => b.id === parseInt(id));
 
   return (
     <div className="book-detail-container">

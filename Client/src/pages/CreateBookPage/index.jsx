@@ -106,6 +106,7 @@ const handleSubmit = (e) => {
         {/* Kapak ve Temel Bilgiler */}
         <div className="form-section">
           <div className="book-info"> 
+            
             <div className="cover-upload">
               <label className="upload-label">
                 <input
@@ -191,19 +192,19 @@ const handleSubmit = (e) => {
               
             </div>
             {/* Açıklama */}
-              <div className="book-description">
-                <div className="input-group">
-                  <label>Kitap Açıklaması</label>
-                  <textarea
-                    name="description"
-                    value={bookData.description}
-                    onChange={handleInputChange}
-                    rows="4"
-                  />
-                  {errors.description && <span className="error-message">{errors.description}</span>}
+            <div className="book-description">
+              <div className="input-group">
+                <label>Kitap Açıklaması</label>
+                <textarea
+                  name="description"
+                  value={bookData.description}
+                  onChange={handleInputChange}
+                  rows="4"
+                />
+                {errors.description && <span className="error-message">{errors.description}</span>}
 
-                </div>
-              </div> 
+              </div>
+            </div> 
           </div>  
         </div>
 

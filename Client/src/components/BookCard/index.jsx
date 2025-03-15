@@ -1,5 +1,5 @@
 // ArticleCard.js
-import React from 'react';
+import React, {useEffect} from 'react';
 import { FavoriteBorder, 
   Paid, 
   Pages, 
@@ -10,22 +10,22 @@ import { FavoriteBorder,
   Comment as CommentIcon  } from '@mui/icons-material';
 import ProgressBar from '../Common/ProgressBar';
 
+import { useNavigate } from 'react-router-dom';
+
 import './BookCard.css';
 
-const BookCard = ({ 
-  title,
-  author,
-  excerpt,
-  currentAmount,
-  goal,
-  imageUrl,
-  pageCount,
-  genre,
-  stats
-}) => {
+const BookCard = (props) => {
+
+  const {title, author, excerpt, currentAmount, goal, imageUrl, pageCount, genre, stats, id} = props;
+  
+  const navigate = useNavigate(); // Yönlendirme için hook
+  
+  const handleBookClick = (bookId) => {
+    navigate(`/book-detail/${bookId}`); // Kitap detayına yönlendirme
+  };
   
   return (
-    <div className="article-card">
+    <div className="article-card" key={id} onClick={() => handleBookClick(id)} style={{ cursor: "pointer" }}>
       <div className="card-media">
         <img src={imageUrl} alt={title} className="cover-image" />
         <div className="meta-overlay">

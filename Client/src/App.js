@@ -7,6 +7,8 @@ import BookDetailPage from "./pages/BookDetailPage";
 import BookReader from "./pages/BookReader";
 import CreateBookPage from "./pages/CreateBookPage";
 import BookDashboard from "./pages/BookDashboard";
+import ProfilePage from "./pages/ProfilePage";
+import UserProfilePage from "./pages/UserProfilePage";
 
 const Layout = ({ children }) => (
   <div className="App">
@@ -25,7 +27,7 @@ const router = createBrowserRouter([
     element: <Layout><FeedPage /></Layout>,
   },
   {
-    path: "/book-detail",
+    path: "/book-detail/:id",
     element: <Layout><BookDetailPage /></Layout>
   },
   {
@@ -39,6 +41,14 @@ const router = createBrowserRouter([
   {
     path: "/dashboard",
     element: <Layout><BookDashboard/></Layout>
+  },
+  {
+    path: "/profile",
+    element: <Layout><ProfilePage/></Layout>
+  },
+  {
+    path: "/candemir",
+    element: <Layout><UserProfilePage/></Layout>
   }
 ]);
 
