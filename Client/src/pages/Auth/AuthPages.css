@@ -1,0 +1,128 @@
+/* Ortak Stiller */
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #F8F9FA;
+    padding: 2rem;
+  }
+  
+  .auth-card {
+    background: white;
+    padding: 3rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 500px;
+  }
+  
+  .auth-title {
+    color: #2C3E50;
+    text-align: center;
+    margin-bottom: 2rem;
+    font-family: 'Merriweather', serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+  }
+  
+  .input-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .input-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #2C3E50;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+  
+  .input-group input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+  }
+  
+  .input-group input:focus {
+    border-color: #2A5C82;
+    outline: none;
+  }
+  
+  .auth-button {
+    background: #27AE60;
+    color: white;
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    margin-top: 1rem;
+  }
+  
+  .auth-button:hover {
+    transform: translateY(-2px);
+  }
+  
+  .auth-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: #666;
+  }
+  
+  .link {
+    color: #2A5C82;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .link:hover {
+    text-decoration: underline;
+  }
+  
+  .terms {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1rem 0;
+    color: #666;
+  }
+  
+  .terms input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .auth-options {
+    text-align: right;
+    margin: 1rem 0;
+  }
+  
+  /* Responsive Tasarım */
+  @media (max-width: 768px) {
+    .auth-card {
+      padding: 2rem;
+    }
+  
+    .auth-title {
+      font-size: 1.5rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .auth-container {
+      padding: 1rem;
+    }
+    
+    .auth-card {
+      padding: 1.5rem;
+    }
+  }
