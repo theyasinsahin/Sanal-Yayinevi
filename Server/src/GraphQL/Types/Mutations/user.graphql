@@ -1,4 +1,38 @@
 type Mutation {
-    createDummyUser(name: String!, email: String!): User!
+  register(
+    username: String!
+    fullName: String!
+    email: String!
+    password: String!
+  ): Status!
+  login(email: String!, password: String!): AuthPayload
+  deleteUserById(id: ID!): Status!
+  followUser(followId: ID!): Status!
+  updateProfile(username: String, fullName: String, bio: String): User!
 }
 
+type Status {
+  code: Int!
+  message: String!
+}
+
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
+type User {
+  id: ID!
+  username: String!
+  fullName: String!
+  bio: String!
+  profilePicture: String!
+  email: String!
+  favouriteBooks: [ID!]
+  favouriteAuthors: [ID!]
+  usersBooks: [ID!]
+  followers: [ID!]
+  following: [ID!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}

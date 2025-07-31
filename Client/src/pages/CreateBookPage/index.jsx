@@ -6,7 +6,7 @@ import './CreateBookPage.css';
 
 const CreateBookPage = () => {
 
-  const [inputTag, setInputTag] = useState('');
+  const [inputTag, setInputTag] = useState();
   
   const handleAddTag = () => {
     if (inputTag && !bookData.tags.includes(inputTag)) {
@@ -32,7 +32,7 @@ const CreateBookPage = () => {
     cover: null,
     description: '',
     chapters: [''],
-    tags: [''],
+    tags: [],
   });
   
   const [preview, setPreview] = useState(null);

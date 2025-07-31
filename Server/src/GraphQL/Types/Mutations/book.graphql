@@ -1,0 +1,46 @@
+type Mutation {
+  createBook(title: String!, genre: String!, description: String!): Book!
+}
+
+type Comment {
+  id: ID!
+  userId: ID!
+  bookId: ID!
+  content: String!
+  createdAt: DateTime!
+  replies: [Comment!]
+  likes: Int!
+}
+
+type Chapter {
+  id: ID!
+  bookId: ID!
+  title: String!
+  content: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type BookStats {
+  views: Int!
+  shares: Int!
+  likes: Int!
+  comments: Int!
+}
+
+type Book {
+  id: ID!
+  title: String!
+  authorId: ID!
+  imageUrl: String!
+  pageCount: Int!
+  genre: String!
+  genreId: ID!
+  description: String!
+  stats: BookStats!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  publishDate: DateTime!
+  comments: [Comment!]
+  chapters: [Chapter!]
+}

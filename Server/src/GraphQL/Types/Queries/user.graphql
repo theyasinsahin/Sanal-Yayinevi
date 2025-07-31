@@ -1,11 +1,28 @@
 scalar JSON
+scalar DateTime
 
 type Query {
-    me: User!
+  getUserById(id: ID!): User
+  getUserByUsername(username: String!): User
+  getUserByEmail(email: String!): User
+  getAllUsers: [User!]
+  getFollowingByUser(id: ID!): [ID!]
+  getFollowersByUser(id: ID!): [ID!]
+  me: User
 }
 
 type User {
-    id: ID!
-    name: String!
-    email: String!
+  id: ID!
+  username: String!
+  fullName: String!
+  bio: String!
+  profilePicture: String!
+  email: String!
+  favouriteBooks: [ID!]
+  favouriteAuthors: [ID!]
+  usersBooks: [ID!]
+  followers: [ID!]
+  following: [ID!]
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }

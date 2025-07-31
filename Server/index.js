@@ -83,21 +83,7 @@ const startServer = async () => {
           schema, 
           cacheControl: { defaultMaxAge: 5 },
           // plugins: [LogMiddleware, ApolloServerPluginDrainHttpServer({ httpServer })],
-          plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-          context: async ({req}) => {
-            const token = req.headers.authorization || '';
-            let user = null;
-
-            if(token){
-              try {
-                const decoded = jwt.verify(token.replace("Bearer", ""), secret);
-                user = await models.User.findById(decoded.id);
-              } catch (error) {
-                console.log('Authentication error:', error);
-              }
-            }
-            return {...models, user};
-          },
+          plugins: [ApolloServerPluginDrainHttpServer({ httpServer })]
         });
         
         //app.use('/api/auth', require('./src/routes/auth'));
@@ -112,8 +98,21 @@ const startServer = async () => {
           bodyParser.json({ limit: "50mb" }),
             expressMiddleware(server, {
               context: async ({ req }) => {
-                return {...models, secret}
-            }  
+                const authHeader = req.headers.authorization;
+                let user = null;
+
+                if (authHeader && authHeader.startsWith("Bearer ")) {
+                  const token = authHeader.replace("Bearer ", "");
+                  try {
+                    const decoded = jwt.verify(token, secret);
+                    user = await models.User.findById(decoded.id).select("-password");
+                  } catch (error) {
+                    console.log("Authentication error:", error.message); // sadece mesaj
+                  }
+                }
+
+                return { ...models, user, req };
+              },
           })
         )
 

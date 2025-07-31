@@ -1,0 +1,13 @@
+# Genel
+.DS_Store
+.env
+*.log
+
+# React (Client)
+Client/node_modules/
+Client/build/
+
+# Node.js (Server)
+Server/node_modules/
+Server/dist/
+Server/.env

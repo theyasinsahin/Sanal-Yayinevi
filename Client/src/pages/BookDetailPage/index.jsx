@@ -8,6 +8,10 @@ import './BookDetailPage.css';
 import CommentList from './CommentList';
 
 const BookDetailPage = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
   const { id } = useParams();
   const book = sampleBooks.find(b => b.id === parseInt(id));
 

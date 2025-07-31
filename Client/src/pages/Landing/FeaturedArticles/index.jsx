@@ -11,7 +11,7 @@ const FeaturedArticles = () => {
     <section className="featured-articles">
       <div className="section-header">
         <h2 className="section-title">Öne Çıkan Yazılar</h2>
-        <Link to='/feed' className="see-all-button">Tümünü Gör</Link>
+        <Link to='/feed' className="secondary-cta">Tümünü Gör</Link>
       </div>
       
       <div className="articles-grid">
