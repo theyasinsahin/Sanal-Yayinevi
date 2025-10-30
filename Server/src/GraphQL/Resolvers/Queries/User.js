@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-
+import { authenticateUser } from '../../../utils/auth.js';
 export default {
     getUserById: async (_, { id }, { User }) => {
         return await User.findById(id).select('-password');
@@ -17,7 +17,7 @@ export default {
         return await User.find().select('-password');
     },
 
-    getFollowingByUser: async (_, { id }, { User }) => {
+    getFollowingByUserId: async (_, { id }, { User }) => {
         const user = await User.findById(id); // populate kullanma
         if (!user) {
             throw new Error("User not found");
@@ -25,7 +25,7 @@ export default {
         return user.following.map(followingId => followingId.toString());
     },
 
-    getFollowersByUser: async (_, { id }, { User }) => {
+    getFollowersByUserId: async (_, { id }, { User }) => {
         console.log("UserId: ", id);
         const user = await User.findById(id);
         if (!user) {
@@ -36,30 +36,37 @@ export default {
 
     me: async (_, __, { req, User },) => {
 
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            throw new Error("Not authenticated");
-        }
+        const user = await authenticateUser(req, User);
 
-        const token = authHeader.replace("Bearer ", "");
-
-        let decoded;
-        try {
-            decoded = jwt.verify(token, "SECRET_KEY");
-        } catch (err) {
-            throw new Error("Invalid or expired token");
-        }
-
-        if (!decoded?.userId) {
-            throw new Error("Invalid token payload");
-        }
-
-        const user = await User.findById(decoded.userId).select('-password');
         if (!user) {
             throw new Error("User not found");
         }
 
         return user;
-    }
+    },
+
+    getFavouriteBooksByUserId: async (_, { id }, { User }) => {
+        const user = await User.findById(id).populate('favouriteBooks');
+        if (!user) {
+            throw new Error("User not found");
+        }
+        return user.favouriteBooks;
+    },
+
+    getFavouriteAuthorsByUserId: async (_, { id }, { User }) => {
+        const user = await User.findById(id).populate('favouriteAuthors');
+        if (!user) {
+            throw new Error("User not found");
+        }
+        return user.favouriteAuthors;
+    },
+
+    getUsersBooksByUserId: async (_, { id }, { User }) => {
+        const user = await User.findById(id).populate('usersBooks');
+        if (!user) {
+            throw new Error("User not found");
+        }
+        return user.usersBooks;
+    },
 
 }

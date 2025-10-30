@@ -1,9 +1,11 @@
+import { get } from "mongoose";
+
 export default {
   getBookById: async (_, { id }, { Book }) => {
     return await Book.findById(id);
   },
 
-  getBooksByAuthor: async (_, { authorId }, { Book }) => {
+  getBooksByAuthorId: async (_, { authorId }, { Book }) => {
     // authorId alanına göre filtrele
     return await Book.find({ authorId });
   },
@@ -14,6 +16,11 @@ export default {
 
   getAllBooks: async (_, __, { Book }) => {
     return await Book.find();
+  },
+
+  getBookByTitle: async (_, { title }, { Book }) => {
+    // title alanına göre filtrele
+    return await Book.findOne({ title });
   },
 
   searchBooks: async (_, { query }, { Book, User }) => {

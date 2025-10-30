@@ -8,7 +8,12 @@ type Mutation {
   login(email: String!, password: String!): AuthPayload
   deleteUserById(id: ID!): Status!
   followUser(followId: ID!): Status!
-  updateProfile(username: String, fullName: String, bio: String): User!
+  updateProfile(
+    username: String
+    fullName: String
+    bio: String
+    profilePicture: String
+  ): User!
 }
 
 type Status {

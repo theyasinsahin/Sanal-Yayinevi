@@ -6,9 +6,12 @@ type Query {
   getUserByUsername(username: String!): User
   getUserByEmail(email: String!): User
   getAllUsers: [User!]
-  getFollowingByUser(id: ID!): [ID!]
-  getFollowersByUser(id: ID!): [ID!]
+  getFollowingByUserId(id: ID!): [ID!]
+  getFollowersByUserId(id: ID!): [ID!]
   me: User
+  getFavouriteBooksByUserId(id: ID!): [Book!]
+  getFavouriteAuthorsByUserId(id: ID!): [ID!]
+  getUsersBooksByUserId(id: ID!): [Book!]
 }
 
 type User {

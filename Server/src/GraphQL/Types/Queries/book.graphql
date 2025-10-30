@@ -3,9 +3,10 @@ scalar DateTime
 
 type Query {
   getBookById(id: ID!): Book
-  getBooksByAuthor(author: String!): [Book!]
+  getBooksByAuthorId(authorId: ID!): [Book!]
   getBooksByGenre(genre: String!): [Book!]
   getAllBooks: [Book!]
+  getBookByTitle(title: String!): Book
   searchBooks(query: String!): [Book!]
 }
 
@@ -42,12 +43,12 @@ type Book {
   imageUrl: String!
   pageCount: Int!
   genre: String!
-  genreId: ID!
   description: String!
   stats: BookStats!
   createdAt: DateTime!
   updatedAt: DateTime!
   publishDate: DateTime!
-  comments: [Comment!]
-  chapters: [Chapter!]
+  comments: [ID!]
+  chapters: [ID!]
+  tags: [String]
 }

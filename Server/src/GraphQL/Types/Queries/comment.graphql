@@ -1,0 +1,19 @@
+scalar JSON
+scalar DateTime
+
+type Query {
+  getCommentsByBookId(bookId: ID!): [Comment!]
+  getCommentById(id: ID!): Comment
+  getCommentsByUserId(userId: ID!): [Comment!]
+  getAllComments: [Comment!]
+}
+
+type Comment {
+  id: ID!
+  userId: ID!
+  bookId: ID!
+  content: String!
+  date: DateTime!
+  replies: [Comment!]
+  likes: Int!
+}

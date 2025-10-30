@@ -1,4 +1,7 @@
 import User from "./user.js";
 import Book from "./book.js";
+import BookLike from "./bookLike.js";
+import Chapter from "./chapter.js";
+import Comment from "./comment.js";
 
-export default {User, Book};
+export default {User, Book, BookLike, Chapter, Comment};

@@ -1,19 +1,19 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({
+  path: process.env.NODE_ENV === "production" ? ".env.prod" : ".env",
+});
 
 export const authenticateUser = async (req, User) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  const token = req.headers.authorization;
+  
+  if (!token) {
     throw new Error("Not authenticated");
   }
-
-  const token = authHeader.replace("Bearer ", "");
-
+  
   let decoded;
   try {
-    decoded = jwt.verify(token, process.env.JWT_SECRET || "SECRET_KEY");
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
   } catch (err) {
     throw new Error("Invalid or expired token");
   }

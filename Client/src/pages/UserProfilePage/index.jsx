@@ -1,13 +1,13 @@
 // UserProfilePage.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
 import { People, Book, Paid, Email, Link, Chat } from '@mui/icons-material';
-import ArticleGrid from '../../components/ArticleGrid';
+import ArticleGrid from '../../components/BookGrid';
 import { sampleBooks } from '../../Data/sampleBooks';
 import './UserProfilePage.css';
 
+
 const UserProfilePage = () => {
-  //const { userId } = useParams();
+  
   const [isFollowing, setIsFollowing] = useState(false);
 
 
@@ -60,7 +60,7 @@ const UserProfilePage = () => {
         </div>
 
         <div className="profile-info">
-          <h1 className="user-name">{user.name}</h1>
+          <h1 className="full-name">{user.fullName}</h1>
           <p className="user-bio">{user.bio}</p>
           
           <div className="social-links">

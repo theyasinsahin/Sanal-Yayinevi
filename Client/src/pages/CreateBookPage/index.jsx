@@ -3,8 +3,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AddPhotoAlternate, Add, Subject, Category, Title, Tag } from '@mui/icons-material';
 import './CreateBookPage.css';
+import { CREATE_BOOK_MUTATION } from './graphql';
+import { useMutation } from '@apollo/client';
 
 const CreateBookPage = () => {
+
+  const [createBook] = useMutation(CREATE_BOOK_MUTATION);  
 
   const [inputTag, setInputTag] = useState();
   
@@ -28,7 +32,7 @@ const CreateBookPage = () => {
   const [bookData, setBookData] = useState({
     title: '',
     author: '',
-    category: 'roman',
+    genre: 'roman',
     cover: null,
     description: '',
     chapters: [''],
@@ -38,7 +42,7 @@ const CreateBookPage = () => {
   const [preview, setPreview] = useState(null);
   const navigate = useNavigate();
 
-  const categories = [
+  const genres = [
     { value: 'roman', label: 'Roman' },
     { value: 'siir', label: 'Şiir' },
     { value: 'bilimkurgu', label: 'Bilim Kurgu' },
@@ -83,7 +87,6 @@ const handleSubmit = (e) => {
   let newErrors = {};
 
   if (!bookData.title.trim()) newErrors.title = "Kitap başlığı zorunludur.";
-  if (!bookData.author.trim()) newErrors.author = "Yazar adı zorunludur.";
   if (!bookData.description.trim()) newErrors.description = "Açıklama zorunludur.";
 
   if (Object.keys(newErrors).length > 0) {
@@ -92,7 +95,20 @@ const handleSubmit = (e) => {
   }
 
   // Hata yoksa kitabı kaydet
-  console.log(bookData);
+  createBook({
+    variables: {
+      title: bookData.title,
+      genre: bookData.genre,
+      description: bookData.description,
+      tags: bookData.tags
+    }
+  }).then(response => {
+    console.log("Kitap başarıyla oluşturuldu:", response.data.createBook);
+  }).catch(error => {
+    console.error("Kitap oluşturulurken hata:", error);
+    setErrors({ submit: "Kitap oluşturulurken bir hata oluştu." });
+  });
+
   navigate('/dashboard');
 };
 
@@ -140,25 +156,13 @@ const handleSubmit = (e) => {
               </div>
 
               <div className="input-group">
-                <label><Subject /> Yazar Adı</label>
-                <input
-                  type="text"
-                  name="author"
-                  value={bookData.author}
-                  onChange={handleInputChange}
-                />
-                  {errors.author && <span className="error-message">{errors.author}</span>}
-
-              </div>
-
-              <div className="input-group">
-                <label><Category /> Kategori</label>
+                <label><Category /> Tür</label>
                 <select
-                  name="category"
-                  value={bookData.category}
+                  name="genre"
+                  value={bookData.genre}
                   onChange={handleInputChange}
                 >
-                  {categories.map(cat => (
+                  {genres.map(cat => (
                     <option key={cat.value} value={cat.value}>
                       {cat.label}
                     </option>

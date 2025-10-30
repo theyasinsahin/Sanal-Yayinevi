@@ -3,15 +3,35 @@ import { Link } from 'react-router-dom';
 import { Email, Lock, Login } from '@mui/icons-material';
 import '../AuthPages.css';
 
+import { useMutation } from '@apollo/client';
+import { LOGIN } from '../../../graphql/mutations/user';
+
 const LoginPage = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
 
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const [login, { loading, error, data }] = useMutation(LOGIN);
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Giriş işlemleri
+    
+    login({ variables: formData })
+      .then(res => {
+        console.log("Giriş başarılı:", res.data.login);
+        localStorage.setItem("token", res.data.login.token);
+        // yönlendirme veya mesaj gösterme
+        window.location.href = "/";
+      })
+      .catch(err => {
+        console.error("Giriş hatası:", err.message);
+      }
+    );
   };
 
   return (
@@ -28,7 +48,7 @@ const LoginPage = () => {
               type="email"
               name="email"
               value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              onChange={(e) => handleChange(e)}
               required
             />
           </div>
@@ -39,7 +59,7 @@ const LoginPage = () => {
               type="password"
               name="password"
               value={formData.password}
-              onChange={(e) => setFormData({...formData, password: e.target.value})}
+              onChange={(e) => handleChange(e)}
               required
             />
           </div>

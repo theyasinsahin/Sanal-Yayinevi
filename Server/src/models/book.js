@@ -1,25 +1,4 @@
-// models/book.js
 import mongoose from 'mongoose';
-
-const CommentSchema = new mongoose.Schema({}, { _id: false });
-CommentSchema.add({
-  id: Number,
-  userId: String,
-  bookId: String,
-  content: String,
-  date: {type:Date, default: Date.now},
-  likes: Number,
-  replies: [CommentSchema]
-});
-
-const ChapterSchema = new mongoose.Schema({
-  id: Number,
-  bookId: String,
-  title: String,
-  content: String,
-  createdAt: {type:Date, default: Date.now},
-  updatedAt: {type:Date, default: Date.now},
-}, { _id: false });
 
 const BookSchema = new mongoose.Schema({
   title: String,
@@ -38,11 +17,15 @@ const BookSchema = new mongoose.Schema({
     likes: {type: Number, default: 0},
     comments: {type: Number, default: 0},
   },
-  createdAt: {type:Date, default: Date.now},
-  updatedAt: {type:Date, default: Date.now},
   publishDate: {type:Date, default: Date.now},
-  comments: {type: [CommentSchema], default: []},
-  chapters: {type: [ChapterSchema], default: []},
-});
+  comments: {
+  type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
+  default: [],
+},
+chapters: {
+  type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Chapter' }],
+  default: [],
+}
+},{timestamps: true});
 
 export default mongoose.model('Book', BookSchema);

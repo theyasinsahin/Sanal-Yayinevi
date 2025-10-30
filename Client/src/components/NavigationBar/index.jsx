@@ -4,9 +4,14 @@ import { Link } from 'react-router-dom';
 import { Menu, Close, Book, Person } from '@mui/icons-material';
 import MobileMenu from './MobileMenu';
 import './NavigationBar.css';
-
+import { ME_QUERY } from './graphql';
+import { useQuery } from '@apollo/client';
+import { useEffect } from 'react';
 const NavigationBar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  const { data, loading, error } = useQuery(ME_QUERY);
+  
 
   return (
     <nav className="navigation-bar">
@@ -25,9 +30,15 @@ const NavigationBar = () => {
           <Link to="/create-book" className="nav-link highlight">
             Kitap Oluştur
           </Link>
-          <Link to="/profile" className="nav-link">
-            <Person className="profile-icon" />
-          </Link>
+          { /*If user logged in*/
+          data ? (
+            <Link to="/profile" className="nav-link">
+              <Person className="profile-icon" />
+            </Link>) : (
+            <Link to="/login" className="nav-link">
+              Giriş Yap
+            </Link>
+            )}
         </div>
 
         {/* Mobile Toggle */}

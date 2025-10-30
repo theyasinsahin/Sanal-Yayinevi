@@ -3,18 +3,32 @@ import { Link } from 'react-router-dom';
 import { Person, Email, Lock, HowToReg, AlternateEmail } from '@mui/icons-material';
 import '../AuthPages.css';
 
+import { useMutation } from '@apollo/client';
+import { REGISTER } from '../../../graphql/mutations/user';
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    username:'',
+    username: '',
+    fullName:'',
     email: '',
     password: '',
-    confirmPassword: ''
   });
 
-  const handleSubmit = (e) => {
+  const [register, { loading, error, data }] = useMutation(REGISTER);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Kayıt işlemleri
+    try {
+      const res = await register({ variables: formData });
+      
+      console.log("Kayıt başarılı:", res.data.register.message);
+      // yönlendirme veya mesaj gösterme
+    } catch (err) {
+      console.error("Kayıt hatası:", err.message);
+    }
   };
 
   return (
@@ -29,9 +43,9 @@ const RegisterPage = () => {
             <label><Person /> Tam Adınız</label>
             <input
               type="text"
-              name="name"
+              name="fullName"
               value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
+              onChange={(e) => handleChange(e)}
               required
             />
           </div>
@@ -40,9 +54,9 @@ const RegisterPage = () => {
             <label><AlternateEmail /> Kullanıcı Adınız</label>
             <input
               type="text"
-              name="name"
+              name="username"
               value={formData.username}
-              onChange={(e) => setFormData({...formData, username: e.target.value})}
+              onChange={(e) => handleChange(e)}
               required
             />
           </div>
@@ -53,7 +67,7 @@ const RegisterPage = () => {
               type="email"
               name="email"
               value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              onChange={(e) => handleChange(e)}
               required
             />
           </div>
@@ -64,18 +78,7 @@ const RegisterPage = () => {
               type="password"
               name="password"
               value={formData.password}
-              onChange={(e) => setFormData({...formData, password: e.target.value})}
-              required
-            />
-          </div>
-
-          <div className="input-group">
-            <label><Lock /> Şifre Tekrar</label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+              onChange={(e) => handleChange(e)}
               required
             />
           </div>
@@ -88,8 +91,11 @@ const RegisterPage = () => {
           </div>
 
           <button type="submit" className="auth-button">
-            Kayıt Ol
+            {loading ? 'Kayıt Oluşturuluyor...' : 'Kayıt Ol'}
           </button>
+
+          {error && <p style={{ color: 'red' }}>Hata: {error.message}</p>}
+          {data && <p style={{ color: 'green' }}>Kayıt başarılı: {data.register.username}</p>}
 
           <div className="auth-footer">
             Zaten hesabın var mı? <Link to="/login" className="link">Giriş Yap</Link>

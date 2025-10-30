@@ -13,11 +13,34 @@ import ProgressBar from '../Common/ProgressBar';
 import { useNavigate } from 'react-router-dom';
 
 import './BookCard.css';
+import { useQuery } from '@apollo/client';
+import {GET_BOOK_BY_ID_QUERY, GET_USER_BY_ID_QUERY} from './graphql';
+import { use } from 'react';
 
-const BookCard = (props) => {
+const BookCard = ({bookId}) => {
+  const {data, loading, error} = useQuery(GET_BOOK_BY_ID_QUERY, {
+    variables: {id: bookId}
+  });
+  useEffect(() => {
+    if (error) {
+      console.error("Error fetching book data:", error.message);
+    }
+  }, [error]);
 
-  const {title, author, excerpt, currentAmount, goal, imageUrl, pageCount, genre, stats, id} = props;
+  useEffect(() => {
+    console.log("Fetched book data:", data);
+  }, [data]);
+  const {title, authorId, description, imageUrl, pageCount, genre, stats, id} = data.getBookById;
   
+  const {data: userData} = useQuery(GET_USER_BY_ID_QUERY, {
+    variables: {id: authorId}
+  });
+
+  let author = "Bilinmiyor";
+  if (userData && userData.getUserById) {
+    author = userData.getUserById.fullName || userData.getUserById.username;
+  }
+
   const navigate = useNavigate(); // Yönlendirme için hook
   
   const handleBookClick = (bookId) => {
@@ -25,7 +48,11 @@ const BookCard = (props) => {
   };
   
   return (
+    
     <div className="article-card" key={id} onClick={() => handleBookClick(id)} style={{ cursor: "pointer" }}>
+      {loading ? <div className="loading">Yükleniyor...</div> :
+      error ? <div className="error">Hata: {error.message}</div> :
+<>
       <div className="card-media">
         <img src={imageUrl} alt={title} className="cover-image" />
         <div className="meta-overlay">
@@ -47,7 +74,7 @@ const BookCard = (props) => {
             <span className="by">Yazar: </span>
             <span className="author-name">{author}</span>
           </div>
-          <p className="article-excerpt">{excerpt}</p>
+          <p className="article-excerpt">{description}</p>
 
           {/* İstatistikler */}
           <div className="stats">
@@ -64,7 +91,7 @@ const BookCard = (props) => {
         </div>
 
         {/* Progress Bar */}
-        <ProgressBar currentAmount={currentAmount} goal={goal} />
+        <ProgressBar currentAmount={0} goal={0} />
 
         <div className="card-footer">
           <button className="donate-button">
@@ -77,7 +104,7 @@ const BookCard = (props) => {
             <FavoriteBorder className="icon" />
           </div>
         </div>
-      </div>
+      </div></>}
     </div>
   );
 };

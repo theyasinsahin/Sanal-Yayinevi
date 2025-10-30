@@ -6,6 +6,7 @@
 # React (Client)
 Client/node_modules/
 Client/build/
+Client/.env
 
 # Node.js (Server)
 Server/node_modules/

@@ -1,0 +1,19 @@
+type Mutation {
+  createComment(bookId: ID!, content: String!): Comment!
+  deleteComment(id: ID!): Status!
+}
+
+type Status {
+  code: Int!
+  message: String!
+}
+
+type Comment {
+  id: ID!
+  userId: ID!
+  bookId: ID!
+  content: String!
+  date: DateTime!
+  replies: [Comment!]
+  likes: Int!
+}
