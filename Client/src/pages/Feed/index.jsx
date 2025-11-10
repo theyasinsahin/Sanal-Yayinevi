@@ -1,15 +1,27 @@
 import React, { useState } from 'react';
 import { useFilters } from '../../context/FiltersContext';
 import FeedFilters from './FeedFilters';
-import ArticleGrid from '../../components/BookGrid';
-import { filterArticles } from '../../utils/FilterArticles';
-import { sampleBooks } from '../../Data/sampleBooks';
+import BookGrid from '../../components/BookGrid';
+import { filterBooks } from '../../utils/FilterArticles';
+
+import { useQuery } from '@apollo/client';
+import { GET_BOOKS } from '../../graphql/queries/book';
+import { GET_USER_BY_ID } from '../../graphql/queries/user';
+
 const FeedPage = () => {
-  const [books] = useState(sampleBooks);
+
   const { filters } = useFilters(); // Context'ten filtreleri al
 
+  const { loading, error, data } = useQuery(GET_BOOKS);
+  const books = data ? data.getAllBooks : [];
+      
+  if (loading) return <p>Yükleniyor...</p>;
+  
+  // 4. HATA DURUMU
+  if (error) return <p>Kitap yüklenirken hata oluştu: {error.message}</p>;
+
   // Filtrelenmiş makaleleri hesapla
-  const filteredBooks = filterArticles(books, filters);
+  const filteredBooks = filterBooks(books, filters);
 
   return (
     <div className="feed-page-container">
@@ -18,11 +30,10 @@ const FeedPage = () => {
       </aside>
       
       <main className="articles-main">
-        <ArticleGrid articles={filteredBooks} /> {/* Filtrelenmiş makaleleri gönder */}
+        <BookGrid books={filteredBooks} /> {/* Filtrelenmiş makaleleri gönder */}
       </main>
     </div>
   );
 };
 
-// FiltersProvider'ı App.js seviyesine taşı
 export default FeedPage;

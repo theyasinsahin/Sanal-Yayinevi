@@ -1,49 +1,36 @@
 // src/components/Feed/FeedFilters/index.js
 import React from 'react';
 import { useFilters } from '../../../context/FiltersContext';
-import { categories } from '../../../Data/categoriesData';
-import RangeInput from '../../../components/Common/RangeInput'
+import { genres } from '../../../Data/genresData';
 import './FeedFilters.css';
 
 const FeedFilters = () => {
   const { filters, updateFilters } = useFilters();
-  
+  console.log("Current filters in FeedFilters:", filters);
   return (
     <div className="feed-filters">
       {/* Kategori Filtreleri */}
       <div className="filter-section">
         <h3>Kategoriler</h3>
         <div className="categories-grid">
-          {categories.map(category => (
+          {Object.values(genres).map(genre => (
             <button
-              key={category.id}
+              key={genre.id}
               className={`category-pill ${
-                filters.categories.includes(category.id) ? 'active' : ''
+                filters.genres.includes(genre.slug) ? 'active' : ''
               }`}
               onClick={() => {
-                const newCategories = filters.categories.includes(category.id)
-                  ? filters.categories.filter(id => id !== category.id)
-                  : [...filters.categories, category.id];
-                updateFilters('categories', newCategories);
+                const newGenres = filters.genres.includes(genre.slug)
+                  ? filters.genres.filter(name => name !== genre.slug)
+                  : [...filters.genres, genre.slug];
+                updateFilters('genres', newGenres);
               }}
             >
-              <span className="category-icon">{category.icon}</span>
-              {category.name}
+              <span className="category-icon">{genre.icon}</span>
+              {genre.name}
             </button>
           ))}
         </div>
-      </div>
-
-      {/* Bağış Aralığı */}
-      <div className="filter-section">
-        <h3>Bağış Hedefi</h3>
-        <RangeInput
-          min={0}
-          max={100000}
-          value={filters.donationRange}
-          onChange={value => updateFilters('donationRange', value)}
-          formatLabel={value => `${value.toLocaleString()} TL`}
-        />
       </div>
 
       {/* Sıralama */}
@@ -53,8 +40,6 @@ const FeedFilters = () => {
           {[
             { value: 'newest', label: 'En Yeni' },
             { value: 'popular', label: 'En Popüler' },
-            { value: 'closesttl', label: 'Hedefe Yakın (TL olarak)' },
-            { value: 'closestpercent', label: 'Hedefe Yakın (% olarak)' },
           ].map(option => (
             <label key={option.value} className="sort-option">
               <input

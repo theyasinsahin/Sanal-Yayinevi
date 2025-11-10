@@ -5,6 +5,7 @@ import { AddPhotoAlternate, Add, Subject, Category, Title, Tag } from '@mui/icon
 import './CreateBookPage.css';
 import { CREATE_BOOK_MUTATION } from './graphql';
 import { useMutation } from '@apollo/client';
+import { genres } from '../../Data/genresData';
 
 const CreateBookPage = () => {
 
@@ -41,13 +42,6 @@ const CreateBookPage = () => {
   
   const [preview, setPreview] = useState(null);
   const navigate = useNavigate();
-
-  const genres = [
-    { value: 'roman', label: 'Roman' },
-    { value: 'siir', label: 'Şiir' },
-    { value: 'bilimkurgu', label: 'Bilim Kurgu' },
-    { value: 'tarih', label: 'Tarih' }
-  ];
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -163,8 +157,8 @@ const handleSubmit = (e) => {
                   onChange={handleInputChange}
                 >
                   {genres.map(cat => (
-                    <option key={cat.value} value={cat.value}>
-                      {cat.label}
+                    <option key={cat.slug} value={cat.slug}>
+                      {cat.name}
                     </option>
                   ))}
                 </select>

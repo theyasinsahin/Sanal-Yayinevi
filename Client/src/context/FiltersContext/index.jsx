@@ -4,7 +4,7 @@ const FiltersContext = createContext();
 
 export const FiltersProvider = ({ children }) => {
   const [filters, setFilters] = useState({
-    categories: [],
+    genres: [],
     donationRange: [0, 100000],
     sortBy: 'newest',
     searchQuery: ''

@@ -4,15 +4,14 @@ import './BookGrid.css';
 import BookCard from '../BookCard'; 
 
 
-const BookGrid = ({ bookIds }) => {
+const BookGrid = ({ books }) => {
 
-  console.log("BookGrid received bookIds:", bookIds);
   return (
     <div className="book-grid">
-      {bookIds.map(bookId => (
+      {books.map(book => (
           <BookCard
-            bookId={bookId}
-            key={bookId}
+            book={book}
+            key={book.id}
           />
       ))}
     </div>

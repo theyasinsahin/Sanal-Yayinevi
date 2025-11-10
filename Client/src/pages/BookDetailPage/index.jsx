@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowBack, FavoriteBorder, Share, Comment, Paid, BookmarkBorder } from '@mui/icons-material';
-import ProgressBar from '../../components/Common/ProgressBar';
-import { sampleBooks } from '../../Data/sampleBooks';
-
+import { useQuery } from '@apollo/client';
+import { GET_BOOK_BY_ID } from '../../graphql/queries/book';
 import './BookDetailPage.css';
 import CommentList from './CommentList';
+import {GET_USER_BY_ID} from '../../graphql/queries/user';
 
 const BookDetailPage = () => {
   useEffect(() => {
@@ -13,7 +13,35 @@ const BookDetailPage = () => {
   }, []);
   
   const { id } = useParams();
-  const book = sampleBooks.find(b => b.id === parseInt(id));
+  
+  const {
+    data,
+    loading,
+    error,
+  } = useQuery(GET_BOOK_BY_ID, {
+    variables: { id },
+  });
+
+  const book = data ? data.getBookById : {};
+
+  const authorId = book?.authorId; // GET_BOOK_BY_ID'den
+
+  const {
+      data: userData,
+      loading: userLoading,
+      error: userError,
+    } = useQuery(GET_USER_BY_ID, {
+      variables: { id: authorId },
+    });
+
+    const isLoading = ( loading) || (authorId && userLoading);
+  
+  if (isLoading) return <p>Yükleniyor...</p>;
+
+  // 4. HATA DURUMU
+  if (error) return <p>Kitap yüklenirken hata oluştu: {error.message}</p>;
+  if (userError) return <p>Yazar yüklenirken hata oluştu: {userError.message}</p>;
+
 
   return (
     <div className="book-detail-container">
@@ -58,19 +86,10 @@ const BookDetailPage = () => {
           <h1 className="book-title">{book.title}</h1>
           <div className="author-section">
             <span className="by">Yazar:</span>
-            <span className="author-name">{book.author}</span>
+            <span className="author-name">{userData.getUserById.fullName} ({userData.getUserById.username})</span>
           </div>
 
-
-          <ProgressBar 
-            currentAmount={book.currentAmount} goal={book.goal}
-          />
-
           <div className="action-buttons">
-            <button className="donate-button">
-              <Paid fontSize="small" />
-              Destek Ol
-            </button>
             <div className="secondary-actions">
               <button className="icon-button">
                 <FavoriteBorder />
@@ -87,7 +106,7 @@ const BookDetailPage = () => {
 
           <div className="description-section">
             <h3>Hikaye Özeti</h3>
-            <p className="book-description">{book.excerpt}</p>
+            <p className="book-description">{book.description}</p>
           </div>
 
           <div className="comments-section">

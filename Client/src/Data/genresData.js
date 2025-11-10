@@ -1,9 +1,9 @@
 // src/data/categoriesData.js
-export const categories = [
+export const genres = [
     {
       id: 1,
       name: "Bilim Kurgu",
-      slug: "bilim-kurgu",
+      slug: "bilimkurgu",
       icon: "🚀"
     },
     {
@@ -33,7 +33,13 @@ export const categories = [
     {
       id: 6,
       name: "Kişisel Gelişim",
-      slug: "kisisel-gelisim",
+      slug: "kisiselgelisim",
       icon: "💡"
+    },
+    {
+      id: 7,
+      name: "Şiir",
+      slug: "siir",
+      icon: "📝"
     }
   ];

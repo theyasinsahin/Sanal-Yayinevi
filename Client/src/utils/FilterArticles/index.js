@@ -1,22 +1,15 @@
-export const filterArticles = (articles, filters) => {
-    return articles.filter(article => {
+export const filterBooks = (books, filters) => {
+    return books.filter(book => {
       // Arama Filtresi
-      const matchesSearch = article.title.toLowerCase().includes(
-        filters.searchQuery.toLowerCase()
-      ) || article.author.toLowerCase().includes(
+      const matchesSearch = book.title.toLowerCase().includes(
         filters.searchQuery.toLowerCase()
       );
   
       // Kategori Filtresi
-      const matchesCategory = filters.categories.length === 0 || 
-        filters.categories.includes(article.genreId);
+      const matchesGenres = filters.genres.length === 0 || 
+        filters.genres.includes(book.genre);
   
-      // Bağış Aralığı Filtresi
-      const [min, max] = filters.donationRange;
-      const matchesDonation = article.goal >= min && 
-        article.goal <= max;
-  
-      return matchesSearch && matchesCategory && matchesDonation;
+      return matchesSearch && matchesGenres;
     }).sort((a, b) => {
       // Sıralama Mantığı
       switch(filters.sortBy) {
@@ -24,12 +17,6 @@ export const filterArticles = (articles, filters) => {
           return new Date(b.createdAt) - new Date(a.createdAt);
         case 'popular':
           return b.stats.views - a.stats.views;
-        case 'closestpercent':
-          return (a.goal / a.currentAmount) - (b.goal / b.currentAmount);
-        case 'closesttl':
-          return (a.goal - a.currentAmount) - (b.goal - b.currentAmount);
-        case 'most-funded':
-          return b.currentAmount - a.currentAmount;
         default:
           return 0;
       }
