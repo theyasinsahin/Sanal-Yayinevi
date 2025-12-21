@@ -26,7 +26,6 @@ export default {
     },
 
     getFollowersByUserId: async (_, { id }, { User }) => {
-        console.log("UserId: ", id);
         const user = await User.findById(id);
         if (!user) {
             throw new Error("User not found");
@@ -46,11 +45,11 @@ export default {
     },
 
     getFavouriteBooksByUserId: async (_, { id }, { User }) => {
-        const user = await User.findById(id).populate('favouriteBooks');
+        const user = await User.findById(id).populate('savedBooks');
         if (!user) {
             throw new Error("User not found");
         }
-        return user.favouriteBooks;
+        return user.savedBooks;
     },
 
     getFavouriteAuthorsByUserId: async (_, { id }, { User }) => {

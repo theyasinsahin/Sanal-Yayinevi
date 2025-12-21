@@ -1,69 +1,108 @@
 import mongoose from 'mongoose';
 import {authenticateUser} from '../../../utils/auth.js';
+const updateBookTotalPageCount = async (bookId, BookModel, ChapterModel) => {
+  try {
+    const chapters = await ChapterModel.find({ bookId });
+    // Tüm bölümlerin sayfa sayılarını topla
+    const totalPages = chapters.reduce((sum, ch) => sum + (ch.pageCount || 0), 0);
+    // Kitabı güncelle
+    await BookModel.findByIdAndUpdate(bookId, { pageCount: totalPages });
+  } catch (err) {
+    console.error("Sayfa sayısı güncellenemedi:", err);
+  }
+};
+
 export default{
-    createChapter: async (_, { bookId, title, content }, { Chapter, Book, User, req }) => {
+    createChapter: async (_, { bookId, title, content, pageCount }, { Chapter, Book, User, req }) => {
+    try {
+        // 1. Kullanıcı Giriş Kontrolü
+        const user = await authenticateUser(req, User);
+        if (!user) {
+            throw new Error("Bölüm oluşturmak için giriş yapmalısınız.");
+        }
+
+        // 2. Kitabı Bul (Yazarı kontrol etmek ve authorId almak için)
+        const book = await Book.findById(bookId);
+        if (!book) {
+            throw new Error("Kitap bulunamadı.");
+        }
+
+        // 3. Yetki Kontrolü: Bu kitabı düzenlemeye yetkili mi?
+        if (book.authorId.toString() !== user._id.toString() && user.role !== 'ADMIN') {
+            throw new Error("Bu kitaba bölüm ekleme yetkiniz yok.");
+        }
+
+        // 4. Bölümü Oluştur (authorId EKLENDİ)
+        const newChapter = await Chapter.create({
+            bookId,
+            title,
+            content,
+            pageCount: pageCount || 0,
+            authorId: user._id // <-- HATAYI ÇÖZEN SATIR BURASI
+        });
+
+        // 5. Kitabın 'chapters' listesine ekle
+        await Book.findByIdAndUpdate(bookId, { $push: { chapters: newChapter._id } });
+
+        // 6. Toplam Sayfa Sayısını Güncelle (Daha önce yazdığımız fonksiyon)
+        await updateBookTotalPageCount(bookId, Book, Chapter);
+
+        return newChapter;
+    } catch (error) {
+        console.error("Error creating chapter:", error);
+        throw new Error(error.message);
+    }
+},
+
+    updateChapter: async (_, { chapterId, title, content, pageCount }, { Chapter, Book, User, req }) => { // 1. Book EKLENDİ
+        
+        console.log("UpdateChapter Tetiklendi!");
+    console.log("Gelen ID:", chapterId);
+    console.log("Gelen Sayfa Sayısı (pageCount):", pageCount);
+        
         try {
         const user = await authenticateUser(req, User);
         if (!user) {
             throw new Error("Unauthorized");
         }
-
-        const book = await Book.findById(bookId);
+        const chapter = await Chapter.findById(chapterId);
+        if (!chapter) {
+            throw new Error("Chapter not found");
+        }
+        // --- DÜZELTME BAŞLANGICI ---
+        
+        // Bölümün bağlı olduğu Kitabı buluyoruz
+        const book = await Book.findById(chapter.bookId);
         if (!book) {
-            throw new Error("Book not found");
+            throw new Error("Book associated with this chapter not found");
         }
-
+        
+        // Yetki kontrolünü KİTAP üzerinden yapıyoruz (Bölümde authorId yok)
         if (book.authorId.toString() !== user._id.toString() && user.role !== 'ADMIN') {
-            throw new Error("You are not authorized to add a chapter to this book");
+            throw new Error("You are not authorized to update this chapter");
         }
 
-        const newChapter = new Chapter({
-            title,
-            content,
-            bookId: book._id,
-            authorId: user._id,
-        });
+        // --- DÜZELTME BİTİŞİ ---
 
+        const updatedChapter = await Chapter.findByIdAndUpdate(
+            chapterId,{ 
+                ...(title && { title }), 
+                ...(content && { content }),
+                ...(pageCount !== undefined && { pageCount }) 
+            },
+            { new: true }
+        );
 
-        const savedChapter = await newChapter.save();
-        if (!savedChapter) {
-            throw new Error("Chapter save failed");
+        if (updatedChapter) {
+            // Toplam sayfa sayısını güncelle
+            await updateBookTotalPageCount(updatedChapter.bookId, Book, Chapter);
         }
 
-        book.chapters.push(savedChapter._id);
-        await book.save();
-
-        return savedChapter;
-    } catch (error) {
-        console.error("Error creating chapter:", error);
-        throw new Error("Failed to create chapter");
-    }
-    },
-
-    updateChapter: async (_, { chapterId, title, content }, { Chapter, User, req }) => {
-        try {
-            const user = await authenticateUser(req, User);
-            if (!user) {
-                throw new Error("Unauthorized");
-            }
-
-            const chapter = await Chapter.findById(chapterId);
-            if (!chapter) {
-                throw new Error("Chapter not found");
-            }
-
-            if (chapter.authorId.toString() !== user._id.toString() && user.role !== 'ADMIN') {
-                throw new Error("You are not authorized to update this chapter");
-            }
-
-            if (title) chapter.title = title;
-            if (content) chapter.content = content;
-
-            const updatedChapter = await chapter.save();
-            return updatedChapter;
+         return updatedChapter;
         } catch (error) {
-            console.error("Error updating chapter:", error);
-            throw new Error("Failed to update chapter");
+                console.error("Error updating chapter:", error);
+                // Hatanın detayını frontend'e göndermek için:
+                throw new Error(error.message); 
         }
     },
 

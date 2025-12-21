@@ -1,147 +1,191 @@
-// UserProfilePage.jsx
-import React, { useState, useEffect } from 'react';
-import { People, Book, Paid, Email, Link, Chat } from '@mui/icons-material';
-import ArticleGrid from '../../components/BookGrid';
-import { sampleBooks } from '../../Data/sampleBooks';
-import './UserProfilePage.css';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { Person, Email, Link, Book, People, PersonAdd, PersonRemove } from '@mui/icons-material';
+import BookGrid from '../../components/BookGrid';
+import '../MyProfilePage/ProfilePage.css'; 
 
+import { useQuery, useMutation } from '@apollo/client';
+
+import { GET_USER_BY_ID } from '../../graphql/queries/user'; 
+import { TOGGLE_FOLLOW_MUTATION } from '../../graphql/mutations/user';
 
 const UserProfilePage = () => {
-  
+  const { userId } = useParams(); 
+  const currentUserId = localStorage.getItem('userId');
+
+  // --- STATE ---
+  // Varsayılan false, veri gelince useEffect ile güncellenecek
   const [isFollowing, setIsFollowing] = useState(false);
 
+  // 1. QUERY
+  const { data, loading, error } = useQuery(GET_USER_BY_ID, {
+    variables: { id: userId },
+    skip: !userId,
+    fetchPolicy: "network-only" // Cache kullanma, her seferinde taze veri al
+  });
 
-      const mockUser = {
-        id: 1,
-        name: 'Can Demir',
-        bio: 'Bilim kurgu yazarı ve teknoloji meraklısı',
-        avatar: '/images/avatars/can-demir.jpg',
-        stats: {
-          books: 6,
-          followers: 3560,
-          following: 124,
-          donations: 23450
-        },
-        contact: {
-          email: 'can@yaziyolu.com',
-          website: 'https://candemir.tech'
-        },
-        social: {
-          twitter: '@candmir',
-          medium: '@candemir'
-        },
-        isFollowing: false,
-        books: [1,2,3],
-      };
+  // 2. MUTATION
+  const [toggleFollow, { loading: toggleLoading }] = useMutation(TOGGLE_FOLLOW_MUTATION, {
+    // İşlem bitince veriyi yenile
+    refetchQueries: [{ query: GET_USER_BY_ID, variables: { id: userId } }],
+    awaitRefetchQueries: true, 
+    onError: (err) => {
+        alert("İşlem başarısız: " + err.message);
+        // Hata olursa (Optimistic update'i geri al)
+        setIsFollowing(prev => !prev); 
+    }
+  });
 
-      const [user, setUser] = useState(mockUser);
+  const user = data?.getUserById;
 
-    const books = sampleBooks.filter(book => user.books.includes(book.id));
-  
-  const handleFollow = async () => {
-    // API çağrısı
+  // --- KRİTİK DÜZELTME: useEffect Kontrolü ---
+  // Sunucudan yeni veri (user) geldiğinde bu kod çalışır ve butonun durumunu netleştirir.
+  useEffect(() => {
+    if (user && user.followers && currentUserId) {
+        
+        // Debug için konsola yazdırıyoruz (Sorun devam ederse F12'den bakabilirsin)
+        // console.log("Gelen Takipçiler:", user.followers);
+
+        const status = user.followers.some(follower => {
+            // SENARYO A: Follower direkt bir ID stringi ise (populate edilmemişse)
+            if (typeof follower === 'string') {
+                return follower === currentUserId;
+            }
+            
+            // SENARYO B: Follower bir obje ise (populate edilmişse)
+            if (typeof follower === 'object' && follower !== null) {
+                const fId = follower.id || follower._id;
+                return fId?.toString() === currentUserId.toString();
+            }
+
+            return false;
+        });
+
+        // Sadece durum gerçekten farklıysa state'i güncelle (Sonsuz döngüyü önler)
+        setIsFollowing(status);
+    }
+  }, [user, currentUserId]); // user değiştiğinde (refetch olunca) burası tekrar çalışır
+
+  // Sayfa başa sarma
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  if (loading) return <div className="profile-container"><p>Profil yükleniyor...</p></div>;
+  if (error) return <div className="profile-container"><p>Hata: {error.message}</p></div>;
+  if (!user) return <div className="profile-container"><p>Kullanıcı bulunamadı.</p></div>;
+
+  const targetUserId = user.id || user._id;
+  const isMe = currentUserId === targetUserId?.toString();
+
+  const handleFollowToggle = () => {
+    if (!currentUserId) return alert("Takip etmek için giriş yapmalısınız.");
+    
+    // Onay mekanizması
+    if (isFollowing) {
+        if(!window.confirm(`${user.username} kişisini takipten çıkarmak istiyor musunuz?`)) {
+            return;
+        }
+    }
+
+    // 1. OPTIMISTIC UPDATE: Sunucuyu beklemeden butonu anında değiştir
     setIsFollowing(!isFollowing);
+
+    // 2. Mutation'ı çalıştır
+    toggleFollow({ variables: { followId: targetUserId } });
   };
 
-  if (!user) return <div className="loading">Yükleniyor...</div>;
-
   return (
-    <div className="user-profile-container">
-      {/* Profil Üst Bilgisi */}
+    <div className="profile-container">
       <div className="profile-header">
-        <div className="avatar-section">
-          <img src={user.avatar} alt={user.name} className="user-avatar" />
-          <button 
-            className={`follow-button ${isFollowing ? 'following' : ''}`}
-            onClick={handleFollow}
-          >
-            {isFollowing ? 'Takibi Bırak' : 'Takip Et'}
-          </button>
+        
+        <div className="avatar-container">
+            <div className="avatar">
+              {user.profilePicture ? (
+                <img src={user.profilePicture} alt={user.username} className="user-avatar-img" />
+              ) : (
+                <Person style={{ fontSize: '4rem' }} />
+              )}
+            </div>
         </div>
 
         <div className="profile-info">
-          <h1 className="full-name">{user.fullName}</h1>
-          <p className="user-bio">{user.bio}</p>
-          
-          <div className="social-links">
-            {user.social.twitter && (
-              <a href={`https://twitter.com/${user.social.twitter}`} className="social-link">
-                <img src="/icons/twitter.svg" alt="Twitter" />
-              </a>
+            <h1 className="full-name">{user.fullName}</h1>
+            <h2 className="user-name">@{user.username}</h2>
+            <p className="user-bio">{user.bio || "Henüz bir biyografi eklenmemiş."}</p>
+            
+            {!isMe && (
+                <button 
+                    className={`follow-btn ${isFollowing ? 'following' : ''}`} 
+                    onClick={handleFollowToggle}
+                    disabled={toggleLoading}
+                >
+                    {isFollowing ? (
+                        <>
+                           <PersonRemove fontSize="small" /> Takibi Bırak
+                        </>
+                    ) : (
+                        <>
+                           <PersonAdd fontSize="small" /> Takip Et
+                        </>
+                    )}
+                </button>
             )}
-            {user.social.medium && (
-              <a href={`https://medium.com/${user.social.medium}`} className="social-link">
-                <img src="/icons/medium.svg" alt="Medium" />
-              </a>
-            )}
-          </div>
+
         </div>
       </div>
 
-      {/* İstatistikler */}
       <div className="stats-grid">
         <div className="stat-card">
           <Book className="stat-icon" />
           <div className="stat-content">
-            <span className="stat-value">{user.stats.books}</span>
-            <span className="stat-label">Yayınlanan Kitap</span>
+            <span className="stat-value">{user.usersBooks?.length || 0}</span>
+            <span className="stat-label">Yayınlanan</span>
           </div>
         </div>
+        
         <div className="stat-card">
           <People className="stat-icon" />
           <div className="stat-content">
-            <span className="stat-value">{user.stats.followers.toLocaleString()}</span>
-            <span className="stat-label">Takipçi</span>
+            <span className="stat-value">{user.followers?.length || 0}</span>
+            <span className="stat-label">Takipçiler</span>
           </div>
         </div>
+        
         <div className="stat-card">
           <People className="stat-icon" />
           <div className="stat-content">
-            <span className="stat-value">{user.stats.following.toLocaleString()}</span>
+            <span className="stat-value">{user.following?.length || 0}</span>
             <span className="stat-label">Takip Edilen</span>
           </div>
         </div>
-        <div className="stat-card">
-          <Paid className="stat-icon" />
-          <div className="stat-content">
-            <span className="stat-value">₺{user.stats.donations.toLocaleString()}</span>
-            <span className="stat-label">Toplanan Bağış</span>
-          </div>
-        </div>
       </div>
 
-      {/* İletişim ve Detaylar */}
-      <div className="details-section">
-        <div className="contact-info">
-          <h3><Email /> İletişim</h3>
+      <div className="info-section">
+        <h2 className="section-title">İletişim Bilgileri</h2>
+        <div className="info-grid">
           <div className="info-item">
-            <span>Email:</span>
-            <a href={`mailto:${user.contact.email}`}>{user.contact.email}</a>
+            <Email className="info-icon" />
+            <span>{user.email}</span>
           </div>
-          <div className="info-item">
-            <span>Website:</span>
-            <a href={user.contact.website} target="_blank" rel="noreferrer">
-              {user.contact.website}
-            </a>
-          </div>
-        </div>
-
-        <div className="interaction-buttons">
-          <button className="message-button">
-            <Chat /> Mesaj Gönder
-          </button>
+          {user.website && (
+            <div className="info-item">
+              <Link className="info-icon" />
+              <a href={user.website} target="_blank" rel="noreferrer">{user.website}</a>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Kitaplar */}
-      <div className="section">
-        <h2 className="section-title">
-          <Book /> Kitapları
-        </h2>
-        <ArticleGrid articles={books} />
+      <div className="info-section">
+        <h2 className="section-title">Yayınlanan Kitaplar</h2>
+        {user.usersBooks?.length > 0 ? (
+          <BookGrid books={user.usersBooks} />
+        ) : (
+          <p className="empty-message">Bu kullanıcı henüz kitap yayınlamamış.</p>
+        )}
       </div>
 
-      
     </div>
   );
 };

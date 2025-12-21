@@ -8,7 +8,7 @@
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
-  width: 350px;
+  width: 300px;
   height: 100%;
 }
 
@@ -20,7 +20,7 @@
 /* Kapak Görseli */
 .card-media {
   position: relative;
-  height: 200px;
+  height: 300px;
   overflow: hidden;
 }
 

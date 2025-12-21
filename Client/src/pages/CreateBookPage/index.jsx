@@ -1,17 +1,18 @@
-// CreateBookPage.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AddPhotoAlternate, Add, Subject, Category, Title, Tag } from '@mui/icons-material';
+import { Add, Subject, Category, Title, Tag, AutoStories } from '@mui/icons-material';
 import './CreateBookPage.css';
-import { CREATE_BOOK_MUTATION } from './graphql';
+import { CREATE_BOOK_MUTATION } from './graphql'; // Dosya yolunun doğruluğundan emin olun
 import { useMutation } from '@apollo/client';
 import { genres } from '../../Data/genresData';
+import ImageUpload from '../../components/ImageUpload'; // ImageUpload bileşenini import et
 
 const CreateBookPage = () => {
+  const navigate = useNavigate();
+  const [createBook, { loading }] = useMutation(CREATE_BOOK_MUTATION);  
 
-  const [createBook] = useMutation(CREATE_BOOK_MUTATION);  
-
-  const [inputTag, setInputTag] = useState();
+  // --- TAG YÖNETİMİ ---
+  const [inputTag, setInputTag] = useState('');
   
   const handleAddTag = () => {
     if (inputTag && !bookData.tags.includes(inputTag)) {
@@ -27,84 +28,69 @@ const CreateBookPage = () => {
     setBookData(prevState => ({
       ...prevState,
       tags: prevState.tags.filter(tag => tag !== tagToRemove)
-    }));  
+    }));   
   };
 
+  // --- FORM STATE ---
+  // Başlangıç değerleri '' (boş string) olmalı, null değil!
   const [bookData, setBookData] = useState({
     title: '',
-    author: '',
     genre: 'roman',
-    cover: null,
+    imageUrl: '', // cover yerine imageUrl kullanıyoruz (String URL)
     description: '',
-    chapters: [''],
     tags: [],
   });
   
-  const [preview, setPreview] = useState(null);
-  const navigate = useNavigate();
+  const [errors, setErrors] = useState({});
+
+  // --- HANDLERS ---
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setBookData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleCoverUpload = (e) => {
-    const file = e.target.files[0];
-    if(file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result);
-        setBookData(prev => ({ ...prev, cover: file }));
+  // ImageUpload bileşeninden gelen URL'i state'e atar
+  const handleImageSuccess = (url) => {
+    setBookData(prev => ({ ...prev, imageUrl: url }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    let newErrors = {};
+    if (!bookData.title.trim()) newErrors.title = "Kitap başlığı zorunludur.";
+    if (!bookData.description.trim()) newErrors.description = "Açıklama zorunludur.";
+    if (!bookData.imageUrl) newErrors.imageUrl = "Kapak resmi yüklemek zorunludur.";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    try {
+      // Backend'e gönderilecek veriler
+      const variables = {
+        title: bookData.title,
+        genre: bookData.genre,
+        description: bookData.description,
+        tags: bookData.tags,
+        imageUrl: bookData.imageUrl,
+        // Sayıyı Integer'a çeviriyoruz (400 hatasını önler)
+        pageCount: bookData.pageCount ? parseInt(bookData.pageCount) : 0 
       };
-      reader.readAsDataURL(file);
+
+      const response = await createBook({ variables });
+      
+      // Başarılı olursa Dashboard'a veya Detay sayfasına yönlendir
+      // Kitabı düzenlemek için Dashboard daha mantıklı olabilir
+      navigate(`/dashboard/${response.data.createBook.id}`);
+
+    } catch (error) {
+      console.error("Kitap oluşturulurken hata:", error);
+      setErrors({ submit: "Kitap oluşturulurken bir hata oluştu: " + error.message });
     }
   };
-
-  const addChapter = () => {
-    setBookData(prev => ({
-      ...prev,
-      chapters: [...prev.chapters, '']
-    }));
-  };
-
-  const handleChapterChange = (index, value) => {
-    const newChapters = [...bookData.chapters];
-    newChapters[index] = value;
-    setBookData(prev => ({ ...prev, chapters: newChapters }));
-  };
-
-  const [errors, setErrors] = useState({});
-
-const handleSubmit = (e) => {
-  e.preventDefault();
-  
-  let newErrors = {};
-
-  if (!bookData.title.trim()) newErrors.title = "Kitap başlığı zorunludur.";
-  if (!bookData.description.trim()) newErrors.description = "Açıklama zorunludur.";
-
-  if (Object.keys(newErrors).length > 0) {
-    setErrors(newErrors);
-    return;
-  }
-
-  // Hata yoksa kitabı kaydet
-  createBook({
-    variables: {
-      title: bookData.title,
-      genre: bookData.genre,
-      description: bookData.description,
-      tags: bookData.tags
-    }
-  }).then(response => {
-    console.log("Kitap başarıyla oluşturuldu:", response.data.createBook);
-  }).catch(error => {
-    console.error("Kitap oluşturulurken hata:", error);
-    setErrors({ submit: "Kitap oluşturulurken bir hata oluştu." });
-  });
-
-  navigate('/dashboard');
-};
 
   return (
     <div className="create-book-container">
@@ -113,30 +99,23 @@ const handleSubmit = (e) => {
       </h1>
 
       <form onSubmit={handleSubmit} className="book-form">
-        {/* Kapak ve Temel Bilgiler */}
         <div className="form-section">
           <div className="book-info"> 
             
-            <div className="cover-upload">
-              <label className="upload-label">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleCoverUpload}
-                  className="hidden-input"
-                />
-                {preview ? (
-                  <img src={preview} alt="Kapak Önizleme" className="cover-preview" />
-                ) : (
-                  <div className="upload-placeholder">
-                    <AddPhotoAlternate fontSize="large" />
-                    <span>Kapak Resmi Yükle</span>
-                  </div>
-                )}
-              </label>
+            {/* --- KAPAK RESMİ YÜKLEME --- */}
+            <div className="cover-upload-section" style={{display:'flex', flexDirection:'column', alignItems:'center', gap:'10px'}}>
+               <div style={{ width: '200px', height: '300px' }}>
+                  <ImageUpload 
+                      onUploadSuccess={handleImageSuccess} 
+                      label="Kapak Yükle"
+                      currentImage={bookData.imageUrl}
+                  />
+               </div>
+               {errors.imageUrl && <span className="error-message">{errors.imageUrl}</span>}
             </div>
 
             <div className="basic-info">
+              
               <div className="input-group">
                 <label><Title /> Kitap Başlığı</label>
                 <input
@@ -144,9 +123,9 @@ const handleSubmit = (e) => {
                   name="title"
                   value={bookData.title}
                   onChange={handleInputChange}
+                  placeholder="Örn: Sefiller"
                 />
                 {errors.title && <span className="error-message">{errors.title}</span>}
-
               </div>
 
               <div className="input-group">
@@ -164,22 +143,29 @@ const handleSubmit = (e) => {
                 </select>
               </div>
 
+               
+
               <div className="input-group">
                 <label><Tag /> Etiketler</label>
-                <input
-                  type="text"
-                  name="tags"
-                  value={inputTag}
-                  onChange={(e) => setInputTag(e.target.value)}
-                />
+                <div style={{display:'flex', gap:'10px'}}>
+                    <input
+                    type="text"
+                    value={inputTag}
+                    onChange={(e) => setInputTag(e.target.value)}
+                    placeholder="Etiket yazıp ekleye basın"
+                    />
+                    <button type="button" className='add-tag-button' onClick={handleAddTag} style={{whiteSpace:'nowrap'}}>
+                        Ekle
+                    </button>
+                </div>
 
-                <p className='add-tag-button' onClick={handleAddTag}>Etiket Ekle</p>
                 <div className="tags">
                   {bookData.tags.map((tag, index) => (
                     <span
                       key={index}
                       className="tag"
                       onClick={() => handleRemoveTag(tag)}
+                      title="Silmek için tıkla"
                     >
                       {tag}
                     </span>
@@ -187,27 +173,30 @@ const handleSubmit = (e) => {
                 </div>
               </div> 
 
-              
             </div>
+
             {/* Açıklama */}
             <div className="book-description">
               <div className="input-group">
-                <label>Kitap Açıklaması</label>
+                <label><Subject /> Kitap Açıklaması</label>
                 <textarea
                   name="description"
                   value={bookData.description}
                   onChange={handleInputChange}
-                  rows="4"
+                  rows="6"
+                  placeholder="Kitabınızın konusu nedir?"
                 />
                 {errors.description && <span className="error-message">{errors.description}</span>}
-
               </div>
             </div> 
+
           </div>  
         </div>
+        
+        {errors.submit && <div className="error-banner">{errors.submit}</div>}
 
-        <button type="submit" className="submit-btn">
-          Kitabı Yayınla
+        <button type="submit" className="submit-btn" disabled={loading}>
+          {loading ? "Oluşturuluyor..." : "Kitabı Yayınla ve Bölüm Ekle"}
         </button>
       </form>
     </div>

@@ -85,6 +85,8 @@
   box-shadow: 0 4px 8px rgba(243, 156, 18, 0.2);
   position: relative;
   overflow: hidden;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .primary-cta:hover {

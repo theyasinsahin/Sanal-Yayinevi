@@ -7,13 +7,14 @@ type Mutation {
   ): Status!
   login(email: String!, password: String!): AuthPayload
   deleteUserById(id: ID!): Status!
-  followUser(followId: ID!): Status!
+  toggleFollowUser(followId: ID!): Status!
   updateProfile(
     username: String
     fullName: String
     bio: String
     profilePicture: String
   ): User!
+  toggleSaveBook(bookId: ID!): User!
 }
 
 type Status {
@@ -33,11 +34,12 @@ type User {
   bio: String!
   profilePicture: String!
   email: String!
-  favouriteBooks: [ID!]
+  savedBooks: [ID!]
   favouriteAuthors: [ID!]
   usersBooks: [ID!]
   followers: [ID!]
   following: [ID!]
   createdAt: DateTime!
   updatedAt: DateTime!
+  role: String!
 }

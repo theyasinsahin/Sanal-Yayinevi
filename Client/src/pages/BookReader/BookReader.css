@@ -1,127 +1,383 @@
+/* Google Fonts İçe Aktarma: Okuma için 'Crimson Text', Başlıklar için 'Playfair Display' */
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
+
+/* --- 1. GENEL SAYFA DÜZENİ --- */
 .book-reader {
-    position: relative;
+    margin-top: 3.5em;
     min-height: 100vh;
-    background: #f5f3e7;
-    padding: 2rem;
-    margin-top: 3rem;
+    background-color: #2b2b2b; /* Odaklanmayı artıran koyu arka plan */
     display: flex;
     flex-direction: column;
     align-items: center;
-  }
+    justify-content: center;
+    padding: 2rem;
+    font-family: 'Crimson Text', serif;
+    position: relative;
+}
 
-.book-container {
+/* Yükleme Ekranı */
+.book-reader-loading {
     display: flex;
     justify-content: center;
-    max-width: 900px;
-    transform-style: preserve-3d;
+    align-items: center;
+    height: 100vh;
+    background-color: #2b2b2b;
+    color: #ccc;
+    font-family: 'Crimson Text', serif;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
 }
 
-.book-page {
-    background: #fffbe6;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    padding: 2rem;
-    width: 50%;
-    min-height: 70vh;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    transform-origin: left center;
-    transition: transform 0.8s ease-in-out;
-    backface-visibility: hidden;
-    font-family: 'Garamond', serif;
-}
-
-.book-page.left {
-    border-right: 2px solid #ccc;
-}
-
-.book-page.right {
-    border-left: 2px solid #ccc;
-}
-
-.book-page .header {
-    font-size: 0.8rem;
-    font-weight: bold;
-    text-align: center;
-    color: #333;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #2A5C82;
-    margin-bottom: 1.5rem;
-}
-
-.book-page .content {
-    line-height: 1.8;
-    font-size: 1rem;
-    color: #444;
-    text-align: justify;
-    hyphens: auto;
-    white-space: pre-line; /* \n karakterini destekler */
-}
-
-.book-page .footer {
+/* Sol Üstteki Geri Dön Linki */
+.back-link {
     position: absolute;
-    bottom: 1rem;
-    right: 1rem;
-    color: #666;
-    font-size: 0.9rem;
-}
-
-.navigation-buttons {
-    position: fixed;
-    top: 50%;
-    left: 0;
-    right: 0;
+    top: 30px;
+    left: 40px;
+    color: #888;
+    text-decoration: none;
     display: flex;
-    justify-content: space-between;
-    padding: 0 2rem;
-    transform: translateY(-50%);
+    align-items: center;
+    gap: 8px;
+    transition: color 0.3s;
+    z-index: 100;
+    font-size: 1rem;
 }
 
-.nav-button {
-    background: #8B4513;
+.back-link:hover {
     color: white;
-    border: none;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
 }
 
-.nav-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.nav-button:hover:not(:disabled) {
-    background: #5A3311;
-    transform: scale(1.1);
-}
-
-.footer {
+/* Yazar Kontrolleri (Düzenle Butonu) */
+.author-controls {
     position: absolute;
-    bottom: 1rem;
-    font-size: 0.9rem;
-    color: #666;
-  }
-  
-  .footer.left {
-    left: 1rem;
-  }
-  
-  .footer.right {
-    right: 1rem;
-  }
-  
+    top: 30px;
+    right: 40px;
+    z-index: 100;
+}
 
-@media (max-width: 768px) {
+.edit-book-button {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ddd;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.edit-book-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+/* --- 2. KİTAP GÖVDESİ (SABİT BOYUT) --- */
+.book-container {
+    position: relative;
+    width: 950px;  /* Sabit Genişlik */
+    height: 680px; /* Sabit Yükseklik */
+    background-color: #fffbf0; /* Sıcak Kitap Kağıdı Rengi */
+    display: flex;
+    box-shadow: 
+        0 20px 50px rgba(0,0,0,0.6), 
+        0 5px 15px rgba(0,0,0,0.3);
+    border-radius: 6px;
+    overflow: hidden; /* İçerik taşarsa gizle */
+    perspective: 1500px; /* 3D derinlik hissi */
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* Sayfa Çevirme Efekti (JS ile eklenip çıkarılıyor) */
+.book-container.flipping {
+    transform: scale(0.98);
+    opacity: 0.95;
+}
+
+/* Kitap Sırtı Gölgesi (İki sayfa arası) */
+.book-spine {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 60px;
+    margin-left: -30px;
+    background: linear-gradient(
+        to right, 
+        rgba(0,0,0,0.02) 0%, 
+        rgba(0,0,0,0.15) 45%, 
+        rgba(0,0,0,0.2) 50%, 
+        rgba(0,0,0,0.15) 55%, 
+        rgba(0,0,0,0.02) 100%
+    );
+    pointer-events: none; /* Tıklamayı engellemesin */
+    z-index: 20;
+}
+
+/* --- 3. SAYFA YAPISI --- */
+.book-page {
+    flex: 1; /* %50 Genişlik */
+    padding: 3rem 3.5rem; /* Kenar boşlukları */
+    position: relative;
+    cursor: pointer; /* Tıklanabilir */
+    transition: background-color 0.3s;
+    overflow: hidden; 
+}
+
+/* Sayfa üzerine gelince hafif renk değişimi (Yaprak hissi) */
+.book-page:hover {
+    background: linear-gradient(to right, #fffbf0 0%, #fffef8 100%);
+}
+
+/* Sol Sayfa Kenarlığı */
+.book-page.left {
+    border-right: 1px solid #e3dac1;
+}
+
+/* Sağ Sayfa Kenarlığı */
+.book-page.right {
+    border-left: 1px solid #e3dac1;
+}
+
+/* Sayfa İçeriği Kapsayıcısı */
+.page-inner {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- 4. METİN İÇERİĞİ VE HTML DÜZELTMELERİ --- */
+.content-text {
+    flex: 1;
+    overflow: hidden; /* Taşmayı engelle */
+    font-size: 1.15rem; /* Okunaklı font boyutu */
+    line-height: 1.7;   /* Satır arası */
+    color: #222;
+    text-align: justify; /* İki yana yasla */
+    hyphens: auto;       /* Heceleri böl */
+}
+
+/* Veritabanından gelen <p> etiketleri için stil */
+.content-text p {
+    margin-bottom: 0.8em; 
+    text-indent: 1.5em; /* Paragraf başı girintisi */
+    margin-top: 0;
+}
+
+/* Kalın ve İtalik düzeltmeleri */
+.content-text strong { font-weight: 700; color: #111; }
+.content-text em { font-style: italic; }
+
+/* --- 5. KAPAK SAYFASI TASARIMI --- */
+.title-page-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
+    border: 3px double #8B4513; /* Klasik çerçeve */
+    margin: 5px;
+    padding: 2rem !important;
+}
+
+.title-decoration-top {
+    font-size: 2rem;
+    color: #8B4513;
+    margin-bottom: auto; /* En üste it */
+    opacity: 0.7;
+}
+
+.book-main-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    color: #1a1a1a;
+    margin: 1rem 0;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.book-main-author {
+    margin-bottom: 3rem;
+}
+
+.book-main-author span {
+    font-style: italic;
+    color: #666;
+    font-size: 0.95rem;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.book-main-author h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    color: #333;
+    margin: 0;
+    font-weight: 600;
+}
+
+.book-genre-tag {
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 3px;
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    padding: 8px 24px;
+    margin-bottom: 4rem;
+    color: #555;
+}
+
+.publisher-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    color: #8B4513;
+    font-weight: bold;
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.title-decoration-bottom {
+    font-size: 2rem;
+    color: #8B4513;
+    margin-top: auto; /* En alta it */
+    opacity: 0.7;
+}
+
+/* --- 6. BÖLÜM BAŞLANGICI --- */
+.chapter-start-header {
+    text-align: center;
+    margin-top: 3rem;    /* Bölüm başında bol boşluk */
+    margin-bottom: 2.5rem;
+}
+
+.chapter-start-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    margin: 0;
+    color: #111;
+    font-weight: 700;
+}
+
+.chapter-start-header .separator {
+    color: #8B4513;
+    font-size: 1.5rem;
+    margin-top: 15px;
+    opacity: 0.8;
+}
+
+/* --- 7. ALT BİLGİ VE NAVİGASYON --- */
+.footer-number {
+    text-align: center;
+    margin-top: auto; /* Sayfanın en altına yapıştır */
+    font-size: 0.9rem;
+    color: #999;
+    font-weight: 600;
+    padding-top: 1rem;
+}
+
+/* Boş Sayfa (SON) */
+.empty-page {
+    background-color: #f7efdc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+}
+
+.end-text {
+    font-size: 2.5rem;
+    font-family: 'Playfair Display', serif;
+    color: #d0c8b0;
+    font-weight: bold;
+    letter-spacing: 8px;
+}
+
+/* Alt Butonlar (Sayfa Numarası ve Oklar) */
+.navigation-controls {
+    margin-top: 30px;
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    padding: 10px 20px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 50px;
+    backdrop-filter: blur(5px);
+}
+
+.nav-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #ddd;
+    padding: 8px 18px;
+    border-radius: 30px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.nav-btn:hover:not(:disabled) {
+    background: white;
+    color: #222;
+    border-color: white;
+}
+
+.nav-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    border-color: transparent;
+}
+
+.progress-text {
+    color: #ccc;
+    font-size: 0.95rem;
+    font-weight: 500;
+    min-width: 100px;
+    text-align: center;
+}
+
+/* --- 8. MOBİL UYUMLULUK --- */
+@media (max-width: 1000px) {
+    .book-reader {
+        padding: 1rem;
+        justify-content: flex-start;
+        padding-top: 4rem;
+    }
+
+    .book-container {
+        width: 100%;
+        max-width: 500px; /* Mobilde tek sayfa genişliği */
+        height: auto;
+        min-height: 600px; /* Minimum yükseklik */
+        flex-direction: column; /* Sayfaları alt alta alma */
+    }
+
     .book-page {
-      padding: 1.5rem;
+        width: 100%;
+        border: none !important;
+        padding: 2rem;
+    }
+
+    /* Mobilde sırt gölgesi ve sağ sayfa gereksiz */
+    .book-spine, 
+    .book-page.right {
+        display: none; 
     }
     
-    .nav-button {
-      width: 40px;
-      height: 40px;
+    /* Mobilde tek sayfa gösterdiğimiz için sağ sayfa mantığını JS'de yönetiyoruz 
+       ama CSS'de de sağ sayfayı gizlemek yerine flex yapısını değiştiriyoruz */
+       
+    .navigation-controls {
+        width: 100%;
+        justify-content: space-between;
+        background: transparent;
     }
 }

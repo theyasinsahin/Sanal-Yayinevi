@@ -12,12 +12,12 @@ type Query {
 
 type Comment {
   id: ID!
-  userId: ID!
+  userId: User!
   bookId: ID!
   content: String!
-  createdAt: DateTime!
-  replies: [Comment!]
-  likes: Int!
+  date: DateTime!
+  replies: [Comment]
+  likedBy: [ID]
 }
 
 type Chapter {
@@ -27,13 +27,13 @@ type Chapter {
   content: String!
   createdAt: DateTime!
   updatedAt: DateTime!
+  pageCount: Int!
 }
 
 type BookStats {
   views: Int!
   shares: Int!
   likes: Int!
-  comments: Int!
 }
 
 type Book {
@@ -48,7 +48,8 @@ type Book {
   createdAt: DateTime!
   updatedAt: DateTime!
   publishDate: DateTime!
-  comments: [ID!]
-  chapters: [ID!]
+  comments: [Comment!]
+  chapters: [Chapter!]
   tags: [String]
+  likedBy: [ID!]
 }

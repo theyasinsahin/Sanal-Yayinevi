@@ -24,7 +24,6 @@ const RegisterPage = () => {
     try {
       const res = await register({ variables: formData });
       
-      console.log("Kayıt başarılı:", res.data.register.message);
       // yönlendirme veya mesaj gösterme
     } catch (err) {
       console.error("Kayıt hatası:", err.message);

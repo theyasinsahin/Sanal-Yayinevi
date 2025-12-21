@@ -1,6 +1,8 @@
 type Mutation {
   createComment(bookId: ID!, content: String!): Comment!
   deleteComment(id: ID!): Status!
+  toggleCommentLike(commentId: ID!): Comment
+  replyToComment(bookId: ID!, content: String!, parentCommentId: ID!): Comment
 }
 
 type Status {
@@ -10,10 +12,10 @@ type Status {
 
 type Comment {
   id: ID!
-  userId: ID!
+  userId: User!
   bookId: ID!
   content: String!
   date: DateTime!
-  replies: [Comment!]
-  likes: Int!
+  replies: [Comment]
+  likedBy: [ID]
 }

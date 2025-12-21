@@ -10,10 +10,10 @@ type Query {
 
 type Comment {
   id: ID!
-  userId: ID!
+  userId: User!
   bookId: ID!
   content: String!
   date: DateTime!
-  replies: [Comment!]
-  likes: Int!
+  replies: [Comment]
+  likedBy: [ID]
 }

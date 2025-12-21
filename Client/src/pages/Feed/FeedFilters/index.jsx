@@ -6,7 +6,6 @@ import './FeedFilters.css';
 
 const FeedFilters = () => {
   const { filters, updateFilters } = useFilters();
-  console.log("Current filters in FeedFilters:", filters);
   return (
     <div className="feed-filters">
       {/* Kategori Filtreleri */}

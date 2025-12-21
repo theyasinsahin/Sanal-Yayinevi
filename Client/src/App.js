@@ -6,7 +6,7 @@ import {
 } from "@apollo/client";
 
 import { setContext } from "@apollo/client/link/context";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 
 import NavigationBar from "./components/NavigationBar";
 
@@ -16,7 +16,7 @@ import BookDetailPage from "./pages/BookDetailPage";
 import BookReader from "./pages/BookReader";
 import CreateBookPage from "./pages/CreateBookPage";
 import BookDashboard from "./pages/BookDashboard";
-import MePage from "./pages/MePage";
+import MyProfilePage from "./pages/MyProfilePage";
 import UserProfilePage from "./pages/UserProfilePage";
 import LoginPage from "./pages/Auth/Login";
 import RegisterPage from "./pages/Auth/Register";
@@ -50,17 +50,43 @@ const Layout = ({ children }) => (
   </div>
 );
 
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
+
 const router = createBrowserRouter([
   { path: "/", element: <Layout><LandingPage /></Layout> },
   { path: "/feed", element: <Layout><FeedPage /></Layout> },
   { path: "/book-detail/:id", element: <Layout><BookDetailPage /></Layout> },
-  { path: "/book-reader", element: <Layout><BookReader /></Layout> },
-  { path: "/create-book", element: <Layout><CreateBookPage /></Layout> },
-  { path: "/dashboard", element: <Layout><BookDashboard /></Layout> },
-  { path: "/profile", element: <Layout><MePage /></Layout> },
-  { path: "/candemir", element: <Layout><UserProfilePage /></Layout> },
-  { path: "/login", element: <LoginPage /> },
-  { path: "/register", element: <RegisterPage /> }
+  { path: "/book-reader/:bookId", element: <Layout><BookReader /></Layout> },
+  
+  { path: "/create-book", 
+    element:  <ProtectedRoute>
+                <Layout><CreateBookPage /></Layout>
+              </ProtectedRoute> 
+              },
+
+  { path: "/dashboard/:bookId", 
+    element: <ProtectedRoute>
+      <Layout><BookDashboard /></Layout> 
+      </ProtectedRoute>
+      },
+
+  { path: "/profile", 
+    element: <ProtectedRoute>
+    <Layout><MyProfilePage /></Layout> 
+    </ProtectedRoute>
+    },
+
+  { path: "/user/:userId", element: <Layout><UserProfilePage /></Layout> },
+  { path: "/login", element: <Layout><LoginPage /></Layout> },
+  { path: "/register", element: <Layout><RegisterPage /></Layout> }
 ]);
 
 function App() {

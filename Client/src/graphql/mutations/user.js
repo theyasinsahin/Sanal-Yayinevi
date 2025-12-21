@@ -22,3 +22,21 @@ export const LOGIN = gql`
     }
   }
 `;
+
+export const TOGGLE_SAVED_BOOK_MUTATION = gql`
+  mutation ToggleSaveBook($bookId: ID!) {
+    toggleSaveBook(bookId: $bookId) {
+      id
+      savedBooks
+    }
+  }
+`;
+
+export const TOGGLE_FOLLOW_MUTATION = gql`
+  mutation ToggleFollowUser($followId: ID!) {
+    toggleFollowUser(followId: $followId) {
+      code
+      message
+    }
+  }
+`;

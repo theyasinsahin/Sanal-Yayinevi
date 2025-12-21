@@ -15,7 +15,10 @@ const BookSchema = new mongoose.Schema({
     views: {type: Number, default: 0},
     shares: {type: Number, default: 0},
     likes: {type: Number, default: 0},
-    comments: {type: Number, default: 0},
+  },
+  likedBy: {
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    default: []
   },
   publishDate: {type:Date, default: Date.now},
   comments: {

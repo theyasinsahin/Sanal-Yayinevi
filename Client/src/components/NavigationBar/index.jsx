@@ -1,7 +1,8 @@
 // NavigationBar/index.js
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, Close, Book, Person } from '@mui/icons-material';
+import { Menu, Close, Quill, Person } from '@mui/icons-material';
+import { FiFeather } from 'react-icons/fi';
 import MobileMenu from './MobileMenu';
 import './NavigationBar.css';
 import { ME_QUERY } from './graphql';
@@ -18,8 +19,8 @@ const NavigationBar = () => {
       <div className="nav-container">
         {/* Logo */}
         <Link to="/" className="logo">
-          <Book className="logo-icon" />
-          <span>Writer Wings</span>
+          <FiFeather className="logo-icon" />
+          <span>Quill</span>
         </Link>
 
         {/* Desktop Menu */}
@@ -27,9 +28,12 @@ const NavigationBar = () => {
           <Link to="/feed" className="nav-link">
             Keşfet
           </Link>
+          {/* If user is logged in, show create book link */}
+          {data && data.me ? (
           <Link to="/create-book" className="nav-link highlight">
             Kitap Oluştur
           </Link>
+          ) : null}
           { /*If user logged in*/
           data ? (
             <Link to="/profile" className="nav-link">

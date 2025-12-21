@@ -6,14 +6,35 @@ import BookCard from '../BookCard';
 
 const BookGrid = ({ books }) => {
 
+  if (!Array.isArray(books) || books.length === 0) {
+    // Varsa boş bir grid veya bir mesaj döndürebilirsiniz
+    return (
+      <div className="book-grid">
+        <p>Gösterilecek kitap bulunamadı.</p>
+      </div>
+    );
+  }
+
+  const firstElement = books[0];
+
+  const isIdArray = typeof firstElement === 'string' || typeof firstElement === 'number';
   return (
     <div className="book-grid">
-      {books.map(book => (
+      {isIdArray ? (
+        books.map(bookId => (
           <BookCard
-            book={book}
-            key={book.id}
+            bookId={bookId} 
+            key={bookId}
           />
-      ))}
+        ))
+      ) : (
+        books.map(book => (
+          <BookCard
+            book={book}  
+            key={book.id}  
+          />
+        ))
+      )}
     </div>
   );
 };

@@ -1,3 +1,31 @@
+/* ReactQuill veya Reader içerik alanı */
+.content p, 
+.ql-editor p {
+  margin-bottom: 0.5rem; /* Paragraf altı boşluğunu küçült */
+  margin-top: 0;
+}
+
+.content h1, .content h2, .content h3,
+.ql-editor h1, .ql-editor h2, .ql-editor h3 {
+  margin-top: 1rem; /* Başlık üstü boşluğunu ayarla */
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+
+/* Listelerin (ol, ul) etrafındaki boşlukları düzenle */
+.content ol, .content ul,
+.ql-editor ol, .ql-editor ul {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem; /* Maddelerin içeri girmesi için */
+}
+
+/* Liste elemanları (li) arasındaki boşluk */
+.content li,
+.ql-editor li {
+  margin-bottom: 0.2rem;
+}
+
 /* BookDashboard.css */
 .book-dashboard {
     display: grid;
@@ -216,6 +244,49 @@
   .custom-quill-editor .ql-editor p {
     margin-bottom: 1rem;
   }
+
+  /* ADIM 4: Bildirim Çubuğu (Snackbar) Stilleri
+*/
+.notification-snackbar {
+  /* Ekrana göre konumlandırma */
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  /* Görünüm */
+  padding: 12px 24px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000; /* Diğer her şeyin üstünde */
+  
+  /* Animasyon (opsiyonel ama şık) */
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Başarı (Yeşil) */
+.notification-snackbar.success {
+  background-color: #4CAF50; /* Koyu yeşil */
+}
+
+/* Hata (Kırmızı) */
+.notification-snackbar.error {
+  background-color: #f44336; /* Kırmızı */
+}
+
+/* Basit giriş animasyonu */
+@keyframes fadeIn {
+  from {
+    bottom: -50px;
+    opacity: 0;
+  }
+  to {
+    bottom: 20px;
+    opacity: 1;
+  }
+}
   
   /* Responsive Design */
   @media (max-width: 768px) {

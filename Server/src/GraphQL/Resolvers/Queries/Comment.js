@@ -1,7 +1,7 @@
 import { get } from "mongoose";
 import { authenticateUser } from "../../../utils/auth.js";
 
-export default {
+export const commentQueries = {
     getCommentsByBookId: async (_, { bookId }, { Comment }) => {
         try {
             const comments = await Comment.find({ bookId }).populate('userId', 'username');

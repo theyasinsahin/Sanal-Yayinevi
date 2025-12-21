@@ -41,5 +41,11 @@ export const genres = [
       name: "Şiir",
       slug: "siir",
       icon: "📝"
+    },
+    {
+      id: 7,
+      name: "Roman",
+      slug: "roman",
+      icon: "📚"
     }
   ];

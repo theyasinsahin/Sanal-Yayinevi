@@ -1,1 +1,13 @@
 
+.author-link, .author-name-link {
+    color: #2A5C82; /* Senin temanın mavisi */
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    cursor: pointer;
+}
+
+.author-link:hover, .author-name-link:hover {
+    color: #1e4563; /* Hover olunca biraz koyulaşsın */
+    text-decoration: underline;
+}

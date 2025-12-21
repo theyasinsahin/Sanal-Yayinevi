@@ -21,11 +21,12 @@ type User {
   bio: String!
   profilePicture: String!
   email: String!
-  favouriteBooks: [ID!]
+  savedBooks: [ID!]
   favouriteAuthors: [ID!]
   usersBooks: [ID!]
   followers: [ID!]
   following: [ID!]
   createdAt: DateTime!
   updatedAt: DateTime!
+  role: String!
 }

@@ -4,6 +4,7 @@ type Mutation {
     genre: String!
     description: String!
     tags: [String]
+    imageUrl: String!
   ): Book!
   deleteBook(id: ID!): Status!
   updateBook(
@@ -23,12 +24,12 @@ type Status {
 
 type Comment {
   id: ID!
-  userId: ID!
+  userId: User!
   bookId: ID!
   content: String!
   date: DateTime!
-  replies: [Comment!]
-  likes: Int!
+  replies: [Comment]
+  likedBy: [ID]
 }
 
 type Chapter {
@@ -39,13 +40,13 @@ type Chapter {
   content: String!
   createdAt: DateTime!
   updatedAt: DateTime!
+  pageCount: Int!
 }
 
 type BookStats {
   views: Int!
   shares: Int!
   likes: Int!
-  comments: Int!
 }
 
 type Book {
@@ -60,7 +61,9 @@ type Book {
   createdAt: DateTime!
   updatedAt: DateTime!
   publishDate: DateTime!
-  comments: [ID!]
-  chapters: [ID!]
+  comments: [Comment!]
+  chapters: [Chapter!]
   tags: [String]
+  likedBy: [ID!]
+  commentCount: Int!
 }

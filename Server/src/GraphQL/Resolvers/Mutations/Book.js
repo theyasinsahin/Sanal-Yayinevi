@@ -1,6 +1,6 @@
 import { authenticateUser } from "../../../utils/auth.js";
 export default {
-    createBook: async (_, { title, genre, description, tags }, { Book, User, req }) => {
+    createBook: async (_, { title, genre, description, tags, imageUrl }, { Book, User, req }) => {
     const user = await authenticateUser(req, User);
         try {
             const newBook = new Book({
@@ -9,6 +9,7 @@ export default {
             description,
             authorId: user._id,
             tags: tags || [],
+            imageUrl: imageUrl || '',
             });
 
             const savedBook = await newBook.save();
@@ -24,40 +25,57 @@ export default {
         }
     },
 
-    deleteBook: async (_, { id }, { Book, req, Comment, Chapter }) => {
-        //const user = await authenticateUser(req, Book);
-        try {
-            const book = await Book.findById(id);
-            if (!book) {
-                throw new Error("Book not found");
-            }
-            /*if (book.authorId.toString() !== user._id.toString() && user.role !== 'ADMIN') {
-                throw new Error("You are not authorized to delete this book");
-            }*/
+    deleteBook: async (_, { id }, { Book, req, Comment, Chapter, User }) => {
+    const user = await authenticateUser(req, User);
 
-            // Yorumları sil
-            if (book.comments && book.comments.length > 0) {
-                await Comment.deleteMany({ _id: { $in: book.comments } });
-            }
-
-            // Bölümleri sil
-            if (book.chapters && book.chapters.length > 0) {
-                await Chapter.deleteMany({ _id: { $in: book.chapters } });
-            }
-
-            await Book.findByIdAndDelete(id);
-            return {
-                code: 200,
-                message: "Book deleted successfully",
-            };
-        } catch (error) {
-            console.error("Error deleting book:", error);
-            return {
-                code: 500,
-                message: "Failed to delete book",
-            };
+    try {
+        const book = await Book.findById(id);
+        if (!book) {
+            throw new Error("Book not found");
         }
-    },
+
+        // Yetki Kontrolü
+        // Not: user._id kullanmak Mongoose objeleri için daha güvenlidir.
+        if (book.authorId.toString() !== user._id.toString() && user.role !== 'ADMIN') {
+            throw new Error("You are not authorized to delete this book");
+        }
+
+        // --- TEMİZLİK İŞLEMLERİ ---
+
+        // 1. Yorumları sil
+        if (book.comments && book.comments.length > 0) {
+            await Comment.deleteMany({ _id: { $in: book.comments } });
+        }
+
+        // 2. Bölümleri sil
+        if (book.chapters && book.chapters.length > 0) {
+            await Chapter.deleteMany({ _id: { $in: book.chapters } });
+        }
+
+        // 3. Yazardan kitabı sil
+        await User.findByIdAndUpdate(book.authorId, { 
+            $pull: { usersBooks: id } 
+        });
+
+        // 4. Başkaları kaydettiyse onlardan da sil
+        await User.updateMany(
+            { savedBooks: id },
+            { $pull: { savedBooks: id } }
+        );
+
+        // 5. Kitabı sil
+        await Book.findByIdAndDelete(id);
+
+        return {
+            code: 200,
+            message: "Book deleted successfully",
+        };
+
+    } catch (error) {
+        console.error("Error deleting book:", error);
+        throw new Error(error.message);
+    }
+},
     updateBook: async (_, { bookId, title, genre, description }, { User, Book, req }) => {
         const user = await authenticateUser(req, User);
         try {
@@ -88,7 +106,7 @@ export default {
             if (!book) {
                 throw new Error("Book not found");
             }
-            book.stats.likes = (book.stats.likes || 0) + 1; // <-- GÜNCELLENDİ
+            book.stats.views = (book.stats.views || 0) + 1; // <-- GÜNCELLENDİ
             const updatedBook = await book.save();
             return updatedBook;
         } catch (error) {
@@ -97,35 +115,24 @@ export default {
         }
     },
 
-    likeBook: async (_, { bookId }, { Book, User, BookLike, req }) => {
-        try {
-            const book = await Book.findById(bookId);
-            if (!book) {
-                throw new Error("Book not found");
-            }
+    likeBook: async (_, { bookId }, { Book, User, req }) => {
+    const user = await authenticateUser(req, User); 
 
-            const user = await authenticateUser(req, User);
-            if (!user) {
-                throw new Error("User not found");
-            }
-            const userId = user._id;
-
-            // Check if the user has already liked the book
-            const existingLike = await BookLike.findOne({ userId, bookId });
-            if (existingLike) {
-                throw new Error("You have already liked this book");
-            }
-
-            // 2. Yeni beğeni kaydını oluştur
-            await BookLike.create({ userId, bookId });
-
-            book.stats.likes += 1; // Increment likes count
-
-            const updatedBook = await book.save();
-            return updatedBook;
-        } catch (error) {
-            console.error("Error liking book:", error);
-            throw new Error("Failed to like book");
+    try {
+        const book = await Book.findById(bookId);
+        
+        if (book.likedBy.includes(user.id)) {
+            book.likedBy.pull(user.id); 
+            book.stats.likes = Math.max(0, book.stats.likes - 1);
+        } else {
+            book.likedBy.push(user.id); 
+            book.stats.likes += 1;    
         }
-    },
+
+        await book.save();
+        return book;
+    } catch (err) {
+        throw new Error(err);
+    }
+}
 }

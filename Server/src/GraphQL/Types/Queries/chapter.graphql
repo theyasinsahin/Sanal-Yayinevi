@@ -16,4 +16,5 @@ type Chapter {
   content: String!
   createdAt: DateTime!
   updatedAt: DateTime!
+  pageCount: Int!
 }

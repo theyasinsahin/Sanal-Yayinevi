@@ -23,8 +23,8 @@ const LoginPage = () => {
     
     login({ variables: formData })
       .then(res => {
-        console.log("Giriş başarılı:", res.data.login);
         localStorage.setItem("token", res.data.login.token);
+        localStorage.setItem('userId', res.data.login.user.id);
         // yönlendirme veya mesaj gösterme
         window.location.href = "/";
       })

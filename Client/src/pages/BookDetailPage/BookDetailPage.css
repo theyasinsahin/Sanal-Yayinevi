@@ -1,3 +1,35 @@
+.read-book-button {
+  /* Kutu Modeli ve Hizalama */
+  display: inline-block;
+  padding: 12px 24px;
+  text-align: center;
+  
+  /* Görünüm */
+  background-color: #007bff; /* Ana Eylem Rengi (Mavi) */
+  color: #ffffff; /* Beyaz Yazı */
+  text-decoration: none; /* Link alt çizgisini kaldır */
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  
+  /* Efektler */
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.read-book-button:hover {
+  background-color: #0056b3; /* Koyu Mavi */
+  transform: translateY(-2px); /* Hafif yukarı kalkma efekti */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.read-book-button:active {
+  /* Tıklama anı efekti */
+  transform: translateY(0);
+}
+
 /* Ana Konteyner */
 .book-detail-container {
   max-width: 1400px;

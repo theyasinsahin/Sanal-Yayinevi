@@ -1,14 +1,34 @@
-// BookDashboard.jsx
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import ReactQuill from 'react-quill';
-import { Add, Save, FolderOpen, Edit } from '@mui/icons-material';
-import { sampleBooks } from '../../Data/sampleBooks';
-import 'react-quill/dist/quill.snow.css'; // Make sure this is imported
+import 'react-quill/dist/quill.snow.css';
+import { Add, Save, FolderOpen, Edit, Visibility } from '@mui/icons-material';
 import './BookDashboard.css';
 
+import { useQuery, useMutation } from '@apollo/client'; // useApolloClient'a gerek kalmadı
+import { GET_BOOK_BY_ID } from '../../graphql/queries/book'; 
+import { CREATE_CHAPTER_MUTATION, UPDATE_CHAPTER_MUTATION } from '../../graphql/mutations/chapter';
+
+import { parseContentToPages } from '../../utils/htmlPageSplitter';
+
 const BookDashboard = () => {
-  const { bookId } = useParams() || { bookId: 1 };
+  const { bookId } = useParams();
+
+  // 1. TEK SORGU YETERLİ
+  const { data: bookData, loading: bookLoading, error: bookError } = useQuery(GET_BOOK_BY_ID, {
+    variables: { id: bookId },
+    skip: !bookId,
+    // Bölüm ekleyince/düzenleyince listenin güncel kalması için:
+    fetchPolicy: "network-only" 
+  });
+
+  const [addChapter] = useMutation(CREATE_CHAPTER_MUTATION, {
+    // Bölüm eklenince Kitap sorgusunu yenile ki yeni bölüm listeye gelsin
+    refetchQueries: [{ query: GET_BOOK_BY_ID, variables: { id: bookId, pageCount: 0 } }]
+  });
+  
+  const [saveChapterContent] = useMutation(UPDATE_CHAPTER_MUTATION);
+
   const [book, setBook] = useState(null);
   const [chapters, setChapters] = useState([]);
   const [selectedChapter, setSelectedChapter] = useState(null);
@@ -16,100 +36,157 @@ const BookDashboard = () => {
   const [newChapterTitle, setNewChapterTitle] = useState('');
   const [isSaved, setIsSaved] = useState(true);
 
-  useEffect(() => {
-    // Simulating API call with sample data
-    const loadBook = sampleBooks.find(b => b.id === parseInt(bookId) || 1);
-    if (loadBook) {
-      setBook(loadBook);
-      setChapters(loadBook.chapters || []);
-      
-      // Auto-select first chapter if available
-      if (loadBook.chapters && loadBook.chapters.length > 0) {
-        setSelectedChapter(loadBook.chapters[0].id);
-        setContent(loadBook.chapters[0].content || '');
-      }
-    }
-  }, [bookId]);
+  const [notification, setNotification] = useState({ isVisible: false, message: '', type: '' });
+  const isJustLoaded = useRef(false);
 
-  const handleContentChange = (value) => {
-    setContent(value);
-    setIsSaved(false);
-  };
-
-  const addNewChapter = () => {
-    if (newChapterTitle.trim()) {
-      const newChapter = {
-        id: Date.now(),
-        title: newChapterTitle,
-        content: '',
-        lastModified: new Date().toISOString()
-      };
-      setChapters(prev => [...prev, newChapter]);
-      setNewChapterTitle('');
-      setSelectedChapter(newChapter.id);
-      setContent('');
-    }
-  };
-
-  const handleChapterSelect = (chapterId) => {
-    if (!isSaved) {
-      if (window.confirm('Değişiklikleriniz kaydedilmedi. Devam etmek istiyor musunuz?')) {
-        const chapter = chapters.find(c => c.id === chapterId);
-        setSelectedChapter(chapterId);
-        setContent(chapter?.content || '');
-        setIsSaved(true);
-      }
-    } else {
-      const chapter = chapters.find(c => c.id === chapterId);
-      setSelectedChapter(chapterId);
-      setContent(chapter?.content || '');
-    }
-  };
-
-  const saveChapter = () => {
-    if (selectedChapter) {
-      setChapters(prev => prev.map(ch => 
-        ch.id === selectedChapter ? 
-        { ...ch, content, lastModified: new Date().toISOString() } : 
-        ch
-      ));
-      setIsSaved(true);
-    }
-  };
-
-  // Custom modules for ReactQuill
-  const modules = {
+  const modules = useMemo(() => ({
     toolbar: [
       ['bold', 'italic', 'underline', 'strike'],
-      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+      [{ 'header': [1, 2, 3, false] }],
       [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      [{ 'indent': '-1' }, { 'indent': '+1' }],
       ['link'],
       ['clean']
     ]
+  }), []);
+
+  // 2. USEEFFECT SADELEŞTİRİLDİ
+  // Veri geldiğinde state'leri güncellemek yeterli. Ekstra fetch YOK.
+  useEffect(() => {
+    if (bookData && bookData.getBookById) {
+      const fetchedBook = bookData.getBookById;
+      setBook(fetchedBook);
+      
+      // Query'den gelen chapters zaten dolu obje dizisi
+      const fetchedChapters = fetchedBook.chapters || [];
+      setChapters(fetchedChapters);
+
+      // Eğer seçili bölüm yoksa ve bölümler varsa ilkini seç
+      if (!selectedChapter && fetchedChapters.length > 0) {
+        isJustLoaded.current = true;
+        setSelectedChapter(fetchedChapters[0].id);
+        setContent(fetchedChapters[0].content || '');
+        setIsSaved(true);
+      }
+    }
+  }, [bookData]); // selectedChapter bağımlılığını kaldırdım ki sonsuz döngü olmasın
+
+  const handleContentChange = (value) => {
+    setContent(value);
+    if (isJustLoaded.current) {
+      isJustLoaded.current = false;
+      return;
+    }
+    setIsSaved(false);
   };
 
-  const formats = [
-    'header', 'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet', 'indent', 'link'
-  ];
+  const handleChapterSelect = (chapterId) => {
+    const switchChapter = () => {
+      isJustLoaded.current = true;
+      const chapter = chapters.find(c => c.id === chapterId);
+      setSelectedChapter(chapterId);
+      setContent(chapter?.content || '');
+      setIsSaved(true);
+    };
+    
+    if (!isSaved) {
+      if (window.confirm('Değişiklikleriniz kaydedilmedi. Devam etmek istiyor musunuz?')) {
+        switchChapter();
+      }
+    } else {
+      switchChapter();
+    }
+  };
+
+  const addNewChapter = async () => {
+    if (newChapterTitle.trim() && bookId) {
+      try {
+        await addChapter({
+          variables: {
+            bookId: bookId,
+            title: newChapterTitle,
+            content: '',
+          },
+        });
+        // refetchQueries kullandığımız için burada manuel setChapters yapmaya gerek yok,
+        // ama kullanıcı deneyimi için (loading beklemeden) state güncelleyebiliriz:
+        setNewChapterTitle('');
+        // setSelectedChapter vs işlemlerini useEffect'e bırakabiliriz veya 
+        // mutation dönüş değerini kullanabiliriz.
+      } catch (err) {
+        console.error("Bölüm eklenemedi:", err.message);
+        alert("Hata: " + err.message);
+      }
+    }
+  };
+
+  const saveChapter = async () => {
+    if (selectedChapter) {
+      try {
+        // 1. HESAPLAMA: İçeriğin kaç sayfa tuttuğunu hesapla
+        // Bölüm başlığı hesaplamayı etkilemediği için boş string geçebilirsin veya state'ten alabilirsin
+        const currentChapterTitle = chapters.find(c => c.id === selectedChapter)?.title || "";
+        const calculatedPages = parseContentToPages(content, currentChapterTitle);
+        // Dizi uzunluğu = Sayfa Sayısı
+        const pageCount = calculatedPages.length;
+
+        // 2. GÖNDERME: pageCount'u mutation'a ekle
+        const { data: updatedData } = await saveChapterContent({
+          variables: {
+            chapterId: selectedChapter,
+            content: content,
+            pageCount: pageCount 
+          },
+        });
+
+        // 3. STATE GÜNCELLEME
+        if (updatedData && updatedData.updateChapter) {
+          setChapters(prev => prev.map(ch => 
+            ch.id === selectedChapter ? { ...ch, content, pageCount } : ch
+          ));
+          setIsSaved(true);
+
+        setNotification({ isVisible: true, message: 'Kaydedildi!', type: 'success' });
+        setTimeout(() => setNotification({ isVisible: false, message: '', type: '' }), 3000);        
+      }
+      } catch (err) {
+        console.error("Bölüm kaydedilemedi:", err);
+        setNotification({ isVisible: true, message: 'Hata oluştu', type: 'error' });
+      }
+    }
+  };
+
+
+  
+
+
+
+  if (!bookId) return <div className="book-dashboard"><h2>Geçersiz Kitap ID</h2></div>;
+  if (bookLoading) return <div className="book-dashboard"><p>Yükleniyor...</p></div>;
+  if (bookError) return <div className="book-dashboard"><p>Hata: {bookError.message}</p></div>;
+  if (!book) return <div className="book-dashboard"><h2>Kitap Bulunamadı</h2></div>;
 
   return (
     <div className="book-dashboard">
-      {/* Sidebar */}
       <div className="sidebar">
-        <div className="book-info-dashboard">
+         <div className="book-info-dashboard">
           <img 
-            src={book?.imageUrl || 'https://via.placeholder.com/120x170'} 
-            alt={book?.title || 'Book Cover'} 
-            className="book-cover" 
+            src={book?.imageUrl || 'https://via.placeholder.com/200x300'} 
+            alt={book?.title} 
+            className="book-cover"
           />
-          <h2>{book?.title || 'Kitap Başlığı'}</h2>
-          <p className="author">{book?.author || 'Yazar'}</p>
+          <h2 title={book?.title}>{book?.title}</h2>
+          
           <div className="stats">
             <span>{chapters.length} Bölüm</span>
-            <span>{book?.genre || 'Kategori'}</span>
+            <span>{book?.genre}</span>
           </div>
+
+          <Link to={`/book-reader/${bookId}`} className="preview-button">
+             <Visibility fontSize="small" /> Okuyucu Modu
+          </Link>
+          <Link to={`/book-detail/${bookId}`} className="preview-button secondary">
+             <Visibility fontSize="small" /> Detay Sayfası
+          </Link>
         </div>
 
         <div className="chapter-management">
@@ -122,7 +199,7 @@ const BookDashboard = () => {
               onKeyPress={(e) => e.key === 'Enter' && addNewChapter()}
             />
             <button onClick={addNewChapter}>
-              <Add fontSize="small" /> Ekle
+              <Add fontSize="small" />
             </button>
           </div>
 
@@ -135,40 +212,48 @@ const BookDashboard = () => {
               >
                 <FolderOpen className="icon" fontSize="small" />
                 <span className="title">{chapter.title}</span>
-                <span className="date">
-                  {new Date(chapter.lastModified).toLocaleDateString()}
-                </span>
               </div>
             ))}
           </div>
         </div>
       </div>
-
-      {/* Editor Area */}
+      
       <div className="editor-area">
-        <div className="editor-header">
-          <h3>
-            <Edit fontSize="small" /> {chapters.find(c => c.id === selectedChapter)?.title || 'Bölüm Seçin'}
-          </h3>
-          <button 
-            onClick={saveChapter} 
-            className="save-btn"
-            disabled={isSaved || !selectedChapter}
-          >
-            <Save fontSize="small" /> Kaydet
-          </button>
-        </div>
-
-        <ReactQuill
-          theme="snow"
-          value={content}
-          onChange={handleContentChange}
-          modules={modules}
-          formats={formats}
-          className="custom-quill-editor"
-          placeholder="Yazmaya başlayın..."
-        />
+        {selectedChapter ? (
+           <>
+            <div className="editor-header">
+              <h3>
+                <Edit fontSize="small" /> {chapters.find(c => c.id === selectedChapter)?.title}
+              </h3>
+              <button 
+                onClick={saveChapter} 
+                className={`save-btn ${isSaved ? 'saved' : 'unsaved'}`}
+                disabled={isSaved}
+              >
+                <Save fontSize="small" /> {isSaved ? "Kaydedildi" : "Kaydet"}
+              </button>
+            </div>
+            <ReactQuill
+              theme="snow"
+              value={content}
+              onChange={handleContentChange}
+              modules={modules}
+              className="custom-quill-editor"
+              placeholder="Hikayenizi buraya yazın..."
+            />
+           </>
+        ) : (
+            <div className="no-chapter-selected">
+                <p>Düzenlemek için soldan bir bölüm seçin veya yeni bölüm ekleyin.</p>
+            </div>
+        )}
       </div>
+
+    {notification.isVisible && (
+        <div className={`notification-snackbar ${notification.type}`}>
+          {notification.message}
+        </div>
+      )}
     </div>
   );
 };

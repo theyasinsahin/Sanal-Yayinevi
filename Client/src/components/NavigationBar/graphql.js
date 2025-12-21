@@ -11,7 +11,7 @@ export const ME_QUERY = gql`
       profilePicture
       followers
       following
-      favouriteBooks
+      savedBooks
       favouriteAuthors
       usersBooks
     }

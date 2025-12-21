@@ -12,7 +12,8 @@ const ChapterSchema = new mongoose.Schema({
     required: true,
 },
   title: String,
-  content: String
+  content: String,
+  pageCount: { type: Number, default: 0 },
 }, {timestamps: true});
 
 export default mongoose.model('Chapter', ChapterSchema);

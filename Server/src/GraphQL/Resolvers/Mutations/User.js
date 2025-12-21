@@ -90,29 +90,48 @@ export default {
         return { code: 200, message: "User deleted successfully" };
     },
 
-    followUser: async (_, { followId }, {req, User}) => {
-        const user = await authenticateUser(req, User);
+    toggleFollowUser: async (_, { followId }, {req, User}) => {
+       const user = await authenticateUser(req, User);
 
-        const followUser = await User.findById(followId);
+        const targetUser = await User.findById(followId);
         
-        if (!user || !followUser) {
+        if (!user || !targetUser) {
             throw new Error("User not found");
         }
-        if (user.following.includes(followId)) {
-            throw new Error("You are already following this user");
-        }
-        if(user == followUser) {
+
+        // Kendini takip etmeyi engelle
+        if (user._id.toString() === targetUser._id.toString()) {
             throw new Error("You cannot follow yourself");
         }
         
-        user.following.push(followId);
-        followUser.followers.push(user._id);
-        await user.save();
-        await followUser.save();
-        return {
-            code: 200,
-            message: "User followed successfully",
-        };
+        // KONTROL: Zaten takip ediyor mu?
+        const isFollowing = user.following.includes(followId);
+
+        if (isFollowing) {
+            // TAKİBİ BIRAK (Unfollow)
+            user.following.pull(followId);
+            targetUser.followers.pull(user._id);
+            
+            await user.save();
+            await targetUser.save();
+
+            return {
+                code: 200,
+                message: "User unfollowed successfully",
+            };
+        } else {
+            // TAKİP ET (Follow)
+            user.following.push(followId);
+            targetUser.followers.push(user._id);
+
+            await user.save();
+            await targetUser.save();
+
+            return {
+                code: 200,
+                message: "User followed successfully",
+            };
+        }
     },
     updateProfile: async (_, { username, fullName, bio, profilePicture }, { req, User }) => {
         const user = await authenticateUser(req, User);
@@ -129,5 +148,27 @@ export default {
         await user.save();
         
         return user;
-    }
+    },
+    toggleSaveBook: async (_, { bookId }, {req, User}) => {
+        const user = await authenticateUser(req, User); 
+      try {
+        const currentUser = await User.findById(user.id);
+        
+        const isBookSaved = currentUser.savedBooks.includes(bookId);
+
+        if (isBookSaved) {
+          await User.findByIdAndUpdate(user.id, {
+            $pull: { savedBooks: bookId } // DÜZELTME 2: Alan isminin doğruluğu
+          });
+        } else {
+          await User.findByIdAndUpdate(user.id, {
+            $addToSet: { savedBooks: bookId } 
+          });
+        }
+        // Güncel kullanıcıyı döndür
+        return await User.findById(user.id);
+      } catch (err) {
+        throw new Error(err);
+      }
+}
 };

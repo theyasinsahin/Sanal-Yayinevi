@@ -1,6 +1,16 @@
 type Mutation {
-  createChapter(bookId: ID!, title: String!, content: String!): Chapter!
-  updateChapter(chapterId: ID!, title: String, content: String): Chapter!
+  createChapter(
+    bookId: ID!
+    title: String!
+    content: String!
+    pageCount: Int
+  ): Chapter!
+  updateChapter(
+    chapterId: ID!
+    title: String
+    content: String
+    pageCount: Int
+  ): Chapter!
   deleteChapter(id: ID!): Status!
 }
 
@@ -17,4 +27,5 @@ type Chapter {
   content: String!
   createdAt: DateTime!
   updatedAt: DateTime!
+  pageCount: Int!
 }
