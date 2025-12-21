@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const BookSchema = new mongoose.Schema({
-  title: String,
+  title: {type: String, required: true},
   authorId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -30,5 +30,18 @@ chapters: {
   default: [],
 }
 },{timestamps: true});
+
+BookSchema.pre('findOneAndDelete', async function(next) {
+    // Silinmekte olan kitabı bul
+    const book = await this.model.findOne(this.getQuery());
+    
+    if (book) {
+        // TRIGGER GÖREVİ: Kitaba bağlı chapter'ları ve yorumları sil
+        await mongoose.model('Chapter').deleteMany({ _id: { $in: book.chapters } });
+        await mongoose.model('Comment').deleteMany({ _id: { $in: book.comments } });
+        console.log('Trigger çalıştı: Bağlı veriler temizlendi.');
+    }
+    next();
+});
 
 export default mongoose.model('Book', BookSchema);

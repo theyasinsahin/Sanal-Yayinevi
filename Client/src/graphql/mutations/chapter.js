@@ -23,3 +23,12 @@ export const UPDATE_CHAPTER_MUTATION = gql`
     }
   }
 `;
+
+export const DELETE_CHAPTER_MUTATION = gql`
+  mutation DeleteChapter($id: ID!) {
+    deleteChapter(id: $id) {
+      code
+      message
+    }
+  }
+`;

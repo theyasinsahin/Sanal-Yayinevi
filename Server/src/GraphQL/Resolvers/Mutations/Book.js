@@ -95,8 +95,7 @@ export default {
             const updatedBook = await book.save();
             return updatedBook;
         } catch (error) {
-            console.error("Error updating book:", error);
-            throw new Error("Failed to update book");
+            throw new Error(error.message);        
         }
     },
 

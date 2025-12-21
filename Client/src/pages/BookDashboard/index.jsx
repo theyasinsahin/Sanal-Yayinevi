@@ -2,12 +2,12 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { Add, Save, FolderOpen, Edit, Visibility } from '@mui/icons-material';
+import { Add, Save, FolderOpen, Edit, Visibility, Delete } from '@mui/icons-material';
 import './BookDashboard.css';
 
 import { useQuery, useMutation } from '@apollo/client'; // useApolloClient'a gerek kalmadı
 import { GET_BOOK_BY_ID } from '../../graphql/queries/book'; 
-import { CREATE_CHAPTER_MUTATION, UPDATE_CHAPTER_MUTATION } from '../../graphql/mutations/chapter';
+import { CREATE_CHAPTER_MUTATION, UPDATE_CHAPTER_MUTATION, DELETE_CHAPTER_MUTATION } from '../../graphql/mutations/chapter';
 
 import { parseContentToPages } from '../../utils/htmlPageSplitter';
 
@@ -28,6 +28,37 @@ const BookDashboard = () => {
   });
   
   const [saveChapterContent] = useMutation(UPDATE_CHAPTER_MUTATION);
+
+  const [deleteChapterMutation] = useMutation(DELETE_CHAPTER_MUTATION);
+
+  // 3. SİLME FONKSİYONU
+  const handleDeleteChapter = async (e, chapterId) => {
+    // ÖNEMLİ: Buna basınca satırın "onClick" olayının çalışmasını (seçilmesini) engeller.
+    e.stopPropagation(); 
+
+    if (window.confirm("Bu bölümü silmek istediğinize emin misiniz? Bu işlem geri alınamaz.")) {
+      try {
+        await deleteChapterMutation({
+          variables: { id: chapterId }
+        });
+
+        // State'ten silerek anında ekrandan kaldırıyoruz (Refetch beklemeye gerek yok)
+        setChapters(prev => prev.filter(c => c.id !== chapterId));
+
+        // Eğer silinen bölüm şu an ekranda açıksa editörü temizle
+        if (selectedChapter === chapterId) {
+            setSelectedChapter(null);
+            setContent('');
+            setIsSaved(true);
+        }
+
+        setNotification({ isVisible: true, message: 'Bölüm silindi', type: 'success' });
+        setTimeout(() => setNotification({ isVisible: false, message: '', type: '' }), 3000);
+      } catch (err) {
+        alert("Silme hatası: " + err.message);
+      }
+    }
+  };
 
   const [book, setBook] = useState(null);
   const [chapters, setChapters] = useState([]);
@@ -164,7 +195,7 @@ const BookDashboard = () => {
   if (bookLoading) return <div className="book-dashboard"><p>Yükleniyor...</p></div>;
   if (bookError) return <div className="book-dashboard"><p>Hata: {bookError.message}</p></div>;
   if (!book) return <div className="book-dashboard"><h2>Kitap Bulunamadı</h2></div>;
-
+  
   return (
     <div className="book-dashboard">
       <div className="sidebar">
@@ -210,8 +241,21 @@ const BookDashboard = () => {
                 className={`chapter-item ${selectedChapter === chapter.id ? 'active' : ''}`}
                 onClick={() => handleChapterSelect(chapter.id)}
               >
-                <FolderOpen className="icon" fontSize="small" />
-                <span className="title">{chapter.title}</span>
+                {/* Sol Kısım: İkon ve Başlık */}
+                <div className="chapter-item-left">
+                  <FolderOpen className="icon" fontSize="small" />
+                  <span className="title" title={chapter.title}>{chapter.title}</span>
+                </div>
+
+                {/* Sağ Kısım: Silme Butonu */}
+                <button 
+                  className="delete-chapter-btn"
+                  onClick={(e) => handleDeleteChapter(e, chapter.id)}
+                  title="Bölümü Sil"
+                >
+                  <Delete fontSize="small" />
+                </button>
+
               </div>
             ))}
           </div>

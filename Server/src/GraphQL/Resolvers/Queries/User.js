@@ -52,14 +52,6 @@ export default {
         return user.savedBooks;
     },
 
-    getFavouriteAuthorsByUserId: async (_, { id }, { User }) => {
-        const user = await User.findById(id).populate('favouriteAuthors');
-        if (!user) {
-            throw new Error("User not found");
-        }
-        return user.favouriteAuthors;
-    },
-
     getUsersBooksByUserId: async (_, { id }, { User }) => {
         const user = await User.findById(id).populate('usersBooks');
         if (!user) {

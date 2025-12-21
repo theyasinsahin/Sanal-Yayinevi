@@ -4,12 +4,19 @@ const FiltersContext = createContext();
 
 export const FiltersProvider = ({ children }) => {
   const [filters, setFilters] = useState({
-    genres: [],
-    donationRange: [0, 100000],
+    // 1. GÜNCELLEME: 'genres: []' yerine 'genre' string'i kullanıyoruz.
+    // Çünkü FilterArticles.js'de tek bir kategoriye göre (filters.genre) işlem yapıyoruz.
+    genre: 'Tümü', 
+    
+    // Sıralama varsayılanı
     sortBy: 'newest',
+    
+    // 2. ARAMA: Arama çubuğu için gerekli alan
     searchQuery: ''
   });
 
+  // Filtre güncelleme fonksiyonu
+  // Kullanımı: updateFilters('searchQuery', 'yeni değer') veya updateFilters('genre', 'Roman')
   const updateFilters = (type, value) => {
     setFilters(prev => ({
       ...prev,

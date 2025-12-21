@@ -61,10 +61,10 @@ export default {
         if (!user) throw new Error("User not found");
 
         // 1. Kullanıcının kitaplarını bul
-        const userBooks = await Book.find({ _id: { $in: user.userBooks } });
+        const usersBooks = await Book.find({ _id: { $in: user.usersBooks } });
 
         // 2. Her kitap için ilgili yorum ve bölümleri sil
-        for (const book of userBooks) {
+        for (const book of usersBooks) {
             // Eğer kitaplarda comment/chapters dizisi varsa:
             if (book.comments && book.comments.length > 0) {
                 await Comment.deleteMany({ _id: { $in: book.comments } });
@@ -76,7 +76,7 @@ export default {
         }
 
         // 3. Kitapları sil
-        await Book.deleteMany({ _id: { $in: user.userBooks } });
+        await Book.deleteMany({ _id: { $in: user.usersBooks } });
 
         // 4. Diğer kullanıcıların "followers" listesinden sil
         await User.updateMany({ followers: id }, { $pull: { followers: id } });

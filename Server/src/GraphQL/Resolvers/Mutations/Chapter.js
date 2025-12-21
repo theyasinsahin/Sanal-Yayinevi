@@ -132,7 +132,7 @@ export default{
             return { code: 200, message: "Chapter deleted successfully" };
         } catch (error) {
             console.error("Error deleting chapter:", error);
-            throw new Error("Failed to delete chapter");
+            throw new Error(error.message);        
         }
     }
 

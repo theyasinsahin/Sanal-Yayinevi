@@ -126,27 +126,50 @@
   .chapter-item {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
-    padding: 0.7rem;
-    border-radius: 6px;
+    justify-content: space-between; /* İkonlar iki uca yaslansın */
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background-color: white;
+    border-radius: 8px;
     cursor: pointer;
+    border: 1px solid #eee;
     transition: all 0.2s ease;
-    background: #f8f9fa;
-  }
+    /* Butonun pozisyonlanması için */
+    position: relative; 
+    overflow: hidden;
+}
+
+.chapter-item:hover {
+    border-color: #2A5C82;
+    background-color: #f8fbff;
+    transform: translateX(3px); /* Hafif sağa kayma efekti */
+}
+
+.chapter-item.active {
+    background-color: #2A5C82;
+    color: white;
+    border-color: #2A5C82;
+}
+
+/* Sol taraf (Folder ikonu ve Başlık) */
+.chapter-item-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1; /* Mümkün olan tüm alanı kapla */
+    overflow: hidden; /* Uzun başlıklar taşmasın */
+}
+
+.chapter-item .title {
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Çok uzun başlıklara ... koyar */
+}
   
-  .chapter-item:hover {
-    background: rgba(42, 92, 130, 0.05);
-  }
-  
-  .chapter-item.active {
-    background: rgba(42, 92, 130, 0.1);
-    border-left: 3px solid #2A5C82;
-  }
-  
-  .chapter-item .icon {
-    color: #2A5C82;
-    font-size: 1.1rem;
-  }
+  .chapter-item.active .icon {
+    color: white;
+}
   
   .chapter-item .title {
     flex: 1;
@@ -157,6 +180,44 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
+  .delete-chapter-btn {
+    background: transparent;
+    border: none;
+    color: #ccc; /* Varsayılan olarak silik gri */
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    opacity: 0; /* Başlangıçta gizli olsun (daha temiz görünüm için) */
+    transform: translateX(10px);
+}
+
+/* Satırın üzerine gelince butonu göster */
+.chapter-item:hover .delete-chapter-btn {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Aktif satırda buton hafif beyazımsı görünsün */
+.chapter-item.active .delete-chapter-btn {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Butonun kendisine gelince KIPKIRMIZI olsun */
+.delete-chapter-btn:hover {
+    background-color: #ffebee;
+    color: #d32f2f !important; /* !important ile aktif rengini ezer */
+}
+
+/* Aktif satırdayken butona gelince arka plan farklı olsun */
+.chapter-item.active .delete-chapter-btn:hover {
+    background-color: rgba(255, 0, 0, 0.2);
+    color: white !important;
+}
   
   .chapter-item .date {
     color: #666;

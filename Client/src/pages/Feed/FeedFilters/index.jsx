@@ -3,26 +3,43 @@ import React from 'react';
 import { useFilters } from '../../../context/FiltersContext';
 import { genres } from '../../../Data/genresData';
 import './FeedFilters.css';
+import { Apps } from '@mui/icons-material'; // Tümü ikonu için
 
 const FeedFilters = () => {
+  // Context'ten 'genre' (tekil string) ve güncelleme fonksiyonunu alıyoruz
   const { filters, updateFilters } = useFilters();
+
   return (
     <div className="feed-filters">
+      
       {/* Kategori Filtreleri */}
       <div className="filter-section">
         <h3>Kategoriler</h3>
         <div className="categories-grid">
+          
+          {/* 1. TÜMÜ BUTONU: Filtreyi sıfırlamak için */}
+          <button
+            className={`category-pill ${filters.genre === 'Tümü' ? 'active' : ''}`}
+            onClick={() => updateFilters('genre', 'Tümü')}
+          >
+            <span className="category-icon"><Apps fontSize="small"/></span>
+            Tümü
+          </button>
+
+          {/* 2. DİNAMİK KATEGORİLER */}
           {Object.values(genres).map(genre => (
             <button
               key={genre.id}
+              // Active kontrolü: Şu anki filtre bu slug'a eşit mi?
               className={`category-pill ${
-                filters.genres.includes(genre.slug) ? 'active' : ''
+                filters.genre === genre.slug ? 'active' : ''
               }`}
               onClick={() => {
-                const newGenres = filters.genres.includes(genre.slug)
-                  ? filters.genres.filter(name => name !== genre.slug)
-                  : [...filters.genres, genre.slug];
-                updateFilters('genres', newGenres);
+                // TOGGLE MANTIĞI:
+                // Eğer zaten bu kategori seçiliyse -> 'Tümü' yap (seçimi kaldır)
+                // Değilse -> Bu kategoriyi seç
+                const nextGenre = filters.genre === genre.slug ? 'Tümü' : genre.slug;
+                updateFilters('genre', nextGenre);
               }}
             >
               <span className="category-icon">{genre.icon}</span>
@@ -32,13 +49,14 @@ const FeedFilters = () => {
         </div>
       </div>
 
-      {/* Sıralama */}
+      {/* Sıralama (Burada değişiklik yok, mantık aynı) */}
       <div className="filter-section">
         <h3>Sırala</h3>
         <div className="sort-options">
           {[
             { value: 'newest', label: 'En Yeni' },
-            { value: 'popular', label: 'En Popüler' },
+            { value: 'popular', label: 'En Popüler' }, // filterBooks'ta buna göre logic kurmuştuk
+            { value: 'oldest', label: 'En Eski' },
           ].map(option => (
             <label key={option.value} className="sort-option">
               <input
