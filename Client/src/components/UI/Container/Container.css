@@ -1,0 +1,40 @@
+/* Base Container Styles */
+.app-container {
+  width: 100%;
+  margin-left: auto;  /* Ortalamak için */
+  margin-right: auto; /* Ortalamak için */
+  padding-left: 1rem; /* Mobilde kenarlara yapışmaması için */
+  padding-right: 1rem;
+  box-sizing: border-box; /* Padding ekleyince genişlik taşmasın */
+}
+
+/* Max Width Varyasyonları (Tailwind standartlarına benzer) */
+.max-w-xs { max-width: 20rem; /* ~320px */ }
+.max-w-sm { max-width: 24rem; /* ~384px */ }
+.max-w-md { max-width: 28rem; /* ~448px */ }
+.max-w-lg { max-width: 32rem; /* ~512px */ }
+.max-w-xl { max-width: 36rem; /* ~576px */ }
+.max-w-2xl { max-width: 42rem; /* ~672px */ }
+.max-w-3xl { max-width: 48rem; /* ~768px */ }
+.max-w-4xl { max-width: 56rem; /* ~896px */ }
+.max-w-5xl { max-width: 64rem; /* ~1024px */ }
+.max-w-6xl { max-width: 72rem; /* ~1152px */ }
+.max-w-7xl { max-width: 80rem; /* ~1280px */ }
+.max-w-8xl { max-width: 90rem; /* ~1440px */ }
+.max-w-9xl { max-width: 100rem; /* ~1600px */ }
+.max-w-full { max-width: 100%; }
+
+/* Responsive Padding (Tablet ve üstünde biraz daha ferah olsun) */
+@media (min-width: 640px) {
+  .app-container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
