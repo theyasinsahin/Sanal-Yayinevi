@@ -1,122 +1,89 @@
-import User from "./src/models/user.js";
-import bcrypt from "bcryptjs";
-// GraphQL Libraries && TypeDefs && Resolvers
-import GraphQLJSON from "graphql-type-json";
-import { loadFilesSync } from "@graphql-tools/load-files";
-import { mergeResolvers, mergeTypeDefs } from "@graphql-tools/merge";
-import { makeExecutableSchema } from "@graphql-tools/schema";
-// Apollo Libraries
-import { ApolloServer } from "@apollo/server";
-import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
-import { expressMiddleware } from "@apollo/server/express4";
-import { MemcachedCache } from "apollo-server-cache-memcached";
-import express from 'express';
-import mongoose from 'mongoose';
-import cors from 'cors';
-
+// Temel Kütüphaneler
 import http from 'http';
+import express from 'express';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import * as dotenv from 'dotenv';
+import { expressMiddleware } from '@apollo/server/express4';
+import { ApolloServer } from '@apollo/server';
+import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 
-import * as dotenv from "dotenv";
+// Bizim Oluşturduğumuz Modüller
+import connectDB from './src/config/db.js';
+import schema from './src/graphql/schema.js';
+import models from './src/models/index.js';
+import { authenticateUser } from './src/utils/auth.js';
+import formatError from './src/utils/formatError.js';
 
-import { authenticateUser } from "./src/utils/auth.js";
+import paymentRoutes from './src/routes/paymentRoutes.js';
 
-import { join } from "path";
-
-import bodyParser from "body-parser";
-
-import resolvers from "./src/GraphQL/Resolvers/index.js";
-
-// Start DotENV
+// 1. Ortam Değişkenlerini Yükle
 dotenv.config({
   path: process.env.NODE_ENV === "production" ? ".env.prod" : ".env",
 });
 
-const secret = process.env.JWT_SECRET;
+const PORT = process.env.PORT || 5000;
 
-import jwt from 'jsonwebtoken';
-import models from "./src/models/index.js";
-import { introspectionFromSchema } from "graphql";
-
+// 2. Sunucuyu Başlatma Fonksiyonu
 const startServer = async () => {
-    try{
-        const app = express();
+  try {
+    // Express App Oluştur
+    const app = express();
 
-        app.use(express.json());
-        
-        /// CORS middleware'ini ekleyin
-        app.use(cors({
-            origin: 'http://localhost:3000', // React uygulamanızın URL'sini buraya yazın
-            methods: ['GET', 'POST', 'PUT', 'DELETE'], // İzin vermek istediğiniz HTTP metodları
-            credentials: true, // Eğer cookie ya da authorization bilgisi gönderiyorsanız
-        }));
-        
-        /*app.use(cors({
-          origin: 'https://quoridor-game.vercel.app', // React uygulamanızın URL'sini buraya yazın
-          methods: ['GET', 'POST', 'PUT', 'DELETE'], // İzin vermek istediğiniz HTTP metodları
-          credentials: true, // Eğer cookie ya da authorization bilgisi gönderiyorsanız
-      }));*/
-        const PORT = 5000;
-        
-        
-        mongoose.connect(process.env.MONGO_URI
-        ).then(() => {
-            console.log('MongoDB connection successful');
-            
-        }).catch(err => {
-            console.log('MongoDB connection failed', err);
-        }); 
-        
-        
-            // Create the GraphQL schema using the type definitions and resolvers
-        const schema = makeExecutableSchema({
-          typeDefs: mergeTypeDefs(
-            loadFilesSync(join("./src/GraphQL/**/**/**/*.graphql"), "utf8")
-          ), // Read and Merge TypeDefs
-          resolvers: {
-            ...mergeResolvers(resolvers), // Merge Resolvers
-            JSON: GraphQLJSON, // Import Scalar JSON Schema
-          },
-        });
-        
-        
-        // Create an HTTP server using the Express app
-        const httpServer = http.createServer(app);
+    // Veritabanına Bağlan
+    await connectDB();
 
-        // Create an Apollo Server instance with the schema and an HTTP server plugin
-       const server = new ApolloServer({
-        schema,
-        cacheControl: { defaultMaxAge: 5 },
-        introspection: true, // ✅ Enable introspection
-        plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-      });
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
 
-        
-        //app.use('/api/auth', require('./src/routes/auth'));
-        await server.start();
+    // 3. Ödeme Geri Çağrı Yolu (Webhook)
+    app.use('/api/payment', paymentRoutes);
 
-        // Set up middleware for handling requests
-        app.use(
-          "/",
-          bodyParser.json({ limit: "50mb" }),
-            expressMiddleware(server, {
-              context: async ({ req }) => {
-                const authHeader = req.headers.authorization;
-                let user = null;
+    // 4. Genel Middleware'ler
+    app.use(cors({
+      origin: ['http://localhost:3000'],
+      credentials: true,
+    }));
+    app.use(express.json()); // Standart JSON body parser
 
-                if (authHeader && authHeader.startsWith("Bearer ")) {
-                  user = await authenticateUser(req, models.User);
-                }
+    // 5. Apollo Server Kurulumu
+    const httpServer = http.createServer(app);
+    
+    const server = new ApolloServer({
+      schema, // schema.js'den geliyor
+      cache: "bounded", // cacheControl yerine bunu kullanmak daha güncel
+      introspection: true,
+      plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+      formatError: formatError,
+    });
 
-                return { ...models, user, req };
-              },
-          }),
-        )
+    await server.start();
 
-      // Start the HTTP server and listen on the specified port
-      await new Promise((resolve) => httpServer.listen({ port: PORT }, resolve));
-    }catch(e){
-        console.log('Error starting server: ',e);
-    }
-}
+    // 6. Apollo Middleware Entegrasyonu
+    app.use(
+      '/',
+      bodyParser.json({ limit: '50mb' }),
+      expressMiddleware(server, {
+        context: async ({ req }) => {
+          const authHeader = req.headers.authorization;
+          let user = null;
+
+          if (authHeader && authHeader.startsWith("Bearer ")) {
+            user = await authenticateUser(req, models.User);
+          }
+
+          return { ...models, user, req };
+        },
+      })
+    );
+
+    // 7. Sunucuyu Dinle
+    await new Promise((resolve) => httpServer.listen({ port: PORT }, resolve));
+    console.log(`🚀 Server hazır: http://localhost:${PORT}`);
+
+  } catch (e) {
+    console.error('Server başlatılamadı:', e);
+  }
+};
 
 startServer();

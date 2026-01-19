@@ -1,18 +1,19 @@
-// NavigationBar/index.js
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, Close, Quill, Person } from '@mui/icons-material';
+import { Menu, Close, Person } from '@mui/icons-material'; // Quill kullanılmıyordu, kaldırdım
 import { FiFeather } from 'react-icons/fi';
 import MobileMenu from './MobileMenu';
 import './NavigationBar.css';
-import { ME_QUERY } from './graphql';
-import { useQuery } from '@apollo/client';
-import { useEffect } from 'react';
+
+// 1. QUERY YERİNE CONTEXT IMPORT EDİYORUZ
+import { useAuth } from '../../context/AuthContext';
+
 const NavigationBar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  const { data, loading, error } = useQuery(ME_QUERY);
-  
+  // 2. AuthContext'ten user bilgisini çekiyoruz
+  // user varsa giriş yapmıştır, null ise yapmamıştır.
+  const { user } = useAuth(); 
 
   return (
     <nav className="navigation-bar">
@@ -28,21 +29,25 @@ const NavigationBar = () => {
           <Link to="/feed" className="nav-link">
             Keşfet
           </Link>
-          {/* If user is logged in, show create book link */}
-          {data && data.me ? (
-          <Link to="/create-book" className="nav-link highlight">
-            Kitap Oluştur
-          </Link>
-          ) : null}
-          { /*If user logged in*/
-          data ? (
-            <Link to="/profile" className="nav-link">
-              <Person className="profile-icon" />
-            </Link>) : (
-            <Link to="/login" className="nav-link">
+          
+          {/* KULLANICI KONTROLÜ */}
+          {user ? (
+            // --- GİRİŞ YAPMIŞSA ---
+            <>
+              <Link to="/create-book" className="nav-link highlight">
+                Kitap Oluştur
+              </Link>
+              
+              <Link to="/profile" className="nav-link profile-btn" title="Profilim">
+                <Person className="profile-icon" />
+              </Link>
+            </>
+          ) : (
+            // --- GİRİŞ YAPMAMIŞSA ---
+            <Link to="/login" className="nav-link login-btn">
               Giriş Yap
             </Link>
-            )}
+          )}
         </div>
 
         {/* Mobile Toggle */}
@@ -54,8 +59,12 @@ const NavigationBar = () => {
         </button>
       </div>
 
-      {/* Mobile Menu */}
-      <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+      {/* Mobile Menu'ye de user bilgisini (veya istersen logout fonksiyonunu) geçebilirsin */}
+      <MobileMenu 
+        isOpen={isMobileMenuOpen} 
+        onClose={() => setIsMobileMenuOpen(false)} 
+        user={user} // Mobile menü içinde de kontrol yapmak istersen
+      />
     </nav>
   );
 };

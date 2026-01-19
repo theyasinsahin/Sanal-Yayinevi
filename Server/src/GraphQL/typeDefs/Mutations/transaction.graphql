@@ -1,0 +1,27 @@
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+type Transaction {
+  id: ID!
+  user: User!
+  book: Book!
+  amount: Float!
+  currency: String!
+  status: TransactionStatus!
+  paymentProviderId: String
+  createdAt: DateTime! # BURASI ARTIK DateTime OLDU
+}
+
+type PaymentInitResult {
+  htmlContent: String! # Iyzico'nun gönderdiği script/html
+  token: String!
+  transactionId: ID!
+}
+
+type Mutation {
+  initializePayment(bookId: ID!, amount: Float!): PaymentInitResult!
+}

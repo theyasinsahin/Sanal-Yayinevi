@@ -13,7 +13,26 @@ const User = new mongoose.Schema({
     usersBooks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Book', default: []}],
     email: { type: String, required: true, unique: true},
     password: { type: String, required: true},
-    lastLogin: { type: Date, default: Date.now,}
+    lastLogin: { type: Date, default: Date.now,},
+    // Ödeme sağlayıcısındaki Müşteri ID'si (Örn: stripeCustomerId)
+  // Kart bilgilerini biz tutmuyoruz, bu ID ile sağlayıcıdan çekiyoruz.
+  paymentCustomerId: {
+    type: String,
+    select: false // Her sorguda gelmesin, güvenlik için
+  },
+  // Kargolama için adres bilgisi (Basılı kitap gidecekse)
+  address: {
+    street: String,
+    city: String,
+    zipCode: String,
+    country: String
+  },
+
+  // Kullanıcının desteklediği kitaplar (Hızlı erişim için)
+  supportedBooks: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Book'
+  }]
 }, { timestamps: true });
 
 export default mongoose.model("User", User);

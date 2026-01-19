@@ -1,13 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { Edit, Person, Email, Link, Book, People, Bookmark, Save, Cancel } from '@mui/icons-material';
+import { Edit, Person, Email, Link as LinkIcon, Book, People, Bookmark, Save, Cancel } from '@mui/icons-material';
 import BookGrid from '../../components/BookGrid';
-import './ProfilePage.css';
+import './ProfilePage.css'; // CSS dosyanın adı buysa
 import { useQuery, useMutation } from '@apollo/client';
-import { ME_QUERY, UPDATE_USER_MUTATION } from './graphql';
+import { UPDATE_USER_MUTATION } from './graphql'; // Dosya yolunu kontrol et
+import { GET_USER_BY_ID } from '../../graphql/queries/user';
 import ImageUpload from '../../components/ImageUpload';
+import { useNavigate } from 'react-router-dom';
+
+import { useAuth } from '../../context/AuthContext';
 
 const MyProfilePage = () => {
-  const { data, loading, error } = useQuery(ME_QUERY);
+  const navigate = useNavigate();
+
+  // 1. AuthContext'ten verileri al
+  const { user, loading: authLoading } = useAuth();
+
+  // 2. ID Belirleme (Güvenli Yöntem)
+  // LocalStorage'dan "undefined" veya "null" stringi gelirse onu null kabul et.
+  const storedId = localStorage.getItem('userId');
+  const safeStoredId = (storedId && storedId !== 'undefined' && storedId !== 'null') ? storedId : null;
+  
+  const userId = user?.id || safeStoredId;
+
+  // 3. Sorgu
+  const { data, loading, error } = useQuery(GET_USER_BY_ID, { 
+    variables: { id: userId },
+    skip: !userId, // ID yoksa sorgu atma
+    fetchPolicy: 'network-only',
+    onError: (err) => {
+        console.log("Query Error Detayı:", err);
+    }
+  });
+
   const [updateProfile, { loading: updating }] = useMutation(UPDATE_USER_MUTATION);
 
   const [isEditing, setIsEditing] = useState(false);
@@ -20,29 +45,78 @@ const MyProfilePage = () => {
   });
 
   useEffect(() => {
-    if (data?.me && !isEditing) {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
+    if (data && data.getUserById && !isEditing) {
+      const u = data.getUserById;
       setEditForm({
-        fullName: data.me.fullName || '',
-        username: data.me.username || '',
-        bio: data.me.bio || '',
-        profilePicture: data.me.profilePicture || ''
+        fullName: u.fullName || '',
+        username: u.username || '',
+        bio: u.bio || '',
+        profilePicture: u.profilePicture || ''
       });
     }
   }, [data, isEditing]);
 
+  // --- KRİTİK DÜZELTME BURADA ---
+  // 1. Önce AuthContext'in yüklenmesini bekle
+  if (authLoading) {
+      return <div className="profile-container" style={{textAlign:'center', marginTop: 50}}>Oturum kontrol ediliyor...</div>;
+  }
+
+  // 2. Auth bitti ama userId hala yoksa -> Login'e at
+  if (!userId) {
+      // Yönlendirme yan etkisi (side-effect) olduğu için render içinde setTimeout ile veya useEffect ile yapmak daha güvenlidir
+      setTimeout(() => navigate('/login'), 0);
+      return <div className="profile-container">Yönlendiriliyor...</div>;
+  }
+
+  // 3. Query Yükleniyor mu?
+  if (loading) return <div className="profile-container" style={{textAlign:'center', marginTop: 50}}>Profil yükleniyor...</div>;
+
+  // 4. Query Hatası Var mı?
+  if (error) {
+    console.error("Profil Yükleme Hatası:", error);
+    return (
+        <div className="p-10 text-center text-red-600 profile-container">
+            <p className="font-bold text-lg">Profil bilgileri alınamadı.</p>
+            <p className="text-sm text-gray-500 mt-2">{error.message}</p>
+            
+            <button 
+                onClick={() => {
+                    localStorage.clear();
+                    window.location.href = '/login';
+                }}
+                className="mt-4 px-6 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
+            >
+                Çıkış Yap ve Tekrar Dene
+            </button>
+        </div>
+    );
+  }  
+
+  const profile = data?.getUserById;
+
+  // 5. Veri Yok mu?
+  if (!profile) return <div className="profile-container" style={{textAlign:'center'}}>Kullanıcı verisi bulunamadı.</div>;
+
+  // --- HANDLERS ---
   const handleEditClick = () => {
-    if (data?.me) {
-      setEditForm({
-        fullName: data.me.fullName,
-        username: data.me.username,
-        bio: data.me.bio,
-        profilePicture: data.me.profilePicture
-      });
-    }
     setIsEditing(true);
   };
 
   const handleCancelClick = () => {
+    // İptal edince formu tekrar orijinal veriye döndür
+    if (profile) {
+        setEditForm({
+            fullName: profile.fullName || '',
+            username: profile.username || '',
+            bio: profile.bio || '',
+            profilePicture: profile.profilePicture || ''
+        });
+    }
     setIsEditing(false);
   };
 
@@ -64,19 +138,16 @@ const MyProfilePage = () => {
           bio: editForm.bio,
           profilePicture: editForm.profilePicture
         },
+        // Mutation sonrası query'yi yenile ki UI güncellensin
+        refetchQueries: [{ query: GET_USER_BY_ID, variables: { id: userId } }]
       });
       setIsEditing(false);
+      alert("Profil başarıyla güncellendi!");
     } catch (err) {
       console.error("Update failed:", err.message);
-      alert("Profil güncellenirken hata oluştu: " + err.message);
+      alert("Hata: " + err.message);
     }
   };
-
-  if (loading) return <div className="profile-container">Yükleniyor...</div>;
-  if (error) return <div className="profile-container">Hata: {error.message}</div>;
-  
-  const user = data?.me;
-  if (!user) return null;
 
   return (
     <div className="profile-container">
@@ -86,7 +157,6 @@ const MyProfilePage = () => {
         {/* --- AVATAR KISMI --- */}
         <div className="avatar-container">
           {isEditing ? (
-            // Düzenleme modunda ImageUpload bileşeni görünür
             <div className="avatar-edit-wrapper">
                <ImageUpload 
                   onUploadSuccess={handleImageUpload} 
@@ -95,17 +165,17 @@ const MyProfilePage = () => {
                />
             </div>
           ) : (
-            // Normal görünümde Avatar
             <div className="avatar">
-              {user.profilePicture ? (
+              {profile.profilePicture ? (
                 <img 
-                  src={user.profilePicture} 
-                  alt={user.username} 
-                  className="user-avatar-img" // CSS'te bu sınıfı tanımladık
+                  src={profile.profilePicture} 
+                  alt={profile.username} 
+                  className="user-avatar-img" 
+                  onError={(e) => { e.target.style.display='none'; }} // Resim kırık ise gizle
                 />
-              ) : (
-                <Person style={{ fontSize: '4rem' }} />
-              )}
+              ) : null}
+              {/* Resim yoksa veya yüklenemezse ikon göster (Resim varsa üstüne binmemesi için CSS kontrolü gerekir ama burada JS ile hallettik) */}
+              {(!profile.profilePicture) && <Person style={{ fontSize: '4rem', color: '#ccc' }} />}
             </div>
           )}
 
@@ -154,23 +224,22 @@ const MyProfilePage = () => {
                 onClick={handleSave} 
                 disabled={updating}
               >
-                {updating ? "Kaydediliyor..." : <><Save fontSize="small" style={{marginRight:5}}/> Kaydet</>}
+                {updating ? "..." : <><Save fontSize="small" style={{marginRight:5}}/> Kaydet</>}
               </button>
             </div>
           ) : (
             /* GÖRÜNTÜLEME MODU */
             <>
-              <h1 className="full-name">{user.fullName}</h1>
-              <h2 className="user-name">@{user.username}</h2>
-              <p className="user-bio">{user.bio || "Henüz bir biyografi eklenmemiş."}</p>
+              <h1 className="full-name">{profile.fullName}</h1>
+              <h2 className="user-name">@{profile.username}</h2>
+              <p className="user-bio">{profile.bio || "Henüz bir biyografi eklenmemiş."}</p>
             </>
           )}
         </div>
 
         <div className='logout-button-container'>
           <button className="logout-btn" onClick={() => {
-            localStorage.removeItem('token');
-            localStorage.removeItem('userId');
+            localStorage.clear();
             window.location.href = '/login';
           }}>
             Çıkış Yap
@@ -183,7 +252,7 @@ const MyProfilePage = () => {
         <div className="stat-card">
           <Book className="stat-icon" />
           <div className="stat-content">
-            <span className="stat-value">{user.usersBooks?.length || 0}</span>
+            <span className="stat-value">{profile.usersBooks?.length || 0}</span>
             <span className="stat-label">Yayınlanan</span>
           </div>
         </div>
@@ -191,7 +260,7 @@ const MyProfilePage = () => {
         <div className="stat-card">
           <Bookmark className="stat-icon" />
           <div className="stat-content">
-            <span className="stat-value">{user.savedBooks?.length || 0}</span>
+            <span className="stat-value">{profile.savedBooks?.length || 0}</span>
             <span className="stat-label">Kaydedilen</span>
           </div>
         </div>
@@ -199,7 +268,7 @@ const MyProfilePage = () => {
         <div className="stat-card">
           <People className="stat-icon" />
           <div className="stat-content">
-            <span className="stat-value">{user.followers?.length || 0}</span>
+            <span className="stat-value">{profile.followers?.length || 0}</span>
             <span className="stat-label">Takipçiler</span>
           </div>
         </div>
@@ -207,7 +276,7 @@ const MyProfilePage = () => {
         <div className="stat-card">
           <People className="stat-icon" />
           <div className="stat-content">
-            <span className="stat-value">{user.following?.length || 0}</span>
+            <span className="stat-value">{profile.following?.length || 0}</span>
             <span className="stat-label">Takip Edilen</span>
           </div>
         </div>
@@ -219,13 +288,13 @@ const MyProfilePage = () => {
         <div className="info-grid">
           <div className="info-item">
             <Email className="info-icon" />
-            <span>{user.email}</span>
+            <span>{profile.email}</span>
           </div>
-          {user.website && (
+          {profile.website && (
             <div className="info-item">
-              <Link className="info-icon" />
-              <a href={user.website} target="_blank" rel="noreferrer">
-                {user.website}
+              <LinkIcon className="info-icon" />
+              <a href={profile.website} target="_blank" rel="noreferrer">
+                {profile.website}
               </a>
             </div>
           )}
@@ -235,8 +304,8 @@ const MyProfilePage = () => {
       {/* --- KİTAP LİSTELERİ --- */}
       <div className="info-section">
         <h2 className="section-title">Yayınlanan Kitaplar</h2>
-        {user.usersBooks?.length > 0 ? (
-          <BookGrid books={user.usersBooks} />
+        {profile.usersBooks?.length > 0 ? (
+          <BookGrid books={profile.usersBooks} />
         ) : (
           <p className="empty-message">Henüz yayınlanmış bir kitap yok.</p>
         )}
@@ -244,8 +313,8 @@ const MyProfilePage = () => {
 
       <div className="info-section">
         <h2 className="section-title">Kaydedilen Kitaplar</h2>
-        {user.savedBooks?.length > 0 ? (
-          <BookGrid books={user.savedBooks} />
+        {profile.savedBooks?.length > 0 ? (
+          <BookGrid books={profile.savedBooks} />
         ) : (
           <p className="empty-message">Henüz kaydedilen bir kitap yok.</p>
         )}

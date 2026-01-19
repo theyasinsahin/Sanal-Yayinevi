@@ -28,7 +28,42 @@ const BookSchema = new mongoose.Schema({
 chapters: {
   type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Chapter' }],
   default: [],
-}
+},
+
+status: {
+    type: String,
+    enum: ['WRITING', 'COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'],
+    default: 'WRITING'
+  },
+
+  // BASKI VE MALİYET KONFİGÜRASYONU (Otomatik hesaplama için)
+  printConfig: {
+    paperType: { type: String, enum: ['enzo', 'ivory', 'coated'], default: 'enzo' }, // Kitap kağıdı, 1. hamur vb.
+    coverType: { type: String, enum: ['hardcover', 'paperback'], default: 'paperback' },
+    dimension: { type: String, default: '13.5x21' }, // Standart roman boyu
+    estimatedPageCount: { type: Number, default: 0 } // Chapter'lardan otomatik de hesaplanabilir
+  },
+
+  // FİNANSAL HEDEFLER
+  fundingTarget: {
+    type: Number,
+    default: 0 // Hesaplanan basım maliyeti + komisyon
+  },
+  currentFunding: {
+    type: Number,
+    default: 0 // Toplanan bağış miktarı
+  },
+  
+  // Backer (Bağışçı) Sayısı
+  backerCount: {
+    type: Number,
+    default: 0
+  },
+
+  // Kampanya Bitiş Tarihi (Opsiyonel ama önerilir)
+  fundingDeadline: {
+    type: Date
+  }
 },{timestamps: true});
 
 BookSchema.pre('findOneAndDelete', async function(next) {

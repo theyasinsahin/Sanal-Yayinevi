@@ -1,0 +1,24 @@
+scalar DateTime
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+type Transaction {
+  id: ID!
+  user: User! # Resolver ile doldurulacak
+  book: Book! # Resolver ile doldurulacak
+  amount: Float!
+  currency: String!
+  status: TransactionStatus!
+  paymentProviderId: String # Stripe ID'sini tutmak için ekledim, çok lazım olacak
+  createdAt: DateTime!
+}
+
+type Query {
+  getMyTransactions: [Transaction]
+  getBookTransactions(bookId: ID!): [Transaction]
+}

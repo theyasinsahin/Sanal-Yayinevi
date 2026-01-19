@@ -1,0 +1,47 @@
+scalar JSON
+scalar DateTime
+
+type Query {
+  getBookById(id: ID!): Book
+  getBooksByAuthorId(authorId: ID!): [Book!]
+  getBooksByGenre(genre: String!): [Book!]
+  getBookByTitle(title: String!): Book
+  searchBooks(query: String!): [Book!]
+  getAllBooks: [Book!]
+}
+
+type BookStats {
+  views: Int
+  shares: Int
+  likes: Int
+}
+
+type Book {
+  id: ID!
+  title: String!
+  authorId: ID!
+
+  # --- DÜZELTME BURADA ---
+  # Ünlem (!) işaretini kaldırdık.
+  # Artık yazar silindiyse null dönebilir ve sayfa çökmez.
+  author: User
+
+  imageUrl: String
+  pageCount: Int
+  genre: String
+  description: String
+  stats: BookStats
+  createdAt: DateTime
+  updatedAt: DateTime
+  publishDate: DateTime
+
+  fundingTarget: Float
+  currentFunding: Float
+  backerCount: Int
+  status: String
+
+  comments: [Comment]
+  chapters: [Chapter]
+  tags: [String]
+  likedBy: [ID]
+}

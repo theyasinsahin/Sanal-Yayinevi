@@ -7,13 +7,53 @@ export const GET_USER_BY_ID = gql`
           username,
           fullName,
           email,
-          savedBooks,
+          savedBooks {
+            id
+            title
+            author {
+              id
+              fullName
+              username
+              profilePicture
+            }
+            imageUrl
+            genre
+            description
+            stats {
+              views
+              shares
+              likes
+            }
+            pageCount
+          },
           role,
-          usersBooks,
+          usersBooks {
+            id
+            title
+            author {
+              id
+              fullName
+              username
+              profilePicture
+            }
+              imageUrl
+            genre
+            description
+            stats {
+              views
+              shares
+              likes
+            }
+            pageCount
+          },
           bio,
           profilePicture,
-          followers,
-          following
+          followers{
+            id
+          },
+          following{
+            id
+          }
         }
     }
 `;

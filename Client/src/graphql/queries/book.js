@@ -7,6 +7,12 @@ export const GET_BOOKS = gql`
         title,
         description,
         authorId,
+        author {
+        id
+        username
+        fullName
+        profilePicture
+      },
         comments {
           id
           content
@@ -57,6 +63,12 @@ export const GET_BOOK_BY_ID = gql`
       pageCount
       publishDate
       authorId
+      author {
+        id
+        username
+        fullName
+        profilePicture
+      },
       stats {
         views
         likes

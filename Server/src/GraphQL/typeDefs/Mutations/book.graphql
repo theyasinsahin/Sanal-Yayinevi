@@ -1,0 +1,55 @@
+# src/GraphQL/Types/book.graphql
+
+type Mutation {
+  createBook(
+    title: String!
+    genre: String!
+    description: String!
+    tags: [String]
+    imageUrl: String!
+  ): Book!
+
+  deleteBook(id: ID!): Status!
+
+  updateBook(
+    bookId: ID!
+    title: String
+    genre: String
+    description: String
+  ): Book!
+
+  incrementBookViews(id: ID!): Book!
+  likeBook(bookId: ID!): Book!
+}
+
+type BookStats {
+  views: Int!
+  shares: Int!
+  likes: Int!
+}
+
+type Book {
+  id: ID!
+  title: String!
+  authorId: ID!
+  imageUrl: String!
+  pageCount: Int!
+  genre: String!
+  description: String!
+  stats: BookStats!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  publishDate: DateTime!
+
+  # Crowdfunding ile ilgili alanlar
+  fundingTarget: Float
+  currentFunding: Float
+  backerCount: Int
+  status: String
+  # İlişkiler (Tipler otomatik tanınacak)
+  comments: [Comment!]
+  chapters: [Chapter!]
+  tags: [String]
+  likedBy: [ID!]
+  commentCount: Int!
+}

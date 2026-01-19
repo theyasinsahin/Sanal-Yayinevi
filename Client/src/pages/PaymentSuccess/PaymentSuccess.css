@@ -1,0 +1,137 @@
+/* Sayfa Arka Planı */
+.payment-success-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); /* Hafif yeşil gradyan */
+  padding: 20px;
+}
+
+/* Kart Tasarımı */
+.success-card {
+  background: #ffffff;
+  padding: 3rem 2.5rem;
+  border-radius: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08); /* Yumuşak, modern gölge */
+  text-align: center;
+  max-width: 450px;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  animation: slideUp 0.6s ease-out forwards;
+}
+
+/* İkon Yuvarlağı */
+.icon-container {
+  width: 80px;
+  height: 80px;
+  background-color: #d1fae5; /* Açık yeşil */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem auto;
+  animation: popIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+/* İkonun Kendisi */
+.success-icon {
+  width: 40px;
+  height: 40px;
+  color: #059669; /* Koyu Yeşil */
+  stroke-width: 3;
+}
+
+/* Başlık */
+.success-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #1f2937;
+  margin-bottom: 0.75rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Açıklama Yazısı */
+.success-message {
+  color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  font-size: 1.05rem;
+}
+
+/* İşlem ID Kutusu */
+.transaction-box {
+  background-color: #f9fafb;
+  border: 1px dashed #d1d5db;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  font-size: 0.85rem;
+  color: #9ca3af;
+  display: inline-block;
+  width: 100%;
+}
+
+.transaction-box .label {
+  font-weight: 600;
+  margin-right: 5px;
+  color: #6b7280;
+}
+
+.transaction-box .value {
+  font-family: 'Courier New', Courier, monospace;
+  color: #374151;
+}
+
+/* Buton */
+.home-button {
+  display: inline-block;
+  background-color: #10b981;
+  color: white;
+  padding: 14px 32px;
+  border-radius: 50px; /* Hap şeklinde buton */
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 1rem;
+  box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+  transition: all 0.3s ease;
+}
+
+.home-button:hover {
+  background-color: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(16, 185, 129, 0.3);
+}
+
+.home-button:active {
+  transform: translateY(0);
+}
+
+/* --- Animasyonlar --- */
+
+/* Kartın aşağıdan yukarı kayması */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* İkonun patlayarak büyümesi */
+@keyframes popIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  80% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

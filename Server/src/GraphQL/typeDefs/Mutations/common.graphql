@@ -1,0 +1,8 @@
+scalar DateTime
+scalar JSON
+
+# Tüm mutation dönüşlerinde kullandığın ortak standart cevap tipi
+type Status {
+  code: Int!
+  message: String!
+}

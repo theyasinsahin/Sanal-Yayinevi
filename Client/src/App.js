@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   ApolloClient,
   InMemoryCache,
@@ -5,8 +6,14 @@ import {
   createHttpLink
 } from "@apollo/client";
 
+import { onError } from "@apollo/client/link/error";
+
 import { setContext } from "@apollo/client/link/context";
 import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
+
+// IMPORT: Context
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { FiltersProvider } from "./context/FiltersContext";
 
 import NavigationBar from "./components/NavigationBar";
 
@@ -20,10 +27,11 @@ import MyProfilePage from "./pages/MyProfilePage";
 import UserProfilePage from "./pages/UserProfilePage";
 import LoginPage from "./pages/Auth/Login";
 import RegisterPage from "./pages/Auth/Register";
+import DonationPage from "./pages/DonationPage";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentFailure from "./pages/PaymentFailure";
 
-import { FiltersProvider } from "./context/FiltersContext";
-
-
+// --- APOLLO SETUP (Burası Aynı Kalıyor) ---
 const httpLink = createHttpLink({
   uri: "http://localhost:5000",
 });
@@ -33,16 +41,32 @@ const authLink = setContext((_, { headers }) => {
   return {
     headers: {
       ...headers,
-      authorization: token ? `${token}` : "",
+      authorization: token ? `Bearer ${token}` : "", // 'Bearer ' eklemek standarttır
     },
   };
 });
 
+const errorLink = onError(({ graphQLErrors, networkError }) => {
+  if (graphQLErrors) {
+    graphQLErrors.forEach(({ message, extensions }) => {
+      // Eğer hata "Unauthenticated" veya "jwt expired" içeriyorsa
+      if (message.includes("jwt expired") || (extensions && extensions.code === 'UNAUTHENTICATED')) {
+        console.log("Oturum süresi doldu, çıkış yapılıyor...");
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+        // İsteğe bağlı: Sayfayı yenile veya login'e at
+        // window.location.href = "/login"; 
+      }
+    });
+  }
+});
+
 const client = new ApolloClient({
-  link: authLink.concat(httpLink),
+  link: errorLink.concat(authLink).concat(httpLink),
   cache: new InMemoryCache(),
 });
 
+// --- LAYOUT ---
 const Layout = ({ children }) => (
   <div className="App">
     <NavigationBar />
@@ -50,16 +74,25 @@ const Layout = ({ children }) => (
   </div>
 );
 
+// --- PROTECTED ROUTE (GÜNCELLENDİ) ---
+// Artık localStorage'a değil, AuthContext'e bakıyor.
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("token");
+  const { user, loading } = useAuth();
 
-  if (!token) {
+  if (loading) {
+    return <div>Yükleniyor...</div>; // Veya bir Spinner bileşeni
+  }
+
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
 
   return children;
 };
 
+// --- ROUTER TANIMI ---
+// ProtectedRoute'u element içinde kullanmaya devam ediyoruz.
+// Router yapısı Provider'ın içinde render edildiği sürece sorun yok.
 const router = createBrowserRouter([
   { path: "/", element: <Layout><LandingPage /></Layout> },
   { path: "/feed", element: <Layout><FeedPage /></Layout> },
@@ -67,34 +100,49 @@ const router = createBrowserRouter([
   { path: "/book-reader/:bookId", element: <Layout><BookReader /></Layout> },
   
   { path: "/create-book", 
-    element:  <ProtectedRoute>
-                <Layout><CreateBookPage /></Layout>
-              </ProtectedRoute> 
-              },
+    element: (
+      <ProtectedRoute>
+        <Layout><CreateBookPage /></Layout>
+      </ProtectedRoute> 
+    )
+  },
 
   { path: "/dashboard/:bookId", 
-    element: <ProtectedRoute>
-      <Layout><BookDashboard /></Layout> 
+    element: (
+      <ProtectedRoute>
+        <Layout><BookDashboard /></Layout> 
       </ProtectedRoute>
-      },
+    )
+  },
 
   { path: "/profile", 
-    element: <ProtectedRoute>
-    <Layout><MyProfilePage /></Layout> 
-    </ProtectedRoute>
-    },
+    element: (
+      <ProtectedRoute>
+        <Layout><MyProfilePage /></Layout> 
+      </ProtectedRoute>
+    )
+  },
 
   { path: "/user/:userId", element: <Layout><UserProfilePage /></Layout> },
+  
+  // Login ve Register sayfalarını Layout içine koyduk
   { path: "/login", element: <Layout><LoginPage /></Layout> },
-  { path: "/register", element: <Layout><RegisterPage /></Layout> }
+  { path: "/register", element: <Layout><RegisterPage /></Layout> },
+  
+  { path: "/donate/:bookId", element: <Layout><DonationPage /></Layout> },
+  { path: "/payment/success", element: <Layout><PaymentSuccess /></Layout> },
+  { path: "/payment/failure", element: <Layout><PaymentFailure /></Layout> },
 ]);
 
 function App() {
   return (
     <ApolloProvider client={client}>
-      <FiltersProvider>
-        <RouterProvider router={router} future={{ v7_startTransition: true }} />
-      </FiltersProvider>
+      {/* AuthProvider EN DIŞTA (Apollo'nun içinde) OLMALI */}
+      <AuthProvider>
+        <FiltersProvider>
+          <RouterProvider router={router} future={{ v7_startTransition: true }} />
+        </FiltersProvider>
+      </AuthProvider>
     </ApolloProvider>
   );
 }

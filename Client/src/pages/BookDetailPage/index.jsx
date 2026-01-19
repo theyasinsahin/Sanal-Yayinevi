@@ -10,7 +10,8 @@ import {
   Bookmark, 
   MenuBook, 
   Edit,
-  Delete
+  Delete,
+  CardGiftcard // YENİ: Bağış ikonu
 } from '@mui/icons-material';
 import { useQuery, useMutation } from '@apollo/client';
 
@@ -35,7 +36,7 @@ const BookDetailPage = () => {
   const currentUserId = localStorage.getItem('userId');
   const [commentText, setCommentText] = useState("");
 
-  // 1. KİTAP VERİSİ
+  // 1. KİTAP VERİSİ (Yazar bilgisi artık bunun içinde geliyor!)
   const {
     data,
     loading,
@@ -44,8 +45,7 @@ const BookDetailPage = () => {
     variables: { id },
   });
 
-  const book = data ? data.getBookById : { comments: [], likedBy: [] };
-  const authorId = book?.authorId; 
+  const book = data ? data.getBookById : null;
 
   // --- SİLME MUTASYONU ---
   const [deleteBook, { loading: deleting }] = useMutation(DELETE_BOOK_MUTATION, {
@@ -65,26 +65,19 @@ const BookDetailPage = () => {
     }
   };
 
-  // 2. YAZAR VERİSİ
-  const {
-      data: authorData,
-      loading: authorLoading,
-      error: authorError,
-    } = useQuery(GET_USER_BY_ID, {
-      variables: { id: authorId },
-      skip: !authorId, 
-    });
+  // --- ESKİ YAZAR SORGUSU SİLİNDİ ---
+  // Artık book.author var.
 
-  // 3. MEVCUT KULLANICI VERİSİ (Role bilgisini buradan alıyoruz)
+  // 2. MEVCUT KULLANICI VERİSİ (Role ve SavedBooks için)
   const {
     data: currentUserData,
-    loading: currentUserLoading // Bunu isLoading kontrolüne eklemek iyi olur
+    loading: currentUserLoading
   } = useQuery(GET_USER_BY_ID, {
     variables: { id: currentUserId },
     skip: !currentUserId, 
   });
 
-  // 4. MUTASYONLAR
+  // 3. MUTASYONLAR
   const [likeBook] = useMutation(LIKE_BOOK_MUTATION);
   const [toggleSavedBook] = useMutation(TOGGLE_SAVED_BOOK_MUTATION);
   
@@ -101,10 +94,17 @@ const BookDetailPage = () => {
 
   const [showShareToast, setShowShareToast] = useState(false);
 
+  // Yükleniyor durumu
+  if (loading) return <div className="loading-container">Yükleniyor...</div>;
+  if (error) return <p>Hata: {error.message}</p>;
+  if (!book) return null;
+
+  // --- VERİ HAZIRLIĞI ---
+  const author = book.author; // Backend'den gelen obje
+  const authorId = book.authorId; // ID karşılaştırması için
+
   // --- MANTIK KONTROLLERİ ---
   const isAuthor = currentUserId && authorId === currentUserId;
-  
-  // currentUserData henüz yüklenmediyse isAdmin false olur, yüklendiğinde re-render tetiklenir ve true olur.
   const isAdmin = currentUserData?.getUserById?.role === 'ADMIN';
 
   const isLiked = book.likedBy && currentUserId 
@@ -116,9 +116,6 @@ const BookDetailPage = () => {
     (typeof savedBook === 'string' ? savedBook : savedBook.id) === book.id
   );
 
-  // currentUserLoading'i de ekledik ki rol gelmeden sayfa tam oturmuş sanmasın
-  const isLoading = loading || (authorId && authorLoading); 
-
   // --- HANDLERS ---
   const handleLike = async () => {
     if (!currentUserId) return alert("Beğenmek için giriş yapmalısınız.");
@@ -126,12 +123,9 @@ const BookDetailPage = () => {
       await likeBook({ variables: { bookId: book.id } });
     } catch (err) {
       if (err.message && err.message.includes("Invalid or expired token")) {
-        alert("Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.");
+        alert("Oturum süreniz dolmuş.");
         localStorage.removeItem('token');
-        localStorage.removeItem('userId');
         window.location.reload(); 
-      } else {
-        console.error("Beğeni hatası:", err);
       }
     }
   };
@@ -167,13 +161,12 @@ const BookDetailPage = () => {
     } catch (e) { }
   };
 
-  if (isLoading) return <p>Yükleniyor...</p>;
-  if (error) return <p>Kitap yüklenirken hata oluştu: {error.message}</p>;
-  if (authorError) return <p>Yazar yüklenirken hata oluştu: {authorError.message}</p>;
-
   const formattedPublishDate = book.publishDate 
     ? new Date(book.publishDate).toLocaleDateString() 
     : 'Bilinmiyor';
+
+  // Yazar İsmi Belirleme
+  const displayAuthorName = author?.fullName || author?.username || "Bilinmeyen Yazar";
 
   return (
     <div className="book-detail-container">
@@ -184,17 +177,19 @@ const BookDetailPage = () => {
       </nav>
 
       <main className="detail-main">
+        {/* SOL PANEL: KAPAK VE BİLGİLER */}
         <div className="left-panel">
           <img 
             src={book.imageUrl} 
             alt={book.title} 
             className="book-cover" 
+            onError={(e) => { e.target.src = 'https://via.placeholder.com/300x450?text=Resim+Yok'; }}
           />
           
           <div className="quick-info">
             <div className="info-item">
               <span className="label">Kategori:</span>
-              <span className="value">{book.genre}</span>
+              <span className="value" style={{textTransform: 'capitalize'}}>{book.genre}</span>
             </div>
             <div className="info-item">
               <span className="label">Sayfa Sayısı:</span>
@@ -208,26 +203,28 @@ const BookDetailPage = () => {
               <span className="label">Beğeni:</span>
               <span className="value">{book.stats?.likes || 0}</span>
             </div>
+            {/* YENİ: Bağışçı Sayısı */}
+            <div className="info-item">
+              <span className="label">Destekleyen:</span>
+              <span className="value">{book.backerCount || 0} Kişi</span>
+            </div>
           </div>
         </div>
 
+        {/* SAĞ PANEL: İÇERİK */}
         <div className="right-panel">
           <h1 className="book-title">{book.title}</h1>
-          <div className="author-section">
-          <span className="by">Yazar:</span>
           
-          {/* Link Bileşeni Eklendi */}
-          <Link 
-            to={`/user/${authorId}`} 
-            className="author-name-link"
-            style={{ textDecoration: 'none', color: 'inherit' }} // İstersen CSS class'ı ile de yapabilirsin
-          >
-            <span className="author-name">
-              {authorData?.getUserById?.fullName} ({authorData?.getUserById?.username})
-            </span>
-          </Link>
-
-        </div>
+          <div className="author-section">
+             <span className="by">Yazar:</span>
+             <Link 
+               to={`/user/${authorId}`} 
+               className="author-name-link"
+               style={{ textDecoration: 'none', color: 'inherit', fontWeight: 'bold' }} 
+             >
+               <span className="author-name">{displayAuthorName}</span>
+             </Link>
+          </div>
 
           <div className="action-buttons">
             <div className="secondary-actions">
@@ -246,26 +243,44 @@ const BookDetailPage = () => {
           </div>
 
           <div className="primary-buttons-container">
-            {/* HERKES GÖREBİLİR: OKU BUTONU */}
+            {/* 1. OKU BUTONU */}
             <Link 
               to={`/book-reader/${book.id}`} 
               className="read-book-button"
             >
-              <MenuBook fontSize="small" style={{marginRight: '5px'}}/> Kitabı Oku
+              <MenuBook fontSize="small" style={{marginRight: '5px'}}/> Oku
             </Link>
 
-            {/* SADECE YAZAR GÖREBİLİR: DÜZENLE BUTONU */}
+            {/* 2. YENİ: DESTEK OL BUTONU (Iyzico) */}
+            <Link 
+              to={`/donate/${book.id}`} 
+              className="donate-button"
+              style={{
+                  backgroundColor: '#10b981', // Yeşil
+                  color: 'white',
+                  textDecoration: 'none',
+                  padding: '10px 20px',
+                  borderRadius: '5px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  fontWeight: 'bold',
+                  marginLeft: '10px'
+              }}
+            >
+              <CardGiftcard fontSize="small" style={{marginRight: '5px'}}/> Destek Ol
+            </Link>
+
+            {/* YAZAR İŞLEMLERİ */}
             {isAuthor && (
               <Link 
                 to={`/dashboard/${book.id}`} 
                 className="continue-writing-button"
+                style={{ marginLeft: '10px' }}
               >
-                <Edit fontSize="small" style={{marginRight: '5px'}}/> Yazmaya Devam Et
+                <Edit fontSize="small" style={{marginRight: '5px'}}/> Düzenle
               </Link>
             )}
             
-            {/* YAZAR VEYA ADMIN GÖREBİLİR: SİL BUTONU */}
-            {/* Buradaki mantık hatasını düzelttik: Artık isAuthor bloğunun dışında bağımsız bir kontrol */}
             {(isAuthor || isAdmin) && (
                 <button 
                   onClick={handleDelete} 
@@ -285,16 +300,16 @@ const BookDetailPage = () => {
                   }}
                >
                   <Delete fontSize="small"/> 
-                  {deleting ? "Siliniyor..." : "Kitabı Sil"}
+                  {deleting ? "Siliniyor..." : "Sil"}
                </button>
             )}
-
           </div>
 
           <div className="description-section">
             <h3>Hikaye Özeti</h3>
             <p className="book-description">{book.description}</p>
           </div>
+
 
           <div className="comments-section">
             <h3>Yorumlar ({book.commentCount || 0})</h3>
@@ -309,7 +324,7 @@ const BookDetailPage = () => {
                 onClick={handleCommentSubmit}
                 disabled={commentLoading}
               >
-                <Comment /> {commentLoading ? "Gönderiliyor..." : "Gönder"}
+                <Comment /> {commentLoading ? "..." : "Gönder"}
               </button>
             </div>
             

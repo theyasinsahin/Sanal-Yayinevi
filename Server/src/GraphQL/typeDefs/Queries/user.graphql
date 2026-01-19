@@ -1,0 +1,37 @@
+scalar JSON
+scalar DateTime
+
+type Query {
+  getUserById(id: ID!): User
+  getUserByUsername(username: String!): User
+  getUserByEmail(email: String!): User
+  getAllUsers: [User!]
+  me: User
+
+  # Bu sorgulara gerek kalmayabilir çünkü User tipi içinde çözebiliriz
+  # Ama spesifik sorgular için kalabilirler.
+  getFollowingByUserId(id: ID!): [User]
+  getFollowersByUserId(id: ID!): [User]
+  getSavedBooksByUserId(id: ID!): [Book]
+  getUsersBooksByUserId(id: ID!): [Book]
+}
+
+type User {
+  id: ID!
+  username: String!
+  fullName: String
+  bio: String
+  profilePicture: String
+  email: String!
+  role: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  donations: [Transaction]
+
+  # İLİŞKİLER (ID yerine Obje dönüyoruz)
+  savedBooks: [Book] # [ID!] yerine [Book]
+  favouriteAuthors: [User] # [ID!] yerine [User]
+  usersBooks: [Book] # Yazdığı kitaplar
+  followers: [User] # Takipçiler
+  following: [User] # Takip ettikleri
+}

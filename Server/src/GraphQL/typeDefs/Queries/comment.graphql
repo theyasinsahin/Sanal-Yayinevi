@@ -1,0 +1,19 @@
+scalar JSON
+scalar DateTime
+
+type Query {
+  getCommentsByBookId(bookId: ID!): [Comment!]
+  getCommentById(id: ID!): Comment
+  getCommentsByUserId(userId: ID!): [Comment!]
+  getAllComments: [Comment!]
+}
+
+type Comment {
+  id: ID!
+  userId: User! # İlişkisel veri (User tipini user.graphql'den alır)
+  bookId: ID!
+  content: String!
+  date: DateTime!
+  replies: [Comment] # İç içe yorumlar
+  likedBy: [ID]
+}

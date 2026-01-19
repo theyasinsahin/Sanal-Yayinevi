@@ -1,0 +1,21 @@
+scalar JSON
+scalar DateTime
+
+type Query {
+  getChaptersByBookId(bookId: ID!): [Chapter!]
+  getChapterById(id: ID!): Chapter
+  getAllChapters: [Chapter!]
+  # Yazarın tüm bölümlerini çekmek nadir bir senaryodur ama kalabilir
+  getChaptersByAuthorId(authorId: ID!): [Chapter!]
+}
+
+type Chapter {
+  id: ID!
+  bookId: ID!
+  authorId: ID!
+  title: String!
+  content: String!
+  pageCount: Int
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}

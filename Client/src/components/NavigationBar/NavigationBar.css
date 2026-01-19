@@ -105,6 +105,19 @@
   box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
 }
 
+.profile-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  border-radius: 50%;
+  transition: background-color 0.3s;
+}
+
+.profile-btn:hover {
+  background-color: #f0f0f0;
+}
+
 .profile-icon {
   font-size: 1.8rem !important;
   transition: transform 0.3s ease, color 0.3s ease;

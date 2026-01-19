@@ -1,0 +1,18 @@
+# src/GraphQL/Types/comment.graphql
+
+type Mutation {
+  createComment(bookId: ID!, content: String!): Comment!
+  deleteComment(id: ID!): Status!
+  toggleCommentLike(commentId: ID!): Comment
+  replyToComment(bookId: ID!, content: String!, parentCommentId: ID!): Comment
+}
+
+type Comment {
+  id: ID!
+  userId: User!
+  bookId: ID!
+  content: String!
+  date: DateTime!
+  replies: [Comment]
+  likedBy: [ID]
+}

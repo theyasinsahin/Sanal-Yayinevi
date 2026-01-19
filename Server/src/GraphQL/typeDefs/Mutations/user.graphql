@@ -1,0 +1,50 @@
+# src/GraphQL/Types/user.graphql
+
+type Mutation {
+  register(
+    username: String!
+    fullName: String!
+    email: String!
+    password: String!
+  ): Status!
+
+  login(email: String!, password: String!): AuthPayload
+
+  deleteUserById(id: ID!): Status!
+  toggleFollowUser(followId: ID!): Status!
+
+  updateProfile(
+    username: String
+    fullName: String
+    bio: String
+    profilePicture: String
+  ): User!
+
+  toggleSaveBook(bookId: ID!): User!
+}
+
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
+type User {
+  id: ID!
+  username: String!
+  fullName: String!
+  bio: String!
+  profilePicture: String!
+  email: String!
+  role: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+
+  donations: [Transaction]
+
+  # İLİŞKİLER (Graph mantığına uygun hale getirildi)
+  savedBooks: [Book] # [ID!] yerine [Book]
+  favouriteAuthors: [User] # [ID!] yerine [User]
+  usersBooks: [Book] # Yazarın kitapları
+  followers: [User]
+  following: [User]
+}

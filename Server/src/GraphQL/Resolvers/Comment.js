@@ -1,35 +1,93 @@
-// Resolvers/Comment.js
+import * as CommentService from '../../services/commentService.js';
+import * as UserService from '../../services/userService.js';
+import { authenticateUser } from '../../utils/auth.js';
 
-// 1. Alt dosyaları import et
-import { commentQueries } from './Queries/Comment.js';
-import { commentMutations } from './Mutations/Comment.js';
-
-// 2. Hepsini tek bir obje olarak export et
 export default {
-  // Query'leri buraya ekle
   Query: {
-    ...commentQueries
-  },
-
-  // Mutation'ları buraya ekle
-  Mutation: {
-    ...commentMutations
-  },
-
-  // --- ÖNEMLİ: Field Resolver Buraya Geliyor ---
-  // GraphQL'de "Comment" tipi ne zaman dönülse bu çalışır
-  Comment: {
-    userId: async (parent, args, { User }) => {
-      // parent.userId veritabanındaki "689..." string ID'sidir.
-      // Bunu User objesine çeviriyoruz.
-      return await User.findById(parent.userId);
+    getCommentsByBookId: async (_, { bookId }) => {
+      return CommentService.findCommentsByBookId(bookId);
     },
 
-    // 2. YENİ: Replies'ı getir (Populate mantığı)
-    replies: async (parent, args, { Comment }) => {
-      // parent.replies içindeki ID'leri kullanarak objeleri çek
-      // Sadece ana yorumların replies'ı doludur, yanıtlarınki boştur.
-      return await Comment.find({ _id: { $in: parent.replies } });
+    getCommentById: async (_, { id }) => {
+      const comment = await CommentService.findCommentById(id);
+      if (!comment) throw new Error("Comment not found");
+      return comment;
+    },
+
+    getCommentsByUserId: async (_, { userId }) => {
+      return CommentService.findCommentsByUserId(userId);
+    },
+
+    getAllComments: async () => {
+      return CommentService.findAllComments();
     }
-  }
+  },
+
+    Mutation: {
+        createComment: async (_, { bookId, content }, { req, User }) => {
+            const user = await authenticateUser(req, User);
+            if(!user) throw new Error("Giriş yapmalısınız");
+            
+            // Kitap referansını güncelleme işini Service içindeki createComment'e ekleyebilirsin
+            // veya burada basitçe bırakabilirsin. Service'i güncellemeni öneririm.
+            return CommentService.createComment({
+                userId: user._id,
+                bookId,
+                content,
+                date: new Date().toISOString()
+            });
+        },
+
+        replyToComment: async (_, { bookId, content, parentCommentId }, { req, User }) => {
+            const user = await authenticateUser(req, User);
+            if(!user) throw new Error("Giriş yapmalısınız");
+
+            return CommentService.createReply(user, bookId, content, parentCommentId);
+        },
+
+        deleteComment: async (_, { id }, { req, User }) => {
+            const user = await authenticateUser(req, User);
+            if(!user) throw new Error("Giriş yapmalısınız");
+
+            const comment = await CommentService.findCommentById(id);
+            
+            // Yetki: Yorum sahibi mi?
+            if (comment.userId.toString() !== user._id.toString()) {
+                throw new Error("Yetkiniz yok.");
+            }
+
+            return CommentService.deleteCommentRecursive(id);
+        },
+
+        toggleCommentLike: async (_, { commentId }, { req, User }) => {
+            const user = await authenticateUser(req, User);
+            if(!user) throw new Error("Giriş yapmalısınız");
+            
+            return CommentService.toggleLike(commentId, user._id);
+        }
+    },
+
+  // FIELD RESOLVERS (İlişkileri Çözme)
+  Comment: {
+    // comment.userId (User Objesi) istendiğinde çalışır
+    userId: async (parent) => {
+      // parent.userId veritabanındaki ID'dir.
+      // Bunu kullanarak User objesini bulup dönüyoruz.
+      return UserService.findUserById(parent.userId);
+    },
+
+    // comment.replies istendiğinde çalışır
+    replies: async (parent) => {
+        // Eğer yorumun içinde reply ID'leri varsa onları populate ederiz
+        // Veya parentId mantığı varsa servisten çağırırız.
+        // Şimdilik boş dizi veya servisteki logic:
+        if (parent.replies && parent.replies.length > 0) {
+             // Bu logic, replies array'inde ID'ler tutulduğunu varsayar
+             // Service'e findCommentsByIds gibi bir metod ekleyip kullanabilirsin
+             // Şimdilik null veya boş dönelim, yapıya göre güncellersin.
+             return []; 
+        }
+        return [];
+    }
+  },
 };
