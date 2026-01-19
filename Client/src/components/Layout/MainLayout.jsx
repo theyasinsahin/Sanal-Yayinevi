@@ -1,6 +1,6 @@
 import React from 'react';
 import NavigationBar from '../../components/Navigation/NavigationBar'; // Navbar'ı buraya taşıyacağız
-//import Footer from '../../components/Navigation/Footer'; // Footer yapınca buraya
+import Footer from '../../components/Navigation/Footer'; // Footer yapınca buraya
 
 export const MainLayout = ({ children }) => {
   return (
@@ -9,7 +9,7 @@ export const MainLayout = ({ children }) => {
       <main className="main-content">
         {children}
       </main>
-      {/* <Footer /> */}
+      <Footer />
     </div>
   );
 };

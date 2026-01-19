@@ -1,0 +1,11 @@
+.main-layout-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Ekranın tamamını kapla */
+}
+
+.main-content {
+
+  flex: 1; 
+  width: 100%;
+}
