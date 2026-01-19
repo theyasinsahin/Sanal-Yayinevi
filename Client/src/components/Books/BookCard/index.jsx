@@ -3,8 +3,8 @@ import { FavoriteBorder, Pages, LocalOffer, Visibility as EyeIcon, Comment as Co
 import { useNavigate } from 'react-router-dom';
 import './BookCard.css';
 import { useQuery } from '@apollo/client';
-import { GET_BOOK_BY_ID } from '../../graphql/queries/book';
-import { getOptimizedImage } from '../../utils/ImageUtils';
+import { GET_BOOK_BY_ID } from '../../../graphql/queries/book';
+import { getOptimizedImage } from '../../../utils/ImageUtils';
 
 const BookCard = ({ book: bookProp, bookId }) => {
 

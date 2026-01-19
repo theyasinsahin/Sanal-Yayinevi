@@ -2,7 +2,7 @@ import React from 'react';
 import { useFilters } from '../../context/FiltersContext';
 import FeedFilters from './FeedFilters';
 import FeedSearch from '../../components/FeedSearch';
-import BookGrid from '../../components/BookGrid';
+import BookGrid from '../../components/Books/BookGrid';
 import { filterBooks } from '../../utils/FilterArticles';
 
 import { useQuery } from '@apollo/client';

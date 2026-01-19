@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Person, Email, Link, Book, People, PersonAdd, PersonRemove } from '@mui/icons-material';
-import BookGrid from '../../components/BookGrid';
+import BookGrid from '../../components/Books/BookGrid';
 import '../MyProfilePage/ProfilePage.css'; 
 
 import { useQuery, useMutation } from '@apollo/client';

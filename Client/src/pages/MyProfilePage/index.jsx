@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Edit, Person, Email, Link as LinkIcon, Book, People, Bookmark, Save, Cancel } from '@mui/icons-material';
-import BookGrid from '../../components/BookGrid';
+import BookGrid from '../../components/Books/BookGrid';
 import './ProfilePage.css'; // CSS dosyanın adı buysa
 import { useQuery, useMutation } from '@apollo/client';
 import { UPDATE_USER_MUTATION } from './graphql'; // Dosya yolunu kontrol et
