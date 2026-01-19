@@ -47,7 +47,9 @@ export const GET_BOOKS = gql`
             shares,
             likes,
         },
-        commentCount
+        commentCount,
+        createdAt,
+        updatedAt
     }
   }
 `;

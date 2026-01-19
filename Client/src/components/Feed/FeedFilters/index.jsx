@@ -58,6 +58,8 @@ const FeedFilters = () => {
             { value: 'newest', label: 'En Yeni' },
             { value: 'popular', label: 'En Popüler' },
             { value: 'oldest', label: 'En Eski' },
+            { value: 'lastUpdated', label: 'En Son Güncellenen' },
+
           ].map(option => (
             <label key={option.value} className="sort-option">
               <input

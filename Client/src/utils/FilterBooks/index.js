@@ -31,25 +31,33 @@ export const filterBooks = (books, filters) => {
   }
 
   // --- 3. SIRALAMA (SORT) ---
-  if (filters.sortBy) {
+ if (filters.sortBy) {
     switch (filters.sortBy) {
       case 'newest':
-        // Tarihe göre yeniden eskiye
+        // Tarihe göre yeniden eskiye (createdAt alanı şemada mevcut)
         filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        break;
+      case 'lastUpdated':
+        // Tarihe göre yeniden eskiye (updatedAt alanı şemada mevcut)
+        filtered.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
         break;
       case 'oldest':
         // Tarihe göre eskiden yeniye
         filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
         break;
       case 'popular':
-        // Eğer likeCount veya viewCount varsa ona göre sırala
-        // (Yoksa newest gibi davranır)
-        filtered.sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0));
+        // Düzeltme: likeCount yerine likedBy dizisinin uzunluğuna (length) bakıyoruz.
+        // Array null/undefined gelirse hata vermemesi için kontrol ekliyoruz.
+        filtered.sort((a, b) => {
+            const countA = a.likedBy ? a.likedBy.length : 0;
+            const countB = b.likedBy ? b.likedBy.length : 0;
+            return countB - countA; // Çoktan aza sıralama
+        });
         break;
       default:
         break;
     }
-  }
+}
 
   return filtered;
 };
