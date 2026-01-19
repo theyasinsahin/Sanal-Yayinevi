@@ -1,17 +1,38 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Person, Email, Lock, HowToReg, AlternateEmail } from '@mui/icons-material';
+import { useMutation } from '@apollo/client';
+import { Link, useNavigate } from 'react-router-dom';
+import { 
+  Person, 
+  Email, 
+  Lock, 
+  HowToReg, 
+  AlternateEmail 
+} from '@mui/icons-material';
+
+// --- GRAPHQL & UTILS ---
+import { REGISTER } from '../../../graphql/mutations/user';
+
+// --- UI KIT IMPORTS ---
+import { Typography } from '../../../components/UI/Typography';
+import { Button } from '../../../components/UI/Button';
+import { Input } from '../../../components/UI/Input';
+import { Container } from '../../../components/UI/Container';
+
+// CSS (AuthPages.css ortak kullanılıyor)
 import '../AuthPages.css';
 
-import { useMutation } from '@apollo/client';
-import { REGISTER } from '../../../graphql/mutations/user';
 const RegisterPage = () => {
+  const navigate = useNavigate();
+  
   const [formData, setFormData] = useState({
     username: '',
-    fullName:'',
+    fullName: '',
     email: '',
     password: '',
   });
+
+  // Checkbox state'i (Form submit için gerekli olabilir)
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const [register, { loading, error, data }] = useMutation(REGISTER);
 
@@ -21,86 +42,150 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!termsAccepted) {
+      alert("Lütfen kullanım koşullarını kabul edin.");
+      return;
+    }
+
     try {
       const res = await register({ variables: formData });
       
-      // yönlendirme veya mesaj gösterme
+      // Kayıt başarılıysa 2 saniye sonra login'e at
+      if (res.data && res.data.register) {
+        setTimeout(() => {
+            navigate('/login');
+        }, 2000);
+      }
     } catch (err) {
       console.error("Kayıt hatası:", err.message);
     }
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h1 className="auth-title">
-          <HowToReg fontSize="large" /> Yeni Hesap Oluştur
-        </h1>
-
-        <form onSubmit={handleSubmit}>
-          <div className="input-group">
-            <label><Person /> Tam Adınız</label>
-            <input
-              type="text"
-              name="fullName"
-              value={formData.name}
-              onChange={(e) => handleChange(e)}
-              required
-            />
+    <div className="auth-page-wrapper">
+      <Container maxWidth="lg">
+        <div className="auth-card">
+          
+          {/* --- Header --- */}
+          <div className="auth-header">
+            <div className="auth-icon-circle">
+              <HowToReg fontSize="large" style={{ color: '#2563EB' }} />
+            </div>
+            <Typography variant="h3" weight="bold" className="text-center mb-2">
+              Yeni Hesap Oluştur
+            </Typography>
+            <Typography variant="body" color="muted" className="text-center">
+              Quill ailesine katılmak için bilgilerinizi girin
+            </Typography>
           </div>
 
-          <div className="input-group">
-            <label><AlternateEmail /> Kullanıcı Adınız</label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={(e) => handleChange(e)}
-              required
-            />
-          </div>
+          {/* --- Mesajlar (Hata / Başarı) --- */}
+          {error && (
+            <div className="auth-error-box">
+              <Typography variant="small" color="danger">
+                {error.message || "Kayıt işlemi başarısız oldu."}
+              </Typography>
+            </div>
+          )}
 
-          <div className="input-group">
-            <label><Email /> E-Posta</label>
-            <input
-              type="email"
+          {data && (
+            <div className="auth-success-box">
+              <Typography variant="body" className="success-text">
+                🎉 Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz...
+              </Typography>
+            </div>
+          )}
+
+          {/* --- Form --- */}
+          <form onSubmit={handleSubmit} className="auth-form">
+            
+            {/* İki input yan yana (Ad Soyad - Kullanıcı Adı) */}
+            <div className="form-row">
+              <Input
+                label="Tam Adınız"
+                name="fullName"
+                placeholder="Ad Soyad"
+                value={formData.fullName}
+                onChange={handleChange}
+                icon={<Person fontSize="small" />}
+                required
+                disabled={loading}
+              />
+              
+              <Input
+                label="Kullanıcı Adı"
+                name="username"
+                placeholder="kullaniciadi"
+                value={formData.username}
+                onChange={handleChange}
+                icon={<AlternateEmail fontSize="small" />}
+                required
+                disabled={loading}
+              />
+            </div>
+
+            <Input
+              label="E-Posta"
               name="email"
+              type="email"
+              placeholder="ornek@email.com"
               value={formData.email}
-              onChange={(e) => handleChange(e)}
+              onChange={handleChange}
+              icon={<Email fontSize="small" />}
               required
+              disabled={loading}
             />
-          </div>
 
-          <div className="input-group">
-            <label><Lock /> Şifre</label>
-            <input
-              type="password"
+            <Input
+              label="Şifre"
               name="password"
+              type="password"
+              placeholder="••••••••"
               value={formData.password}
-              onChange={(e) => handleChange(e)}
+              onChange={handleChange}
+              icon={<Lock fontSize="small" />}
               required
+              disabled={loading}
             />
-          </div>
 
-          <div className="terms">
-            <input type="checkbox" id="terms" required />
-            <label htmlFor="terms">
-              <Link to="/kullanim-kosullari" className="link">Kullanım Koşulları</Link>'nı kabul ediyorum
-            </label>
-          </div>
+            {/* Terms Checkbox (Özel UI Input olmadığı için HTML+CSS kullanıyoruz) */}
+            <div className="terms-wrapper">
+              <input 
+                type="checkbox" 
+                id="terms" 
+                className="terms-checkbox"
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+                required 
+              />
+              <label htmlFor="terms" className="terms-label">
+                <Link to="/kullanim-kosullari" className="link">Kullanım Koşulları</Link>'nı okudum ve kabul ediyorum.
+              </label>
+            </div>
 
-          <button type="submit" className="auth-button">
-            {loading ? 'Kayıt Oluşturuluyor...' : 'Kayıt Ol'}
-          </button>
+            <Button 
+              type="submit" 
+              variant="primary" 
+              size="large" 
+              isLoading={loading}
+              className="w-full"
+            >
+              Kayıt Ol
+            </Button>
 
-          {error && <p style={{ color: 'red' }}>Hata: {error.message}</p>}
-          {data && <p style={{ color: 'green' }}>Kayıt başarılı: {data.register.username}</p>}
+            <div className="auth-footer">
+              <Typography variant="body" color="muted">
+                Zaten hesabın var mı?{' '}
+                <Link to="/login" className="register-link">
+                  Giriş Yap
+                </Link>
+              </Typography>
+            </div>
 
-          <div className="auth-footer">
-            Zaten hesabın var mı? <Link to="/login" className="link">Giriş Yap</Link>
-          </div>
-        </form>
-      </div>
+          </form>
+        </div>
+      </Container>
     </div>
   );
 };

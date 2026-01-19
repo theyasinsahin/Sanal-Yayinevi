@@ -1,128 +1,155 @@
-/* Ortak Stiller */
-.auth-container {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #F8F9FA;
-    padding: 2rem;
-  }
+/* Sayfanın ortalanması ve arka planı */
+.auth-page-wrapper {
+  min-height: calc(100vh - var(--navbar-height));
   
-  .auth-card {
-    background: white;
-    padding: 3rem;
-    border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-    width: 100%;
-    max-width: 500px;
+  display: flex;
+  justify-content: center;
+
+  align-items: flex-start;
+
+  padding-top: 6rem;
+  padding-bottom: 4rem;
+}
+
+/* Kart Tasarımı */
+.auth-card {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  border: 1px solid #E5E7EB;
+}
+
+/* Header Kısmı */
+.auth-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.auth-icon-circle {
+  width: 60px;
+  height: 60px;
+  background-color: #EFF6FF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+
+/* Hata Kutusu */
+.auth-error-box {
+  background-color: #FEF2F2;
+  border: 1px solid #FECACA;
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+/* Linkler */
+.auth-options {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1.5rem;
+  margin-top: -0.5rem; /* Input margin'ini dengelemek için */
+}
+
+.forgot-password-link {
+  font-size: 0.875rem;
+  color: #6B7280;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.forgot-password-link:hover {
+  color: #2563EB;
+}
+
+.auth-footer {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.register-link {
+  color: #2563EB;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.register-link:hover {
+  text-decoration: underline;
+}
+
+/* Helper Utility */
+.w-full {
+  width: 100%;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* Checkbox Alanı */
+.terms-wrapper {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  margin-top: -0.5rem;
+}
+
+.terms-checkbox {
+  width: 18px;
+  height: 18px;
+  margin-right: 0.5rem;
+  accent-color: #2563EB; /* Checkbox rengi */
+  cursor: pointer;
+}
+
+.terms-label {
+  font-size: 0.9rem;
+  color: #4B5563;
+  cursor: pointer;
+  user-select: none;
+}
+
+.link {
+  color: #2563EB;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+/* Başarı Mesaj Kutusu */
+.auth-success-box {
+  background-color: #ECFDF5;
+  border: 1px solid #6EE7B7;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.success-text {
+  color: #065F46 !important; /* Typography rengini ezmek için */
+  font-weight: 500;
+}
+
+/* Responsive: Mobilde yan yana olan inputlar alt alta geçsin */
+@media (max-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
   }
-  
-  .auth-title {
-    color: #2C3E50;
-    text-align: center;
-    margin-bottom: 2rem;
-    font-family: 'Merriweather', serif;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-  }
-  
-  .input-group {
-    margin-bottom: 1.5rem;
-  }
-  
-  .input-group label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: #2C3E50;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-  }
-  
-  .input-group input {
-    width: 100%;
-    padding: 0.8rem 1rem;
-    border: 2px solid #eee;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: border-color 0.3s ease;
-  }
-  
-  .input-group input:focus {
-    border-color: #2A5C82;
-    outline: none;
-  }
-  
-  .auth-button {
-    background: #27AE60;
-    color: white;
-    width: 100%;
-    padding: 1rem;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-    margin-top: 1rem;
-  }
-  
-  .auth-button:hover {
-    transform: translateY(-2px);
-  }
-  
-  .auth-footer {
-    text-align: center;
-    margin-top: 1.5rem;
-    color: #666;
-  }
-  
-  .link {
-    color: #2A5C82;
-    text-decoration: none;
-    font-weight: 500;
-  }
-  
-  .link:hover {
-    text-decoration: underline;
-  }
-  
-  .terms {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin: 1rem 0;
-    color: #666;
-  }
-  
-  .terms input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-  }
-  
-  .auth-options {
-    text-align: right;
-    margin: 1rem 0;
-  }
-  
-  /* Responsive Tasarım */
-  @media (max-width: 768px) {
-    .auth-card {
-      padding: 2rem;
-    }
-  
-    .auth-title {
-      font-size: 1.5rem;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .auth-container {
-      padding: 1rem;
-    }
-    
-    .auth-card {
-      padding: 1.5rem;
-    }
-  }
+}
