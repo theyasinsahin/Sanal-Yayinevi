@@ -1,0 +1,86 @@
+.feed-filters {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 16px;
+  border: 1px solid #E5E7EB;
+  position: sticky;
+  top: calc(var(--navbar-height) + 2rem); /* Scroll yapınca yapışsın */
+}
+
+.filter-section {
+  margin-bottom: 2rem;
+}
+
+.filter-section:last-child {
+  margin-bottom: 0;
+}
+
+.filter-title {
+  margin-bottom: 1rem;
+  display: block;
+  color: #111827;
+}
+
+/* Kategori Hapları (Pills) */
+.categories-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.category-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #4B5563;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.category-pill:hover {
+  background-color: #F3F4F6;
+  color: #111827;
+}
+
+.category-pill.active {
+  background-color: #EFF6FF; /* Açık Mavi */
+  color: #2563EB; /* Primary Mavi */
+  font-weight: 600;
+  border-color: #BFDBFE;
+}
+
+.category-icon {
+  display: flex;
+  align-items: center;
+  color: inherit;
+}
+
+/* Sıralama Radyo Butonları */
+.sort-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sort-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  color: #4B5563;
+  font-size: 0.95rem;
+}
+
+.sort-option input {
+  accent-color: #2563EB;
+  width: 16px;
+  height: 16px;
+}

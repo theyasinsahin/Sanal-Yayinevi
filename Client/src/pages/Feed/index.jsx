@@ -1,77 +1,112 @@
 import React from 'react';
-import { useFilters } from '../../context/FiltersContext';
-import FeedFilters from './FeedFilters';
-import FeedSearch from '../../components/FeedSearch';
-import BookGrid from '../../components/Books/BookGrid';
-import { filterBooks } from '../../utils/FilterArticles';
-
 import { useQuery } from '@apollo/client';
-// İki sorguyu da import ediyoruz
+
+// --- LOGIC & CONTEXT ---
+import { useFilters } from '../../context/FiltersContext';
+import { filterBooks } from '../../utils/FilterBooks';
 import { GET_BOOKS } from '../../graphql/queries/book';
-import { GET_ALL_USERS } from '../../graphql/queries/user'; // Bu sorgunun var olduğunu varsayıyorum
+import { GET_ALL_USERS } from '../../graphql/queries/user';
+
+// --- COMPONENTS ---
+import FeedFilters from '../../components/Feed/FeedFilters';
+import FeedSearch from '../../components/Feed/FeedSearch';
+import BookGrid from '../../components/Books/BookGrid'; // Henüz refactor edilmedi ama yeri doğru
+import { MainLayout } from '../../components/Layout/MainLayout';
+
+// --- UI KIT ---
+import { Container } from '../../components/UI/Container';
+import { Typography } from '../../components/UI/Typography';
+
+import './FeedPage.css';
 
 const FeedPage = () => {
   const { filters } = useFilters();
 
-  // 1. KİTAPLARI ÇEK
-  const { 
-    loading: booksLoading, 
-    error: booksError, 
-    data: booksData 
-  } = useQuery(GET_BOOKS);
+  // 1. VERİ ÇEKME
+  const { loading: booksLoading, error: booksError, data: booksData } = useQuery(GET_BOOKS);
+  const { loading: usersLoading, error: usersError, data: usersData } = useQuery(GET_ALL_USERS);
 
-  // 2. KULLANICILARI ÇEK
-  const { 
-    loading: usersLoading, 
-    error: usersError, 
-    data: usersData 
-  } = useQuery(GET_ALL_USERS);
+  // 2. YÜKLENİYOR DURUMU
+  if (booksLoading || usersLoading) {
+    return (
+      <MainLayout>
+        <Container className="py-10 text-center">
+           <Typography variant="h5" color="muted">İçerikler yükleniyor...</Typography>
+        </Container>
+      </MainLayout>
+    );
+  }
 
-  // Herhangi biri yükleniyorsa bekle
-  if (booksLoading || usersLoading) return <p>Yükleniyor...</p>;
-  
-  // Hata kontrolü
-  if (booksError) return <p>Kitaplar yüklenirken hata: {booksError.message}</p>;
-  if (usersError) return <p>Kullanıcılar yüklenirken hata: {usersError.message}</p>;
+  // 3. HATA DURUMU
+  if (booksError || usersError) {
+    return (
+      <MainLayout>
+        <Container className="py-10 text-center">
+          <Typography variant="body" color="danger">
+            Hata: {booksError?.message || usersError?.message}
+          </Typography>
+        </Container>
+      </MainLayout>
+    );
+  }
 
-  // Verileri al
+  // 4. VERİ İŞLEME
   const rawBooks = booksData?.getAllBooks || [];
   const allUsers = usersData?.getAllUsers || [];
 
-  // 3. VERİLERİ BİRLEŞTİR (DATA MERGING)
-  // Backend'in yapmadığı populate işlemini burada biz yapıyoruz.
   const enrichedBooks = rawBooks.map(book => {
-    // Bu kitabın yazarını, kullanıcılar listesinde ID'sine göre bul
     const authorDetail = allUsers.find(u => u.id === book.authorId || u._id === book.authorId);
-
     return {
       ...book,
-      // Kitabın içine 'author' objesini ekle. Bulunamazsa boş obje koy patlamasın.
       author: authorDetail || { username: 'Bilinmiyor', fullName: 'Bilinmiyor' } 
     };
   });
 
-  // 4. FİLTRELEME
-  // Artık enrichedBooks içinde author objesi olduğu için filtreleme fonksiyonu yazar ismine göre çalışır.
   const filteredBooks = filterBooks(enrichedBooks, filters);
 
   return (
-    <div className="feed-page-container">
-      <aside className="filters-sidebar">
-        <FeedSearch />
-        <FeedFilters />
-      </aside>
-      
-      <main className="articles-main">
-        {filteredBooks.length > 0 ? (
-           <BookGrid books={filteredBooks} />
-        ) : (
-           <div className="no-results">
-             <p>Aramanızla eşleşen kitap bulunamadı.</p>
-           </div>
-        )}
-      </main>
-    </div>
+    <MainLayout>
+      <div className="feed-page-wrapper">
+        <Container maxWidth="7xl">
+          
+          <div className="feed-layout-grid">
+            
+            {/* SOL: FİLTRELER (SIDEBAR) */}
+            <aside className="feed-sidebar">
+              {/* Mobilde Search burada da olabilir veya yukarıda */}
+              <FeedSearch /> 
+              <FeedFilters />
+            </aside>
+            
+            {/* SAĞ: İÇERİK (MAIN) */}
+            <main className="feed-main-content">
+              
+              <div className="feed-header">
+                <Typography variant="h4" weight="bold">Keşfet</Typography>
+                <Typography variant="body" color="muted">
+                  {filteredBooks.length} kitap listeleniyor
+                </Typography>
+              </div>
+
+              {filteredBooks.length > 0 ? (
+                 <BookGrid books={filteredBooks} />
+              ) : (
+                 <div className="no-results-box">
+                   <Typography variant="h6" color="muted">
+                     Aramanızla eşleşen kitap bulunamadı.
+                   </Typography>
+                   <Typography variant="body" color="muted">
+                     Filtreleri değiştirmeyi deneyebilirsiniz.
+                   </Typography>
+                 </div>
+              )}
+            </main>
+
+          </div>
+
+        </Container>
+      </div>
+    </MainLayout>
   );
 };
 

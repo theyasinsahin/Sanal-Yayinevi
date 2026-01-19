@@ -1,19 +1,58 @@
-/* FeedPage.css */
-.feed-page-container {
-    display: flex;
+.feed-page-wrapper {
+  min-height: calc(100vh - var(--navbar-height));
+  
+  display: flex;
+  justify-content: center;
+
+  align-items: flex-start;
+
+  padding-top: 6rem;
+  padding-bottom: 4rem;
+}
+
+/* Grid Layout: Sidebar (280px) + Gap + Content (Rest) */
+.feed-layout-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+/* Header */
+.feed-header {
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 1px solid #E5E7EB;
+  padding-bottom: 1rem;
+}
+
+/* Sonuç Bulunamadı Kutusu */
+.no-results-box {
+  padding: 4rem;
+  text-align: center;
+  background-color: #F9FAFB;
+  border-radius: 16px;
+  border: 1px dashed #D1D5DB;
+}
+
+/* Responsive: Tablet ve Mobil */
+@media (max-width: 1024px) {
+  .feed-layout-grid {
+    grid-template-columns: 240px 1fr;
     gap: 2rem;
-    max-width: 1400px;
-    margin: 2rem auto;
-    padding: 0 1rem;
   }
-  
-  .filters-sidebar {
-    flex: 0 0 300px;
-    position: sticky;
-    top: 1rem;
-    align-self: flex-start;
+}
+
+@media (max-width: 768px) {
+  .feed-layout-grid {
+    grid-template-columns: 1fr; /* Tek sütuna düş */
   }
-  
-  .articles-main {
-    flex: 1;
+
+  /* Sidebar mobilde üstte kalsın ama search hariç filtreler gizlenebilir (İsteğe bağlı) */
+  /* Şimdilik alt alta diziyoruz */
+  .feed-sidebar {
+    margin-bottom: 2rem;
   }
+}

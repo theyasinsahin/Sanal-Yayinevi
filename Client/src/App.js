@@ -94,8 +94,8 @@ const ProtectedRoute = ({ children }) => {
 // ProtectedRoute'u element içinde kullanmaya devam ediyoruz.
 // Router yapısı Provider'ın içinde render edildiği sürece sorun yok.
 const router = createBrowserRouter([
-  { path: "/", element: <Layout><LandingPage /></Layout> },
-  { path: "/feed", element: <Layout><FeedPage /></Layout> },
+  { path: "/", element: <LandingPage /> },
+  { path: "/feed", element: <FeedPage /> },
   { path: "/book-detail/:id", element: <Layout><BookDetailPage /></Layout> },
   { path: "/book-reader/:bookId", element: <Layout><BookReader /></Layout> },
   
