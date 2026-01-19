@@ -1,7 +1,7 @@
 import React from 'react';
 import HeroSection from './HeroSection';
 import HowItWorks from './HowItWorks';
-import FeaturedArticles from './FeaturedArticles';
+import FeaturedBooks from './FeaturedBooks';
 import TrustedPublishers from './TrustedPublishers';
 
 const LandingPage = () => {
@@ -9,7 +9,7 @@ const LandingPage = () => {
     <main className="landing-page">
       <HeroSection />
       <HowItWorks />
-      <FeaturedArticles />
+      <FeaturedBooks />
       <TrustedPublishers />
     </main>
   );

@@ -13,9 +13,9 @@ import { Container } from '../../UI/Container';
 // Eğer henüz taşımadıysan eski yolu kullanabilirsin.
 import BookCard from '../../Books/BookCard'; 
 
-import './FeaturedArticles.css';
+import './FeaturedBooks.css';
 
-const FeaturedArticles = () => {
+const FeaturedBooks = () => {
   const { loading, error, data } = useQuery(GET_BOOKS);
 
   // Loading durumu için UI Kit kullanımı
@@ -66,4 +66,4 @@ const FeaturedArticles = () => {
   );
 };
 
-export default FeaturedArticles;
+export default FeaturedBooks;
