@@ -3,8 +3,8 @@ import './TrustedPublishers.css';
 import PublisherLogo from './PublisherLogo';
 
 // --- UI KIT IMPORTS ---
-import { Typography } from '../../../components/UI/Typography';
-import { Container } from '../../../components/UI/Container';
+import { Typography } from '../../UI/Typography';
+import { Container } from '../../UI/Container';
 
 const TrustedPublishers = () => {
   // Gerçek uygulamada bu veriler API'den veya bir config dosyasından gelebilir

@@ -4,12 +4,12 @@ import { useQuery } from '@apollo/client';
 import { GET_BOOKS } from '../../../graphql/queries/book';
 
 // --- UI KIT IMPORTS ---
-import { Typography } from '../../../components/UI/Typography';
-import { Button } from '../../../components/UI/Button';
-import { Container } from '../../../components/UI/Container';
+import { Typography } from '../../UI/Typography';
+import { Button } from '../../UI/Button';
+import { Container } from '../../UI/Container';
 
 // --- BUSINESS COMPONENTS ---
-import BookCard from '../../../components/Books/BookCard'; 
+import BookCard from '../../Books/BookCard'; 
 
 import './FeaturedBooks.css';
 

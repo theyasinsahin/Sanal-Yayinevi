@@ -7,8 +7,8 @@ import {
 } from '@mui/icons-material';
 
 // --- UI KIT IMPORTS ---
-import { Typography } from '../../../components/UI/Typography';
-import { Container } from '../../../components/UI/Container';
+import { Typography } from '../../UI/Typography';
+import { Container } from '../../UI/Container';
 
 const steps = [
   {
