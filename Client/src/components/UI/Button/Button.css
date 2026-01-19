@@ -1,0 +1,28 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Variants */
+.btn-primary { background-color: #2563EB; color: white; }
+.btn-primary:hover { background-color: #1D4ED8; }
+
+.btn-secondary { background-color: #F3F4F6; color: #1F2937; }
+.btn-outline { border: 1px solid #D1D5DB; background: transparent; color: #374151; }
+.btn-danger { background-color: #DC2626; color: white; }
+
+/* Sizes */
+.btn-small { padding: 0.5rem 1rem; font-size: 0.875rem; }
+.btn-medium { padding: 0.75rem 1.5rem; font-size: 1rem; }
+.btn-large { padding: 1rem 2rem; font-size: 1.125rem; }
