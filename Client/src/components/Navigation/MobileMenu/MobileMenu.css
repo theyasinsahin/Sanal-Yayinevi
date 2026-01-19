@@ -1,0 +1,91 @@
+/* --- Overlay (Karartma) --- */
+.mobile-menu-overlay {
+  position: fixed;
+  top: var(--navbar-height); /* Navbar'ın altından başla */
+  left: 0;
+  width: 100%;
+  height: calc(100vh - var(--navbar-height));
+  background-color: rgba(0, 0, 0, 0.5); /* Yarı saydam siyah */
+  z-index: 998; /* Navbar'ın (1000) altında kalsın */
+  
+  /* Animasyon Durumları */
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.mobile-menu-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* --- Drawer (Çekmece Menü) --- */
+.mobile-menu-drawer {
+  position: fixed;
+  top: var(--navbar-height);
+  right: -100%; /* Başlangıçta ekranın sağında gizli */
+  width: 80%;
+  max-width: 300px; /* Çok geniş olmasın */
+  height: calc(100vh - var(--navbar-height));
+  background-color: #ffffff;
+  z-index: 999;
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Yumuşak kayma */
+  
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-menu-drawer.open {
+  right: 0; /* Ekrana gir */
+}
+
+/* --- İçerik Düzeni --- */
+.mobile-menu-content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Menü Linkleri */
+.mobile-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  text-decoration: none;
+  color: #374151;
+  border-radius: 12px;
+  transition: background-color 0.2s;
+}
+
+.mobile-nav-item:hover {
+  background-color: #F3F4F6;
+  color: #2563EB; /* Hover olunca mavi yap */
+}
+
+.mobile-icon {
+  color: #6B7280;
+}
+
+.mobile-nav-item:hover .mobile-icon {
+  color: #2563EB;
+}
+
+/* Ayırıcı Çizgi */
+.divider {
+  height: 1px;
+  background-color: #E5E7EB;
+  margin: 0.5rem 0;
+}
+
+/* Alt Aksiyon Alanı (Logout butonu vb.) */
+.mobile-action-area {
+  margin-top: 1rem;
+}
+
+/* Helper Class */
+.w-full {
+  width: 100%;
+}
