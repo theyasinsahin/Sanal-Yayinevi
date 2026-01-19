@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import './HeroSection.css';
 
 // --- UI KIT IMPORTS ---
-import { Typography } from '../../UI/Typography';
-import { Button } from '../../UI/Button';
-import { Container } from '../../UI/Container';
+import { Typography } from '../../../components/UI/Typography';
+import { Button } from '../../../components/UI/Button';
+import { Container } from '../../../components/UI/Container';
 
 const HeroSection = () => {
   const scrollToHowItWorks = () => {
