@@ -3,15 +3,13 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import { GET_BOOKS } from '../../../graphql/queries/book';
 
-// --- UI KIT IMPORTS (Yeni Temel Taşlarımız) ---
-import { Typography } from '../../UI/Typography';
-import { Button } from '../../UI/Button';
-import { Container } from '../../UI/Container';
+// --- UI KIT IMPORTS ---
+import { Typography } from '../../../components/UI/Typography';
+import { Button } from '../../../components/UI/Button';
+import { Container } from '../../../components/UI/Container';
 
 // --- BUSINESS COMPONENTS ---
-// Not: BookCard'ı components/Books altına taşıdığını varsayıyorum.
-// Eğer henüz taşımadıysan eski yolu kullanabilirsin.
-import BookCard from '../../Books/BookCard'; 
+import BookCard from '../../../components/Books/BookCard'; 
 
 import './FeaturedBooks.css';
 
@@ -36,10 +34,9 @@ const FeaturedBooks = () => {
 
   return (
     <section className="featured-articles-section">
-      <Container>
+      <Container maxWidth="6xl">
         {/* Header Kısmı */}
         <div className="section-header">
-          {/* h2 yerine Typography h2 kullanıyoruz */}
           <Typography variant="h2" weight="bold" color="default">
             Öne Çıkan Yazılar
           </Typography>
