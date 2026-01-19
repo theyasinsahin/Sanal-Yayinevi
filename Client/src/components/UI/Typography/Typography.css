@@ -1,0 +1,24 @@
+/* Base Styles */
+.typography {
+  margin: 0;
+  font-family: 'Inter', sans-serif; /* Projendeki ana font */
+  line-height: 1.5;
+}
+
+/* Variants */
+.h1 { font-size: 2.5rem; font-weight: 700; letter-spacing: -0.02em; }
+.h2 { font-size: 2rem; font-weight: 600; letter-spacing: -0.01em; }
+.h3 { font-size: 1.75rem; font-weight: 600; }
+.body { font-size: 1rem; color: #374151; }
+.caption { font-size: 0.875rem; color: #6B7280; }
+
+/* Colors */
+.color-default { color: inherit; }
+.color-primary { color: #2563EB; }
+.color-danger { color: #DC2626; }
+.color-muted { color: #9CA3AF; }
+
+/* Weights */
+.weight-normal { font-weight: 400; }
+.weight-medium { font-weight: 500; }
+.weight-bold { font-weight: 700; }
