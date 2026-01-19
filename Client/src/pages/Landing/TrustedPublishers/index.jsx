@@ -2,7 +2,12 @@ import React from 'react';
 import './TrustedPublishers.css';
 import PublisherLogo from './PublisherLogo';
 
+// --- UI KIT IMPORTS ---
+import { Typography } from '../../../components/UI/Typography';
+import { Container } from '../../../components/UI/Container';
+
 const TrustedPublishers = () => {
+  // Gerçek uygulamada bu veriler API'den veya bir config dosyasından gelebilir
   const publishers = [
     {
       id: 1,
@@ -31,22 +36,32 @@ const TrustedPublishers = () => {
   ];
 
   return (
-    <section className="trusted-publishers">
-      <div className="section-header">
-        <h2 className="section-title">İş Birliklerimiz</h2>
-        <p className="section-subtitle">Hedefe ulaşan eserlerimiz bu yayınevleriyle buluşuyor</p>
-      </div>
-      
-      <div className="publishers-grid">
-        {publishers.map(publisher => (
-          <PublisherLogo
-            key={publisher.id}
-            logo={publisher.logo}
-            name={publisher.name}
-            website={publisher.website}
-          />
-        ))}
-      </div>
+    <section className="trusted-publishers-section">
+      <Container maxWidth="7xl">
+        
+        {/* Başlık Alanı */}
+        <div className="section-header-center">
+          <Typography variant="h4" weight="bold" color="default" className="text-center">
+            İş Birliklerimiz
+          </Typography>
+          <Typography variant="body" color="muted" className="text-center section-subtitle">
+            Hedefe ulaşan eserlerimiz bu değerli yayınevleriyle buluşuyor
+          </Typography>
+        </div>
+        
+        {/* Logolar Grid */}
+        <div className="publishers-grid">
+          {publishers.map(publisher => (
+            <PublisherLogo
+              key={publisher.id}
+              logo={publisher.logo}
+              name={publisher.name}
+              website={publisher.website}
+            />
+          ))}
+        </div>
+
+      </Container>
     </section>
   );
 };
