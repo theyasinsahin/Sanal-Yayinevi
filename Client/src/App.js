@@ -15,7 +15,7 @@ import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom"
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { FiltersProvider } from "./context/FiltersContext";
 
-import NavigationBar from "./components/NavigationBar";
+import NavigationBar from "./components/Navigation/NavigationBar";
 
 import LandingPage from "./pages/Landing";
 import FeedPage from "./pages/Feed";

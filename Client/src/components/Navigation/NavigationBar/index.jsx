@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, Close, Person } from '@mui/icons-material'; // Quill kullanılmıyordu, kaldırdım
 import { FiFeather } from 'react-icons/fi';
-import MobileMenu from './MobileMenu';
+import MobileMenu from '../MobileMenu';
 import './NavigationBar.css';
 
 // 1. QUERY YERİNE CONTEXT IMPORT EDİYORUZ
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../../context/AuthContext';
 
 const NavigationBar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
