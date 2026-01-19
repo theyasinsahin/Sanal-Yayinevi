@@ -1,251 +1,75 @@
-.hero-container {
+.hero-section {
+  padding: 4rem 0;
   display: flex;
   align-items: center;
-  padding: 4rem 8%;
-  background: linear-gradient(to right, #f8f9fa 55%, #2a5c82 70%);
-  margin-top: 3em;
-  position: relative;
-  overflow: hidden;
+  min-height: 80vh; /* Ekranın büyük kısmını kaplasın */
+  background-color: #ffffff; /* Veya temanın rengi */
 }
 
-.hero-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 58%;
-  width: 100px;
-  height: 100%;
-  transform: skewX(-10deg);
-  z-index: 1;
+/* İçeriği yan yana koyan wrapper */
+.hero-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4rem;
 }
 
+/* Sol taraf (Metinler) */
 .hero-content {
   flex: 1;
-  color: #2c3e50;
-  position: relative;
-  z-index: 2;
-  transition: transform 0.5s ease;
+  max-width: 600px; /* Metnin çok uzamasını engelle */
 }
 
-.hero-container:hover .hero-content {
-  transform: translateY(-5px);
-}
-
-.hero-content h1 {
-  font-size: 3.5rem;
-  margin-bottom: 1.5rem;
-  font-family: 'Merriweather', serif;
-  position: relative;
-  display: inline-block;
-}
-
-.hero-content h1::after {
-  content: '';
-  position: absolute;
-  width: 40%;
-  height: 4px;
-  background: #f39c12;
-  bottom: -10px;
-  left: 0;
-  border-radius: 2px;
-  transition: width 0.4s ease;
-}
-
-.hero-content:hover h1::after {
-  width: 80%;
-}
-
-.hero-content p {
-  font-size: 1.2rem;
-  margin-bottom: 2rem;
+.hero-subtitle {
+  margin-top: 1.5rem;
+  margin-bottom: 2.5rem;
   line-height: 1.6;
-  max-width: 90%;
-  transition: all 0.3s ease;
 }
 
-.hero-content:hover p {
-  transform: translateX(5px);
-  color: #1a2530;
-}
-
-.cta-buttons {
+/* Buton Grubu */
+.hero-actions {
   display: flex;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
-.primary-cta {
-  background: #f39c12;
-  color: white;
-  padding: 12px 30px;
-  border-radius: 25px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 500;
-  box-shadow: 0 4px 8px rgba(243, 156, 18, 0.2);
-  position: relative;
-  overflow: hidden;
-  text-decoration: none;
-  display: inline-block;
-}
-
-.primary-cta:hover {
-  background: #e67e22;
-  transform: translateY(-3px);
-  box-shadow: 0 6px 12px rgba(243, 156, 18, 0.3);
-}
-
-.primary-cta:active {
-  transform: translateY(-1px);
-}
-
-.primary-cta::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.7s ease;
-}
-
-.primary-cta:hover::before {
-  left: 100%;
-}
-
-.secondary-cta {
-  background: transparent;
-  border: 2px solid #2a5c82;
-  color: #2a5c82;
-  padding: 12px 30px;
-  border-radius: 25px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 500;
-  position: relative;
-  overflow: hidden;
-  z-index: 1;
-}
-
-.secondary-cta::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 100%;
-  background: #2a5c82;
-  transition: width 0.3s ease;
-  z-index: -1;
-}
-
-.secondary-cta:hover {
-  color: white;
-}
-
-.secondary-cta:hover::before {
-  width: 100%;
-}
-
-.hero-image {
+/* Sağ taraf (Görsel) */
+.hero-image-container {
   flex: 1;
-  text-align: center;
-  position: relative;
-  z-index: 2;
-  transition: transform 0.5s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.hero-container:hover .hero-image {
-  transform: translateY(-8px);
-}
-
-.hero-image img {
-  max-width: 80%;
+.hero-img {
+  max-width: 100%;
   height: auto;
-  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1));
-  transition: all 0.5s ease;
-  border-radius: 12px;
+  border-radius: 20px; /* Hafif yuvarlak köşeler */
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); /* Hafif gölge */
+  object-fit: cover;
 }
 
-.hero-image img:hover {
-  filter: drop-shadow(0 15px 30px rgba(0,0,0,0.15));
-  transform: scale(1.02);
-}
-
-@keyframes float {
-  0% {
-    transform: translateY(0px);
+/* --- Responsive (Mobil) --- */
+@media (max-width: 960px) {
+  .hero-section {
+    padding: 2rem 0;
+    min-height: auto;
   }
-  50% {
-    transform: translateY(-10px);
-  }
-  100% {
-    transform: translateY(0px);
-  }
-}
 
-.hero-image::after {
-  content: '';
-  position: absolute;
-  width: 150px;
-  height: 150px;
-  background: radial-gradient(circle, rgba(243, 156, 18, 0.2), transparent);
-  top: -20px;
-  right: 20%;
-  border-radius: 50%;
-  z-index: -1;
-  animation: float 6s ease-in-out infinite;
-}
-
-@media (max-width: 768px) {
-  .hero-container {
-    flex-direction: column;
-    background: #f8f9fa;
+  .hero-wrapper {
+    flex-direction: column-reverse; /* Mobilde görsel üstte, yazı altta olsun istersen 'column' yap */
     text-align: center;
-    padding: 3rem 5%;
+    gap: 3rem;
   }
-  
-  .hero-container::before {
-    display: none;
-  }
-  
-  .hero-content h1 {
-    font-size: 2.5rem;
-  }
-  
-  .hero-content h1::after {
-    left: 30%;
-    width: 40%;
-  }
-  
-  .hero-content:hover h1::after {
-    width: 60%;
-  }
-  
-  .hero-content p {
+
+  .hero-content {
     max-width: 100%;
-    font-size: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
-  
-  .cta-buttons {
+
+  .hero-actions {
     justify-content: center;
-    flex-wrap: wrap;
-  }
-  
-  .hero-image {
-    margin-top: 2rem;
-  }
-  
-  .hero-image img {
-    max-width: 100%;
-    margin-top: 1rem;
-  }
-  
-  .hero-image::after {
-    width: 100px;
-    height: 100px;
-    top: 0;
-    right: 10%;
   }
 }
