@@ -1,0 +1,16 @@
+.ui-badge {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.badge-neutral { background-color: #F3F4F6; color: #4B5563; }
+.badge-primary { background-color: #EFF6FF; color: #2563EB; }
+.badge-success { background-color: #ECFDF5; color: #059669; }
+.badge-warning { background-color: #FFFBEB; color: #D97706; } /* Unsaved için */
+.badge-danger  { background-color: #FEF2F2; color: #DC2626; }
