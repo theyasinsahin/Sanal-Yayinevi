@@ -51,20 +51,10 @@
   align-items: flex-end;
 }
 
-.meta-badge {
-  background-color: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.capitalize {
-  text-transform: capitalize;
+.shadow-sm {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  backdrop-filter: blur(4px); /* Arka planı hafif buzlu cam yap */
+  background-color: rgba(255, 255, 255, 0.9) !important; /* Hafif transparan beyaz */
 }
 
 /* --- İçerik Alanı --- */

@@ -15,6 +15,7 @@ import { getOptimizedImage } from '../../../utils/ImageUtils';
 
 // --- UI KIT ---
 import { Typography } from '../../UI/Typography';
+import { Badge } from '../../UI/Badge';
 
 import './BookCard.css';
 
@@ -69,14 +70,17 @@ const BookCard = ({ book: bookProp, bookId }) => {
         
         {/* Görsel Üzerindeki Etiketler */}
         <div className="meta-overlay">
-          <div className="meta-badge">
-            <Pages style={{fontSize:12}} />
-            <span>{pageCount || 0} Syf</span>
-          </div>
-          <div className="meta-badge">
-            <LocalOffer fontSize="small" />
-            <span className="capitalize">{genre || 'Genel'}</span>
-          </div>
+          {/* Sayfa Sayısı - Neutral Badge */}
+          <Badge variant="neutral" className="shadow-sm">
+            <Pages style={{ fontSize: 12 }} /> 
+            {pageCount || 0}
+          </Badge>
+
+          {/* Tür - Primary Badge */}
+          <Badge variant="primary" className="shadow-sm capitalize">
+            <LocalOffer style={{ fontSize: 12 }} /> 
+            {genre || 'Genel'}
+          </Badge>
         </div>
       </div>
 
