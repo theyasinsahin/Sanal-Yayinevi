@@ -147,20 +147,6 @@
   color: #DC2626;
 }
 
-/* --- CUSTOM INPUT STYLES (Select & Textarea) --- */
-/* UI Kit'teki .form-input ile aynı görünümü sağlamak için */
-.custom-select,
-.form-textarea {
-  font-family: inherit;
-  width: 100%;
-  background-color: #fff;
-}
-
-.form-textarea {
-  resize: vertical;
-  min-height: 120px;
-}
-
 .error-banner {
   background-color: #FEF2F2;
   color: #991B1B;

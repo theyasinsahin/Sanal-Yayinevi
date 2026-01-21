@@ -21,6 +21,8 @@ import { Container } from '../../components/UI/Container';
 import { Typography } from '../../components/UI/Typography';
 import { Button } from '../../components/UI/Button';
 import { Input } from '../../components/UI/Input';
+import { Textarea } from '../../components/UI/Textarea';
+import { Select } from '../../components/UI/Select';
 
 // --- COMPONENTS ---
 import ImageUpload from '../../components/ImageUpload';
@@ -121,6 +123,12 @@ const CreateBookPage = () => {
   // Genres verisi object ise array'e çevir, array ise direkt kullan
   const genreList = Array.isArray(genres) ? genres : Object.values(genres);
 
+  // Select bileşeni { label, value } formatında veri bekler
+const genreOptions = genreList.map(cat => ({
+    label: cat.name,
+    value: cat.slug
+}));
+
   return (
     <MainLayout>
       <div className="create-book-page">
@@ -177,25 +185,16 @@ const CreateBookPage = () => {
                 />
 
                 <div className="form-row-2">
-                  {/* Tür Seçimi (Select Custom Style) */}
-                  <div className="input-wrapper">
-                    <label className="input-label"><Category fontSize="small" className="mr-1"/> Tür</label>
                     <div className="input-container">
-                      <select
-                        name="genre"
-                        value={bookData.genre}
-                        onChange={handleInputChange}
-                        className="form-input custom-select"
-                      >
-                        {genreList.map(cat => (
-                          <option key={cat.slug} value={cat.slug}>
-                            {cat.name}
-                          </option>
-                        ))}
-                      </select>
+                      <Select
+                          label="Tür"
+                          name="genre"
+                          value={bookData.genre}
+                          onChange={handleInputChange}
+                          options={genreOptions}
+                          icon={<Category fontSize="small" />}
+                      />
                     </div>
-                  </div>
-
                 </div>
 
                 {/* Etiketler */}
@@ -233,20 +232,16 @@ const CreateBookPage = () => {
                 </div>
 
                 {/* Açıklama (Textarea Custom Style) */}
-                <div className="input-wrapper">
-                  <label className="input-label"><Subject fontSize="small" className="mr-1"/> Açıklama</label>
-                  <div className={`input-container ${errors.description ? 'has-error' : ''}`}>
-                    <textarea
-                      name="description"
-                      value={bookData.description}
-                      onChange={handleInputChange}
-                      rows="6"
-                      className="form-input form-textarea"
-                      placeholder="Kitabınızın konusu nedir?"
-                    />
-                  </div>
-                  {errors.description && <span className="input-error-message">{errors.description}</span>}
-                </div>
+                <Textarea
+                    label="Açıklama"
+                    name="description"
+                    value={bookData.description}
+                    onChange={handleInputChange}
+                    rows={6}
+                    placeholder="Kitabınızın konusu nedir?"
+                    icon={<Subject fontSize="small" />}
+                    error={errors.description}
+                />
 
                 {/* Submit Butonu */}
                 <div className="form-actions">
