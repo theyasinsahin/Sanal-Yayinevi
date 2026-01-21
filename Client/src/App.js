@@ -102,7 +102,7 @@ const router = createBrowserRouter([
   { path: "/create-book", 
     element: (
       <ProtectedRoute>
-        <Layout><CreateBookPage /></Layout>
+        <CreateBookPage />
       </ProtectedRoute> 
     )
   },
@@ -110,7 +110,7 @@ const router = createBrowserRouter([
   { path: "/dashboard/:bookId", 
     element: (
       <ProtectedRoute>
-        <Layout><BookDashboard /></Layout> 
+        <BookDashboard />
       </ProtectedRoute>
     )
   },
@@ -118,20 +118,19 @@ const router = createBrowserRouter([
   { path: "/profile", 
     element: (
       <ProtectedRoute>
-        <Layout><MyProfilePage /></Layout> 
+        <MyProfilePage />
       </ProtectedRoute>
     )
   },
 
-  { path: "/user/:userId", element: <Layout><UserProfilePage /></Layout> },
-  
-  // Login ve Register sayfalarını Layout içine koyduk
-  { path: "/login", element: <Layout><LoginPage /></Layout> },
-  { path: "/register", element: <Layout><RegisterPage /></Layout> },
-  
-  { path: "/donate/:bookId", element: <Layout><DonationPage /></Layout> },
-  { path: "/payment/success", element: <Layout><PaymentSuccess /></Layout> },
-  { path: "/payment/failure", element: <Layout><PaymentFailure /></Layout> },
+  { path: "/user/:userId", element: <UserProfilePage /> },
+
+  { path: "/login", element: <LoginPage /> },
+  { path: "/register", element: <RegisterPage /> },
+
+  { path: "/donate/:bookId", element: <DonationPage /> },
+  { path: "/payment/success", element: <PaymentSuccess /> },
+  { path: "/payment/failure", element: <PaymentFailure /> },
 ]);
 
 function App() {

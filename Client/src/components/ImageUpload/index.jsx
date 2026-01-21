@@ -16,9 +16,7 @@ const ImageUpload = ({ onUploadSuccess, label = "Resim Yükle", currentImage }) 
     // Cloudinary Yükleme İşlemi
     const formData = new FormData();
     formData.append("file", file);
-    // BURAYA KENDİ PRESET ADINI YAZ:
     formData.append("upload_preset", "quill_preset"); 
-    // BURAYA KENDİ CLOUD NAME'İNİ YAZ:
     const cloudName = "dw1sepw7z"; 
 
     try {
@@ -30,7 +28,6 @@ const ImageUpload = ({ onUploadSuccess, label = "Resim Yükle", currentImage }) 
       const data = await res.json();
       
       if (data.secure_url) {
-        // Yükleme başarılı, URL'i üst bileşene gönder
         onUploadSuccess(data.secure_url);
         setLoading(false);
       } else {
@@ -44,28 +41,36 @@ const ImageUpload = ({ onUploadSuccess, label = "Resim Yükle", currentImage }) 
   };
 
   return (
-    <div className="image-upload-container" style={{ textAlign: 'center', margin: '20px 0' }}>
-      <label htmlFor="file-upload" style={{ cursor: 'pointer', display: 'inline-block' }}>
+    // Dış container'ın marginini kaldırdık ve boyutunu %100 yaptık
+    <div className="image-upload-container" style={{ width: '100%', height: '100%' }}>
+      <label htmlFor="file-upload" style={{ cursor: 'pointer', display: 'block', width: '100%', height: '100%' }}>
         <div style={{
-          width: '150px',
-          height: '200px', // Kitap kapağı oranı (Profil için 150x150 yapabilirsin)
-          border: '2px dashed #ccc',
+          width: '100%',   // DEĞİŞİKLİK: 150px yerine %100
+          height: '100%',  // DEĞİŞİKLİK: 200px yerine %100
+          // Border ve background'u CreateBook.css'teki wrapper hallettiği için buradan kaldırabilirsin
+          // veya şeffaf yapabilirsin. Ama tek başına kullanım için kalsın dersen sorun olmaz.
+          border: '2px dashed #ccc', 
           borderRadius: '10px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           overflow: 'hidden',
           position: 'relative',
-          backgroundColor: '#f9f9f9'
+          backgroundColor: '#f9f9f9',
+          boxSizing: 'border-box' // Padding taşmalarını önler
         }}>
           {loading ? (
-            <span>Yükleniyor...</span>
+            <span style={{ color: '#666' }}>Yükleniyor...</span>
           ) : preview ? (
-            <img src={preview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img 
+                src={preview} 
+                alt="Preview" 
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+            />
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: '#888' }}>
-              <AddPhotoAlternate style={{ fontSize: 40 }} />
-              <span style={{ fontSize: '12px', marginTop: '5px' }}>{label}</span>
+              <AddPhotoAlternate style={{ fontSize: 48, color: '#9CA3AF' }} />
+              <span style={{ fontSize: '14px', marginTop: '10px', fontWeight: '500' }}>{label}</span>
             </div>
           )}
         </div>
