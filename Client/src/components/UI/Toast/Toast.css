@@ -1,0 +1,49 @@
+.ui-toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-width: 300px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 2000;
+  animation: slideInToast 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+@keyframes slideInToast {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.toast-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toast-close-btn {
+  background: none;
+  border: none;
+  color: white;
+  opacity: 0.7;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+.toast-close-btn:hover {
+  opacity: 1;
+}
+
+/* Varyasyonlar */
+.toast-success { background-color: #10B981; }
+.toast-error { background-color: #EF4444; }
+.toast-info { background-color: #3B82F6; }
