@@ -15,6 +15,7 @@ import { Container } from '../../../components/UI/Container';
 
 // CSS Dosyası (Sadece bu sayfaya özel düzenler için)
 import '../AuthPages.css';
+import { MainLayout } from '../../../components/Layout/MainLayout';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -49,6 +50,7 @@ const LoginPage = () => {
   };
 
   return (
+    <MainLayout>
     <div className="auth-page-wrapper">
       <Container maxWidth="lg"> {/* Küçük genişlikte ortalanmış container */}
         <div className="auth-card">
@@ -129,6 +131,7 @@ const LoginPage = () => {
         </div>
       </Container>
     </div>
+    </MainLayout>
   );
 };
 

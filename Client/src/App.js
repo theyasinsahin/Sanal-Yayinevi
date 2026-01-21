@@ -19,7 +19,7 @@ import NavigationBar from "./components/Navigation/NavigationBar";
 
 import LandingPage from "./pages/Landing";
 import FeedPage from "./pages/Feed";
-import BookDetailPage from "./pages/BookDetailPage";
+import BookDetailPage from "./pages/BookDetail";
 import BookReader from "./pages/BookReader";
 import CreateBookPage from "./pages/CreateBookPage";
 import BookDashboard from "./pages/BookDashboard";

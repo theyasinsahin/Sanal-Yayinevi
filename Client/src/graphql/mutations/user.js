@@ -27,7 +27,7 @@ export const TOGGLE_SAVED_BOOK_MUTATION = gql`
   mutation ToggleSaveBook($bookId: ID!) {
     toggleSaveBook(bookId: $bookId) {
       id
-      savedBooks
+      savedBooks{ id}
     }
   }
 `;

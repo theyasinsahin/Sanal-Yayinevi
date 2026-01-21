@@ -1,12 +1,13 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { CheckCircle, Error, Info, Close } from '@mui/icons-material';
+import { CheckCircle, Error, Info, Close, Warning } from '@mui/icons-material';
 import './Toast.css';
 
 const icons = {
   success: <CheckCircle fontSize="small" />,
   error: <Error fontSize="small" />,
-  info: <Info fontSize="small" />
+  info: <Info fontSize="small" />,
+  warning: <Warning fontSize="small" />
 };
 
 export const Toast = ({ 

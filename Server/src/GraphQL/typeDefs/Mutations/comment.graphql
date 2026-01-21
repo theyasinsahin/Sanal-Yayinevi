@@ -15,4 +15,5 @@ type Comment {
   date: DateTime!
   replies: [Comment]
   likedBy: [ID]
+  parentId: ID
 }

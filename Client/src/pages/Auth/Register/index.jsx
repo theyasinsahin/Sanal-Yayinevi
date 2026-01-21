@@ -20,6 +20,7 @@ import { Container } from '../../../components/UI/Container';
 
 // CSS (AuthPages.css ortak kullanılıyor)
 import '../AuthPages.css';
+import { MainLayout } from '../../../components/Layout/MainLayout';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -63,6 +64,7 @@ const RegisterPage = () => {
   };
 
   return (
+    <MainLayout>
     <div className="auth-page-wrapper">
       <Container maxWidth="lg">
         <div className="auth-card">
@@ -187,6 +189,7 @@ const RegisterPage = () => {
         </div>
       </Container>
     </div>
+    </MainLayout>
   );
 };
 

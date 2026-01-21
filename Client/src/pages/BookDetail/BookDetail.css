@@ -1,0 +1,233 @@
+.book-detail-page {
+   min-height: calc(100vh - var(--navbar-height));
+  
+  display: flex;
+  justify-content: center;
+
+  align-items: flex-start;
+
+  padding-top: 6rem;
+  padding-bottom: 4rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6B7280;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 2rem;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #111827;
+}
+
+/* Grid Yapısı */
+.book-detail-grid {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+/* --- SOL PANEL --- */
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.cover-wrapper {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  background-color: #eee;
+}
+
+.book-cover-lg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.meta-info-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
+}
+
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #F3F4F6;
+  font-size: 0.9rem;
+}
+
+.meta-row:last-child {
+  border-bottom: none;
+}
+
+.meta-label {
+  color: #6B7280;
+}
+
+.meta-value {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* --- SAĞ PANEL --- */
+.right-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.book-header {
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #E5E7EB;
+  padding-bottom: 1.5rem;
+}
+
+.book-title-lg {
+  line-height: 1.2;
+  margin-bottom: 0.75rem;
+  color: #111827;
+}
+
+.author-link-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.author-link {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2563EB;
+  text-decoration: none;
+}
+
+.author-link:hover {
+  text-decoration: underline;
+}
+
+/* Toolbar */
+.action-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.primary-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.secondary-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.text-pink-600 { color: #DB2777 !important; }
+.text-blue-600 { color: #2563EB !important; }
+
+/* Admin Actions */
+.admin-actions {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: #FEF2F2;
+  border-radius: 8px;
+  border: 1px dashed #FECACA;
+}
+
+/* Açıklama */
+.description-box {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
+  margin-bottom: 3rem;
+  line-height: 1.8;
+  color: #374151;
+}
+
+/* Yorumlar */
+.comments-wrapper {
+  margin-top: 1rem;
+}
+
+.comment-input-area {
+  margin-bottom: 2rem;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
+}
+
+/* Helper */
+.mb-4 { margin-bottom: 1rem; }
+.mt-2 { margin-top: 0.5rem; }
+.leading-relaxed { line-height: 1.8; }
+.no-underline { text-decoration: none; }
+.flex { display: flex; }
+.justify-end { justify-content: flex-end; }
+.capitalize { text-transform: capitalize; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .book-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .left-panel {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .cover-wrapper {
+    width: 140px;
+    flex-shrink: 0;
+  }
+
+  .meta-info-card {
+    flex-grow: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .left-panel {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .cover-wrapper {
+    width: 180px;
+    margin: 0 auto;
+  }
+
+  .action-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .primary-actions {
+    flex-direction: column;
+  }
+
+  .secondary-actions {
+    justify-content: center;
+  }
+}

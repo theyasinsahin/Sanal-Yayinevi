@@ -1,0 +1,161 @@
+/* --- Comment Item (Ana Kapsayıcı) --- */
+.comment-item {
+  /* Her yorum bloğu */
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+/* Yanıt (Reply) Stili */
+.comment-item.is-reply {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  /* Arka planı kaldırdık, temiz dursun */
+  background-color: transparent; 
+  border-radius: 0;
+  padding: 0;
+}
+
+/* --- YANITLARI KAPSAYAN ALAN (Thread Çizgisi Burada) --- */
+.replies-wrapper {
+  margin-top: 0.5rem;
+  margin-left: 1.2rem; /* Çizginin soldan uzaklığı */
+  padding-left: 1.2rem; /* Çizgi ile içerik arasındaki boşluk */
+  border-left: 2px solid #E5E7EB; /* İŞTE BU ÇİZGİ BAĞLANTIYI SAĞLAR */
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* --- Header (Avatar + İsim) --- */
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.user-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Avatar Kapsayıcı (Daire) */
+.avatar-wrapper {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: #F3F4F6;
+  border: 1px solid #E5E7EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Reply Avatarları Biraz Daha Küçük */
+.comment-item.is-reply .avatar-wrapper {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-fallback-icon {
+  font-size: 36px !important;
+  color: #9CA3AF;
+}
+
+.comment-item.is-reply .avatar-fallback-icon {
+  font-size: 28px !important;
+}
+
+/* İsim ve Tarih */
+.user-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.username {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #111827;
+}
+
+.date {
+  font-size: 0.75rem;
+  color: #6B7280;
+}
+
+/* --- İçerik Metni --- */
+.comment-content {
+  /* Avatarın hizasından değil, direkt soldan başlasın (daha modern durur) */
+  /* Ama hiyerarşi için margin bırakabiliriz */
+  margin-left: 3rem; 
+  margin-bottom: 0.5rem;
+  color: #374151;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Reply metinleri için sol boşluğu azalt */
+.comment-item.is-reply .comment-content {
+  margin-left: 2.5rem; 
+}
+
+/* --- Aksiyonlar --- */
+.comment-actions {
+  display: flex;
+  gap: 1rem;
+  margin-left: 3rem; /* Metinle aynı hiza */
+}
+
+.comment-item.is-reply .comment-actions {
+  margin-left: 2.5rem;
+}
+
+.action-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #6B7280;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 0;
+  transition: color 0.2s;
+}
+
+.action-link:hover { color: #111827; }
+.action-link.liked { color: #DB2777; }
+
+/* Reply Input Formu */
+.reply-form {
+  margin-top: 1rem;
+  margin-left: 3rem;
+  padding: 0.75rem;
+  background-color: #F9FAFB;
+  border-radius: 8px;
+  border: 1px solid #E5E7EB;
+}
+
+/* Silme Butonu */
+.delete-icon-btn {
+  background: none;
+  border: none;
+  color: #EF4444;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+.delete-icon-btn:hover { opacity: 1; }

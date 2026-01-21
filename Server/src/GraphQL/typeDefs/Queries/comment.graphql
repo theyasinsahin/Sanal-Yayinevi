@@ -16,4 +16,5 @@ type Comment {
   date: DateTime!
   replies: [Comment] # İç içe yorumlar
   likedBy: [ID]
+  parentId: ID
 }

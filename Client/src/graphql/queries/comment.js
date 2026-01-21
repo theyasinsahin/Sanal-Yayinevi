@@ -11,3 +11,20 @@ export const GET_COMMENT_BY_ID = gql`
     }
   }
 `;
+
+export const GET_COMMENTS_BY_BOOK_ID = gql`
+  query GetCommentsByBookId($bookId: ID!) {
+    getCommentsByBookId(bookId: $bookId) {
+      id
+      content
+      date
+      parentId
+      userId {
+        id
+        username
+        profilePicture
+      }
+      likedBy
+    }
+  }
+`;
