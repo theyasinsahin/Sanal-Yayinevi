@@ -22,6 +22,8 @@ import { parseContentToPages } from '../../utils/htmlPageSplitter';
 import { Button } from '../../components/UI/Button';
 import { Typography } from '../../components/UI/Typography';
 import { Input } from '../../components/UI/Input';
+import { Toast } from '../../components/UI/Toast';
+import { Badge } from '../../components/UI/Badge';
 
 import './BookDashboard.css';
 
@@ -267,9 +269,9 @@ const BookDashboard = () => {
                 <Typography variant="h5" weight="bold">
                   {chapters.find(c => c.id === selectedChapter)?.title}
                 </Typography>
-                <span className={`status-badge ${isSaved ? 'saved' : 'unsaved'}`}>
+                <Badge variant={isSaved ? 'success' : 'warning'}>
                   {isSaved ? 'Kaydedildi' : 'Kaydedilmedi'}
-                </span>
+                </Badge>
               </div>
               <Button 
                 variant="primary" 
@@ -301,12 +303,12 @@ const BookDashboard = () => {
         )}
       </main>
 
-      {/* Notification Toast */}
-      {notification.isVisible && (
-        <div className={`toast-notification ${notification.type}`}>
-          {notification.message}
-        </div>
-      )}
+      <Toast 
+        isVisible={notification.isVisible}
+        message={notification.message}
+        type={notification.type}
+        onClose={() => setNotification({ ...notification, isVisible: false })}
+      />
 
     </div>
   );

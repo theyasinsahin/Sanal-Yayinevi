@@ -159,22 +159,6 @@
   gap: 1rem;
 }
 
-.status-badge {
-  font-size: 0.75rem;
-  padding: 2px 8px;
-  border-radius: 12px;
-}
-
-.status-badge.saved {
-  background-color: #ECFDF5;
-  color: #059669;
-}
-
-.status-badge.unsaved {
-  background-color: #FFFBEB;
-  color: #D97706;
-}
-
 /* Quill Wrapper */
 .quill-wrapper {
   flex-grow: 1;
@@ -225,27 +209,6 @@
   height: 100%;
   text-align: center;
   color: #9CA3AF;
-}
-
-/* Toast Notification */
-.toast-notification {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  padding: 1rem 1.5rem;
-  border-radius: 8px;
-  color: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  animation: slideIn 0.3s ease;
-  z-index: 2000;
-}
-
-.toast-notification.success {
-  background-color: #10B981;
-}
-
-.toast-notification.error {
-  background-color: #EF4444;
 }
 
 @keyframes slideIn {
