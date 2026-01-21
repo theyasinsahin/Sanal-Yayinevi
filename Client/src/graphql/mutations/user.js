@@ -40,3 +40,14 @@ export const TOGGLE_FOLLOW_MUTATION = gql`
     }
   }
 `;
+
+export const UPDATE_USER_MUTATION = gql`
+    mutation UpdateProfile($username: String!, $fullName: String!, $bio: String!, $profilePicture: String) {
+      updateProfile(username: $username, fullName: $fullName, bio: $bio, profilePicture: $profilePicture) {
+        id  
+        username
+        fullName
+        bio
+        profilePicture
+      }
+    }`;

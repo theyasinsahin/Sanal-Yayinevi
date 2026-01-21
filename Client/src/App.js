@@ -23,7 +23,6 @@ import BookDetailPage from "./pages/BookDetail";
 import BookReader from "./pages/BookReader";
 import CreateBookPage from "./pages/CreateBookPage";
 import BookDashboard from "./pages/BookDashboard";
-import MyProfilePage from "./pages/MyProfilePage";
 import UserProfilePage from "./pages/UserProfilePage";
 import LoginPage from "./pages/Auth/Login";
 import RegisterPage from "./pages/Auth/Register";
@@ -118,7 +117,7 @@ const router = createBrowserRouter([
   { path: "/profile", 
     element: (
       <ProtectedRoute>
-        <MyProfilePage />
+        <UserProfilePage />
       </ProtectedRoute>
     )
   },
