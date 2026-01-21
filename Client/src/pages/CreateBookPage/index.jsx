@@ -23,6 +23,7 @@ import { Button } from '../../components/UI/Button';
 import { Input } from '../../components/UI/Input';
 import { Textarea } from '../../components/UI/Textarea';
 import { Select } from '../../components/UI/Select';
+import { Badge } from '../../components/UI/Badge';  
 
 // --- COMPONENTS ---
 import ImageUpload from '../../components/ImageUpload';
@@ -218,14 +219,15 @@ const genreOptions = genreList.map(cat => ({
                   {bookData.tags.length > 0 && (
                     <div className="tags-list">
                       {bookData.tags.map((tag, index) => (
-                        <span key={index} className="tag-pill">
+                        // Span yerine Badge kullanıyoruz
+                        <Badge key={index} variant="primary">
                           {tag}
                           <Close 
-                            fontSize="small" 
-                            className="tag-remove-icon" 
+                            fontSize="inherit" // İkon boyutunu badge'e uydur
+                            style={{ cursor: 'pointer', marginLeft: '4px', opacity: 0.7 }}
                             onClick={() => handleRemoveTag(tag)}
                           />
-                        </span>
+                        </Badge>
                       ))}
                     </div>
                   )}
