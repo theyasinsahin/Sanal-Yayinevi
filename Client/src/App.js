@@ -27,8 +27,8 @@ import UserProfilePage from "./pages/UserProfilePage";
 import LoginPage from "./pages/Auth/Login";
 import RegisterPage from "./pages/Auth/Register";
 import DonationPage from "./pages/DonationPage";
-import PaymentSuccess from "./pages/PaymentSuccess";
-import PaymentFailure from "./pages/PaymentFailure";
+import PaymentSuccess from "./pages/PaymentResult/PaymentSuccess";
+import PaymentFailure from "./pages/PaymentResult/PaymentFailure";
 
 // --- APOLLO SETUP (Burası Aynı Kalıyor) ---
 const httpLink = createHttpLink({
