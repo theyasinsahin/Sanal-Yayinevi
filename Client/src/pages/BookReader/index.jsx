@@ -1,21 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Edit, ArrowBack, MenuBook } from '@mui/icons-material';
-import './BookReader.css';
-
 import { useQuery, useMutation } from '@apollo/client';
+import { ChevronLeft, ChevronRight, ArrowBack, MenuBook } from '@mui/icons-material';
+
+// --- LOGIC & DATA ---
 import { GET_BOOK_READER_DATA } from '../../graphql/queries/book';
 import { GET_USER_BY_ID } from '../../graphql/queries/user';
 import { INCREMENT_BOOK_VIEW_MUTATION } from '../../graphql/mutations/book';
+import { parseContentToPages } from '../../utils/htmlPageSplitter';
 
-// Yukarıda yazdığımız fonksiyonu buraya yapıştırabilir veya import edebilirsin.
-// Ben kolaylık olsun diye burada çağırdığımızı varsayıyorum:
-import { parseContentToPages } from '../../utils/htmlPageSplitter'; 
+// --- UI KIT ---
+import { Button } from '../../components/UI/Button';
+import { Typography } from '../../components/UI/Typography';
+
+import './BookReader.css';
 
 const BookReader = () => {
   const { bookId } = useParams();
 
-  // --- Görüntülenme Arttırma ---
+  // --- MUTATIONS ---
   const [incrementBookViews] = useMutation(INCREMENT_BOOK_VIEW_MUTATION);
   const viewCounted = useRef(false);
 
@@ -26,8 +29,8 @@ const BookReader = () => {
     }
   }, [bookId, incrementBookViews]);
 
-  // --- Veri Çekme ---
-  const { data: bookData, loading: bookLoading, error: bookError } = useQuery(GET_BOOK_READER_DATA, {
+  // --- QUERIES ---
+  const { data: bookData, loading: bookLoading } = useQuery(GET_BOOK_READER_DATA, {
     variables: { id: bookId },
     skip: !bookId,
   });
@@ -41,14 +44,12 @@ const BookReader = () => {
   const [pages, setPages] = useState([]);
   const [isFlipping, setIsFlipping] = useState(false);
 
-  const currentUserId = localStorage.getItem('userId');
-  const isAuthor = book && book.authorId === currentUserId;
-
   const { data: userData } = useQuery(GET_USER_BY_ID, {
     variables: { id: book?.authorId },
     skip: !book?.authorId,
   });
 
+  // --- RESIZE HANDLER ---
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
@@ -56,6 +57,7 @@ const BookReader = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // --- DATA SETTING ---
   useEffect(() => {
     if (userData && userData.getUserById) {
       setAuthorName(userData.getUserById.fullName || userData.getUserById.username);
@@ -70,22 +72,21 @@ const BookReader = () => {
     }
   }, [bookData]);
 
-  // --- SAYFALANDIRMA MANTIĞI (KAPAK SAYFASI DAHİL) ---
+  // --- PAGE GENERATION LOGIC (UNCHANGED) ---
   useEffect(() => {
     if (book && chapters.length > 0) {
       let allBookPages = [];
 
-      // 1. ADIM: KAPAK SAYFASI EKLE (En Başa)
+      // 1. Kapak Sayfası
       allBookPages.push({
-        type: 'title_page', // Özel tip
+        type: 'title_page', 
         bookTitle: book.title,
         author: authorName || "Bilinmeyen Yazar",
         genre: book.genre
       });
 
-      // 2. ADIM: BÖLÜMLERİ İŞLE
+      // 2. Bölümler
       chapters.forEach((chapter) => {
-        // Yardımcı fonksiyonumuzla HTML'i bozmadan bölüyoruz
         const chapterPages = parseContentToPages(chapter.content, chapter.title);
         allBookPages = [...allBookPages, ...chapterPages];
       });
@@ -95,6 +96,7 @@ const BookReader = () => {
     }
   }, [book, chapters, authorName]);
 
+  // --- NAVIGATION ---
   const changePage = (direction) => {
     const increment = isMobile ? 1 : 2;
     let newPage = currentPage;
@@ -114,10 +116,10 @@ const BookReader = () => {
     }, 300);
   };
 
+  // --- PAGE RENDERER (UNCHANGED VISUALLY) ---
   const renderPageContent = (pageData) => {
     if (!pageData) return null;
 
-    // KAPAK SAYFASI TASARIMI
     if (pageData.type === 'title_page') {
         return (
             <div className="page-inner title-page-content">
@@ -137,7 +139,6 @@ const BookReader = () => {
         );
     }
 
-    // NORMAL İÇERİK SAYFASI
     return (
         <div className="page-inner">
             {pageData.isChapterStart && (
@@ -147,13 +148,10 @@ const BookReader = () => {
                 </div>
             )}
             
-            {/* HTML etiketlerini (p, b, strong) yorumlaması için dangerouslySetInnerHTML kullanıyoruz */}
             <div 
                 className="content-text" 
                 dangerouslySetInnerHTML={{ __html: pageData.content }} 
             />
-            
-            {/* Kapak sayfasında numara olmaz, o yüzden index kontrolü yapabiliriz ama basitlik için bırakıyoruz */}
         </div>
     );
   };
@@ -167,9 +165,14 @@ const BookReader = () => {
   return (
     <div className={`book-reader ${isMobile ? 'mobile' : ''}`}>
       
-      <Link to={`/book-detail/${bookId}`} className="back-link">
-         <ArrowBack /> Kitaba Dön
-      </Link>
+      {/* --- UI KIT: Back Button --- */}
+      <div className="reader-top-bar">
+        <Link to={`/book-detail/${bookId}`} className="no-underline">
+           <Button variant="ghost" icon={<ArrowBack />}>
+             Kitaba Dön
+           </Button>
+        </Link>
+      </div>
 
       <div className={`book-container ${isFlipping ? 'flipping' : ''}`}>
         
@@ -177,7 +180,6 @@ const BookReader = () => {
         {!isMobile && currentPage < pages.length && (
           <div className="book-page left" onClick={() => changePage('prev')}>
             {renderPageContent(pages[currentPage])}
-            {/* Kapak sayfasında (index 0) numara gösterme */}
             {currentPage !== 0 && <div className="footer-number">{currentPage}</div>}
           </div>
         )}
@@ -189,24 +191,40 @@ const BookReader = () => {
              <div className="footer-number">{currentPage + (isMobile ? 0 : 1)}</div>
           </div>
         ) : (
-            !isMobile && <div className="book-page right empty-page">
-                <div className="end-text">SON</div>
-            </div>
+           !isMobile && <div className="book-page right empty-page">
+               <div className="end-text">SON</div>
+           </div>
         )}
 
         {!isMobile && <div className="book-spine"></div>}
       </div>
 
+      {/* --- UI KIT: Navigation Controls --- */}
       <div className="navigation-controls">
-         <button className="nav-btn" onClick={() => changePage('prev')} disabled={currentPage === 0}>
-            <ChevronLeft /> Önceki
-         </button>
+         <Button 
+           variant="secondary" 
+           onClick={() => changePage('prev')} 
+           disabled={currentPage === 0}
+           icon={<ChevronLeft />}
+         >
+           Önceki
+         </Button>
+
          <div className="progress-text">
-            {currentPage === 0 ? "Kapak" : `Sayfa ${currentPage} / ${pages.length-1}`}
+            <Typography variant="body" weight="medium">
+               {currentPage === 0 ? "Kapak" : `Sayfa ${currentPage} / ${pages.length-1}`}
+            </Typography>
          </div>
-         <button className="nav-btn" onClick={() => changePage('next')} disabled={currentPage >= pages.length - 2}>
-            Sonraki <ChevronRight />
-         </button>
+
+         <Button 
+           variant="secondary" 
+           onClick={() => changePage('next')} 
+           disabled={currentPage >= pages.length - 2}
+           // icon prop'unu sağa almak için children olarak kullanabiliriz veya iconRight propu ekleyebiliriz
+           // Şimdilik children olarak:
+         >
+           Sonraki <ChevronRight />
+         </Button>
       </div>
     </div>
   );
