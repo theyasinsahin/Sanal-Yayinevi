@@ -30,6 +30,11 @@ import DonationPage from "./pages/DonationPage";
 import PaymentSuccess from "./pages/PaymentResult/PaymentSuccess";
 import PaymentFailure from "./pages/PaymentResult/PaymentFailure";
 
+import AdminDashboard from './pages/Admin/Dashboard';
+import AdminUsers from './pages/Admin/Users';
+import AdminBooks from './pages/Admin/Books';
+import AdminRoute from './components/Route/AdminRoute';
+
 // --- APOLLO SETUP (Burası Aynı Kalıyor) ---
 const httpLink = createHttpLink({
   uri: "http://localhost:5000",
@@ -130,6 +135,28 @@ const router = createBrowserRouter([
   { path: "/donate/:bookId", element: <DonationPage /> },
   { path: "/payment/success", element: <PaymentSuccess /> },
   { path: "/payment/failure", element: <PaymentFailure /> },
+
+  { path: "/admin", 
+    element: (
+      <AdminRoute>
+        <AdminDashboard />
+      </AdminRoute>
+    )
+  },
+  { path: "/admin/users", 
+    element: (
+      <AdminRoute>
+        <AdminUsers />
+      </AdminRoute>
+    )
+  },
+  { path: "/admin/books", 
+    element: (
+      <AdminRoute>
+        <AdminBooks />
+      </AdminRoute>
+    )
+  },
 ]);
 
 function App() {
