@@ -32,8 +32,8 @@ chapters: {
 
 status: {
     type: String,
-    enum: ['WRITING', 'COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'],
-    default: 'WRITING'
+    enum: ['DRAFT', 'WRITING', 'COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'],
+    default: 'DRAFT'
   },
 
   // BASKI VE MALİYET KONFİGÜRASYONU (Otomatik hesaplama için)

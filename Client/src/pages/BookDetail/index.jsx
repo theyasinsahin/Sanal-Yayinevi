@@ -203,8 +203,12 @@ const BookDetailPage = () => {
                   <span className="meta-value">{book.stats?.likes || 0}</span>
                 </div>
                 <div className="meta-row">
-                  <span className="meta-label">Destekleyen:</span>
-                  <Badge variant="success">{book.backerCount || 0} Kişi</Badge>
+                  <span className="meta-label">Desteklenme Sayısı:</span>
+                  <Badge variant="success">{book.backerCount || 0} Kez</Badge>
+                </div>
+                 <div className="meta-row">
+                  <span className="meta-label">Desteklenme Tutarı:</span>
+                  <Badge variant="success">{book.currentFunding || 0} TL</Badge>
                 </div>
               </div>
             </aside>

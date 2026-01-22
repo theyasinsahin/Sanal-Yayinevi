@@ -108,6 +108,9 @@ export const GET_BOOK_BY_ID = gql`
         createdAt
       }
       tags
+      backerCount
+      fundingTarget
+      currentFunding
     }
   }
 `;
