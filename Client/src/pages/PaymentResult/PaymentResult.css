@@ -1,10 +1,14 @@
 .payment-result-page {
+  min-height: calc(100vh - var(--navbar-height));
+  
   display: flex;
-  align-items: center;
   justify-content: center;
-  min-height: 80vh; /* Footer ve Navbar arası boşluğu doldurur */
+
+  align-items: flex-start;
+
+  padding-top: 6rem;
+  padding-bottom: 4rem;
   background-color: #F9FAFB;
-  padding: 2rem;
 }
 
 .result-card {
