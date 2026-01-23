@@ -16,6 +16,7 @@ import { getOptimizedImage } from '../../../utils/ImageUtils';
 // --- UI KIT ---
 import { Typography } from '../../UI/Typography';
 import { Badge } from '../../UI/Badge';
+import { ProgressBar } from '../../UI/ProgressBar';
 
 import './BookCard.css';
 
@@ -54,6 +55,8 @@ const BookCard = ({ book: bookProp, bookId }) => {
   const handleBookClick = () => {
       navigate(`/book-detail/${id}`);
   };
+
+  console.log("Book Status: ", book);
 
   return (
     <div className="book-card" onClick={handleBookClick}>
@@ -106,6 +109,15 @@ const BookCard = ({ book: bookProp, bookId }) => {
             ? (description.length > 80 ? description.substring(0, 80) + "..." : description) 
             : "Açıklama bulunmuyor."}
         </Typography>
+
+        {book.status === 'FUNDING' && (
+          <div className="funding-status mt-3">
+              <ProgressBar 
+                  current={book.currentFunding || 0} 
+                  target={book.fundingTarget || 1000} 
+              />
+          </div>
+        )}
 
         {/* İstatistikler (Alt Bar) */}
         <div className="card-stats">

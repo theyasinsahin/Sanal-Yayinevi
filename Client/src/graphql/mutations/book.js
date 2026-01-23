@@ -48,3 +48,32 @@ export const CREATE_BOOK_MUTATION = gql`
         }
     }
 `;
+
+export const UPDATE_BOOK_STATUS_MUTATION = gql`
+  mutation UpdateBookStatus(
+    $bookId: ID!
+    $status: String!
+    $fundingTarget: Float
+    $printConfig: PrintConfigInput # Backend'de tanımladığımız Input Type ismi
+  ) {
+    updateBookStatus(
+      bookId: $bookId
+      status: $status
+      fundingTarget: $fundingTarget
+      printConfig: $printConfig
+    ) {
+      id
+      title
+      status
+      fundingTarget
+      currentFunding
+      backerCount
+      printConfig {
+        paperType
+        coverType
+        dimension
+        estimatedPageCount
+      }
+    }
+  }
+`;

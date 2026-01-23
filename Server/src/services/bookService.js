@@ -6,12 +6,20 @@ export const findBookById = async (id) => {
 };
 
 export const findAllBooks = async () => {
-  return await Book.find().sort({ createdAt: -1 }); // Yeniden eskiye
-};
+    return await Book.find({ 
+        status: { $in: ['WRITING', 'COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'] } 
+    }).sort({ createdAt: -1 });};
 
-export const findBooksByAuthorId = async (authorId) => {
-  return await Book.find({ authorId });
-};
+export const findBooksByAuthorId = async (authorId, {User})   => {
+    if (User && User.id === authorId) {
+        return await Book.find({ authorId: authorId }).sort({ createdAt: -1 });
+    }
+    
+    // Başkası bakıyorsa DRAFT'ları gizle
+    return await Book.find({ 
+        authorId: authorId,
+        status: { $ne: 'DRAFT' } // Not Equal to DRAFT
+    }).sort({ createdAt: -1 });};
 
 export const findBooksByGenre = async (genre) => {
   return await Book.find({ genre });

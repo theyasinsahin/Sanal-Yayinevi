@@ -8,7 +8,7 @@ export default {
   Query: {
     getBookById: async (_, { id }) => BookService.findBookById(id),
 
-    getBooksByAuthorId: async (_, { authorId }) => BookService.findBooksByAuthorId(authorId),
+    getBooksByAuthorId: async (_, { authorId }, {req, User}) => BookService.findBooksByAuthorId(authorId, {req, User}),
 
     getBooksByGenre: async (_, { genre }) => BookService.findBooksByGenre(genre),
 
@@ -68,6 +68,24 @@ export default {
         if(!user) throw new Error("Giriş yapmalısınız");
         
         return BookService.toggleLike(bookId, user._id);
+    },
+
+    updateBookStatus: async (_, { bookId, status, fundingTarget, printConfig }, { req, User }) => {
+        const user = await authenticateUser(req, User);
+        if(!user) throw new Error("Giriş yapmalısınız");
+
+        const book = await BookService.findBookById(bookId);
+        if (!book) throw new Error("Kitap bulunamadı");
+
+        if (book.authorId.toString() !== user._id.toString() && user.role !== 'ADMIN') {
+             throw new Error("Yetkiniz yok.");
+        }
+
+        const updates = { status };
+        if (fundingTarget !== undefined) updates.fundingTarget = fundingTarget;
+        if (printConfig) updates.printConfig = printConfig;
+
+        return await Book.findByIdAndUpdate(bookId, updates, { new: true });
     }
   },
 

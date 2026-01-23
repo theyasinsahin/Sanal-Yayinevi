@@ -50,6 +50,11 @@ export const GET_BOOKS = gql`
         commentCount,
         createdAt,
         updatedAt
+        status
+        backerCount
+        fundingTarget
+        currentFunding
+        tags
     }
   }
 `;
@@ -111,6 +116,7 @@ export const GET_BOOK_BY_ID = gql`
       backerCount
       fundingTarget
       currentFunding
+      status
     }
   }
 `;

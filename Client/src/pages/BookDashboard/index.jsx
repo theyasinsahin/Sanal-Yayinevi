@@ -15,6 +15,7 @@ import {
 // --- LOGIC & DATA ---
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_BOOK_BY_ID } from '../../graphql/queries/book'; 
+import { UPDATE_BOOK_STATUS_MUTATION } from '../../graphql/mutations/book';
 import { CREATE_CHAPTER_MUTATION, UPDATE_CHAPTER_MUTATION, DELETE_CHAPTER_MUTATION } from '../../graphql/mutations/chapter';
 import { parseContentToPages } from '../../utils/htmlPageSplitter';
 
@@ -24,6 +25,8 @@ import { Typography } from '../../components/UI/Typography';
 import { Input } from '../../components/UI/Input';
 import { Toast } from '../../components/UI/Toast';
 import { Badge } from '../../components/UI/Badge';
+import { Select } from '../../components/UI/Select';
+import { CostCalculatorModal } from '../../components/Books/CostCalculatorModal';
 
 import './BookDashboard.css';
 
@@ -36,6 +39,11 @@ const BookDashboard = () => {
     variables: { id: bookId },
     skip: !bookId,
     fetchPolicy: "network-only" 
+  });
+
+  // Status Mutation
+  const [updateStatus, { loading: statusLoading }] = useMutation(UPDATE_BOOK_STATUS_MUTATION, {
+     refetchQueries: [{ query: GET_BOOK_BY_ID, variables: { id: bookId } }]
   });
 
   const [addChapter] = useMutation(CREATE_CHAPTER_MUTATION, {
@@ -53,8 +61,26 @@ const BookDashboard = () => {
   const [newChapterTitle, setNewChapterTitle] = useState('');
   const [isSaved, setIsSaved] = useState(true);
   const [notification, setNotification] = useState({ isVisible: false, message: '', type: '' });
-  
+  const [showCostModal, setShowCostModal] = useState(false);
+
   const isJustLoaded = useRef(false);
+
+  // --- HANDLERS ---
+  
+  // 1. Taslak <-> Yayında Geçişi
+  const togglePublish = async () => {
+     const newStatus = book.status === 'DRAFT' ? 'WRITING' : 'DRAFT';
+     if(window.confirm(newStatus === 'WRITING' ? "Kitap herkese görünür olacak. Onaylıyor musunuz?" : "Kitap yayından kaldırılıp taslağa çekilecek.")) {
+        await updateStatus({ variables: { bookId, status: newStatus } });
+     }
+  };
+
+  // 2. Tamamlandı İşaretleme
+  const markAsCompleted = async () => {
+     if(window.confirm("Kitabın yazım aşamasını bitirdiniz mi?")) {
+        await updateStatus({ variables: { bookId, status: 'COMPLETED' } });
+     }
+  };
 
   // --- QUILL MODULES ---
   const modules = useMemo(() => ({
@@ -258,6 +284,59 @@ const BookDashboard = () => {
             ))}
           </div>
         </div>
+
+        <div className="status-management-panel p-4 border-t mt-4">
+             <Typography variant="h6" className="mb-2">Yayın Durumu</Typography>
+             
+             <div className="mb-4">
+                <Badge variant={
+                    book?.status === 'PUBLISHED' ? 'success' : 
+                    book?.status === 'FUNDING' ? 'warning' :
+                    book?.status === 'DRAFT' ? 'neutral' : 'primary'
+                }>
+                    {book?.status}
+                </Badge>
+             </div>
+
+             <div className="flex flex-col gap-2">
+                {/* DRAFT / WRITING DÖNGÜSÜ */}
+                {(book?.status === 'DRAFT' || book?.status === 'WRITING') && (
+                    <Button 
+                      variant={book.status === 'DRAFT' ? 'success' : 'danger'} 
+                      size="small" 
+                      onClick={togglePublish}
+                      isLoading={statusLoading}
+                      className="w-full"
+                    >
+                       {book.status === 'DRAFT' ? 'Yayınla (Görünür Yap)' : 'Taslağa Çek'}
+                    </Button>
+                )}
+
+                {/* WRITING -> COMPLETED */}
+                {book?.status === 'WRITING' && (
+                    <Button 
+                      variant="primary" 
+                      size="small" 
+                      onClick={markAsCompleted}
+                      className="w-full"
+                    >
+                       Yazımı Tamamla
+                    </Button>
+                )}
+
+                {/* COMPLETED -> FUNDING (Hesaplama) */}
+                {book?.status === 'COMPLETED' && (
+                    <Button 
+                      variant="warning" 
+                      size="small" 
+                      onClick={() => setShowCostModal(true)}
+                      className="w-full"
+                    >
+                       Baskı Maliyeti Hesapla
+                    </Button>
+                )}
+             </div>
+          </div>
       </aside>
 
       {/* --- EDITOR AREA --- */}
@@ -302,6 +381,27 @@ const BookDashboard = () => {
           </div>
         )}
       </main>
+
+      {/* MODAL: BASKI MALİYETİ HESAPLAMA */}
+       {showCostModal && (
+          <CostCalculatorModal 
+             book={book} 
+             pageCount={book.pageCount}
+             onClose={() => setShowCostModal(false)}
+             onConfirm={async (data) => {
+                 await updateStatus({ 
+                     variables: { 
+                        bookId, 
+                        status: 'FUNDING',
+                        fundingTarget: data.totalCost,
+                        printConfig: data.config
+                     } 
+                 });
+                 setShowCostModal(false);
+                 alert("Kitap fonlamaya açıldı!");
+             }}
+          />
+       )}
 
       <Toast 
         isVisible={notification.isVisible}

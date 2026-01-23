@@ -20,6 +20,26 @@ type Mutation {
 
   incrementBookViews(id: ID!): Book!
   likeBook(bookId: ID!): Book!
+  updateBookStatus(
+    bookId: ID!
+    status: String!
+    fundingTarget: Float
+    printConfig: PrintConfigInput
+  ): Book!
+}
+
+input PrintConfigInput {
+  paperType: String
+  coverType: String
+  dimension: String
+  estimatedPageCount: Int
+}
+
+type PrintConfig {
+  paperType: String!
+  coverType: String!
+  dimension: String!
+  estimatedPageCount: Int!
 }
 
 type BookStats {
@@ -52,4 +72,5 @@ type Book {
   tags: [String]
   likedBy: [ID!]
   commentCount: Int!
+  printConfig: PrintConfig
 }
