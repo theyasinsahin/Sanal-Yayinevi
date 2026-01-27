@@ -34,6 +34,7 @@ import AdminDashboard from './pages/Admin/Dashboard';
 import AdminUsers from './pages/Admin/Users';
 import AdminBooks from './pages/Admin/Books';
 import AdminRoute from './components/Route/AdminRoute';
+import AdminTransactions from './pages/Admin/Transactions';
 
 // --- APOLLO SETUP (Burası Aynı Kalıyor) ---
 const httpLink = createHttpLink({
@@ -154,6 +155,13 @@ const router = createBrowserRouter([
     element: (
       <AdminRoute>
         <AdminBooks />
+      </AdminRoute>
+    )
+  },
+  { path: "/admin/transactions", 
+    element: (
+      <AdminRoute>
+        <AdminTransactions />
       </AdminRoute>
     )
   },

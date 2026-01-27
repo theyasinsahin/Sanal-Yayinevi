@@ -1,34 +1,112 @@
-/* Sadece düzen ve boşluklarla ilgili stiller kalır */
-
 .featured-articles-section {
-  padding: 4rem 0;
-  background-color: #fff; /* Veya temanın arka plan rengi */
+  padding: 5rem 0;
+  background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle grid pattern background */
+.featured-articles-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 1.5rem;
+  position: relative;
+  z-index: 1;
 }
 
-/* Grid Yapısı */
+.section-header h2 {
+  color: #0F172A;
+  font-size: 2.5rem;
+  font-weight: 700;
+  position: relative;
+  display: inline-block;
+}
+
+/* Animated underline effect */
+.section-header h2::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 60%;
+  height: 4px;
+  background: linear-gradient(90deg, #6366F1, #EC4899);
+  border-radius: 2px;
+  animation: expand-line 1s ease-out;
+}
+
+@keyframes expand-line {
+  from { width: 0; }
+  to { width: 60%; }
+}
+
+/* Grid Structure */
 .articles-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2.5rem;
+  position: relative;
+  z-index: 1;
 }
 
-/* Mobilde başlık ve butonun hizalanması için */
+/* Staggered fade-in animation for cards */
+.articles-grid > * {
+  animation: fadeInScale 0.6s ease-out backwards;
+}
+
+.articles-grid > *:nth-child(1) { animation-delay: 0.1s; }
+.articles-grid > *:nth-child(2) { animation-delay: 0.2s; }
+.articles-grid > *:nth-child(3) { animation-delay: 0.3s; }
+.articles-grid > *:nth-child(4) { animation-delay: 0.4s; }
+.articles-grid > *:nth-child(5) { animation-delay: 0.5s; }
+.articles-grid > *:nth-child(6) { animation-delay: 0.6s; }
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Mobile responsive */
 @media (max-width: 640px) {
+  .featured-articles-section {
+    padding: 3rem 0;
+  }
+
   .section-header {
     flex-direction: column;
     align-items: flex-start;
+    margin-bottom: 2rem;
+  }
+
+  .section-header h2 {
+    font-size: 2rem;
   }
   
   .articles-grid {
     grid-template-columns: 1fr;
+    gap: 2rem;
   }
 }

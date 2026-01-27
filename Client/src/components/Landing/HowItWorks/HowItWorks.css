@@ -1,98 +1,264 @@
 .how-it-works-section {
-  padding: 5rem 0;
-  background-color: #f9fafb; /* Çok açık gri (Bölümleri ayırmak için) */
+  padding: 6rem 0;
+  background: linear-gradient(180deg, #F8FAFC 0%, #EFF6FF 100%);
   position: relative;
   overflow: hidden;
 }
 
-/* Başlık Ortalaması */
+/* Animated background grid */
+.how-it-works-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  animation: grid-move 20s linear infinite;
+}
+
+@keyframes grid-move {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(60px, 60px); }
+}
+
+/* Floating gradient orbs */
+.how-it-works-section::after {
+  content: '';
+  position: absolute;
+  top: -100px;
+  left: -100px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: float-orb 15s ease-in-out infinite;
+}
+
+@keyframes float-orb {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(100px, 50px) scale(1.1); }
+}
+
+/* Header Center */
 .section-header-center {
   text-align: center;
-  margin-bottom: 4rem;
-  max-width: 600px;
+  margin-bottom: 4.5rem;
+  max-width: 700px;
   margin-left: auto;
   margin-right: auto;
+  position: relative;
+  z-index: 1;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.section-header-center h2 {
+  background: linear-gradient(135deg, #0F172A 0%, #6366F1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2.75rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
 }
 
 .section-subtitle {
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
+  color: #64748B;
+  font-size: 1.125rem;
+  line-height: 1.7;
 }
 
-/* Grid Yapısı */
+/* Steps Grid */
 .steps-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2.5rem;
   padding: 1rem 0;
+  position: relative;
+  z-index: 1;
 }
 
-/* Kart Tasarımı */
+/* Step Card */
 .step-card {
-  background: white;
-  padding: 2.5rem;
-  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  padding: 2.75rem 2.5rem;
+  border-radius: 24px;
   position: relative;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: 1px solid #e5e7eb;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(99, 102, 241, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   z-index: 1;
+  overflow: hidden;
 }
 
-/* Hover Efekti: Kart yukarı kalkar */
+/* Gradient border on hover */
+.step-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  padding: 2px;
+  background: linear-gradient(135deg, #6366F1, #EC4899, #06B6D4);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.step-card:hover::before {
+  opacity: 1;
+}
+
 .step-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  transform: translateY(-12px) scale(1.02);
+  box-shadow: 
+    0 30px 60px rgba(0, 0, 0, 0.12),
+    0 0 60px rgba(99, 102, 241, 0.2);
   border-color: transparent;
 }
 
-/* İkon Alanı */
+/* Icon Wrapper */
 .step-icon-wrapper {
-  width: 80px;
-  height: 80px;
-  background-color: #eff6ff; /* Açık mavi */
-  color: #2563EB; /* Primary Mavi */
+  width: 90px;
+  height: 90px;
+  background: linear-gradient(135deg, #EFF6FF 0%, #F0F9FF 100%);
+  border: 3px solid rgba(99, 102, 241, 0.2);
+  color: #6366F1;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1.5rem;
-  transition: background-color 0.3s ease;
+  margin-bottom: 1.75rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 2rem;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+}
+
+/* Glow effect */
+.step-icon-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -10px;
+  background: linear-gradient(135deg, #6366F1, #EC4899);
+  border-radius: 50%;
+  opacity: 0;
+  filter: blur(20px);
+  transition: opacity 0.4s ease;
 }
 
 .step-card:hover .step-icon-wrapper {
-  background-color: #2563EB;
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
   color: white;
+  transform: scale(1.1) rotate(5deg);
+  border-color: transparent;
+}
+
+.step-card:hover .step-icon-wrapper::before {
+  opacity: 0.6;
 }
 
 .step-title {
   margin-bottom: 1rem;
+  color: #0F172A;
+  font-size: 1.375rem;
+  font-weight: 700;
+  position: relative;
+  z-index: 2;
 }
 
-/* Arka Plandaki Dev Numara (Dekoratif) */
+.step-card p {
+  color: #64748B;
+  line-height: 1.7;
+  position: relative;
+  z-index: 2;
+}
+
+/* Decorative Background Number */
 .step-number-bg {
   position: absolute;
-  top: 10px;
-  right: 20px;
-  font-size: 6rem;
+  top: 15px;
+  right: 25px;
+  font-size: 7rem;
   font-weight: 900;
-  color: #f3f4f6;
-  z-index: -1;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(236, 72, 153, 0.08) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  z-index: 0;
   line-height: 1;
   pointer-events: none;
-  opacity: 0.5;
+  transition: all 0.4s ease;
 }
 
-/* Mobil Düzen */
+.step-card:hover .step-number-bg {
+  transform: scale(1.1) rotate(-5deg);
+  opacity: 0.8;
+}
+
+/* Staggered animation */
+.step-card {
+  animation: fadeInScale 0.8s ease-out backwards;
+}
+
+.steps-grid > .step-card:nth-child(1) { animation-delay: 0.1s; }
+.steps-grid > .step-card:nth-child(2) { animation-delay: 0.2s; }
+.steps-grid > .step-card:nth-child(3) { animation-delay: 0.3s; }
+.steps-grid > .step-card:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile Layout */
 @media (max-width: 640px) {
+  .how-it-works-section {
+    padding: 4rem 0;
+  }
+
+  .section-header-center h2 {
+    font-size: 2rem;
+  }
+
   .steps-grid {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 2rem;
   }
   
   .step-card {
-    padding: 2rem;
+    padding: 2.25rem 2rem;
+  }
+
+  .step-number-bg {
+    font-size: 5rem;
   }
 }

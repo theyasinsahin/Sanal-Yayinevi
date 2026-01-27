@@ -1,16 +1,101 @@
 .ui-badge {
   font-size: 0.75rem;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   white-space: nowrap;
+  letter-spacing: 0.02em;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
 }
 
-.badge-neutral { background-color: #F3F4F6; color: #4B5563; }
-.badge-primary { background-color: #EFF6FF; color: #2563EB; }
-.badge-success { background-color: #ECFDF5; color: #059669; }
-.badge-warning { background-color: #FFFBEB; color: #D97706; } /* Unsaved için */
-.badge-danger  { background-color: #FEF2F2; color: #DC2626; }
+/* Neutral - Sleek gray */
+.badge-neutral {
+  background: linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%);
+  color: #475569;
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+.badge-neutral:hover {
+  background: linear-gradient(135deg, #E2E8F0 0%, #CBD5E1 100%);
+  transform: scale(1.05);
+}
+
+/* Primary - Vibrant purple/indigo */
+.badge-primary {
+  background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
+  color: #4F46E5;
+  border-color: rgba(99, 102, 241, 0.2);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+}
+
+.badge-primary:hover {
+  background: linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+/* Success - Fresh green */
+.badge-success {
+  background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+  color: #047857;
+  border-color: rgba(16, 185, 129, 0.2);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+}
+
+.badge-success:hover {
+  background: linear-gradient(135deg, #A7F3D0 0%, #6EE7B7 100%);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+/* Warning - Warm amber */
+.badge-warning {
+  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+  color: #B45309;
+  border-color: rgba(245, 158, 11, 0.2);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
+}
+
+.badge-warning:hover {
+  background: linear-gradient(135deg, #FDE68A 0%, #FCD34D 100%);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+/* Danger - Bold red */
+.badge-danger {
+  background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+  color: #B91C1C;
+  border-color: rgba(220, 38, 38, 0.2);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.1);
+}
+
+.badge-danger:hover {
+  background: linear-gradient(135deg, #FECACA 0%, #FCA5A5 100%);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+
+/* Icon inside badge */
+.ui-badge svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Glow effect for special badges */
+.badge-glow {
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+@keyframes badge-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px currentColor;
+  }
+  50% {
+    box-shadow: 0 0 16px currentColor;
+  }
+}

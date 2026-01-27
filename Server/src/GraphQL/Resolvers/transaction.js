@@ -15,7 +15,18 @@ export default {
         getBookTransactions: async (_, { bookId }) => {
             // Servis üzerinden kitabın başarılı bağışlarını getir
             return TransactionService.findSuccessfulTransactionsByBookId(bookId);
-        }
+        },
+
+        getAllTransactions: async (_, __, context) => {
+            if (!context.user || context.user.role !== 'ADMIN') {
+                throw new Error("Yetkisiz işlem.");
+            }
+            
+            return await Transaction.find({})
+                .populate('userId')   // Gönderen (User)
+                .populate('bookId')   // Hangi Kitaba (Book)
+                .sort({ createdAt: -1 }); // En yeniden eskiye
+        },
     },
 
     Mutation: {

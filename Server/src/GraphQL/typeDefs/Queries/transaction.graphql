@@ -21,4 +21,5 @@ type Transaction {
 type Query {
   getMyTransactions: [Transaction]
   getBookTransactions(bookId: ID!): [Transaction]
+  getAllTransactions: [Transaction]
 }

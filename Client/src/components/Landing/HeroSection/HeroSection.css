@@ -1,63 +1,165 @@
 .hero-section {
-  padding: 4rem 0;
+  padding: 6rem 0;
   display: flex;
   align-items: center;
-  min-height: 80vh; /* Ekranın büyük kısmını kaplasın */
-  background-color: #ffffff; /* Veya temanın rengi */
+  min-height: 90vh;
+  background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #312E81 100%);
+  position: relative;
+  overflow: hidden;
 }
 
-/* İçeriği yan yana koyan wrapper */
+/* Animated background effects */
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: pulse-glow 8s ease-in-out infinite;
+}
+
+.hero-section::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: -10%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.12) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: pulse-glow 10s ease-in-out infinite reverse;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.1); opacity: 1; }
+}
+
+/* Content wrapper */
 .hero-wrapper {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 4rem;
+  gap: 5rem;
+  position: relative;
+  z-index: 1;
 }
 
-/* Sol taraf (Metinler) */
+/* Left side (Text content) */
 .hero-content {
   flex: 1;
-  max-width: 600px; /* Metnin çok uzamasını engelle */
+  max-width: 600px;
+  animation: fadeInUp 1s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-content h1 {
+  color: #FFFFFF;
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #FFFFFF 0%, #E0E7FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .hero-subtitle {
   margin-top: 1.5rem;
   margin-bottom: 2.5rem;
-  line-height: 1.6;
+  line-height: 1.7;
+  font-size: 1.125rem;
+  color: #CBD5E1;
+  font-weight: 400;
 }
 
-/* Buton Grubu */
+/* Button Group */
 .hero-actions {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+  animation: fadeInUp 1s ease-out 0.2s backwards;
 }
 
-/* Sağ taraf (Görsel) */
+/* Right side (Image) */
 .hero-image-container {
   flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
+  animation: fadeInRight 1s ease-out 0.3s backwards;
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Glowing frame effect around image */
+.hero-image-container::before {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  background: linear-gradient(135deg, #6366F1, #EC4899, #06B6D4);
+  border-radius: 30px;
+  opacity: 0.3;
+  filter: blur(40px);
+  animation: rotate-gradient 6s linear infinite;
+}
+
+@keyframes rotate-gradient {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .hero-img {
   max-width: 100%;
   height: auto;
-  border-radius: 20px; /* Hafif yuvarlak köşeler */
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); /* Hafif gölge */
+  border-radius: 24px;
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.4),
+    0 0 80px rgba(99, 102, 241, 0.3);
   object-fit: cover;
+  position: relative;
+  z-index: 1;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.5s ease;
 }
 
-/* --- Responsive (Mobil) --- */
+.hero-img:hover {
+  transform: scale(1.02) translateY(-5px);
+}
+
+/* Responsive (Mobile) */
 @media (max-width: 960px) {
   .hero-section {
-    padding: 2rem 0;
+    padding: 3rem 0;
     min-height: auto;
   }
 
   .hero-wrapper {
-    flex-direction: column-reverse; /* Mobilde görsel üstte, yazı altta olsun istersen 'column' yap */
+    flex-direction: column;
     text-align: center;
     gap: 3rem;
   }
@@ -69,7 +171,20 @@
     align-items: center;
   }
 
+  .hero-content h1 {
+    font-size: 2.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+
   .hero-actions {
     justify-content: center;
+  }
+
+  .hero-image-container::before {
+    inset: -10px;
+    filter: blur(20px);
   }
 }

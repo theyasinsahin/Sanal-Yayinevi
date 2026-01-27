@@ -6,7 +6,9 @@ import {
   Pages, 
   LocalOffer, 
   Visibility as EyeIcon, 
-  Comment as CommentIcon 
+  Comment as CommentIcon,
+  TrendingUp,
+  Star
 } from '@mui/icons-material';
 
 // --- LOGIC ---
@@ -23,118 +25,191 @@ import './BookCard.css';
 const BookCard = ({ book: bookProp, bookId }) => {
   const navigate = useNavigate();
 
-  // Eğer bookId verildiyse veriyi çek, verilmediyse prop'u kullan
+  // Fetch data if bookId is provided, otherwise use prop
   const {
     data: bookData,
     loading: bookLoading,
     error: bookError,
   } = useQuery(GET_BOOK_BY_ID, {
     variables: { id: bookId },
-    skip: !!bookProp || !bookId, // bookProp varsa sorguyu atla
+    skip: !!bookProp || !bookId,
   });
 
-  // Hangi objeyi kullanacağız?
-  const book = bookProp ? bookProp : bookData?.getBookById;
+  // Determine which book object to use
+  const book = bookProp || bookData?.getBookById;
 
-  // Loading Skeleton (Basit versiyon)
-  if (!bookProp && bookLoading) return <div className="book-card skeleton"></div>;
+  // Loading Skeleton with better structure
+  if (!bookProp && bookLoading) {
+    return (
+      <div className="book-card skeleton">
+        <div className="skeleton-shimmer"></div>
+      </div>
+    );
+  }
   
-  if (bookError) return null; // Hata varsa kartı hiç gösterme (veya hata kartı göster)
+  if (bookError) return null;
   if (!book) return null;
 
-  const { title, description, imageUrl, pageCount, genre, stats, id, commentCount, author } = book;
+  const { 
+    title, 
+    description, 
+    imageUrl, 
+    pageCount, 
+    genre, 
+    stats, 
+    id, 
+    commentCount, 
+    author,
+    status,
+    currentFunding,
+    fundingTarget
+  } = book;
 
-  // Yazar Adı (Güvenli Erişim)
-  const displayAuthor = author?.fullName || author?.username || "Gizli Yazar";
+  // Author name (safe access)
+  const displayAuthor = author?.fullName || author?.username || "Anonymous";
 
-  // Resim Optimizasyonu
+  // Image optimization
   const finalCoverImage = imageUrl 
     ? getOptimizedImage(imageUrl, 300, 450) 
-    : 'https://via.placeholder.com/300x450?text=Kapak+Yok';
+    : 'https://via.placeholder.com/300x450?text=No+Cover';
 
-  const handleBookClick = () => {
-      navigate(`/book-detail/${id}`);
+  // Format numbers for better readability
+  const formatNumber = (num) => {
+    if (!num) return '0';
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+    return num.toString();
   };
 
-  console.log("Book Status: ", book);
+  // Calculate reading time estimate (rough)
+  const estimatedReadTime = pageCount ? Math.ceil(pageCount / 3) : 0;
+
+  // Handle card click
+  const handleBookClick = () => {
+    navigate(`/book-detail/${id}`);
+  };
+
+  // Determine if book is trending (example logic)
+  const isTrending = stats?.views > 1000;
 
   return (
     <div className="book-card" onClick={handleBookClick}>
       
-      {/* --- GÖRSEL ALANI --- */}
+      {/* COVER IMAGE AREA */}
       <div className="card-media">
         <img 
           src={finalCoverImage} 
           alt={title} 
           className="cover-image" 
           loading="lazy"
-          onError={(e) => { e.target.src = 'https://via.placeholder.com/300x450?text=Hata'; }}
+          onError={(e) => { 
+            e.target.src = 'https://via.placeholder.com/300x450?text=Error'; 
+          }}
         />
         
-        {/* Görsel Üzerindeki Etiketler */}
+        {/* Overlay Badges */}
         <div className="meta-overlay">
-          {/* Sayfa Sayısı - Neutral Badge */}
-          <Badge variant="neutral" className="shadow-sm">
-            <Pages style={{ fontSize: 12 }} /> 
-            {pageCount || 0}
-          </Badge>
+          {/* Page Count */}
+          {pageCount && (
+            <Badge variant="neutral" className="shadow-sm">
+              <Pages style={{ fontSize: 12 }} /> 
+              {pageCount}p
+            </Badge>
+          )}
 
-          {/* Tür - Primary Badge */}
-          <Badge variant="primary" className="shadow-sm capitalize">
-            <LocalOffer style={{ fontSize: 12 }} /> 
-            {genre || 'Genel'}
-          </Badge>
+          {/* Genre Tag */}
+          {genre && (
+            <Badge variant="primary" className="shadow-sm">
+              <LocalOffer style={{ fontSize: 12 }} /> 
+              {genre}
+            </Badge>
+          )}
+
+          {/* Trending Badge */}
+          {isTrending && (
+            <Badge variant="warning" className="shadow-sm badge-glow">
+              <TrendingUp style={{ fontSize: 12 }} /> 
+              Trending
+            </Badge>
+          )}
         </div>
+
+        {/* Status Indicator */}
+        {status === 'FUNDING' && (
+          <div className="status-badge funding">
+            <Star style={{ fontSize: 14 }} />
+            <span>Funding</span>
+          </div>
+        )}
+        {status === 'PUBLISHED' && (
+          <div className="status-badge published">
+            Published
+          </div>
+        )}
       </div>
 
-      {/* --- İÇERİK ALANI --- */}
+      {/* CONTENT AREA */}
       <div className="card-content">
         
-        {/* Başlık */}
-        <Typography variant="h6" weight="bold" className="book-title" title={title} style={{ fontSize: '1.5rem' }}>
+        {/* Title */}
+        <Typography 
+          variant="h6" 
+          weight="bold" 
+          className="book-title" 
+          title={title}
+        >
           {title}
         </Typography>
         
-        {/* Yazar */}
+        {/* Author */}
         <div className="book-author">
-          <Typography variant="caption" color="muted">Yazar:</Typography>
-          <Typography variant="caption" weight="medium" color="default">
-             {displayAuthor}
+          <Typography variant="caption" color="muted">by</Typography>
+          <Typography variant="caption" weight="semibold" color="primary">
+            {displayAuthor}
           </Typography>
         </div>
         
-        {/* Açıklama (Kısa) */}
+        {/* Description */}
         <Typography variant="body" color="muted" className="book-excerpt">
           {description 
-            ? (description.length > 80 ? description.substring(0, 80) + "..." : description) 
-            : "Açıklama bulunmuyor."}
+            ? (description.length > 120 ? description.substring(0, 120) + "..." : description) 
+            : "No description available."}
         </Typography>
 
-        {book.status === 'FUNDING' && (
-          <div className="funding-status mt-3">
-              <ProgressBar 
-                  current={book.currentFunding || 0} 
-                  target={book.fundingTarget || 1000} 
-              />
+        {/* Reading Time Estimate */}
+        {estimatedReadTime > 0 && (
+          <div className="reading-time">
+            <Typography variant="caption" color="muted">
+              ~{estimatedReadTime} min read
+            </Typography>
           </div>
         )}
 
-        {/* İstatistikler (Alt Bar) */}
+        {/* Funding Progress Bar */}
+        {status === 'FUNDING' && (
+          <div className="funding-status">
+            <ProgressBar 
+              current={currentFunding || 0} 
+              target={fundingTarget || 1000} 
+            />
+          </div>
+        )}
+
+        {/* Statistics Bar */}
         <div className="card-stats">
-          <div className="stat-item" title="Görüntülenme">
+          <div className="stat-item" title="Views">
             <EyeIcon className="stat-icon" />
-            <span>{stats?.views || 0}</span>
+            <span>{formatNumber(stats?.views || 0)}</span>
           </div>
-          <div className="stat-item" title="Yorumlar">
+          <div className="stat-item" title="Comments">
             <CommentIcon className="stat-icon" />
-            <span>{commentCount || 0}</span>
+            <span>{formatNumber(commentCount || 0)}</span>
           </div>
-          <div className="stat-item" title="Beğeniler">
-             <FavoriteBorder className="stat-icon" />
-             <span>{(stats?.likes || 0).toLocaleString()}</span>
+          <div className="stat-item" title="Likes">
+            <FavoriteBorder className="stat-icon" />
+            <span>{formatNumber(stats?.likes || 0)}</span>
           </div>
         </div>
-
       </div>
     </div>
   );

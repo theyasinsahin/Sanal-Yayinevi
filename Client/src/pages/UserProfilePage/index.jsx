@@ -5,7 +5,10 @@ import {
   Person, Email, Link as LinkIcon, 
   Book, People, Bookmark, 
   Edit, Save, Cancel, 
-  PersonAdd, PersonRemove, Logout 
+  PersonAdd, PersonRemove, Logout,
+  Verified,
+  TrendingUp,
+  Star
 } from '@mui/icons-material';
 
 // --- CONTEXT & UTILS ---
@@ -30,8 +33,8 @@ import ImageUpload from '../../components/ImageUpload';
 import './UserProfile.css';
 
 const UserProfile = () => {
-  const { userId } = useParams(); // URL'den gelen ID (opsiyonel)
-  const { user: authUser, logout } = useAuth(); // Giriş yapmış kullanıcı
+  const { userId } = useParams();
+  const { user: authUser, logout } = useAuth();
   const navigate = useNavigate();
 
   // --- STATE ---
@@ -40,12 +43,10 @@ const UserProfile = () => {
     fullName: '', username: '', bio: '', profilePicture: '', website: ''
   });
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
+  const [activeTab, setActiveTab] = useState('published'); // 'published' | 'saved'
 
-  // 1. HANGİ KULLANICI GÖSTERİLECEK?
-  // Eğer URL'de ID varsa onu kullan, yoksa authUser'ı kullan.
+  // Determine which user to show
   const targetId = userId || authUser?.id;
-
-  // 2. KENDİ PROFİLİ Mİ?
   const isMe = authUser && targetId === authUser.id;
 
   // --- QUERIES ---
@@ -61,7 +62,7 @@ const UserProfile = () => {
   const [updateUser, { loading: updating }] = useMutation(UPDATE_USER_MUTATION, {
     onCompleted: () => {
       setIsEditing(false);
-      showToast('Profil güncellendi', 'success');
+      showToast('Profile updated successfully!', 'success');
       refetch();
     },
     onError: (err) => showToast(err.message, 'error')
@@ -69,11 +70,13 @@ const UserProfile = () => {
 
   const [toggleFollow, { loading: followLoading }] = useMutation(TOGGLE_FOLLOW_MUTATION, {
     refetchQueries: [{ query: GET_USER_BY_ID, variables: { id: targetId } }],
+    onCompleted: () => {
+      showToast(isFollowing ? 'Unfollowed successfully' : 'Following now!', 'success');
+    },
     onError: (err) => showToast(err.message, 'error')
   });
 
   // --- EFFECTS ---
-  // Edit modu açıldığında formu doldur
   useEffect(() => {
     if (isEditing && profile) {
       setEditForm({
@@ -86,21 +89,28 @@ const UserProfile = () => {
     }
   }, [isEditing, profile]);
 
-  // Sayfa yüklendiğinde en üste git
-  useEffect(() => { window.scrollTo(0, 0); }, []);
+  useEffect(() => { 
+    window.scrollTo({ top: 0, behavior: 'smooth' }); 
+  }, []);
 
   // --- HANDLERS ---
-  const showToast = (message, type = 'info') => setToast({ show: true, message, type });
+  const showToast = (message, type = 'info') => 
+    setToast({ show: true, message, type });
 
   const handleFollowToggle = async () => {
-    if (!authUser) return showToast("Giriş yapmalısınız", 'warning');
+    if (!authUser) {
+      showToast("Please log in to follow users", 'warning');
+      return;
+    }
     await toggleFollow({ variables: { followId: targetId } });
   };
 
   const handleSave = async () => {
-    await updateUser({
-      variables: { ...editForm }
-    });
+    if (!editForm.username.trim()) {
+      showToast("Username is required", 'error');
+      return;
+    }
+    await updateUser({ variables: { ...editForm } });
   };
 
   const handleLogout = () => {
@@ -109,198 +119,368 @@ const UserProfile = () => {
   };
 
   const isFollowing = profile?.followers?.some(f => {
-      const fId = typeof f === 'object' ? f.id : f;
-      return fId === authUser?.id;
+    const fId = typeof f === 'object' ? f.id : f;
+    return fId === authUser?.id;
   });
 
+  // Calculate total stats
+  const totalViews = profile?.usersBooks?.reduce((sum, book) => 
+    sum + (book.stats?.views || 0), 0) || 0;
+  const totalLikes = profile?.usersBooks?.reduce((sum, book) => 
+    sum + (book.stats?.likes || 0), 0) || 0;
+
+  // Format numbers
+  const formatNumber = (num) => {
+    if (!num) return '0';
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+    return num.toString();
+  };
+
   // --- RENDER CHECKS ---
-  if (!targetId) return <div className="p-10 text-center">Giriş yapın veya bir kullanıcı seçin.</div>;
-  if (loading) return <MainLayout><div className="p-10 text-center">Yükleniyor...</div></MainLayout>;
-  if (error) return <MainLayout><div className="p-10 text-center text-red-500">Hata: {error.message}</div></MainLayout>;
-  if (!profile) return <MainLayout><div className="p-10 text-center">Kullanıcı bulunamadı.</div></MainLayout>;
+  if (!targetId) {
+    return (
+      <MainLayout>
+        <div className="error-state">
+          <Person style={{ fontSize: '4rem' }} />
+          <Typography variant="h3">Please log in or select a user</Typography>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+          <Typography variant="body" color="muted">Loading profile...</Typography>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="error-state">
+          <Typography variant="h3" color="danger">Error loading profile</Typography>
+          <Typography variant="body" color="muted">{error.message}</Typography>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <MainLayout>
+        <div className="error-state">
+          <Typography variant="h3">User not found</Typography>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
       <div className="profile-page">
+        
+        {/* Background decorative elements */}
+        <div className="profile-bg-orb profile-bg-orb-1"></div>
+        <div className="profile-bg-orb profile-bg-orb-2"></div>
+
         <Container maxWidth="5xl">
           
-          {/* --- HEADER --- */}
+          {/* HEADER SECTION */}
           <div className="profile-header-card">
             
-            {/* Sol: Avatar */}
+            {/* Avatar Section */}
             <div className="header-left">
               <div className="avatar-wrapper-lg">
                 {isEditing ? (
-                   <ImageUpload 
-                     currentImage={editForm.profilePicture}
-                     onUploadSuccess={(url) => setEditForm(prev => ({...prev, profilePicture: url}))}
-                   />
+                  <ImageUpload 
+                    currentImage={editForm.profilePicture}
+                    onUploadSuccess={(url) => setEditForm(prev => ({...prev, profilePicture: url}))}
+                  />
                 ) : (
-                   profile.profilePicture ? (
-                     <img src={profile.profilePicture} alt={profile.username} className="avatar-img-lg" />
-                   ) : (
-                     <Person className="avatar-placeholder" />
-                   )
+                  profile.profilePicture ? (
+                    <img src={profile.profilePicture} alt={profile.username} className="avatar-img-lg" />
+                  ) : (
+                    <div className="avatar-placeholder-wrapper">
+                      <Person className="avatar-placeholder" />
+                    </div>
+                  )
                 )}
               </div>
+              
+              {/* Verified Badge */}
+              {!isEditing && profile.isVerified && (
+                <div className="verified-badge">
+                  <Verified style={{ fontSize: '1rem' }} />
+                  <span>Verified</span>
+                </div>
+              )}
             </div>
 
-            {/* Orta: Bilgiler & Form */}
+            {/* Info Section */}
             <div className="header-center">
-               {isEditing ? (
-                 <div className="edit-form-grid">
-                    <Input 
-                      name="fullName" 
-                      placeholder="Ad Soyad" 
-                      value={editForm.fullName}
-                      onChange={(e) => setEditForm({...editForm, fullName: e.target.value})}
-                    />
-                    <Input 
-                      name="username" 
-                      placeholder="Kullanıcı Adı" 
-                      value={editForm.username}
-                      onChange={(e) => setEditForm({...editForm, username: e.target.value})}
-                    />
-                    <Input 
-                      name="website" 
-                      placeholder="Website (Opsiyonel)" 
-                      value={editForm.website}
-                      onChange={(e) => setEditForm({...editForm, website: e.target.value})}
-                    />
-                    <Textarea 
-                      name="bio"
-                      placeholder="Biyografi..."
-                      value={editForm.bio}
-                      onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
-                      rows={3}
-                    />
-                    <div className="edit-actions">
-                       <Button variant="primary" size="small" onClick={handleSave} isLoading={updating} icon={<Save fontSize="small"/>}>
-                         Kaydet
-                       </Button>
-                       <Button variant="ghost" size="small" onClick={() => setIsEditing(false)} icon={<Cancel fontSize="small"/>}>
-                         İptal
-                       </Button>
+              {isEditing ? (
+                <div className="edit-form-grid">
+                  <Input 
+                    name="fullName" 
+                    label="Full Name"
+                    placeholder="Enter your full name" 
+                    value={editForm.fullName}
+                    onChange={(e) => setEditForm({...editForm, fullName: e.target.value})}
+                  />
+                  <Input 
+                    name="username" 
+                    label="Username"
+                    placeholder="Choose a username" 
+                    value={editForm.username}
+                    onChange={(e) => setEditForm({...editForm, username: e.target.value})}
+                    required
+                  />
+                  <Input 
+                    name="website" 
+                    label="Website"
+                    placeholder="https://yourwebsite.com" 
+                    value={editForm.website}
+                    onChange={(e) => setEditForm({...editForm, website: e.target.value})}
+                  />
+                  <Textarea 
+                    name="bio"
+                    label="Bio"
+                    placeholder="Tell us about yourself..."
+                    value={editForm.bio}
+                    onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
+                    rows={4}
+                  />
+                  <div className="edit-actions">
+                    <Button 
+                      variant="primary" 
+                      size="medium" 
+                      onClick={handleSave} 
+                      isLoading={updating} 
+                      icon={<Save fontSize="small"/>}
+                    >
+                      Save Changes
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="medium" 
+                      onClick={() => setIsEditing(false)} 
+                      icon={<Cancel fontSize="small"/>}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="name-section">
+                    <div className="name-row">
+                      <Typography variant="h2" weight="bold">
+                        {profile.fullName}
+                      </Typography>
                     </div>
-                 </div>
-               ) : (
-                 <>
-                   <div className="name-section">
-                     <Typography variant="h3" weight="bold">{profile.fullName}</Typography>
-                     <Typography variant="body" color="muted">@{profile.username}</Typography>
-                   </div>
-                   
-                   <Typography variant="body" className="bio-text">
-                     {profile.bio || "Henüz bir biyografi eklenmemiş."}
-                   </Typography>
+                    <Typography variant="body" color="muted" className="username-text">
+                      @{profile.username}
+                    </Typography>
+                  </div>
+                  
+                  {profile.bio && (
+                    <Typography variant="body" className="bio-text">
+                      {profile.bio}
+                    </Typography>
+                  )}
 
-                   <div className="contact-info">
+                  <div className="contact-info">
+                    <div className="contact-item">
+                      <Email fontSize="small" />
+                      <span>{profile.email}</span>
+                    </div>
+                    {profile.website && (
                       <div className="contact-item">
-                        <Email fontSize="small" className="text-gray-400"/>
-                        <span>{profile.email}</span>
+                        <LinkIcon fontSize="small" />
+                        <a 
+                          href={profile.website} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          className="link-hover"
+                        >
+                          {profile.website.replace(/^https?:\/\//i, '')}
+                        </a>
                       </div>
-                      {profile.website && (
-                        <div className="contact-item">
-                          <LinkIcon fontSize="small" className="text-gray-400"/>
-                          <a href={profile.website} target="_blank" rel="noreferrer" className="link-hover">
-                            {profile.website}
-                          </a>
-                        </div>
-                      )}
-                   </div>
-                 </>
-               )}
+                    )}
+                  </div>
+
+                  {/* Mini stats under bio */}
+                  <div className="mini-stats">
+                    <div className="mini-stat">
+                      <TrendingUp style={{ fontSize: '1rem' }} />
+                      <span>{formatNumber(totalViews)} views</span>
+                    </div>
+                    <div className="mini-stat">
+                      <Star style={{ fontSize: '1rem' }} />
+                      <span>{formatNumber(totalLikes)} likes</span>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
-            {/* Sağ: Butonlar */}
+            {/* Action Buttons */}
             <div className="header-right">
               {isMe ? (
-                 !isEditing && (
-                   <div className="my-actions">
-                     <Button variant="outline" size="small" onClick={() => setIsEditing(true)} icon={<Edit fontSize="small"/>}>
-                       Düzenle
-                     </Button>
-                     <Button variant="danger" size="small" onClick={handleLogout} icon={<Logout fontSize="small"/>}>
-                       Çıkış
-                     </Button>
-                   </div>
-                 )
+                !isEditing && (
+                  <div className="my-actions">
+                    <Button 
+                      variant="primary" 
+                      size="medium" 
+                      onClick={() => setIsEditing(true)} 
+                      icon={<Edit fontSize="small"/>}
+                    >
+                      Edit Profile
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="medium" 
+                      onClick={handleLogout} 
+                      icon={<Logout fontSize="small"/>}
+                    >
+                      Logout
+                    </Button>
+                  </div>
+                )
               ) : (
-                 <Button 
-                   variant={isFollowing ? 'outline' : 'primary'} 
-                   onClick={handleFollowToggle}
-                   isLoading={followLoading}
-                   icon={isFollowing ? <PersonRemove/> : <PersonAdd/>}
-                 >
-                   {isFollowing ? 'Takibi Bırak' : 'Takip Et'}
-                 </Button>
+                <Button 
+                  variant={isFollowing ? 'outline' : 'primary'} 
+                  size="large"
+                  onClick={handleFollowToggle}
+                  isLoading={followLoading}
+                  icon={isFollowing ? <PersonRemove/> : <PersonAdd/>}
+                >
+                  {isFollowing ? 'Unfollow' : 'Follow'}
+                </Button>
               )}
             </div>
           </div>
 
-          {/* --- İSTATİSTİKLER --- */}
+          {/* STATISTICS BAR */}
           <div className="stats-bar">
-             <div className="stat-box">
-                <Book className="stat-icon"/>
-                <div>
-                  <span className="stat-num">{profile.usersBooks?.length || 0}</span>
-                  <span className="stat-lbl">Kitap</span>
+            <div className="stat-box">
+              <div className="stat-icon-wrapper">
+                <Book className="stat-icon" />
+              </div>
+              <div className="stat-content">
+                <span className="stat-num">{profile.usersBooks?.length || 0}</span>
+                <span className="stat-lbl">Books</span>
+              </div>
+            </div>
+            
+            <div className="stat-box">
+              <div className="stat-icon-wrapper">
+                <People className="stat-icon" />
+              </div>
+              <div className="stat-content">
+                <span className="stat-num">{formatNumber(profile.followers?.length || 0)}</span>
+                <span className="stat-lbl">Followers</span>
+              </div>
+            </div>
+            
+            <div className="stat-box">
+              <div className="stat-icon-wrapper">
+                <People className="stat-icon" />
+              </div>
+              <div className="stat-content">
+                <span className="stat-num">{formatNumber(profile.following?.length || 0)}</span>
+                <span className="stat-lbl">Following</span>
+              </div>
+            </div>
+            
+            {isMe && (
+              <div className="stat-box">
+                <div className="stat-icon-wrapper bookmark">
+                  <Bookmark className="stat-icon" />
                 </div>
-             </div>
-             <div className="stat-box">
-                <People className="stat-icon"/>
-                <div>
-                  <span className="stat-num">{profile.followers?.length || 0}</span>
-                  <span className="stat-lbl">Takipçi</span>
+                <div className="stat-content">
+                  <span className="stat-num">{profile.savedBooks?.length || 0}</span>
+                  <span className="stat-lbl">Saved</span>
                 </div>
-             </div>
-             <div className="stat-box">
-                <People className="stat-icon"/>
-                <div>
-                  <span className="stat-num">{profile.following?.length || 0}</span>
-                  <span className="stat-lbl">Takip</span>
-                </div>
-             </div>
-             {isMe && (
-               <div className="stat-box">
-                  <Bookmark className="stat-icon"/>
-                  <div>
-                    <span className="stat-num">{profile.savedBooks?.length || 0}</span>
-                    <span className="stat-lbl">Kaydedilen</span>
-                  </div>
-               </div>
-             )}
+              </div>
+            )}
           </div>
 
-          {/* --- KİTAPLAR --- */}
-          <div className="books-section">
-             <Typography variant="h2" weight="bold" className="mb-4 border-b pb-2">
-               Yayınlanan Kitaplar
-             </Typography>
-             {profile.usersBooks?.length > 0 ? (
-                <BookGrid books={profile.usersBooks} />
-             ) : (
-                <div className="empty-box">Bu kullanıcı henüz kitap yayınlamamış.</div>
-             )}
-          </div>
-
+          {/* TABS SECTION (if user owns profile) */}
           {isMe && (
-            <div className="books-section" style={{marginTop:'2em'}}>
-               <Typography variant="h2" weight="bold" className="mb-4 border-b pb-2">
-                 Kaydedilen Kitaplar
-               </Typography>
-               {profile.savedBooks?.length > 0 ? (
-                  <BookGrid books={profile.savedBooks} />
-               ) : (
-                  <div className="empty-box">Henüz kaydedilen bir kitap yok.</div>
-               )}
+            <div className="tabs-wrapper">
+              <button 
+                className={`tab-btn ${activeTab === 'published' ? 'active' : ''}`}
+                onClick={() => setActiveTab('published')}
+              >
+                <Book style={{ fontSize: '1.25rem' }} />
+                Published Books
+              </button>
+              <button 
+                className={`tab-btn ${activeTab === 'saved' ? 'active' : ''}`}
+                onClick={() => setActiveTab('saved')}
+              >
+                <Bookmark style={{ fontSize: '1.25rem' }} />
+                Saved Books
+              </button>
             </div>
           )}
 
+          {/* BOOKS SECTION */}
+          <div className="books-section">
+            {!isMe || activeTab === 'published' ? (
+              <>
+                {!isMe && (
+                  <Typography variant="h2" weight="bold" className="section-title">
+                    Published Books
+                  </Typography>
+                )}
+                {profile.usersBooks?.length > 0 ? (
+                  <BookGrid books={profile.usersBooks} />
+                ) : (
+                  <div className="empty-state">
+                    <Book style={{ fontSize: '3rem' }} />
+                    <Typography variant="h4" color="muted">
+                      No books published yet
+                    </Typography>
+                    <Typography variant="body" color="muted">
+                      {isMe ? "Start writing your first book!" : "This user hasn't published any books yet."}
+                    </Typography>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                {profile.savedBooks?.length > 0 ? (
+                  <BookGrid books={profile.savedBooks} />
+                ) : (
+                  <div className="empty-state">
+                    <Bookmark style={{ fontSize: '3rem' }} />
+                    <Typography variant="h4" color="muted">
+                      No saved books yet
+                    </Typography>
+                    <Typography variant="body" color="muted">
+                      Save books to read them later!
+                    </Typography>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
         </Container>
       </div>
+
       <Toast 
-        isVisible={toast.show} message={toast.message} type={toast.type} 
+        isVisible={toast.show} 
+        message={toast.message} 
+        type={toast.type} 
         onClose={() => setToast({...toast, show: false})}
       />
     </MainLayout>

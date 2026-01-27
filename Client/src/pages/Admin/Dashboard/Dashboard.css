@@ -11,3 +11,45 @@
   border: 1px solid #E5E7EB;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
+
+.activity-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #F3F4F6;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.activity-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Tailwind benzeri sınıflar (Eğer Tailwind kullanmıyorsan manuel ekle) */
+.text-indigo-600 { color: #4F46E5; }
+.text-pink-600 { color: #DB2777; }
+.text-green-600 { color: #059669; }
+.bg-green-100 { background-color: #D1FAE5; }
+.bg-blue-100 { background-color: #DBEAFE; }
+.text-blue-600 { color: #2563EB; }

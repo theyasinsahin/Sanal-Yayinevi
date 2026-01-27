@@ -1,17 +1,18 @@
-/* --- Overlay (Karartma) --- */
+/* Overlay (Backdrop) */
 .mobile-menu-overlay {
   position: fixed;
-  top: var(--navbar-height); /* Navbar'ın altından başla */
+  top: var(--navbar-height);
   left: 0;
   width: 100%;
   height: calc(100vh - var(--navbar-height));
-  background-color: rgba(0, 0, 0, 0.5); /* Yarı saydam siyah */
-  z-index: 998; /* Navbar'ın (1000) altında kalsın */
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: 998;
   
-  /* Animasyon Durumları */
+  /* Animation States */
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .mobile-menu-overlay.open {
@@ -19,73 +20,166 @@
   visibility: visible;
 }
 
-/* --- Drawer (Çekmece Menü) --- */
+/* Drawer (Slide-in Menu) */
 .mobile-menu-drawer {
   position: fixed;
   top: var(--navbar-height);
-  right: -100%; /* Başlangıçta ekranın sağında gizli */
-  width: 80%;
-  max-width: 300px; /* Çok geniş olmasın */
+  right: -100%;
+  width: 85%;
+  max-width: 320px;
   height: calc(100vh - var(--navbar-height));
-  background-color: #ffffff;
+  background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
   z-index: 999;
-  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
-  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Yumuşak kayma */
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.1);
+  transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   
   display: flex;
   flex-direction: column;
+  border-left: 1px solid rgba(99, 102, 241, 0.1);
 }
 
 .mobile-menu-drawer.open {
-  right: 0; /* Ekrana gir */
+  right: 0;
 }
 
-/* --- İçerik Düzeni --- */
+/* Content Area */
 .mobile-menu-content {
-  padding: 1.5rem;
+  padding: 1.75rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  flex: 1;
+  overflow-y: auto;
 }
 
-/* Menü Linkleri */
+/* Menu Items */
 .mobile-nav-item {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem;
+  padding: 1.125rem 1.25rem;
   text-decoration: none;
-  color: #374151;
-  border-radius: 12px;
-  transition: background-color 0.2s;
+  color: #334155;
+  border-radius: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 600;
+  font-size: 0.95rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.mobile-nav-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #EFF6FF 0%, #F0F9FF 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .mobile-nav-item:hover {
-  background-color: #F3F4F6;
-  color: #2563EB; /* Hover olunca mavi yap */
+  color: #6366F1;
+  transform: translateX(4px);
+}
+
+.mobile-nav-item:hover::before {
+  opacity: 1;
+}
+
+.mobile-nav-item.active {
+  background: linear-gradient(135deg, #EFF6FF 0%, #E0E7FF 100%);
+  color: #6366F1;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
 }
 
 .mobile-icon {
-  color: #6B7280;
+  color: #64748B;
+  transition: color 0.3s ease;
+  position: relative;
+  z-index: 1;
+  font-size: 1.25rem;
 }
 
-.mobile-nav-item:hover .mobile-icon {
-  color: #2563EB;
+.mobile-nav-item:hover .mobile-icon,
+.mobile-nav-item.active .mobile-icon {
+  color: #6366F1;
 }
 
-/* Ayırıcı Çizgi */
+.mobile-nav-item span {
+  position: relative;
+  z-index: 1;
+}
+
+/* Divider */
 .divider {
   height: 1px;
-  background-color: #E5E7EB;
-  margin: 0.5rem 0;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.2), transparent);
+  margin: 0.75rem 0;
 }
 
-/* Alt Aksiyon Alanı (Logout butonu vb.) */
+/* Action Area (Bottom Section) */
 .mobile-action-area {
-  margin-top: 1rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(99, 102, 241, 0.1);
+}
+
+/* Logout button styling */
+.mobile-nav-item.logout {
+  background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%);
+  color: #DC2626;
+}
+
+.mobile-nav-item.logout:hover {
+  background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+  transform: translateX(4px);
+}
+
+.mobile-nav-item.logout .mobile-icon {
+  color: #EF4444;
+}
+
+/* Smooth scroll for content */
+.mobile-menu-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.mobile-menu-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mobile-menu-content::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.2);
+  border-radius: 3px;
+}
+
+.mobile-menu-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.4);
 }
 
 /* Helper Class */
 .w-full {
   width: 100%;
+}
+
+/* Animation for items */
+.mobile-menu-drawer.open .mobile-nav-item {
+  animation: slideInItem 0.4s ease-out backwards;
+}
+
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(1) { animation-delay: 0.1s; }
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(2) { animation-delay: 0.15s; }
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(3) { animation-delay: 0.2s; }
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(4) { animation-delay: 0.25s; }
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(5) { animation-delay: 0.3s; }
+
+@keyframes slideInItem {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }

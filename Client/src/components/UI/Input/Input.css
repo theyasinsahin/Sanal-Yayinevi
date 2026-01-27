@@ -7,16 +7,17 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.625rem;
   font-size: 0.9rem;
-  font-weight: 500;
-  color: #374151;
+  font-weight: 600;
+  color: #1E293B;
+  letter-spacing: 0.01em;
 }
 
 .label-icon {
   display: flex;
   align-items: center;
-  color: #6B7280;
+  color: #6366F1;
 }
 
 .input-container {
@@ -25,39 +26,113 @@
 
 .form-input {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1.125rem;
   font-size: 1rem;
-  border: 1px solid #D1D5DB;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  background-color: #fff;
-  box-sizing: border-box; /* Padding taşmasın diye */
+  border: 2px solid #E2E8F0;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
+  box-sizing: border-box;
+  color: #1E293B;
+  font-weight: 500;
 }
 
+.form-input::placeholder {
+  color: #94A3B8;
+  font-weight: 400;
+}
+
+/* Focus state with glow effect */
 .form-input:focus {
   outline: none;
-  border-color: #2563EB;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: #6366F1;
+  background: #FFFFFF;
+  box-shadow: 
+    0 0 0 3px rgba(99, 102, 241, 0.1),
+    0 4px 12px rgba(99, 102, 241, 0.15);
+  transform: translateY(-1px);
 }
 
 .form-input:disabled {
-  background-color: #F3F4F6;
+  background: linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%);
   cursor: not-allowed;
+  opacity: 0.7;
+  border-color: #CBD5E1;
 }
 
-/* Hata Durumu */
+/* Error State */
 .has-error .form-input {
+  border-color: #EF4444;
+  background: linear-gradient(135deg, #FFFFFF 0%, #FEF2F2 100%);
+}
+
+.has-error .form-input:focus {
   border-color: #DC2626;
+  box-shadow: 
+    0 0 0 3px rgba(239, 68, 68, 0.1),
+    0 4px 12px rgba(239, 68, 68, 0.15);
 }
 
 .input-error-message {
-  display: block;
-  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
   font-size: 0.8rem;
+  font-weight: 500;
   color: #DC2626;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .required-mark {
-  color: #DC2626;
+  color: #EF4444;
   margin-left: 2px;
+  font-weight: 700;
+}
+
+/* Floating label effect (optional enhancement) */
+.input-container.has-value .form-input {
+  border-color: #CBD5E1;
+}
+
+/* Textarea styling */
+textarea.form-input {
+  min-height: 120px;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+/* Input group (for icons inside input) */
+.input-with-icon {
+  position: relative;
+}
+
+.input-with-icon .form-input {
+  padding-left: 2.75rem;
+}
+
+.input-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94A3B8;
+  pointer-events: none;
+  transition: color 0.3s ease;
+}
+
+.input-with-icon .form-input:focus ~ .input-icon {
+  color: #6366F1;
 }
