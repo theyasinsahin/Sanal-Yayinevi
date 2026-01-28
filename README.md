@@ -90,3 +90,5 @@ IYZICO_SECRET_KEY=iyzico_secret_key_buraya
 CLOUDINARY_URL=cloudinary://...
 CLIENT_URL=http://localhost:3000
 ```
+
+Quill © 2026 - Tüm Hakları Saklıdır.
