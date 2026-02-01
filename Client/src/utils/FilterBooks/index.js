@@ -27,7 +27,7 @@ export const filterBooks = (books, filters) => {
   if (filters.genre && filters.genre !== 'Tümü') {
     // book.genre veritabanında "slug" olarak mı yoksa "Display Name" olarak mı tutuluyor?
     // Buradaki eşleşmenin birebir olduğundan emin ol.
-    filtered = filtered.filter((book) => book.genre === filters.genre);
+    //filtered = filtered.filter((book) => book.genre === filters.genre);
   }
 
   // --- 3. SIRALAMA (SORT) ---

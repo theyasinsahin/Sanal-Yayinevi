@@ -55,7 +55,7 @@ const BookCard = ({ book: bookProp, bookId }) => {
     description, 
     imageUrl, 
     pageCount, 
-    genre, 
+    //genre, 
     stats, 
     id, 
     commentCount, 
@@ -118,12 +118,12 @@ const BookCard = ({ book: bookProp, bookId }) => {
           )}
 
           {/* Genre Tag */}
-          {genre && (
+          {/*genre && (
             <Badge variant="primary" className="shadow-sm">
               <LocalOffer style={{ fontSize: 12 }} /> 
               {genre}
             </Badge>
-          )}
+          )*/}
 
           {/* Trending Badge */}
           {isTrending && (

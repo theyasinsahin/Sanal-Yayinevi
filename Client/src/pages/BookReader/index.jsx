@@ -82,7 +82,7 @@ const BookReader = () => {
         type: 'title_page', 
         bookTitle: book.title,
         author: authorName || "Bilinmeyen Yazar",
-        genre: book.genre
+        genre: book.genre || "Bilinmeyen Tür",
       });
 
       // 2. Bölümler

@@ -1,7 +1,7 @@
 /* Base Styles */
 .typography {
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-main);  
   line-height: 1.5;
   color: #1E293B;
 }
@@ -12,7 +12,7 @@
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.1;
-  background: linear-gradient(135deg, #0F172A 0%, #6366F1 100%);
+  background: linear-gradient(135deg, #0F172A 0%, var(--primary) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -96,7 +96,7 @@
 
 /* Special Text Styles */
 .text-gradient {
-  background: linear-gradient(135deg, #6366F1 0%, #EC4899 50%, #06B6D4 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -112,7 +112,7 @@
 }
 
 .color-primary {
-  color: #6366F1;
+  color: var(--primary);
 }
 
 .color-secondary {
@@ -136,7 +136,7 @@
 }
 
 .color-white {
-  color: #FFFFFF;
+  color: var(--bg-surface);
 }
 
 /* Font Weights */
@@ -180,7 +180,7 @@
 /* Text Decoration */
 .text-underline {
   text-decoration: underline;
-  text-decoration-color: #6366F1;
+  text-decoration-color: var(--primary);
   text-decoration-thickness: 2px;
   text-underline-offset: 4px;
 }
@@ -214,7 +214,7 @@
 
 /* Link Styles */
 .link {
-  color: #6366F1;
+  color: var(--primary);
   text-decoration: none;
   font-weight: 500;
   transition: all 0.2s ease;
@@ -228,12 +228,12 @@
   left: 0;
   width: 0;
   height: 2px;
-  background: linear-gradient(90deg, #6366F1, #EC4899);
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
   transition: width 0.3s ease;
 }
 
 .link:hover {
-  color: #4F46E5;
+  color: var(--primary-hover);
 }
 
 .link:hover::after {

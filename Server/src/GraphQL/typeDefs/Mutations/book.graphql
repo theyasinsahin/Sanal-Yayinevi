@@ -54,7 +54,7 @@ type Book {
   authorId: ID!
   imageUrl: String!
   pageCount: Int!
-  genre: String!
+  genre: String
   description: String!
   stats: BookStats!
   createdAt: DateTime!

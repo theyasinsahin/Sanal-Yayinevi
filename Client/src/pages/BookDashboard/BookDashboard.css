@@ -23,7 +23,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  border-bottom: 1px solid #F3F4F6;
+  border-bottom: 1px solid var(--bg-app);
 }
 
 .book-cover-mini img {
@@ -89,7 +89,7 @@
 }
 
 .chapter-row:hover {
-  background-color: #F3F4F6;
+  background-color: var(--bg-app);
 }
 
 .chapter-row.active {
@@ -164,7 +164,7 @@
   flex-grow: 1;
   overflow-y: auto;
   padding: 2rem;
-  background-color: #ffffff;
+  background-color: var(--bg-surface);
   display: flex;
   justify-content: center;
 }

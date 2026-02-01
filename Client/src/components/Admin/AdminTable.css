@@ -1,7 +1,7 @@
 .admin-table-container {
   overflow-x: auto;
   background: white;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid #E5E7EB;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
@@ -23,7 +23,7 @@
 
 .admin-table td {
   padding: 1rem;
-  border-bottom: 1px solid #F3F4F6;
+  border-bottom: 1px solid var(--bg-app);
   color: #4B5563;
   vertical-align: middle;
 }

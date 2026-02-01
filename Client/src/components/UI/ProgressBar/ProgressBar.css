@@ -14,7 +14,7 @@
 }
 
 .progress-labels span:last-child {
-  color: #6366F1;
+  color: var(--primary);
 }
 
 .progress-track {
@@ -29,7 +29,7 @@
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #6366F1 0%, #8B5CF6 50%, #EC4899 100%);
+  background: linear-gradient(90deg, var(--primary) 0%, #8B5CF6 50%, var(--secondary) 100%);
   border-radius: 10px;
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;

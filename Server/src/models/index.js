@@ -3,5 +3,6 @@ import Book from "./book.js";
 import Chapter from "./chapter.js";
 import Comment from "./comment.js";
 import Transaction from "./transaction.js";
+import Genre from "./genre.js";
 
-export default {User, Book, Chapter, Comment, Transaction};
+export default {User, Book, Chapter, Comment, Transaction, Genre};

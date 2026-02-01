@@ -18,7 +18,7 @@
 .filter-title {
   margin-bottom: 1rem;
   display: block;
-  color: #111827;
+  color: var(--text-main);
 }
 
 /* Kategori Hapları (Pills) */
@@ -35,19 +35,19 @@
   padding: 0.75rem 1rem;
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.2s ease;
   color: #4B5563;
   width: 100%;
   text-align: left;
-  font-family: inherit;
+  font-family: var(--font-main);
   font-size: 0.95rem;
 }
 
 .category-pill:hover {
-  background-color: #F3F4F6;
-  color: #111827;
+  background-color: var(--bg-app);
+  color: var(--text-main);
 }
 
 .category-pill.active {

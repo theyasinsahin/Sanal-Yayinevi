@@ -1,5 +1,5 @@
 .donation-page {
-  background-color: #F3F4F6;
+  background-color: var(--bg-app);
 
   min-height: calc(100vh - var(--navbar-height));
   
@@ -16,7 +16,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: #6B7280;
+  color: var(--text-muted);
   text-decoration: none;
   font-weight: 500;
   margin-bottom: 2rem;
@@ -24,7 +24,7 @@
 }
 
 .back-link:hover {
-  color: #111827;
+  color: var(--text-main);
 }
 
 /* GRID LAYOUT */
@@ -54,7 +54,7 @@
 .icon-bg {
   background-color: #ECFDF5;
   padding: 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -63,8 +63,8 @@
 .book-summary-box {
   background-color: #F9FAFB;
   padding: 1rem;
-  border-radius: 8px;
-  border: 1px solid #F3F4F6;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--bg-app);
   margin-bottom: 2rem;
 }
 
@@ -91,7 +91,7 @@
   padding: 0.5rem;
   background-color: white;
   border: 1px solid #D1D5DB;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-weight: 500;
   color: #374151;
@@ -113,7 +113,7 @@
 .error-box {
   background-color: #FEF2F2;
   padding: 0.75rem;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   margin-bottom: 1rem;
   border: 1px solid #FECACA;
 }
@@ -124,7 +124,7 @@
   gap: 0.5rem;
   justify-content: center;
   margin-top: 1.5rem;
-  color: #6B7280;
+  color: var(--text-muted);
   opacity: 0.8;
 }
 
@@ -153,7 +153,7 @@
 }
 
 .placeholder-icon {
-  background-color: #F3F4F6;
+  background-color: var(--bg-app);
   padding: 1.5rem;
   border-radius: 50%;
   margin-bottom: 1.5rem;

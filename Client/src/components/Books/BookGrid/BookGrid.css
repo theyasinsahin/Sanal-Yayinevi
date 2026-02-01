@@ -10,6 +10,6 @@
   text-align: center;
   padding: 3rem;
   background-color: #F9FAFB;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px dashed #E5E7EB;
 }

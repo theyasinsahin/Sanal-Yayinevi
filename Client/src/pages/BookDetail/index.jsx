@@ -188,7 +188,7 @@ const BookDetailPage = () => {
               <div className="meta-info-card">
                 <div className="meta-row">
                   <span className="meta-label">Kategori:</span>
-                  <Badge variant="neutral" className="capitalize">{book.genre}</Badge>
+                  {/*<Badge variant="neutral" className="capitalize">{book.genre}</Badge>*/}
                 </div>
                 <div className="meta-row">
                   <span className="meta-label">Sayfa:</span>

@@ -48,7 +48,7 @@ export const Select = ({
         </select>
         
         {/* Sağ tarafa küçük bir ok ikonu ekleyelim (CSS ile de yapılabilir ama basit olsun) */}
-        <div style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#6B7280' }}>
+        <div style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-muted)' }}>
             ▼
         </div>
       </div>

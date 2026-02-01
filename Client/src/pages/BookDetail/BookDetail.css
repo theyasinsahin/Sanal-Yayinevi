@@ -14,7 +14,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: #6B7280;
+  color: var(--text-muted);
   text-decoration: none;
   font-weight: 500;
   margin-bottom: 2rem;
@@ -22,7 +22,7 @@
 }
 
 .back-link:hover {
-  color: #111827;
+  color: var(--text-main);
 }
 
 /* Grid Yapısı */
@@ -42,7 +42,7 @@
 
 .cover-wrapper {
   width: 100%;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   box-shadow: 0 10px 25px rgba(0,0,0,0.1);
   background-color: #eee;
@@ -57,7 +57,7 @@
 .meta-info-card {
   background: white;
   padding: 1.5rem;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid #E5E7EB;
 }
 
@@ -66,7 +66,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 0;
-  border-bottom: 1px solid #F3F4F6;
+  border-bottom: 1px solid var(--bg-app);
   font-size: 0.9rem;
 }
 
@@ -75,12 +75,12 @@
 }
 
 .meta-label {
-  color: #6B7280;
+  color: var(--text-muted);
 }
 
 .meta-value {
   font-weight: 600;
-  color: #111827;
+  color: var(--text-main);
 }
 
 /* --- SAĞ PANEL --- */
@@ -98,7 +98,7 @@
 .book-title-lg {
   line-height: 1.2;
   margin-bottom: 0.75rem;
-  color: #111827;
+  color: var(--text-main);
 }
 
 .author-link-wrapper {
@@ -148,7 +148,7 @@
   margin-bottom: 2rem;
   padding: 1rem;
   background-color: #FEF2F2;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   border: 1px dashed #FECACA;
 }
 
@@ -156,7 +156,7 @@
 .description-box {
   background: white;
   padding: 2rem;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid #E5E7EB;
   margin-bottom: 3rem;
   line-height: 1.8;
@@ -172,7 +172,7 @@
   margin-bottom: 2rem;
   background: white;
   padding: 1.5rem;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid #E5E7EB;
 }
 

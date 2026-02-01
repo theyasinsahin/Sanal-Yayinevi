@@ -8,7 +8,7 @@ const BookSchema = new mongoose.Schema({
   },  
   imageUrl: { type:String, default: '' },
   pageCount: { type:Number, default: 0 },
-  genre: String,
+  genre: {type:String},
   tags: {type: [String], default: []},
   description: String,
   stats: {

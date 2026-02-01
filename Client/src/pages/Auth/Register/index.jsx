@@ -33,7 +33,7 @@ const RegisterPage = () => {
   });
 
   // Checkbox state'i (Form submit için gerekli olabilir)
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(true);
 
   const [register, { loading, error, data }] = useMutation(REGISTER);
 

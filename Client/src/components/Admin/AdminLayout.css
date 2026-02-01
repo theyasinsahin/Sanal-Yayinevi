@@ -1,12 +1,12 @@
 .admin-wrapper {
   display: flex;
   min-height: 100vh;
-  background-color: #F3F4F6;
+  background-color: var(--bg-app);
 }
 
 .admin-sidebar {
   width: 260px;
-  background-color: #111827; /* Dark Theme */
+  background-color: var(--text-main); /* Dark Theme */
   color: #9CA3AF;
   display: flex;
   flex-direction: column;
@@ -34,7 +34,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   color: #D1D5DB;
   text-decoration: none;
   font-weight: 500;

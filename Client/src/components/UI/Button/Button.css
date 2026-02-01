@@ -1,18 +1,25 @@
 .btn {
+  /* Navbar çizgi fix'i ve temel ayarlar */
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-position 0.3s ease; 
   border: none;
   position: relative;
   overflow: hidden;
   letter-spacing: 0.01em;
+  font-family: var(--font-main);
+  
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  background-clip: padding-box;
 }
 
-/* Shimmer effect for primary button */
+/* Shimmer Effect */
 .btn::before {
   content: '';
   position: absolute;
@@ -23,10 +30,12 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.3),
+    rgba(255, 255, 255, 0.25),
     transparent
   );
-  transition: left 0.5s ease;
+  transition: left 0.6s ease;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .btn:hover::before {
@@ -34,62 +43,70 @@
 }
 
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
+  filter: grayscale(1);
   transform: none !important;
+  box-shadow: none !important;
 }
 
-.btn:disabled::before {
-  display: none;
-}
-
-/* Primary Variant - Gradient */
+/* --- PRIMARY VARIANT (Emerald Green) --- */
 .btn-primary {
-  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  background-image: linear-gradient(
+    135deg, 
+    var(--primary-start) 0%, 
+    var(--primary-end) 50%, 
+    var(--primary-hover-end) 100%
+  );
+  background-size: 200% auto;
   color: white;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  /* GÖLGE: Koyu Kızıl Glow (RGB: 190, 18, 60) */
+  box-shadow: 0 4px 15px rgba(190, 18, 60, 0.4); 
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  background-position: right center; 
+  /* Hover Gölgesi: Canlı Kırmızı */
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5);
   transform: translateY(-2px);
 }
 
 .btn-primary:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 2px 8px rgba(190, 18, 60, 0.3);
 }
 
-/* Secondary Variant - Glass morphism */
+/* --- SECONDARY VARIANT (Glass / Neutral) --- */
 .btn-secondary {
-  background: rgba(248, 250, 252, 0.8);
-  backdrop-filter: blur(10px);
-  color: #1E293B;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  color: var(--text-main);
+  border: 1px solid rgba(148, 163, 184, 0.3); /* Slate border */
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: rgba(241, 245, 249, 0.95);
-  border-color: rgba(99, 102, 241, 0.4);
+  background: #ffffff;
+  border-color: var(--primary-start);
+  color: var(--primary-start); /* Hoverda yazı kızıla döner */
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(190, 18, 60, 0.15);
 }
 
-/* Outline Variant */
+/* --- OUTLINE VARIANT --- */
 .btn-outline {
-  border: 2px solid #6366F1;
+  border: 2px solid var(--primary-start);
   background: transparent;
-  color: #6366F1;
+  color: var(--primary-start);
   position: relative;
+  z-index: 0;
 }
 
 .btn-outline::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  background: linear-gradient(135deg, var(--primary-start) 0%, var(--primary-end) 100%);
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: -1;
@@ -99,49 +116,46 @@
   color: white;
   border-color: transparent;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  /* Gölge Kızıl */
+  box-shadow: 0 4px 15px rgba(190, 18, 60, 0.3);
 }
 
 .btn-outline:hover:not(:disabled)::after {
   opacity: 1;
 }
 
-/* Danger Variant */
+/* --- DANGER VARIANT --- */
 .btn-danger {
-  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  background-image: linear-gradient(
+    135deg, 
+    var(--secondary-start) 0%, 
+    var(--secondary-end) 50%,
+    var(--secondary-hover-end) 100%
+  );
+  background-size: 200% auto;
   color: white;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  /* Koyu Gri/Mavi Gölge */
+  box-shadow: 0 4px 15px rgba(30, 41, 59, 0.4);
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
-  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+  background-position: right center;
+  box-shadow: 0 8px 25px rgba(71, 85, 105, 0.5); 
   transform: translateY(-2px);
 }
 
-/* Sizes */
-.btn-small {
-  padding: 0.625rem 1.25rem;
-  font-size: 0.875rem;
-  border-radius: 10px;
-}
+/* --- SIZES (Aynı) --- */
+.btn-small { padding: 0.5rem 1rem; font-size: 0.85rem; height: 32px; }
+.btn-medium { padding: 0.75rem 1.5rem; font-size: 0.95rem; height: 44px; }
+.btn-large { padding: 1rem 2rem; font-size: 1.1rem; height: 52px; }
 
-.btn-medium {
-  padding: 0.875rem 1.75rem;
-  font-size: 1rem;
-}
-
-.btn-large {
-  padding: 1.125rem 2.25rem;
-  font-size: 1.125rem;
-  border-radius: 14px;
-}
-
-/* Icon support */
 .btn svg {
+  width: 1.2em;
+  height: 1.2em;
+  margin-right: 0.5rem;
   transition: transform 0.3s ease;
 }
 
 .btn:hover:not(:disabled) svg {
-  transform: translateX(2px);
+  transform: translateX(3px);
 }
