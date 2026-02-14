@@ -72,7 +72,7 @@ const RegisterPage = () => {
           {/* --- Header --- */}
           <div className="auth-header">
             <div className="auth-icon-circle">
-              <HowToReg fontSize="large" style={{ color: '#2563EB' }} />
+              <HowToReg fontSize="large" style={{ color: '#8b4513' }} />
             </div>
             <Typography variant="h3" weight="bold" className="text-center mb-2">
               Yeni Hesap Oluştur

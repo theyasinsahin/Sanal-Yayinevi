@@ -58,7 +58,7 @@ const LoginPage = () => {
           {/* Başlık */}
           <div className="auth-header">
             <div className="auth-icon-circle">
-              <LoginIcon fontSize="large" style={{ color: '#2563EB' }} />
+              <LoginIcon fontSize="large" style={{ color: '#8b4513' }} />
             </div>
             <Typography variant="h3" weight="bold" className="text-center mb-2">
               Quill'e Giriş

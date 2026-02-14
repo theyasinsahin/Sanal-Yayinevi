@@ -1,394 +1,664 @@
-/* Google Fonts İçe Aktarma: Okuma için 'Crimson Text', Başlıklar için 'Playfair Display' */
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
-
-/* --- 1. GENEL SAYFA DÜZENİ --- */
+/* === READING LAYOUT === */
 .book-reader {
-    min-height: calc(100vh - var(--navbar-height));
+  min-height: 100vh;
+  background: linear-gradient(
+    180deg,
+    var(--aged-paper) 0%,
+    var(--parchment) 100%
+  );
+  font-family: var(--font-serif);
+  position: relative;
+  display: flex;
+}
+
+.reading-progress-container {
+  position: fixed;
+  top: 80px;
+  left: 0;
+  width: 100%;
+  height: 5px; /* Çubuğun kalınlığı */
+  background-color: transparent; /* Arka plan şeffaf */
+  z-index: 9999; /* Her şeyin üstünde */
+}
+
+/* Progress Bar Doluluk - Senin ana renginle dolar */
+.reading-progress-fill {
+  height: 100%;
+  background-color: var(--ash-gray); /* Temadaki mürekkep rengi */
+  width: 0%;
+  transition: width 0.1s ease-out; /* Akıcı ilerleme efekti */
   
-    display: flex;
-    justify-content: center;
+  /* Opsiyonel: Hafif bir gölge ile derinlik kat */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); 
+}
 
-    align-items: flex-start;
+/* Paper texture overlay */
+.book-reader::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  opacity: 0.06;
+  pointer-events: none;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E");
+  z-index: 0;
+}
 
+/* === CHAPTER SIDEBAR === */
+.chapters-sidebar {
+    min-height: calc(100vh - var(--navbar-height));
     padding-top: 6rem;
-    padding-bottom: 4rem;
-    
-    margin-top: 3.5em;
-    background-color: #2b2b2b; /* Odaklanmayı artıran koyu arka plan */
-    flex-direction: column;
-    align-items: center;
-    font-family: 'Crimson Text', serif;
-    position: relative;
+  padding-bottom: 4rem;
+  width: 280px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background-color: var(--paper-white);
+  border-right: 2px solid var(--fog);
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: var(--shadow-md);
 }
 
-/* Yükleme Ekranı */
-.book-reader-loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #2b2b2b;
-    color: #ccc;
-    font-family: 'Crimson Text', serif;
-    font-size: 1.5rem;
-    letter-spacing: 1px;
+/* Paper texture on sidebar */
+.chapters-sidebar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  pointer-events: none;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulance type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E");
 }
 
-.reader-top-bar{
-    margin-bottom: 1em;
-    margin-top: -3em;
+/* Sidebar Header */
+.sidebar-header {
+  padding: 2rem 1.5rem 1rem;
+  border-bottom: 2px solid var(--fog);
+  position: relative;
+  z-index: 1;
 }
 
-/* Sol Üstteki Geri Dön Linki */
-.back-link {
-    position: absolute;
-    top: 30px;
-    left: 40px;
-    color: #888;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: color 0.3s;
-    z-index: 100;
-    font-size: 1rem;
+.sidebar-header h3 {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ink-black);
+  margin: 0 0 0.5rem;
 }
 
-.back-link:hover {
-    color: white;
+.book-progress {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  color: var(--graphite);
+  font-weight: 600;
 }
 
-/* Yazar Kontrolleri (Düzenle Butonu) */
-.author-controls {
-    position: absolute;
-    top: 30px;
-    right: 40px;
-    z-index: 100;
+/* Progress bar */
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background-color: var(--fog);
+  border-radius: 3px;
+  margin-top: 0.75rem;
+  overflow: hidden;
 }
 
-.edit-book-button {
-    background: rgba(255, 255, 255, 0.1);
-    color: #ddd;
-    padding: 8px 16px;
-    border-radius: 4px;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.2s;
-    font-size: 0.9rem;
+.progress-fill {
+  height: 100%;
+  background-color: var(--ink-black);
+  transition: width 0.3s ease;
+  border-radius: 3px;
 }
 
-.edit-book-button:hover {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
+/* Chapter List */
+.chapters-list {
+  padding: 1rem 0;
+  position: relative;
+  z-index: 1;
 }
 
-/* --- 2. KİTAP GÖVDESİ (SABİT BOYUT) --- */
+.chapter-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
+  position: relative;
+}
+
+.chapter-item:hover {
+  background-color: var(--cream);
+}
+
+.chapter-item.active {
+  background-color: var(--aged-paper);
+  border-left-color: var(--ink-black);
+}
+
+.chapter-item.completed {
+  opacity: 0.7;
+}
+
+/* Checkbox */
+.chapter-checkbox {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  border: 2px solid var(--graphite);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: var(--paper-white);
+  margin-top: 2px;
+}
+
+.chapter-checkbox:hover {
+  border-color: var(--ink-black);
+}
+
+.chapter-checkbox.checked {
+  background-color: var(--ink-black);
+  border-color: var(--ink-black);
+}
+
+.chapter-checkbox.checked svg {
+  color: var(--paper-white);
+  font-size: 0.875rem;
+}
+
+/* Chapter Info */
+.chapter-info {
+  flex: 1;
+}
+
+.chapter-number {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ash-gray);
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.chapter-title {
+  font-family: var(--font-serif);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ink-black);
+  line-height: 1.4;
+}
+
+.chapter-item.active .chapter-title {
+  font-weight: 700;
+}
+
+/* === READING AREA === */
+.reading-area {
+  flex: 1;
+  margin-left: 320px;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+/* Floating Controls */
+.reader-controls {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  gap: 0.75rem;
+  z-index: 100;
+  opacity: 0.3;
+  transition: opacity 0.3s ease;
+}
+
+.reader-controls:hover {
+  opacity: 1;
+}
+
+.control-btn {
+  width: 44px;
+  height: 44px;
+  background-color: var(--paper-white);
+  border: 2px solid var(--fog);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-md);
+}
+
+.control-btn:hover {
+  background-color: var(--ink-black);
+  border-color: var(--ink-black);
+  color: var(--paper-white);
+  transform: scale(1.1);
+}
+
+.control-btn.active {
+  background-color: var(--ink-black);
+  color: var(--paper-white);
+  border-color: var(--ink-black);
+}
+
+/* === CHAPTER READING MODE === */
+.chapter-reading-mode {
+  max-width: 750px;
+  margin: 0 auto;
+  padding: 4rem 2rem 8rem;
+}
+
+/* Title Page */
+.title-page-section {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 2rem;
+  margin-bottom: 4rem;
+}
+
+.title-page-ornament {
+  font-size: 3rem;
+  color: var(--ash-gray);
+  opacity: 0.3;
+  margin: 2rem 0;
+}
+
+.title-page-section h1 {
+  font-family: var(--font-serif);
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--ink-black);
+  margin: 1rem 0;
+  line-height: 1.2;
+}
+
+.title-page-author {
+  font-size: 1rem;
+  color: var(--graphite);
+  font-style: italic;
+  margin: 0.5rem 0;
+}
+
+.title-page-author-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--ink-black);
+  margin: 0.5rem 0 2rem;
+}
+
+.title-page-genre {
+  display: inline-block;
+  padding: 0.5rem 1.5rem;
+  border-top: 1px solid var(--fog);
+  border-bottom: 1px solid var(--fog);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--graphite);
+  margin: 2rem 0;
+}
+
+/* Chapter Section */
+.chapter-section {
+  scroll-margin-top: 2rem;
+}
+
+.chapter-header {
+  text-align: center;
+  margin: 4rem 0 3rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid var(--fog);
+  position: relative;
+}
+
+.chapter-header h2 {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--ink-black);
+  margin: 0;
+}
+
+.chapter-header::after {
+  content: '❦';
+  position: absolute;
+  bottom: -1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--aged-paper);
+  padding: 0 1rem;
+  color: var(--ash-gray);
+  opacity: 0.4;
+  font-size: 1.25rem;
+}
+
+.chapter-content {
+  font-size: 1.125rem;
+  line-height: 1.9;
+  color: var(--ink-black);
+  text-align: justify;
+  hyphens: auto;
+}
+
+.chapter-content p {
+  margin-bottom: 1.5rem;
+  text-indent: 2rem;
+}
+
+.chapter-content p:first-of-type {
+  text-indent: 0;
+}
+
+/* Drop cap */
+.chapter-content p:first-of-type::first-letter {
+  float: left;
+  font-size: 4.5em;
+  line-height: 0.85;
+  margin: 0.05em 0.15em 0 0;
+  font-weight: 700;
+  color: var(--ink-black);
+}
+
+.chapter-content strong {
+  font-weight: 700;
+}
+
+.chapter-content em {
+  font-style: italic;
+}
+
+/* Chapter Navigation */
+.chapter-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 4rem 0 2rem;
+  padding: 1.5rem 0;
+  border-top: 2px solid var(--fog);
+}
+
+.chapter-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--paper-white);
+  border: 2px solid var(--fog);
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ink-black);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.chapter-nav-btn:hover:not(:disabled) {
+  background-color: var(--ink-black);
+  color: var(--paper-white);
+  border-color: var(--ink-black);
+  transform: translateY(-2px);
+}
+
+.chapter-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* End marker */
+.end-marker {
+  text-align: center;
+  padding: 4rem 0;
+  color: var(--ash-gray);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.5rem;
+}
+
+/* === BOOK MODE (unchanged) === */
+.reader-book-mode {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+  margin-left: 320px;
+}
+
 .book-container {
-    position: relative;
-    width: 950px;  /* Sabit Genişlik */
-    height: 680px; /* Sabit Yükseklik */
-    background-color: #fffbf0; /* Sıcak Kitap Kağıdı Rengi */
-    display: flex;
-    box-shadow: 
-        0 20px 50px rgba(0,0,0,0.6), 
-        0 5px 15px rgba(0,0,0,0.3);
-    border-radius: 6px;
-    overflow: hidden; /* İçerik taşarsa gizle */
-    perspective: 1500px; /* 3D derinlik hissi */
-    transition: transform 0.2s ease, opacity 0.2s ease;
+  position: relative;
+  width: 900px;
+  height: 650px;
+  background-color: var(--paper-white);
+  display: flex;
+  box-shadow: 
+    0 20px 60px rgba(26, 26, 26, 0.3),
+    0 10px 30px rgba(26, 26, 26, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
 }
 
-/* Sayfa Çevirme Efekti (JS ile eklenip çıkarılıyor) */
-.book-container.flipping {
-    transform: scale(0.98);
-    opacity: 0.95;
-}
-
-/* Kitap Sırtı Gölgesi (İki sayfa arası) */
 .book-spine {
-    position: absolute;
-    left: 50%;
-    top: 0;
-    bottom: 0;
-    width: 60px;
-    margin-left: -30px;
-    background: linear-gradient(
-        to right, 
-        rgba(0,0,0,0.02) 0%, 
-        rgba(0,0,0,0.15) 45%, 
-        rgba(0,0,0,0.2) 50%, 
-        rgba(0,0,0,0.15) 55%, 
-        rgba(0,0,0,0.02) 100%
-    );
-    pointer-events: none; /* Tıklamayı engellemesin */
-    z-index: 20;
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  margin-left: -20px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(26, 26, 26, 0.05) 45%,
+    rgba(26, 26, 26, 0.15) 50%,
+    rgba(26, 26, 26, 0.05) 55%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 10;
 }
 
-/* --- 3. SAYFA YAPISI --- */
+.book-container.flipping {
+  animation: pageFlip 0.4s ease;
+}
+
+@keyframes pageFlip {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(0.98); }
+}
+
 .book-page {
-    flex: 1; /* %50 Genişlik */
-    padding: 3rem 3.5rem; /* Kenar boşlukları */
-    position: relative;
-    cursor: pointer; /* Tıklanabilir */
-    transition: background-color 0.3s;
-    overflow: hidden; 
+  flex: 1;
+  padding: 3rem;
+  position: relative;
+  cursor: pointer;
+  overflow-y: auto;
 }
 
-/* Sayfa üzerine gelince hafif renk değişimi (Yaprak hissi) */
-.book-page:hover {
-    background: linear-gradient(to right, #fffbf0 0%, #fffef8 100%);
-}
-
-/* Sol Sayfa Kenarlığı */
 .book-page.left {
-    border-right: 1px solid #e3dac1;
+  border-right: 1px solid var(--fog);
 }
 
-/* Sağ Sayfa Kenarlığı */
 .book-page.right {
-    border-left: 1px solid #e3dac1;
+  border-left: 1px solid var(--fog);
 }
 
-/* Sayfa İçeriği Kapsayıcısı */
 .page-inner {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-/* --- 4. METİN İÇERİĞİ VE HTML DÜZELTMELERİ --- */
 .content-text {
-    flex: 1;
-    overflow: hidden; /* Taşmayı engelle */
-    font-size: 1.15rem; /* Okunaklı font boyutu */
-    line-height: 1.7;   /* Satır arası */
-    color: #222;
-    text-align: justify; /* İki yana yasla */
-    hyphens: auto;       /* Heceleri böl */
+  flex: 1;
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: var(--ink-black);
+  text-align: justify;
+  hyphens: auto;
 }
 
-/* Veritabanından gelen <p> etiketleri için stil */
-.content-text p {
-    margin-bottom: 0.8em; 
-    text-indent: 1.5em; /* Paragraf başı girintisi */
-    margin-top: 0;
-}
-
-/* Kalın ve İtalik düzeltmeleri */
-.content-text strong { font-weight: 700; color: #111; }
-.content-text em { font-style: italic; }
-
-/* --- 5. KAPAK SAYFASI TASARIMI --- */
-.title-page-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    height: 100%;
-    border: 3px double #8B4513; /* Klasik çerçeve */
-    margin: 5px;
-    padding: 2rem !important;
-}
-
-.title-decoration-top {
-    font-size: 2rem;
-    color: #8B4513;
-    margin-bottom: auto; /* En üste it */
-    opacity: 0.7;
-}
-
-.book-main-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 2.8rem;
-    color: #1a1a1a;
-    margin: 1rem 0;
-    line-height: 1.2;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.book-main-author {
-    margin-bottom: 3rem;
-}
-
-.book-main-author span {
-    font-style: italic;
-    color: #666;
-    font-size: 0.95rem;
-    display: block;
-    margin-bottom: 5px;
-}
-
-.book-main-author h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.5rem;
-    color: #333;
-    margin: 0;
-    font-weight: 600;
-}
-
-.book-genre-tag {
-    text-transform: uppercase;
-    font-size: 0.8rem;
-    letter-spacing: 3px;
-    border-top: 1px solid #ccc;
-    border-bottom: 1px solid #ccc;
-    padding: 8px 24px;
-    margin-bottom: 4rem;
-    color: #555;
-}
-
-.publisher-logo {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-    color: #8B4513;
-    font-weight: bold;
-    font-size: 0.75rem;
-    opacity: 0.8;
-}
-
-.title-decoration-bottom {
-    font-size: 2rem;
-    color: #8B4513;
-    margin-top: auto; /* En alta it */
-    opacity: 0.7;
-}
-
-/* --- 6. BÖLÜM BAŞLANGICI --- */
-.chapter-start-header {
-    text-align: center;
-    margin-top: 3rem;    /* Bölüm başında bol boşluk */
-    margin-bottom: 2.5rem;
-}
-
-.chapter-start-header h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.8rem;
-    margin: 0;
-    color: #111;
-    font-weight: 700;
-}
-
-.chapter-start-header .separator {
-    color: #8B4513;
-    font-size: 1.5rem;
-    margin-top: 15px;
-    opacity: 0.8;
-}
-
-/* --- 7. ALT BİLGİ VE NAVİGASYON --- */
 .footer-number {
-    text-align: center;
-    margin-top: auto; /* Sayfanın en altına yapıştır */
-    font-size: 0.9rem;
-    color: #999;
-    font-weight: 600;
-    padding-top: 1rem;
+  text-align: center;
+  margin-top: auto;
+  padding-top: 1rem;
+  font-size: 0.875rem;
+  color: var(--ash-gray);
+  font-family: var(--font-sans);
 }
 
-/* Boş Sayfa (SON) */
 .empty-page {
-    background-color: #f7efdc;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: default;
+  background-color: var(--aged-paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .end-text {
-    font-size: 2.5rem;
-    font-family: 'Playfair Display', serif;
-    color: #d0c8b0;
-    font-weight: bold;
-    letter-spacing: 8px;
+  font-family: var(--font-serif);
+  font-size: 3rem;
+  color: var(--light-smoke);
+  font-weight: 700;
+  letter-spacing: 0.5rem;
 }
 
-/* Alt Butonlar (Sayfa Numarası ve Oklar) */
-.navigation-controls {
-    margin-top: 30px;
-    display: flex;
-    align-items: center;
-    gap: 25px;
-    padding: 10px 20px;
-    background: rgba(0,0,0,0.2);
-    border-radius: 50px;
-    backdrop-filter: blur(5px);
-}
-
-.nav-btn {
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.3);
-    color: #ddd;
-    padding: 8px 18px;
-    border-radius: 30px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s;
-    font-size: 0.9rem;
-}
-
-.nav-btn:hover:not(:disabled) {
-    background: white;
-    color: #222;
-    border-color: white;
-}
-
-.nav-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    border-color: transparent;
+.book-navigation {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--paper-white);
+  border: 2px solid var(--fog);
+  border-radius: 50px;
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
 }
 
 .progress-text {
-    color: #ccc;
-    font-size: 0.95rem;
-    font-weight: 500;
-    min-width: 100px;
-    text-align: center;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  color: var(--graphite);
+  font-weight: 600;
+  min-width: 120px;
+  text-align: center;
 }
 
-/* --- 8. MOBİL UYUMLULUK --- */
-@media (max-width: 1000px) {
-    .book-reader {
-        padding: 1rem;
-        justify-content: flex-start;
-        padding-top: 4rem;
-    }
+/* === LOADING STATE === */
+.reader-loading {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+}
 
-    .book-container {
-        width: 100%;
-        max-width: 500px; /* Mobilde tek sayfa genişliği */
-        height: auto;
-        min-height: 600px; /* Minimum yükseklik */
-        flex-direction: column; /* Sayfaları alt alta alma */
-    }
+.reader-loading .spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid var(--fog);
+  border-top-color: var(--ink-black);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
 
-    .book-page {
-        width: 100%;
-        border: none !important;
-        padding: 2rem;
-    }
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 
-    /* Mobilde sırt gölgesi ve sağ sayfa gereksiz */
-    .book-spine, 
-    .book-page.right {
-        display: none; 
-    }
-    
-    /* Mobilde tek sayfa gösterdiğimiz için sağ sayfa mantığını JS'de yönetiyoruz 
-       ama CSS'de de sağ sayfayı gizlemek yerine flex yapısını değiştiriyoruz */
-       
-    .navigation-controls {
-        width: 100%;
-        justify-content: space-between;
-        background: transparent;
-    }
+/* === RESPONSIVE === */
+@media (max-width: 1024px) {
+  .chapters-sidebar {
+    width: 280px;
+  }
+
+  .reading-area {
+    margin-left: 280px;
+  }
+
+  .reader-book-mode {
+    margin-left: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .chapters-sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    border-right: none;
+    border-bottom: 2px solid var(--fog);
+  }
+
+  .reading-area {
+    margin-left: 0;
+  }
+
+  .reader-book-mode {
+    margin-left: 0;
+  }
+
+  .chapter-reading-mode {
+    padding: 3rem 1.5rem 6rem;
+  }
+
+  .title-page-section h1 {
+    font-size: 2.25rem;
+  }
+
+  .chapter-content {
+    font-size: 1.0625rem;
+  }
+
+  .book-container {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    min-height: 600px;
+  }
+
+  .book-page.right,
+  .book-spine {
+    display: none;
+  }
+}
+
+/* Scrollbar styling */
+.chapters-sidebar::-webkit-scrollbar,
+.book-page::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chapters-sidebar::-webkit-scrollbar-track,
+.book-page::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chapters-sidebar::-webkit-scrollbar-thumb,
+.book-page::-webkit-scrollbar-thumb {
+  background: var(--ash-gray);
+  border-radius: 3px;
+}
+
+.chapters-sidebar::-webkit-scrollbar-thumb:hover,
+.book-page::-webkit-scrollbar-thumb:hover {
+  background: var(--graphite);
 }

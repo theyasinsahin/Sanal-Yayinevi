@@ -1,11 +1,16 @@
 .how-it-works-section {
   padding: 6rem 0;
-  background: linear-gradient(180deg, #F8FAFC 0%, #EFF6FF 100%);
+  background: linear-gradient(
+    180deg,
+    var(--aged-paper) 0%,
+    var(--parchment) 50%,
+    var(--aged-paper) 100%
+  );
   position: relative;
   overflow: hidden;
 }
 
-/* Animated background grid */
+/* Vintage ledger lines background */
 .how-it-works-section::before {
   content: '';
   position: absolute;
@@ -13,38 +18,31 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: 
-    linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
-  background-size: 60px 60px;
+  opacity: 0.05;
   pointer-events: none;
-  animation: grid-move 20s linear infinite;
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 2rem,
+      rgba(26, 26, 26, 0.1) 2rem,
+      rgba(26, 26, 26, 0.1) calc(2rem + 1px)
+    );
 }
 
-@keyframes grid-move {
-  0% { transform: translate(0, 0); }
-  100% { transform: translate(60px, 60px); }
-}
-
-/* Floating gradient orbs */
+/* Decorative inkwell illustration (corner) */
 .how-it-works-section::after {
-  content: '';
+  content: '✒';
   position: absolute;
-  top: -100px;
-  left: -100px;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(236, 72, 153, 0.08) 0%, transparent 70%);
-  border-radius: 50%;
-  animation: float-orb 15s ease-in-out infinite;
+  bottom: 3rem;
+  right: 3rem;
+  font-size: 6rem;
+  color: var(--ash-gray);
+  opacity: 0.1;
+  transform: rotate(-15deg);
 }
 
-@keyframes float-orb {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(100px, 50px) scale(1.1); }
-}
-
-/* Header Center */
+/* Section Header - Centered */
 .section-header-center {
   text-align: center;
   margin-bottom: 4.5rem;
@@ -53,148 +51,188 @@
   margin-right: auto;
   position: relative;
   z-index: 1;
-  animation: fadeInUp 0.8s ease-out;
 }
 
 .section-header-center h2 {
-  background: linear-gradient(135deg, #0F172A 0%, var(--primary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-family: var(--font-serif);
   font-size: 2.75rem;
-  font-weight: 800;
+  font-weight: 700;
+  color: var(--ink-black);
   margin-bottom: 1rem;
+  text-shadow: 2px 2px 0 rgba(26, 26, 26, 0.05);
+  position: relative;
+}
+
+/* Ornamental brackets around title */
+.section-header-center h2::before {
+  content: '[ ';
+  opacity: 0.3;
+  margin-right: 0.5rem;
+}
+
+.section-header-center h2::after {
+  content: ' ]';
+  opacity: 0.3;
+  margin-left: 0.5rem;
+}
+
+/* Decorative underline */
+.section-header-center h2 ~ * {
+  position: relative;
+}
+
+.section-header-center::after {
+  content: '';
+  position: absolute;
+  bottom: -1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 3px;
+  background-color: var(--ink-black);
+  opacity: 0.3;
 }
 
 .section-subtitle {
-  margin-top: 0.75rem;
-  color: #64748B;
+  font-family: var(--font-serif);
   font-size: 1.125rem;
-  line-height: 1.7;
+  line-height: 1.8;
+  color: var(--graphite);
+  font-style: italic;
+  margin-top: 1rem;
 }
 
 /* Steps Grid */
 .steps-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 3rem;
   padding: 1rem 0;
   position: relative;
   z-index: 1;
 }
 
-/* Step Card */
+/* Step Card - Vintage Paper Card */
 .step-card {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(20px);
-  padding: 2.75rem 2.5rem;
-  border-radius: 24px;
+  background-color: var(--paper-white);
+  padding: 2.5rem;
+  border-radius: 8px;
+  border: 2px solid var(--fog);
   position: relative;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(99, 102, 241, 0.1);
+  transition: all 0.4s ease;
+  box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  z-index: 1;
-  overflow: hidden;
 }
 
-/* Gradient border on hover */
+/* Paper texture on card */
 .step-card::before {
   content: '';
   position: absolute;
   inset: 0;
-  border-radius: 24px;
-  padding: 2px;
-  background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.4s ease;
+  border-radius: 8px;
+  opacity: 0.1;
+  pointer-events: none;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E");
 }
 
-.step-card:hover::before {
-  opacity: 1;
-}
-
+/* Hover effect - lift card */
 .step-card:hover {
-  transform: translateY(-12px) scale(1.02);
+  transform: translateY(-8px);
   box-shadow: 
-    0 30px 60px rgba(0, 0, 0, 0.12),
-    0 0 60px rgba(99, 102, 241, 0.2);
-  border-color: transparent;
+    var(--shadow-lg),
+    0 0 0 1px var(--ash-gray);
+  border-color: var(--ink-black);
 }
 
-/* Icon Wrapper */
+/* Icon Wrapper - Ink stamp style */
 .step-icon-wrapper {
   width: 90px;
   height: 90px;
-  background: linear-gradient(135deg, #EFF6FF 0%, #F0F9FF 100%);
-  border: 3px solid rgba(99, 102, 241, 0.2);
-  color: var(--primary);
+  border: 3px double var(--ink-black);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 1.75rem;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 2rem;
+  background-color: var(--cream);
   position: relative;
-  z-index: 2;
-  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+  transition: all 0.4s ease;
+  box-shadow: 
+    inset 0 2px 4px rgba(26, 26, 26, 0.1),
+    var(--shadow-sm);
 }
 
-/* Glow effect */
+/* Inner circle for stamp effect */
 .step-icon-wrapper::before {
   content: '';
   position: absolute;
-  inset: -10px;
+  inset: 6px;
+  border: 1px solid var(--ink-black);
   border-radius: 50%;
-  opacity: 0;
-  filter: blur(5px);
-  transition: opacity 0.4s ease;
+  opacity: 0.5;
+}
+
+.step-icon-wrapper svg {
+  font-size: 2.5rem;
+  color: var(--ink-black);
+  position: relative;
+  z-index: 1;
 }
 
 .step-card:hover .step-icon-wrapper {
-  background: linear-gradient(135deg, var(--primary) 0%, #8B5CF6 100%);
-  color: white;
-  transform: scale(1.1) rotate(5deg);
-  border-color: transparent;
+  background-color: var(--ink-black);
+  transform: rotate(-5deg) scale(1.1);
 }
 
-.step-card:hover .step-icon-wrapper::before {
-  opacity: 0.6;
+.step-card:hover .step-icon-wrapper svg {
+  color: var(--paper-white);
 }
 
+/* Step Title */
 .step-title {
-  margin-bottom: 1rem;
-  color: #0F172A;
-  font-size: 1.375rem;
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
   font-weight: 700;
+  color: var(--ink-black);
+  margin-bottom: 1rem;
   position: relative;
-  z-index: 2;
+  z-index: 1;
+}
+
+/* Small decorative line under title */
+.step-title::after {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 2px;
+  background-color: var(--ash-gray);
+  margin: 0.75rem auto 0;
+  opacity: 0.5;
 }
 
 .step-card p {
-  color: #64748B;
+  font-family: var(--font-serif);
+  font-size: 1rem;
   line-height: 1.7;
+  color: var(--graphite);
   position: relative;
-  z-index: 2;
+  z-index: 1;
 }
 
-/* Decorative Background Number */
+/* Background Step Number - Watermark style */
 .step-number-bg {
   position: absolute;
-  top: 15px;
-  right: 25px;
-  font-size: 7rem;
+  top: 1.5rem;
+  right: 1.5rem;
+  font-size: 6rem;
   font-weight: 900;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(236, 72, 153, 0.08) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-family: var(--font-serif);
+  color: var(--fog);
+  opacity: 0.4;
   z-index: 0;
   line-height: 1;
   pointer-events: none;
@@ -202,13 +240,13 @@
 }
 
 .step-card:hover .step-number-bg {
+  opacity: 0.2;
   transform: scale(1.1) rotate(-5deg);
-  opacity: 0.8;
 }
 
-/* Staggered animation */
-.step-card {
-  animation: fadeInScale 0.8s ease-out backwards;
+/* Staggered card animations */
+.steps-grid > .step-card {
+  animation: stepFadeIn 0.8s ease-out backwards;
 }
 
 .steps-grid > .step-card:nth-child(1) { animation-delay: 0.1s; }
@@ -216,30 +254,38 @@
 .steps-grid > .step-card:nth-child(3) { animation-delay: 0.3s; }
 .steps-grid > .step-card:nth-child(4) { animation-delay: 0.4s; }
 
-@keyframes fadeInScale {
+@keyframes stepFadeIn {
   from {
     opacity: 0;
-    transform: scale(0.9) translateY(30px);
+    transform: translateY(40px) scale(0.9);
   }
   to {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Connecting line between steps (optional decorative) */
+.steps-grid::before {
+  content: '';
+  position: absolute;
+  top: 5rem;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--fog) 0px,
+    var(--fog) 10px,
+    transparent 10px,
+    transparent 20px
+  );
+  opacity: 0.5;
+  z-index: 0;
 }
 
-/* Mobile Layout */
-@media (max-width: 640px) {
+/* Responsive */
+@media (max-width: 768px) {
   .how-it-works-section {
     padding: 4rem 0;
   }
@@ -249,15 +295,42 @@
   }
 
   .steps-grid {
+    gap: 2.5rem;
+  }
+
+  .steps-grid::before {
+    display: none;
+  }
+
+  .how-it-works-section::after {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .steps-grid {
     grid-template-columns: 1fr;
     gap: 2rem;
   }
-  
+
   .step-card {
-    padding: 2.25rem 2rem;
+    padding: 2rem;
+  }
+
+  .step-icon-wrapper {
+    width: 75px;
+    height: 75px;
+  }
+
+  .step-icon-wrapper svg {
+    font-size: 2rem;
   }
 
   .step-number-bg {
-    font-size: 5rem;
+    font-size: 4.5rem;
+  }
+
+  .section-header-center h2 {
+    font-size: 1.75rem;
   }
 }

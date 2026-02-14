@@ -1,161 +1,346 @@
 .btn {
-  /* Navbar çizgi fix'i ve temel ayarlar */
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-md);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-position 0.3s ease; 
+  gap: 0.5rem;
   border: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  transition: all var(--transition-base);
   position: relative;
   overflow: hidden;
-  letter-spacing: 0.01em;
-  font-family: var(--font-main);
-  
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  transform: translateZ(0);
-  background-clip: padding-box;
+  text-transform: uppercase;
+  font-size: 0.875rem;
 }
 
-/* Shimmer Effect */
+/* Ink stain effect on hover */
 .btn::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.25),
-    transparent
-  );
-  transition: left 0.6s ease;
-  z-index: 1;
-  pointer-events: none;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(26, 26, 26, 0.1);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
 }
 
 .btn:hover::before {
-  left: 100%;
+  width: 300px;
+  height: 300px;
 }
 
 .btn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
-  filter: grayscale(1);
-  transform: none !important;
-  box-shadow: none !important;
+  filter: grayscale(50%);
 }
 
-/* --- PRIMARY VARIANT (Emerald Green) --- */
+.btn:disabled::before {
+  display: none;
+}
+
+.btn > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* === PRIMARY - Solid Ink === */
 .btn-primary {
-  background-image: linear-gradient(
-    135deg, 
-    var(--primary-start) 0%, 
-    var(--primary-end) 50%, 
-    var(--primary-hover-end) 100%
-  );
-  background-size: 200% auto;
-  color: white;
-  /* GÖLGE: Koyu Kızıl Glow (RGB: 190, 18, 60) */
-  box-shadow: 0 4px 15px rgba(190, 18, 60, 0.4); 
+  background-color: var(--ink-black);
+  color: var(--paper-white);
+  border: 2px solid var(--ink-black);
+  box-shadow: 
+    var(--shadow-md),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-position: right center; 
-  /* Hover Gölgesi: Canlı Kırmızı */
-  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5);
-  transform: translateY(-2px);
+  background-color: var(--charcoal);
+  border-color: var(--charcoal);
+  box-shadow: 
+    var(--shadow-lg),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
 }
 
 .btn-primary:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(190, 18, 60, 0.3);
+  box-shadow: var(--shadow-sm);
 }
 
-/* --- SECONDARY VARIANT (Glass / Neutral) --- */
+/* Paper texture overlay on primary */
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.05;
+  pointer-events: none;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E");
+}
+
+/* === SECONDARY - Paper Card === */
 .btn-secondary {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  color: var(--text-main);
-  border: 1px solid rgba(148, 163, 184, 0.3); /* Slate border */
+  background-color: var(--paper-white);
+  color: var(--ink-black);
+  border: 2px solid var(--fog);
   box-shadow: var(--shadow-sm);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: #ffffff;
-  border-color: var(--primary-start);
-  color: var(--primary-start); /* Hoverda yazı kızıla döner */
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(190, 18, 60, 0.15);
+  background-color: var(--aged-paper);
+  border-color: var(--light-smoke);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
-/* --- OUTLINE VARIANT --- */
+.btn-secondary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: var(--texture-opacity-light);
+  pointer-events: none;
+  background-image: 
+    repeating-linear-gradient(
+      45deg,
+      transparent 0px,
+      transparent 2px,
+      rgba(26, 26, 26, 0.02) 2px,
+      rgba(26, 26, 26, 0.02) 4px
+    );
+}
+
+/* === OUTLINE - Pen Sketch === */
 .btn-outline {
-  border: 2px solid var(--primary-start);
   background: transparent;
-  color: var(--primary-start);
+  color: var(--ink-black);
+  border: 2px solid var(--ink-black);
   position: relative;
-  z-index: 0;
 }
 
+/* Hand-drawn border effect */
 .btn-outline::after {
   content: '';
   position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, var(--primary-start) 0%, var(--primary-end) 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  z-index: -1;
+  inset: -1px;
+  border: 1px solid var(--ink-black);
+  opacity: 0.3;
+  pointer-events: none;
 }
 
 .btn-outline:hover:not(:disabled) {
-  color: white;
-  border-color: transparent;
-  transform: translateY(-2px);
-  /* Gölge Kızıl */
-  box-shadow: 0 4px 15px rgba(190, 18, 60, 0.3);
+  background-color: var(--ink-black);
+  color: var(--paper-white);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .btn-outline:hover:not(:disabled)::after {
-  opacity: 1;
+  opacity: 0;
 }
 
-/* --- DANGER VARIANT --- */
+/* === GHOST - Minimal Ink === */
+.btn-ghost {
+  background: transparent;
+  color: var(--graphite);
+  border: none;
+  position: relative;
+}
+
+.btn-ghost::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 1px;
+  background-color: var(--ink-black);
+  transition: all var(--transition-base);
+  transform: translateX(-50%);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  color: var(--ink-black);
+}
+
+.btn-ghost:hover:not(:disabled)::after {
+  width: 100%;
+}
+
+/* === DANGER - Red Ink (exception to B&W) === */
 .btn-danger {
-  background-image: linear-gradient(
-    135deg, 
-    var(--secondary-start) 0%, 
-    var(--secondary-end) 50%,
-    var(--secondary-hover-end) 100%
-  );
-  background-size: 200% auto;
-  color: white;
-  /* Koyu Gri/Mavi Gölge */
-  box-shadow: 0 4px 15px rgba(30, 41, 59, 0.4);
+  background-color: transparent;
+  color: #8b0000; /* Dark red - looks like old red ink */
+  border: 2px solid #8b0000;
 }
 
 .btn-danger:hover:not(:disabled) {
-  background-position: right center;
-  box-shadow: 0 8px 25px rgba(71, 85, 105, 0.5); 
-  transform: translateY(-2px);
+  background-color: #8b0000;
+  color: var(--paper-white);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
-/* --- SIZES (Aynı) --- */
-.btn-small { padding: 0.5rem 1rem; font-size: 0.85rem; height: 32px; }
-.btn-medium { padding: 0.75rem 1.5rem; font-size: 0.95rem; height: 44px; }
-.btn-large { padding: 1rem 2rem; font-size: 1.1rem; height: 52px; }
+/* === LINK - Underlined Text === */
+.btn-link {
+  background: transparent;
+  color: var(--ink-black);
+  border: none;
+  text-decoration: underline;
+  text-decoration-style: wavy;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  padding: 0;
+}
 
+.btn-link:hover:not(:disabled) {
+  text-decoration-thickness: 2px;
+  opacity: 0.7;
+}
+
+/* === SIZES === */
+.btn-small {
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.05em;
+}
+
+.btn-medium {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  border-radius: var(--radius-md);
+}
+
+.btn-large {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  border-radius: var(--radius-md);
+}
+
+/* === SPECIAL EFFECTS === */
+
+/* Ink stamp effect */
+.btn-stamp {
+  position: relative;
+  border: 3px double var(--ink-black) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.btn-stamp::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid var(--ink-black);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Torn paper button */
+.btn-torn {
+  border: none !important;
+  position: relative;
+  background: var(--paper-white);
+  color: var(--ink-black);
+}
+
+.btn-torn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='4' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,2 Q2,0 4,2 T8,2 T12,2 T16,2 T20,2 T24,2 T28,2 T32,2 T36,2 T40,2 T44,2 T48,2 T52,2 T56,2 T60,2 T64,2 T68,2 T72,2 T76,2 T80,2 T84,2 T88,2 T92,2 T96,2 T100,2' fill='%23fafaf8' stroke='none'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 100px 4px;
+}
+
+.btn-torn::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='4' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,2 Q2,4 4,2 T8,2 T12,2 T16,2 T20,2 T24,2 T28,2 T32,2 T36,2 T40,2 T44,2 T48,2 T52,2 T56,2 T60,2 T64,2 T68,2 T72,2 T76,2 T80,2 T84,2 T88,2 T92,2 T96,2 T100,2' fill='%23fafaf8' stroke='none'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 100px 4px;
+}
+
+/* Loading state - Ink spreading */
+.btn-loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin-top: -8px;
+  margin-left: -8px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: btn-spin 0.8s linear infinite;
+}
+
+.btn-primary.btn-loading::after {
+  border-top-color: var(--paper-white);
+}
+
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Icon alignment */
 .btn svg {
-  width: 1.2em;
-  height: 1.2em;
-  margin-right: 0.5rem;
-  transition: transform 0.3s ease;
+  font-size: 1.25em;
 }
 
-.btn:hover:not(:disabled) svg {
-  transform: translateX(3px);
+/* Button group */
+.btn-group {
+  display: inline-flex;
+  gap: 0;
+}
+
+.btn-group .btn {
+  border-radius: 0;
+  border-right-width: 1px;
+}
+
+.btn-group .btn:first-child {
+  border-top-left-radius: var(--radius-md);
+  border-bottom-left-radius: var(--radius-md);
+}
+
+.btn-group .btn:last-child {
+  border-top-right-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+  border-right-width: 2px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .btn-large {
+    padding: 0.875rem 1.5rem;
+    font-size: 0.9rem;
+  }
 }

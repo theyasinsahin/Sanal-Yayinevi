@@ -7,70 +7,105 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.625rem;
-  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
   font-weight: 600;
-  color: #1E293B;
-  letter-spacing: 0.01em;
+  color: var(--ink-black);
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .label-icon {
   display: flex;
   align-items: center;
-  color: var(--primary);
+  color: var(--graphite);
+  font-size: 1rem;
 }
 
 .input-container {
   position: relative;
 }
 
+/* Base Input Styles - Vintage Paper */
 .form-input {
   width: 100%;
-  padding: 0.875rem 1.125rem;
+  padding: 0.875rem 1rem;
   font-size: 1rem;
-  border: 2px solid #E2E8F0;
+  font-family: var(--font-serif);
+  border: 2px solid var(--fog);
   border-radius: var(--radius-md);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background: linear-gradient(135deg, var(--bg-surface) 0%, #F8FAFC 100%);
+  background-color: var(--paper-white);
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 1.5rem,
+      rgba(26, 26, 26, 0.03) 1.5rem,
+      rgba(26, 26, 26, 0.03) calc(1.5rem + 1px)
+    );
+  color: var(--ink-black);
   box-sizing: border-box;
-  color: #1E293B;
-  font-weight: 500;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+  line-height: 1.5rem;
+}
+
+/* Paper texture overlay */
+.form-input::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: var(--texture-opacity-light);
+  pointer-events: none;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.3'/%3E%3C/svg%3E");
 }
 
 .form-input::placeholder {
-  color: #94A3B8;
-  font-weight: 400;
+  color: var(--light-smoke);
+  font-style: italic;
+  opacity: 1;
 }
 
-/* Focus state with glow effect */
+/* Focus State - Ink Pen Writing */
 .form-input:focus {
   outline: none;
-  border-color: var(--primary);
-  background: var(--bg-surface);
+  border-color: var(--ink-black);
+  background-color: var(--paper-white);
   box-shadow: 
-    0 0 0 3px rgba(99, 102, 241, 0.1),
-    0 4px 12px rgba(99, 102, 241, 0.15);
+    var(--shadow-md),
+    0 0 0 3px rgba(26, 26, 26, 0.05);
   transform: translateY(-1px);
 }
 
-.form-input:disabled {
-  background: linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%);
-  cursor: not-allowed;
-  opacity: 0.7;
-  border-color: #CBD5E1;
+/* Hover State */
+.form-input:hover:not(:disabled) {
+  border-color: var(--ash-gray);
 }
 
-/* Error State */
+/* Disabled State - Faded Paper */
+.form-input:disabled {
+  background-color: var(--aged-paper);
+  background-image: none;
+  cursor: not-allowed;
+  opacity: 0.6;
+  border-color: var(--fog);
+  color: var(--ash-gray);
+}
+
+/* === ERROR STATE === */
 .has-error .form-input {
-  border-color: #EF4444;
-  background: linear-gradient(135deg, var(--bg-surface) 0%, #FEF2F2 100%);
+  border-color: #8b0000; /* Dark red ink */
+  background-color: #fff5f5; /* Slight red tint */
 }
 
 .has-error .form-input:focus {
-  border-color: #DC2626;
+  border-color: #8b0000;
   box-shadow: 
-    0 0 0 3px rgba(239, 68, 68, 0.1),
-    0 4px 12px rgba(239, 68, 68, 0.15);
+    var(--shadow-md),
+    0 0 0 3px rgba(139, 0, 0, 0.1);
 }
 
 .input-error-message {
@@ -80,47 +115,102 @@
   margin-top: 0.5rem;
   font-size: 0.8rem;
   font-weight: 500;
-  color: #DC2626;
-  animation: slideDown 0.3s ease-out;
+  font-family: var(--font-sans);
+  color: #8b0000;
+  animation: shake 0.3s ease;
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
 }
 
+.input-error-message::before {
+  content: '⚠';
+  font-style: normal;
+}
+
+/* === SUCCESS STATE === */
+.has-success .form-input {
+  border-color: #2d5016; /* Dark olive green */
+  background-color: #f0f7f0; /* Slight green tint */
+}
+
+.has-success .form-input:focus {
+  box-shadow: 
+    var(--shadow-md),
+    0 0 0 3px rgba(45, 80, 22, 0.1);
+}
+
+/* === REQUIRED INDICATOR === */
 .required-mark {
-  color: #EF4444;
-  margin-left: 2px;
+  color: #8b0000;
+  margin-left: 0.25rem;
   font-weight: 700;
 }
 
-/* Floating label effect (optional enhancement) */
-.input-container.has-value .form-input {
-  border-color: #CBD5E1;
+/* === INPUT VARIANTS === */
+
+/* Typewriter Style Input */
+.input-typewriter .form-input {
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  background-image: none;
+  border-style: dashed;
 }
 
-/* Textarea styling */
+/* Handwritten Style Input */
+.input-handwritten .form-input {
+  font-family: var(--font-handwriting);
+  font-size: 1.1rem;
+  border-style: dotted;
+  background-image: none;
+}
+
+/* Parchment Style */
+.input-parchment .form-input {
+  background-color: var(--parchment);
+  background-image: 
+    linear-gradient(
+      135deg,
+      transparent 0%,
+      rgba(26, 26, 26, 0.02) 50%,
+      transparent 100%
+    );
+  border-color: var(--sepia-dark);
+}
+
+/* === TEXTAREA === */
 textarea.form-input {
   min-height: 120px;
   resize: vertical;
-  font-family: var(--font-main);
-  line-height: 1.6;
+  font-family: var(--font-serif);
+  line-height: 1.7;
+  padding: 1rem;
 }
 
-/* Input group (for icons inside input) */
+/* Lined paper effect for textarea */
+textarea.form-input.lined {
+  background-image: 
+    repeating-linear-gradient(
+      transparent,
+      transparent 1.7rem,
+      rgba(26, 26, 26, 0.08) 1.7rem,
+      rgba(26, 26, 26, 0.08) calc(1.7rem + 1px)
+    );
+  background-size: 100% 1.7rem;
+  line-height: 1.7rem;
+  padding-top: 0.85rem;
+}
+
+/* === INPUT WITH ICON === */
 .input-with-icon {
   position: relative;
 }
 
 .input-with-icon .form-input {
-  padding-left: 2.75rem;
+  padding-left: 3rem;
 }
 
 .input-icon {
@@ -128,11 +218,202 @@ textarea.form-input {
   left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #94A3B8;
+  color: var(--ash-gray);
   pointer-events: none;
-  transition: color 0.3s ease;
+  transition: color var(--transition-base);
+  font-size: 1.25rem;
 }
 
 .input-with-icon .form-input:focus ~ .input-icon {
-  color: var(--primary);
+  color: var(--ink-black);
+}
+
+/* Icon on right */
+.input-with-icon.icon-right .form-input {
+  padding-left: 1rem;
+  padding-right: 3rem;
+}
+
+.input-with-icon.icon-right .input-icon {
+  left: auto;
+  right: 1rem;
+}
+
+/* === INPUT GROUP === */
+.input-group {
+  display: flex;
+  gap: 0;
+}
+
+.input-group .form-input {
+  border-radius: 0;
+  border-right-width: 1px;
+}
+
+.input-group .form-input:first-child {
+  border-top-left-radius: var(--radius-md);
+  border-bottom-left-radius: var(--radius-md);
+}
+
+.input-group .form-input:last-child {
+  border-top-right-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+  border-right-width: 2px;
+}
+
+.input-group-addon {
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  background-color: var(--aged-paper);
+  border: 2px solid var(--fog);
+  border-right: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--graphite);
+  white-space: nowrap;
+}
+
+.input-group-addon:first-child {
+  border-top-left-radius: var(--radius-md);
+  border-bottom-left-radius: var(--radius-md);
+}
+
+.input-group-addon:last-child {
+  border-right: 2px solid var(--fog);
+  border-left: none;
+  border-top-right-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+}
+
+/* === SEARCH INPUT === */
+.input-search {
+  position: relative;
+}
+
+.input-search .form-input {
+  padding-right: 3rem;
+}
+
+.input-search-icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ash-gray);
+  pointer-events: none;
+  font-size: 1.25rem;
+}
+
+/* === FILE INPUT === */
+.input-file {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+}
+
+.input-file input[type="file"] {
+  position: absolute;
+  left: -9999px;
+}
+
+.input-file-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--paper-white);
+  border: 2px solid var(--ink-black);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all var(--transition-base);
+}
+
+.input-file-label:hover {
+  background-color: var(--ink-black);
+  color: var(--paper-white);
+}
+
+/* === CHECKBOX & RADIO === */
+.checkbox-wrapper,
+.radio-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+}
+
+.checkbox-input,
+.radio-input {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--graphite);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  background-color: var(--paper-white);
+  transition: all var(--transition-base);
+}
+
+.checkbox-input {
+  border-radius: var(--radius-sm);
+}
+
+.radio-input {
+  border-radius: 50%;
+}
+
+.checkbox-input:checked,
+.radio-input:checked {
+  background-color: var(--ink-black);
+  border-color: var(--ink-black);
+}
+
+.checkbox-input:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--paper-white);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.radio-input:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--paper-white);
+}
+
+.checkbox-label,
+.radio-label {
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  color: var(--ink-black);
+  user-select: none;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 640px) {
+  .form-input {
+    font-size: 0.9375rem;
+    padding: 0.75rem 0.875rem;
+  }
+
+  textarea.form-input {
+    min-height: 100px;
+  }
 }

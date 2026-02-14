@@ -1,51 +1,66 @@
 .book-card {
-  background: linear-gradient(135deg, var(--bg-surface) 0%, #F8FAFC 100%);
-  border-radius: var(--radius-lg);
+  background-color: var(--paper-white);
+  border-radius: 8px;
+  border: 2px solid var(--fog);
   overflow: hidden;
-  border: 1px solid rgba(99, 102, 241, 0.1);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s ease;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   height: 100%;
   position: relative;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+  box-shadow: var(--shadow-sm);
 }
 
-/* Glowing border effect on hover */
+/* Paper texture overlay */
 .book-card::before {
   content: '';
   position: absolute;
   inset: 0;
-  border-radius: var(--radius-lg);
-  padding: 2px;
-  background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 0;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E");
 }
 
-.book-card:hover::before {
+/* Hover state - vintage book lift */
+.book-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 
+    var(--shadow-lg),
+    0 0 0 1px var(--ash-gray);
+  border-color: var(--ink-black);
+}
+
+/* Corner fold decoration */
+.book-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 20px 20px 0;
+  border-color: transparent var(--cream) transparent transparent;
+  filter: drop-shadow(-1px 1px 2px rgba(26, 26, 26, 0.15));
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 2;
+}
+
+.book-card:hover::after {
   opacity: 1;
 }
 
-.book-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.1),
-    0 0 40px rgba(99, 102, 241, 0.15);
-  border-color: transparent;
-}
-
-/* Media Area */
+/* COVER IMAGE AREA */
 .card-media {
   position: relative;
   width: 100%;
-  padding-top: 140%;
-  background: linear-gradient(135deg, #E0E7FF 0%, #FDF4FF 100%);
+  padding-top: 140%; /* Book cover aspect ratio */
+  background-color: var(--aged-paper);
   overflow: hidden;
+  border-bottom: 3px double var(--fog);
 }
 
 .cover-image {
@@ -55,15 +70,24 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.6s ease;
 }
 
 .book-card:hover .cover-image {
-  transform: scale(1.08);
-  filter: brightness(1.05);
+  transform: scale(1.05);
 }
 
-/* Overlay Labels */
+/* Vintage photo frame inside cover */
+.card-media::before {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 3px solid rgba(26, 26, 26, 0.2);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* OVERLAY BADGES */
 .meta-overlay {
   position: absolute;
   top: 12px;
@@ -76,30 +100,31 @@
 }
 
 .shadow-sm {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  backdrop-filter: var(--glass-blur);
-  background-color: rgba(255, 255, 255, 0.95) !important;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: none;
+  background-color: var(--paper-white) !important;
+  border: 1px solid var(--ash-gray) !important;
 }
 
-/* Status Badge (Bottom Left) */
+/* STATUS BADGE (Bottom Left) */
 .status-badge {
   position: absolute;
   bottom: 12px;
   left: 12px;
   padding: 6px 12px;
-  border-radius: var(--radius-md);
-  font-size: 0.75rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
   z-index: 10;
   display: flex;
   align-items: center;
   gap: 4px;
-  backdrop-filter: var(--glass-blur);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  font-family: var(--font-sans);
+  box-shadow: var(--shadow-sm);
   animation: slideInLeft 0.5s ease-out;
+  border: 2px solid;
 }
 
 @keyframes slideInLeft {
@@ -114,75 +139,100 @@
 }
 
 .status-badge.funding {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.95) 0%, rgba(217, 119, 6, 0.95) 100%);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: var(--paper-white);
+  color: #8b4513; /* Saddle brown */
+  border-color: #8b4513;
 }
 
 .status-badge.published {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.95) 0%, rgba(5, 150, 105, 0.95) 100%);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: var(--paper-white);
+  color: #2d5016; /* Dark olive */
+  border-color: #2d5016;
+  border-style: double;
+  border-width: 3px;
 }
 
-/* Content Area */
+/* CONTENT AREA */
 .card-content {
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
   position: relative;
+  z-index: 1;
 }
 
 .book-title {
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--ink-black);
+  margin-bottom: 0.625rem;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  line-height: 1.5rem;
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #0F172A;
-  margin-bottom: 0.5rem;
   transition: color 0.3s ease;
 }
 
 .book-card:hover .book-title {
-  color: var(--primary);
+  color: var(--charcoal);
+}
+
+/* Decorative initial cap effect (optional) */
+.book-title.with-drop-cap::first-letter {
+  float: left;
+  font-size: 2.5em;
+  line-height: 0.85;
+  margin-right: 0.1em;
+  font-weight: 900;
 }
 
 .book-author {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.5rem;
   align-items: center;
-  margin-bottom: 0.75rem;
-  color: #64748B;
-  font-size: 0.9rem;
-  font-weight: 500;
+  margin-bottom: 0.875rem;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  color: var(--graphite);
+}
+
+.book-author::before {
+  content: '—';
+  opacity: 0.5;
 }
 
 .book-excerpt {
   flex-grow: 1;
   margin-bottom: 1rem;
+  font-family: var(--font-serif);
   font-size: 0.875rem;
-  line-height: 1.6;
-  color: #475569;
+  line-height: 1.7;
+  color: var(--graphite);
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  font-style: italic;
 }
 
 /* Reading Time */
 .reading-time {
   margin-bottom: 0.75rem;
   padding: 0.375rem 0.75rem;
-  background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
-  border-radius: var(--radius-sm);
+  background-color: var(--aged-paper);
+  border-radius: 4px;
   display: inline-flex;
   align-items: center;
   align-self: flex-start;
-  border: 1px solid rgba(99, 102, 241, 0.1);
+  border: 1px solid var(--fog);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  color: var(--graphite);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 /* Funding Status */
@@ -190,50 +240,68 @@
   margin-bottom: 1rem;
 }
 
-/* Statistics */
+/* STATISTICS BAR */
 .card-stats {
   display: flex;
   justify-content: space-between;
   padding-top: 1rem;
-  border-top: 1px solid rgba(99, 102, 241, 0.1);
-  color: #64748B;
+  border-top: 1px solid var(--fog);
+  color: var(--graphite);
+  position: relative;
+}
+
+/* Decorative divider ornament */
+.card-stats::before {
+  content: '◆';
+  position: absolute;
+  top: -0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--paper-white);
+  padding: 0 0.5rem;
+  color: var(--fog);
+  font-size: 0.625rem;
 }
 
 .stat-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.875rem;
+  gap: 5px;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
   font-weight: 600;
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
+  color: var(--graphite);
 }
 
 .stat-item:hover {
-  color: var(--primary);
+  color: var(--ink-black);
+  transform: scale(1.05);
 }
 
 .stat-icon {
   font-size: 0.875rem !important;
-  color: #94A3B8;
+  color: var(--ash-gray);
   transition: color 0.3s ease;
 }
 
 .stat-item:hover .stat-icon {
-  color: var(--primary);
+  color: var(--ink-black);
 }
 
-/* Skeleton Loading */
+/* SKELETON LOADING */
 .skeleton {
   background: linear-gradient(
     90deg,
-    #E2E8F0 0%,
-    #F1F5F9 50%,
-    #E2E8F0 100%
+    var(--aged-paper) 0%,
+    var(--parchment) 50%,
+    var(--aged-paper) 100%
   );
   background-size: 200% 100%;
   min-height: 450px;
-  animation: shimmer 2s infinite;
-  border-radius: var(--radius-lg);
+  animation: vintageShimmer 2s ease-in-out infinite;
+  border-radius: 8px;
+  border: 2px solid var(--fog);
   position: relative;
   overflow: hidden;
 }
@@ -247,13 +315,13 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.6) 50%,
+    rgba(26, 26, 26, 0.05) 50%,
     transparent 100%
   );
   animation: shimmer-slide 2s infinite;
 }
 
-@keyframes shimmer {
+@keyframes vintageShimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
@@ -263,7 +331,52 @@
   100% { left: 200%; }
 }
 
-/* Responsive adjustments */
+/* SPECIAL DECORATIONS */
+
+/* Bookmark ribbon on featured books */
+.book-card[data-featured="true"]::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 2rem;
+  width: 4px;
+  height: 80px;
+  background: linear-gradient(
+    to bottom,
+    var(--graphite) 0%,
+    var(--graphite) 70%,
+    transparent 100%
+  );
+  opacity: 0.4;
+  z-index: 3;
+}
+
+/* Wax seal for verified authors */
+.book-card .verified-seal {
+  position: absolute;
+  bottom: -1rem;
+  right: 1rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 30% 30%,
+    var(--charcoal) 0%,
+    var(--ink-black) 100%
+  );
+  border: 2px solid var(--graphite);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: var(--paper-white);
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    var(--shadow-md);
+  z-index: 10;
+}
+
+/* Responsive */
 @media (max-width: 640px) {
   .card-content {
     padding: 1rem;
@@ -274,6 +387,14 @@
   }
 
   .book-excerpt {
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
+  }
+
+  .card-stats {
+    padding-top: 0.75rem;
+  }
+
+  .stat-item {
+    font-size: 0.75rem;
   }
 }

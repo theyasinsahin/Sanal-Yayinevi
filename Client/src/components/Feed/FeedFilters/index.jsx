@@ -40,7 +40,6 @@ const FeedFilters = () => {
                 updateFilters('genre', nextGenre);
               }}
             >
-              <span className="category-icon">{genre.icon}</span>
               <span className="category-text">{genre.name}</span>
             </button>
           ))}

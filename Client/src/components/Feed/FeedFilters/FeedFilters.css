@@ -51,8 +51,8 @@
 }
 
 .category-pill.active {
-  background-color: #EFF6FF; /* Açık Mavi */
-  color: #2563EB; /* Primary Mavi */
+  background-color: #ffe5d2; /* Açık Mavi */
+  color: #8b4513; /* Primary Mavi */
   font-weight: 600;
   border-color: #BFDBFE;
 }
@@ -75,12 +75,35 @@
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
-  color: #4B5563;
+  color: #8b4513;
   font-size: 0.95rem;
 }
 
-.sort-option input {
-  accent-color: #2563EB;
-  width: 16px;
-  height: 16px;
+/* Radio butonun varsayılan görünümünü kaldır */
+.sort-option input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #8b4513; /* Dış çizgi rengi */
+  border-radius: 50%;
+  outline: none;
+  cursor: pointer;
+  display: grid;
+  place-content: center;
+}
+
+/* Seçildiğinde ortasına nokta ekle */
+.sort-option input[type="radio"]::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+  background-color: #8b4513; /* İç nokta rengi */
+}
+
+.sort-option input[type="radio"]:checked::before {
+  transform: scale(1);
 }

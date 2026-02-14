@@ -1,54 +1,334 @@
 :root {
-  /* --- PRIMARY (Royal Crimson) --- */
-  /* Asil Kızıl -> Canlı Kırmızı */
-  /* Bu renk "Liderlik" ve "Tutku" hissi verir. */
-  --primary-start: #be123c;   /* Rose 700 - Derin, tok bir kızıl */
-  --primary-end: #ef4444;     /* Red 500 - Enerjik, canlı kırmızı */
-  
-  --primary-hover-start: #9f1239; /* Rose 800 */
-  --primary-hover-end: #dc2626;   /* Red 600 */
-  
-  /* --- SECONDARY (Slate / Midnight) --- */
-  /* Kırmızıyı dengelemek için "Soğuk ve Koyu Gri" kullanıyoruz. */
-  /* Bu, arayüzü "Ciddiyet" ve "Teknoloji" tarafına çeker. */
-  --secondary-start: #1e293b;   /* Slate 800 */
-  --secondary-end: #475569;     /* Slate 600 */
-  --secondary-hover-start: #0f172a;
-  --secondary-hover-end: #334155;
+  --navbar-height: 80px;
 
-  /* --- ACCENT (Wealth Gold) --- */
-  /* Fonlama/Para vurgusu için "Altın/Amber" tonları. */
-  /* Badge'lerde ve ikonlarda çok şık durur. */
-  --accent-start: #d97706;      /* Amber 600 */
-  --accent-end: #fbbf24;        /* Amber 400 */
-  --accent-hover-start: #b45309;
-  --accent-hover-end: #f59e0b;
+  /* === VINTAGE LITERARY COLOR PALETTE === */
+  /* Blacks & Grays - Ink & Charcoal */
+  --ink-black: #1a1a1a;
+  --charcoal: #2d2d2d;
+  --graphite: #4a4a4a;
+  --ash-gray: #6b6b6b;
+  --silver-gray: #8e8e8e;
+  --light-smoke: #b8b8b8;
+  --fog: #d4d4d4;
   
-  /* --- Diğerleri --- */
-  --bg-app: #f8fafc; /* Çok soğuk, temiz bir gri-beyaz (Slate 50) */
-  --bg-surface: #ffffff;
-  --text-main: #0f172a; /* Simsiyah yerine çok koyu lacivert-gri (Slate 900) */
-  --text-muted: #64748b;
+  /* Whites & Creams - Paper Tones */
+  --paper-white: #fafaf8;
+  --cream: #f5f4f0;
+  --aged-paper: #ebe8e0;
+  --parchment: #e8e4d8;
+  --vintage-beige: #dcd7c8;
   
-  /* Glass Effect (Premium) */
-  --glass-bg: rgba(255, 255, 255, 0.8);
-  --glass-border: 1px solid rgba(190, 18, 60, 0.15); /* Hafif kızıl border */
-  --glass-blur: blur(12px);
-  --glass-shadow: 0 8px 32px 0 rgba(190, 18, 60, 0.08); /* Hafif kızıl gölge */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  /* Accent - Subtle sepia warmth for highlights only */
+  --sepia-light: #f4f1e8;
+  --sepia-medium: #d9d3c5;
+  --sepia-dark: #a89f8f;
+  
+  /* Primary palette - Pure B&W with paper warmth */
+  --primary: var(--ink-black);
+  --primary-hover: var(--charcoal);
+  --secondary: var(--graphite);
+  --accent: var(--ash-gray);
+  
+  /* Backgrounds */
+  --bg-app: var(--cream);
+  --bg-surface: var(--paper-white);
+  --bg-elevated: var(--aged-paper);
+  --text-main: var(--ink-black);
+  --text-muted: var(--ash-gray);
+  --text-subtle: var(--light-smoke);
+  
+  /* Borders - Vintage ink lines */
+  --border-light: 1px solid rgba(26, 26, 26, 0.08);
+  --border-medium: 1px solid rgba(26, 26, 26, 0.15);
+  --border-heavy: 2px solid rgba(26, 26, 26, 0.25);
+  --border-dashed: 2px dashed rgba(26, 26, 26, 0.2);
+  
+  /* Shadows - Soft, paper-like */
+  --shadow-sm: 0 2px 4px rgba(26, 26, 26, 0.06);
+  --shadow-md: 0 4px 8px rgba(26, 26, 26, 0.1);
+  --shadow-lg: 0 8px 16px rgba(26, 26, 26, 0.12);
+  --shadow-xl: 0 12px 24px rgba(26, 26, 26, 0.15);
+  --shadow-paper: 2px 4px 8px rgba(26, 26, 26, 0.08);
+  --shadow-inset: inset 0 2px 4px rgba(26, 26, 26, 0.06);
+  
+  /* Text shadows - Subtle ink bleed */
+  --text-shadow-subtle: 0 1px 2px rgba(26, 26, 26, 0.1);
+  --text-shadow-heading: 1px 1px 2px rgba(26, 26, 26, 0.08);
+  
+  /* Radius - Organic, hand-drawn feel */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+  
+  /* Fonts - Literary & Classic */
+  --font-serif: 'Libre Baskerville', 'Crimson Text', 'Georgia', serif;
+  --font-sans: 'Inter', 'Helvetica Neue', system-ui, sans-serif;
+  --font-mono: 'Courier Prime', 'Courier New', monospace;
+  --font-handwriting: 'Caveat', 'Dancing Script', cursive;
+  
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.5s ease;
+  
+  /* Paper texture opacity */
+  --texture-opacity: 0.15;
+  --texture-opacity-light: 0.08;
+  --texture-opacity-heavy: 0.25;
+}
+
+/* === GLOBAL STYLES === */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: var(--font-main);
-  background-color: var(--bg-app);
-  color: var(--text-main);
+  font-family: var(--font-serif);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  line-height: 1.7;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Paper texture overlay on body */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: var(--texture-opacity-light);
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      rgba(26, 26, 26, 0.03) 0px,
+      transparent 1px,
+      transparent 2px,
+      rgba(26, 26, 26, 0.03) 3px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(26, 26, 26, 0.03) 0px,
+      transparent 1px,
+      transparent 2px,
+      rgba(26, 26, 26, 0.03) 3px
+    );
+  background-size: 3px 3px;
+}
+
+/* Subtle vignette effect */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9998;
+  background: radial-gradient(
+    circle at center,
+    transparent 0%,
+    transparent 60%,
+    rgba(26, 26, 26, 0.03) 100%
+  );
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: var(--font-mono);
+  background-color: var(--aged-paper);
+  padding: 0.2em 0.4em;
+  border-radius: var(--radius-sm);
+  font-size: 0.9em;
+  border: var(--border-light);
 }
 
+/* === UTILITY CLASSES === */
+
+/* Paper texture backgrounds */
+.paper-texture {
+  position: relative;
+  background-color: var(--paper-white);
+}
+
+.paper-texture::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: var(--texture-opacity);
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E");
+}
+
+/* Aged paper effect */
+.aged-paper {
+  background: linear-gradient(
+    135deg,
+    var(--aged-paper) 0%,
+    var(--parchment) 50%,
+    var(--aged-paper) 100%
+  );
+  box-shadow: var(--shadow-paper);
+}
+
+/* Torn paper edge effect */
+.torn-edge-top {
+  position: relative;
+}
+
+.torn-edge-top::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 8px;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,4 Q2,0 4,4 T8,4 T12,4 T16,4 T20,4 T24,4 T28,4 T32,4 T36,4 T40,4 T44,4 T48,4 T52,4 T56,4 T60,4 T64,4 T68,4 T72,4 T76,4 T80,4 T84,4 T88,4 T92,4 T96,4 T100,4' fill='%23fafaf8' stroke='none'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 100px 8px;
+}
+
+/* Ink splatter decoration */
+.ink-splatter {
+  position: relative;
+}
+
+.ink-splatter::after {
+  content: '•';
+  position: absolute;
+  font-size: 0.5rem;
+  color: var(--ink-black);
+  opacity: 0.2;
+}
+
+/* Underline - hand-drawn style */
+.hand-underline {
+  position: relative;
+  display: inline-block;
+}
+
+.hand-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--ink-black) 0px,
+    var(--ink-black) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  opacity: 0.6;
+}
+
+/* Corner ornament */
+.corner-ornament {
+  position: relative;
+}
+
+.corner-ornament::before,
+.corner-ornament::after {
+  content: '❦';
+  position: absolute;
+  font-size: 1rem;
+  color: var(--ash-gray);
+  opacity: 0.3;
+  font-family: serif;
+}
+
+.corner-ornament::before {
+  top: 0.5rem;
+  left: 0.5rem;
+}
+
+.corner-ornament::after {
+  bottom: 0.5rem;
+  right: 0.5rem;
+  transform: rotate(180deg);
+}
+
+/* Bookmarks */
+.bookmark-ribbon {
+  position: absolute;
+  top: 0;
+  right: 2rem;
+  width: 3px;
+  height: 100px;
+  background: linear-gradient(
+    to bottom,
+    var(--graphite) 0%,
+    var(--graphite) 80%,
+    transparent 100%
+  );
+  opacity: 0.3;
+}
+
+/* Text styles - Vintage typography */
+.drop-cap::first-letter {
+  float: left;
+  font-size: 4em;
+  line-height: 0.85;
+  margin: 0.1em 0.1em 0 0;
+  font-weight: bold;
+  font-family: var(--font-serif);
+}
+
+/* Selection style */
+::selection {
+  background-color: var(--ink-black);
+  color: var(--paper-white);
+}
+
+::-moz-selection {
+  background-color: var(--ink-black);
+  color: var(--paper-white);
+}
+
+/* Scrollbar - Minimal, vintage style */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--aged-paper);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ash-gray);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--graphite);
+}
+
+/* Print-like styling for important sections */
+@media print {
+  body {
+    background: white;
+  }
+  
+  body::before,
+  body::after {
+    display: none;
+  }
+}

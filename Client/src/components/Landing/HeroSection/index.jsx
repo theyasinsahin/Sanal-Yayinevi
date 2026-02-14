@@ -52,10 +52,13 @@ const HeroSection = () => {
           {/* Sağ taraf: Görsel */}
           <div className="hero-image-container">
             <img 
-              src="/images/landing/hero-bg.jpg" 
+              src="/images/landing/hero-bg1.jpg" 
               alt="Yazma süreci illüstrasyonu" 
               className="hero-img"
             />
+            <div className="hero-stamp">
+              1928
+            </div>
           </div>
 
         </div>

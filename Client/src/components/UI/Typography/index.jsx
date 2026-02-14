@@ -17,7 +17,7 @@ export const Typography = ({
 
   return (
     <Component 
-      className={`typography ${variant} color-${color} weight-${weight} ${className}`} 
+      className={`typography ${variant} color-${color} weight-${weight} ${className}`}
       {...props}
     >
       {children}
