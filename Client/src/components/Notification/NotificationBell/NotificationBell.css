@@ -1,0 +1,148 @@
+/* src/components/Notification/NotificationBell/NotificationBell.css */
+.notif-bell-wrapper {
+  position: relative;
+}
+
+.notif-bell-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  color: var(--text-primary, #1a1a2e);
+  transition: background 0.15s;
+}
+
+.notif-bell-btn:hover { background: var(--bg-muted, #f3f4f6); }
+
+/* "row" varyantı — MobileMenu içinde "label" prop'u verildiğinde
+   kullanılır. İkon+yazı TEK bir buton içinde olduğu için satırın
+   tamamı tıklanabilir hale gelir (eskiden sadece küçük ikon
+   tıklanabilirdi, yazıya/satırın geri kalanına dokunulunca hiçbir şey
+   olmuyordu). */
+.notif-bell-btn--row {
+  width: 100%;
+  padding: 0;
+  border-radius: 0;
+  gap: 1rem;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.notif-bell-btn--row:hover {
+  background: none; /* hover efekti .mobile-nav-item::before üzerinden geliyor */
+}
+
+/* Badge artık butona değil, ikonu saran bu span'e göre konumlanıyor —
+   böylece "row" varyantında (buton tüm satır genişliğinde) badge her
+   zaman ikonun üstünde kalır, satırın sağ ucuna kaymaz. */
+.notif-bell-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.notif-bell-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #334155;
+}
+
+.notif-badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  background: #ef4444;
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 999px;
+  min-width: 16px;
+  text-align: center;
+}
+
+/* KONUMLANDIRMA HAKKINDA: .notif-dropdown artık document.body'ye
+   portallanıyor (bkz. index.jsx) ve position/top/left/right/width
+   değerleri her açılışta JS tarafından (zil butonunun gerçek ekran
+   konumu ölçülerek) inline "style" ile veriliyor. Bu yüzden burada
+   KASITLI OLARAK position/top/right/width tanımlamıyoruz — sadece
+   panelin görsel görünümünü (renk, kenarlık, gölge, köşe, taşma
+   davranışı) tanımlıyoruz. Bu sayede panel; navbar'da mı yoksa mobil
+   çekmecenin içinde mi render edildiğinden bağımsız, her zaman doğru
+   yerde ve her zaman en üstte (z-index) görünür. */
+.notif-dropdown {
+  background: white;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  z-index: 2000;
+  overflow: hidden;
+  max-width: calc(100vw - 1.5rem);
+}
+
+.notif-dropdown-header {
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  color: var(--text-primary, #1a1a2e);
+}
+
+.notif-empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-muted, #6b7280);
+  font-size: 0.85rem;
+}
+
+.notif-list {
+  max-height: min(400px, calc(100vh - var(--navbar-height, 64px) - 5rem));
+  overflow-y: auto;
+}
+
+.notif-item {
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color, #f3f4f6);
+  transition: background 0.15s;
+}
+
+.notif-item:hover { background: var(--bg-muted, #f9fafb); }
+.notif-item.unread { background: #eff6ff; }
+.notif-item.unread:hover { background: #dbeafe; }
+
+.notif-icon { font-size: 1.4rem; flex-shrink: 0; }
+
+.notif-content { display: flex; flex-direction: column; gap: 2px; }
+
+.notif-title {
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: var(--text-primary, #1a1a2e);
+  margin: 0;
+}
+
+.notif-message {
+  font-size: 0.78rem;
+  color: var(--text-muted, #6b7280);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.notif-time {
+  font-size: 0.72rem;
+  color: var(--text-muted, #9ca3af);
+  margin-top: 2px;
+}
+
+.notif-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1999; /* .notif-dropdown'ın (2000) hemen altında */
+}

@@ -1,0 +1,18 @@
+# src/graphql/typeDefs/common.graphql
+
+scalar JSON
+scalar DateTime
+
+# Tüm mutation dönüşlerinde kullandığın ortak standart cevap tipi
+type Status {
+  code: Int!
+  message: String!
+}
+
+type Query {
+  healthCheck: String!
+}
+
+type Mutation {
+  ping: String!
+}

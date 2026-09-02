@@ -33,8 +33,8 @@ export const DELETE_BOOK_MUTATION = gql`
 `;
 
 export const CREATE_BOOK_MUTATION = gql`
-    mutation CreateBook($title:String!, $genre:String!, $description:String!, $tags:[String], $imageUrl:String!){
-        createBook(title:$title, genre:$genre, description:$description, tags:$tags, imageUrl:$imageUrl){
+    mutation CreateBook($title:String!, $genreId:ID!, $description:String!, $tags:[String], $imageUrl:String!){
+        createBook(title:$title, genreId:$genreId, description:$description, tags:$tags, imageUrl:$imageUrl){
             id,
             title,
             description,
@@ -44,7 +44,7 @@ export const CREATE_BOOK_MUTATION = gql`
             },
             chapters{
                 id
-                },
+            },
         }
     }
 `;

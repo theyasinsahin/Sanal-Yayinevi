@@ -1,0 +1,503 @@
+.quote-card {
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: box-shadow 0.2s, transform 0.2s;
+  box-sizing: border-box; /* Padding ile genişlik taşmasını engeller */
+}
+
+/* QuoteCard.css'e ekle */
+.quote-text-container {
+  position: relative;
+  flex: 1;
+}
+
+.quote-text-container.is-spoiler .quote-card-text {
+  filter: blur(6px);
+  user-select: none;
+  pointer-events: none;
+}
+
+.spoiler-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px dashed #f59e0b;
+  transition: background 0.2s;
+}
+
+.spoiler-overlay:hover { background: rgba(245, 158, 11, 0.15); }
+
+.spoiler-icon { font-size: 1.4rem; }
+
+.spoiler-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #f59e0b;
+}
+
+.spoiler-hint {
+  font-size: 0.72rem;
+  color: #9ca3af;
+}
+
+.quote-card:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+.quote-card-text-wrapper {
+  position: relative;
+  padding: 0 12px;
+}
+
+.quote-card-icon {
+  font-size: 2rem !important;
+  color: var(--color-primary, #2563eb);
+  opacity: 0.3;
+  position: absolute;
+}
+
+.quote-card-icon.open { top: -8px; left: -4px; }
+.quote-card-icon.close { 
+  bottom: -8px; 
+  right: -4px; 
+  transform: rotate(180deg); 
+}
+
+.quote-card-text {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-primary, #1a1a2e);
+  font-style: italic;
+  margin: 0;
+  padding: 8px 16px;
+}
+
+.quote-card-note {
+  font-size: 0.85rem;
+  color: var(--text-muted, #6b7280);
+  font-style: italic;
+  padding: 8px 12px;
+  border-left: 3px solid var(--color-primary, #2563eb);
+  margin: 0;
+  background: var(--bg-muted, #f9fafb);
+  border-radius: 0 8px 8px 0;
+}
+
+.quote-card-source {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--bg-muted, #f9fafb);
+  transition: background 0.15s;
+}
+
+.quote-card-source:hover { background: var(--bg-hover, #f3f4f6); }
+
+.quote-card-book-cover {
+  width: 36px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.quote-card-source-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.quote-card-book-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary, #1a1a2e);
+}
+
+.quote-card-chapter {
+  font-size: 0.75rem;
+  color: var(--text-muted, #6b7280);
+}
+
+.quote-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  row-gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.quote-card-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--text-primary, #1a1a2e);
+  font-size: 0.82rem;
+  font-weight: 500;
+  min-width: 0;
+}
+
+.quote-card-user span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quote-card-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.quote-card-avatar-placeholder {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-muted, #e5e7eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted, #9ca3af);
+  flex-shrink: 0;
+}
+
+.quote-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.quote-card-time {
+  font-size: 0.75rem;
+  color: var(--text-muted, #9ca3af);
+  white-space: nowrap;
+}
+
+.quote-card-like-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted, #6b7280);
+  font-size: 0.82rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+
+.quote-card-like-btn:hover { background: #fef2f2; color: #ef4444; }
+.quote-card-like-btn.liked { color: #ef4444; }
+
+/* QuoteCard.css'e ekle */
+
+.quote-card-repost-header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: var(--text-muted, #6b7280);
+  margin-bottom: -4px;
+}
+
+.quote-card-repost-user {
+  font-weight: 600;
+  color: var(--text-primary, #1a1a2e);
+  text-decoration: none;
+}
+.quote-card-repost-user:hover { text-decoration: underline; }
+
+.quote-card-repost-comment {
+  font-size: 0.85rem;
+  color: var(--text-primary, #1a1a2e);
+  font-style: italic;
+  margin: 0;
+  padding: 6px 10px;
+  border-left: 3px solid #f59e0b;
+  background: #fffbeb;
+  border-radius: 0 6px 6px 0;
+}
+
+.quote-card-original-user {
+  font-size: 0.75rem;
+  color: var(--text-muted, #6b7280);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.quote-card-original-user a {
+  color: var(--color-primary, #2563eb);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.quote-card-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted, #6b7280);
+  font-size: 0.82rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+
+.quote-card-action-btn:hover { background: #f3f4f6; color: #1a1a2e; }
+.quote-card-action-btn.reposted { color: #10b981; }
+
+.quote-card-repost-input {
+  border-top: 1px solid var(--border-color, #e5e7eb);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quote-card-textarea {
+  width: 100%;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+  background: var(--bg-muted, #f9fafb);
+}
+
+.quote-card-textarea:focus { border-color: var(--color-primary, #2563eb); }
+
+.quote-card-repost-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.quote-card-cancel-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: var(--text-muted, #6b7280);
+}
+
+.quote-card-repost-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+
+.quote-card-repost-btn:hover:not(:disabled) { background: #059669; }
+.quote-card-repost-btn:disabled { opacity: 0 }
+
+/* --- YORUMLAR --- */
+.quote-card-comments {
+  border-top: 1px solid var(--border-color, #e5e7eb);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.quote-card-comment-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quote-card-comment-field {
+  flex: 1;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 20px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  outline: none;
+  font-family: inherit;
+  background: var(--bg-muted, #f9fafb);
+  transition: border-color 0.15s;
+}
+
+.quote-card-comment-field:focus {
+  border-color: var(--color-primary, #2563eb);
+  background: #fff;
+}
+
+.quote-card-comment-send {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-primary, #2563eb);
+  color: white;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.quote-card-comment-send:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.quote-card-comment-send:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.quote-card-no-comments {
+  font-size: 0.82rem;
+  color: var(--text-muted, #9ca3af);
+  text-align: center;
+  margin: 0;
+  padding: 8px 0;
+}
+
+.quote-card-comment-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: var(--bg-muted, #f9fafb);
+  border-radius: 10px;
+}
+
+.quote-card-comment-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.quote-card-comment-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.quote-card-comment-avatar-placeholder {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-muted, #e5e7eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted, #9ca3af);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.quote-card-comment-username {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary, #1a1a2e);
+  text-decoration: none;
+}
+
+.quote-card-comment-username:hover {
+  text-decoration: underline;
+}
+
+.quote-card-comment-time {
+  font-size: 0.72rem;
+  color: var(--text-muted, #9ca3af);
+  margin-left: auto;
+}
+
+.quote-card-comment-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted, #9ca3af);
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: color 0.15s;
+}
+
+.quote-card-comment-delete:hover {
+  color: #ef4444;
+}
+
+.quote-card-comment-content {
+  font-size: 0.85rem;
+  color: var(--text-primary, #1a1a2e);
+  margin: 0;
+  padding-left: 30px;
+  line-height: 1.5;
+}
+
+/* --- RESPONSIVE --- */
+/* DÜZELTME: Bu dosyada hiç @media bloğu yoktu, kart padding'i mobilde de
+   sabit 24px kalıyordu. Footer'da (kullanıcı bilgisi + saat + yorum/
+   repost/beğeni/paylaş butonları) flex-wrap olmadığı için dar ekranda
+   içerik tek satıra sığmıyor, öğeler birbirinin üstüne biniyor ve
+   beğeni butonu kartın dışına taşıyordu. */
+@media (max-width: 480px) {
+  .quote-card {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .quote-card-text-wrapper {
+    padding: 0 8px;
+  }
+
+  .quote-card-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .quote-card-user {
+    max-width: 100%;
+  }
+
+  .quote-card-actions {
+    width: 100%;
+    justify-content: space-between;
+    gap: 6px;
+  }
+}

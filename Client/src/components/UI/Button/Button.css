@@ -1,3 +1,5 @@
+/* Button.css */
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -15,187 +17,139 @@
   font-size: 0.875rem;
 }
 
-/* Ink stain effect on hover */
+/* Ink stain hover effect — temayı takip eder */
 .btn::before {
   content: '';
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
+  top: 50%; left: 50%;
+  width: 0; height: 0;
   border-radius: 50%;
-  background: rgba(26, 26, 26, 0.1);
+  background: rgba(128, 128, 128, 0.12);
   transform: translate(-50%, -50%);
   transition: width 0.6s ease, height 0.6s ease;
 }
-
-.btn:hover::before {
-  width: 300px;
-  height: 300px;
-}
+.btn:hover::before { width: 300px; height: 300px; }
 
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   filter: grayscale(50%);
 }
+.btn:disabled::before { display: none; }
+.btn > * { position: relative; z-index: 1; }
 
-.btn:disabled::before {
-  display: none;
-}
-
-.btn > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* === PRIMARY - Solid Ink === */
+/* === PRIMARY === */
 .btn-primary {
-  background-color: var(--ink-black);
-  color: var(--paper-white);
-  border: 2px solid var(--ink-black);
-  box-shadow: 
-    var(--shadow-md),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  background-color: var(--text-main);
+  color: var(--bg-surface);
+  border: 2px solid var(--text-main);
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.08);
 }
-
 .btn-primary:hover:not(:disabled) {
-  background-color: var(--charcoal);
-  border-color: var(--charcoal);
-  box-shadow: 
-    var(--shadow-lg),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  opacity: 0.88;
+  box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.12);
   transform: translateY(-1px);
 }
-
 .btn-primary:active:not(:disabled) {
   transform: translateY(0);
   box-shadow: var(--shadow-sm);
 }
-
-/* Paper texture overlay on primary */
 .btn-primary::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.05;
+  inset: 0;
+  opacity: 0.04;
   pointer-events: none;
-  background-image: 
-    url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E");
+  background-image:
+    url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E");
 }
 
-/* === SECONDARY - Paper Card === */
+/* === SECONDARY === */
 .btn-secondary {
-  background-color: var(--paper-white);
-  color: var(--ink-black);
-  border: 2px solid var(--fog);
+  background-color: var(--bg-surface);
+  color: var(--text-main);
+  border: 2px solid var(--border-medium, rgba(26,26,26,0.15));
   box-shadow: var(--shadow-sm);
 }
-
 .btn-secondary:hover:not(:disabled) {
-  background-color: var(--aged-paper);
-  border-color: var(--light-smoke);
+  background-color: var(--bg-elevated);
+  border-color: var(--text-subtle, rgba(26,26,26,0.3));
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
-
 .btn-secondary::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   opacity: var(--texture-opacity-light);
   pointer-events: none;
-  background-image: 
+  background-image:
     repeating-linear-gradient(
       45deg,
-      transparent 0px,
-      transparent 2px,
-      rgba(26, 26, 26, 0.02) 2px,
-      rgba(26, 26, 26, 0.02) 4px
+      transparent 0px, transparent 2px,
+      rgba(128,128,128,0.04) 2px, rgba(128,128,128,0.04) 4px
     );
 }
 
-/* === OUTLINE - Pen Sketch === */
+/* === OUTLINE === */
 .btn-outline {
   background: transparent;
-  color: var(--ink-black);
-  border: 2px solid var(--ink-black);
+  color: var(--text-main);
+  border: 2px solid var(--text-main);
   position: relative;
 }
-
-/* Hand-drawn border effect */
 .btn-outline::after {
   content: '';
   position: absolute;
   inset: -1px;
-  border: 1px solid var(--ink-black);
-  opacity: 0.3;
+  border: 1px solid var(--text-main);
+  opacity: 0.25;
   pointer-events: none;
 }
-
 .btn-outline:hover:not(:disabled) {
-  background-color: var(--ink-black);
-  color: var(--paper-white);
+  background-color: var(--text-main);
+  color: var(--bg-surface);
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
+.btn-outline:hover:not(:disabled)::after { opacity: 0; }
 
-.btn-outline:hover:not(:disabled)::after {
-  opacity: 0;
-}
-
-/* === GHOST - Minimal Ink === */
+/* === GHOST === */
 .btn-ghost {
   background: transparent;
-  color: var(--graphite);
+  color: var(--text-muted);
   border: none;
   position: relative;
 }
-
 .btn-ghost::after {
   content: '';
   position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: 0;
-  height: 1px;
-  background-color: var(--ink-black);
+  bottom: 0; left: 50%;
+  width: 0; height: 1px;
+  background-color: var(--text-main);
   transition: all var(--transition-base);
   transform: translateX(-50%);
 }
+.btn-ghost:hover:not(:disabled) { color: var(--text-main); }
+.btn-ghost:hover:not(:disabled)::after { width: 100%; }
 
-.btn-ghost:hover:not(:disabled) {
-  color: var(--ink-black);
-}
-
-.btn-ghost:hover:not(:disabled)::after {
-  width: 100%;
-}
-
-/* === DANGER - Red Ink (exception to B&W) === */
+/* === DANGER === */
 .btn-danger {
   background-color: transparent;
-  color: #8b0000; /* Dark red - looks like old red ink */
-  border: 2px solid #8b0000;
+  color: var(--color-danger-text);
+  border: 2px solid var(--color-danger-border);
 }
-
 .btn-danger:hover:not(:disabled) {
-  background-color: #8b0000;
-  color: var(--paper-white);
+  background-color: var(--color-danger-border);
+  color: var(--bg-surface);
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
 
-/* === LINK - Underlined Text === */
+/* === LINK === */
 .btn-link {
   background: transparent;
-  color: var(--ink-black);
+  color: var(--text-main);
   border: none;
   text-decoration: underline;
   text-decoration-style: wavy;
@@ -203,144 +157,60 @@
   text-underline-offset: 4px;
   padding: 0;
 }
-
 .btn-link:hover:not(:disabled) {
   text-decoration-thickness: 2px;
   opacity: 0.7;
 }
 
 /* === SIZES === */
-.btn-small {
-  padding: 0.5rem 1rem;
-  font-size: 0.75rem;
-  border-radius: var(--radius-sm);
-  letter-spacing: 0.05em;
-}
+.btn-small  { padding: 0.5rem 1rem;   font-size: 0.75rem; border-radius: var(--radius-sm); letter-spacing: 0.05em; }
+.btn-medium { padding: 0.75rem 1.5rem; font-size: 0.875rem; border-radius: var(--radius-md); }
+.btn-large  { padding: 1rem 2rem;     font-size: 1rem;    border-radius: var(--radius-md); }
 
-.btn-medium {
-  padding: 0.75rem 1.5rem;
-  font-size: 0.875rem;
-  border-radius: var(--radius-md);
-}
-
-.btn-large {
-  padding: 1rem 2rem;
-  font-size: 1rem;
-  border-radius: var(--radius-md);
-}
-
-/* === SPECIAL EFFECTS === */
-
-/* Ink stamp effect */
+/* === SPECIAL === */
 .btn-stamp {
   position: relative;
-  border: 3px double var(--ink-black) !important;
+  border: 3px double var(--text-main) !important;
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
-
 .btn-stamp::before {
   content: '';
   position: absolute;
   inset: 4px;
-  border: 1px solid var(--ink-black);
-  opacity: 0.5;
+  border: 1px solid var(--text-main);
+  opacity: 0.4;
   pointer-events: none;
 }
 
-/* Torn paper button */
-.btn-torn {
-  border: none !important;
-  position: relative;
-  background: var(--paper-white);
-  color: var(--ink-black);
-}
-
-.btn-torn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background-image: url("data:image/svg+xml,%3Csvg width='100' height='4' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,2 Q2,0 4,2 T8,2 T12,2 T16,2 T20,2 T24,2 T28,2 T32,2 T36,2 T40,2 T44,2 T48,2 T52,2 T56,2 T60,2 T64,2 T68,2 T72,2 T76,2 T80,2 T84,2 T88,2 T92,2 T96,2 T100,2' fill='%23fafaf8' stroke='none'/%3E%3C/svg%3E");
-  background-repeat: repeat-x;
-  background-size: 100px 4px;
-}
-
-.btn-torn::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background-image: url("data:image/svg+xml,%3Csvg width='100' height='4' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,2 Q2,4 4,2 T8,2 T12,2 T16,2 T20,2 T24,2 T28,2 T32,2 T36,2 T40,2 T44,2 T48,2 T52,2 T56,2 T60,2 T64,2 T68,2 T72,2 T76,2 T80,2 T84,2 T88,2 T92,2 T96,2 T100,2' fill='%23fafaf8' stroke='none'/%3E%3C/svg%3E");
-  background-repeat: repeat-x;
-  background-size: 100px 4px;
-}
-
-/* Loading state - Ink spreading */
+/* Loading */
 .btn-loading {
   position: relative;
   color: transparent !important;
   pointer-events: none;
 }
-
 .btn-loading::after {
   content: '';
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 16px;
-  height: 16px;
-  margin-top: -8px;
-  margin-left: -8px;
+  top: 50%; left: 50%;
+  width: 16px; height: 16px;
+  margin-top: -8px; margin-left: -8px;
   border: 2px solid transparent;
   border-top-color: currentColor;
   border-radius: 50%;
   animation: btn-spin 0.8s linear infinite;
 }
+.btn-primary.btn-loading::after { border-top-color: var(--bg-surface); }
+@keyframes btn-spin { to { transform: rotate(360deg); } }
 
-.btn-primary.btn-loading::after {
-  border-top-color: var(--paper-white);
-}
-
-@keyframes btn-spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Icon alignment */
-.btn svg {
-  font-size: 1.25em;
-}
+.btn svg { font-size: 1.25em; }
 
 /* Button group */
-.btn-group {
-  display: inline-flex;
-  gap: 0;
-}
+.btn-group { display: inline-flex; gap: 0; }
+.btn-group .btn { border-radius: 0; border-right-width: 1px; }
+.btn-group .btn:first-child { border-top-left-radius: var(--radius-md); border-bottom-left-radius: var(--radius-md); }
+.btn-group .btn:last-child  { border-top-right-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); border-right-width: 2px; }
 
-.btn-group .btn {
-  border-radius: 0;
-  border-right-width: 1px;
-}
-
-.btn-group .btn:first-child {
-  border-top-left-radius: var(--radius-md);
-  border-bottom-left-radius: var(--radius-md);
-}
-
-.btn-group .btn:last-child {
-  border-top-right-radius: var(--radius-md);
-  border-bottom-right-radius: var(--radius-md);
-  border-right-width: 2px;
-}
-
-/* Responsive */
 @media (max-width: 640px) {
-  .btn-large {
-    padding: 0.875rem 1.5rem;
-    font-size: 0.9rem;
-  }
+  .btn-large { padding: 0.875rem 1.5rem; font-size: 0.9rem; }
 }

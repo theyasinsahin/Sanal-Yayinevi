@@ -1,0 +1,618 @@
+/* src/components/Settings/UserSettings.css */
+
+/* =========================================
+   SETTINGS LAYOUT — sidebar + content panel
+   ========================================= */
+
+.settings-wrapper {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* === SIDEBAR === */
+.settings-sidebar {
+  position: sticky;
+  top: calc(var(--navbar-height, 64px) + 1.5rem);
+  background-color: var(--bg-surface);
+  border: 2px solid var(--text-main);
+  border-radius: 4px;
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.10);
+  overflow: hidden;
+  padding: 0.5rem 0;
+}
+
+.settings-sidebar-title {
+  font-family: var(--font-main);
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  padding: 0.75rem 1.25rem 0.5rem;
+}
+
+.settings-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.7rem 1.25rem;
+  background: transparent;
+  border: none;
+  border-left: 3px solid transparent;
+  font-family: sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.settings-nav-btn svg {
+  font-size: 1rem !important;
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.settings-nav-btn:hover {
+  color: var(--text-main);
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.settings-nav-btn:hover svg {
+  opacity: 1;
+}
+
+.settings-nav-btn.active {
+  color: var(--text-main);
+  border-left-color: var(--text-main);
+  background-color: rgba(0, 0, 0, 0.05);
+  font-weight: 700;
+}
+
+.settings-nav-btn.active svg {
+  opacity: 1;
+}
+
+/* Tehlikeli bölümü vurgula */
+.settings-nav-btn.danger {
+  color: #dc2626;
+}
+
+.settings-nav-btn.danger:hover {
+  background-color: rgba(220, 38, 38, 0.06);
+  color: #b91c1c;
+}
+
+.settings-nav-btn.danger.active {
+  border-left-color: #dc2626;
+  background-color: rgba(220, 38, 38, 0.08);
+}
+
+.settings-nav-divider {
+  height: 1px;
+  background-color: var(--accent-start, #e5e7eb);
+  margin: 0.5rem 1rem;
+}
+
+/* === CONTENT PANEL === */
+.settings-content {
+  background-color: var(--bg-surface);
+  border: 2px solid var(--text-main);
+  border-radius: 4px;
+  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.10);
+  min-height: 480px;
+}
+
+/* =========================================
+   SECTION ANATOMY
+   ========================================= */
+
+.settings-section {
+  padding: 2rem 2.5rem;
+}
+
+.settings-section-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--accent-start, #e5e5e5);
+}
+
+.settings-section-title {
+  font-family: var(--font-main);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0 0 0.3rem;
+}
+
+.settings-section-desc {
+  font-family: sans-serif;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* =========================================
+   SETTINGS GROUPS (thematic sub-sections)
+   ========================================= */
+
+.settings-group {
+  margin-bottom: 2.5rem;
+}
+
+.settings-group:last-child {
+  margin-bottom: 0;
+}
+
+.settings-group-label {
+  font-family: sans-serif;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.settings-group-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-color: var(--accent-start, #e5e5e5);
+}
+
+/* =========================================
+   SETTINGS ROW — single-line item with label + control
+   ========================================= */
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.settings-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.settings-row:first-child {
+  padding-top: 0;
+}
+
+.settings-row-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-row-label {
+  font-family: sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.settings-row-sublabel {
+  font-family: sans-serif;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.settings-row-control {
+  flex-shrink: 0;
+}
+
+/* =========================================
+   SETTINGS FIELD — stacked label above input
+   ========================================= */
+
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 1.25rem;
+}
+
+.settings-field:last-child {
+  margin-bottom: 0;
+}
+
+.settings-field-label {
+  font-family: sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.settings-field-hint {
+  font-family: sans-serif;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+/* =========================================
+   TOGGLE SWITCH
+   ========================================= */
+
+.settings-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 0.5rem;
+}
+
+.settings-toggle input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-track {
+  width: 42px;
+  height: 24px;
+  background-color: #d1d5db;
+  border-radius: 999px;
+  border: 2px solid var(--text-main);
+  position: relative;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  background-color: var(--text-main);
+  border-radius: 50%;
+  transition: left 0.2s ease;
+}
+
+.settings-toggle input:checked + .toggle-track {
+  background-color: var(--text-main);
+}
+
+.settings-toggle input:checked + .toggle-track::after {
+  left: calc(100% - 18px);
+  background-color: var(--bg-surface);
+}
+
+.settings-toggle input:focus-visible + .toggle-track {
+  outline: 2px solid var(--text-main);
+  outline-offset: 2px;
+}
+
+.toggle-label-text {
+  font-family: sans-serif;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  user-select: none;
+}
+
+/* =========================================
+   RADIO GROUP
+   ========================================= */
+
+.settings-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.settings-radio-group.horizontal {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.settings-radio-option {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  padding: 0.6rem 0.875rem;
+  border: 2px solid var(--accent-start, #e5e5e5);
+  border-radius: 4px;
+  transition: border-color 0.15s, background-color 0.15s;
+  user-select: none;
+}
+
+.settings-radio-option:hover {
+  border-color: var(--text-main);
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.settings-radio-option.selected {
+  border-color: var(--text-main);
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.settings-radio-option input[type="radio"] {
+  accent-color: var(--text-main);
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.settings-radio-label {
+  font-family: sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.settings-radio-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* =========================================
+   SELECT
+   ========================================= */
+
+.settings-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: var(--bg-surface);
+  border: 2px solid var(--text-main);
+  border-radius: 4px;
+  padding: 0.5rem 2.25rem 0.5rem 0.75rem;
+  font-family: sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23111' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  transition: box-shadow 0.15s;
+  min-width: 160px;
+}
+
+.settings-select:focus {
+  outline: none;
+  box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.12);
+}
+
+/* =========================================
+   SAVE / ACTION ROW
+   ========================================= */
+
+.settings-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 1.75rem;
+  margin-top: 1.75rem;
+  border-top: 1px solid var(--accent-start, #e5e5e5);
+}
+
+.settings-save-hint {
+  font-family: sans-serif;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* =========================================
+   DANGER ZONE
+   ========================================= */
+
+.settings-danger-zone {
+  border: 2px solid #dc2626;
+  border-radius: 4px;
+  padding: 1.5rem;
+  background-color: rgba(220, 38, 38, 0.03);
+}
+
+.settings-danger-zone .settings-group-label {
+  color: #dc2626;
+}
+
+.settings-danger-zone .settings-group-label::after {
+  background-color: rgba(220, 38, 38, 0.25);
+}
+
+.danger-action-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(220, 38, 38, 0.12);
+}
+
+.danger-action-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.danger-action-row:first-child {
+  padding-top: 0;
+}
+
+.danger-action-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.danger-action-title {
+  font-family: sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #dc2626;
+}
+
+.danger-action-desc {
+  font-family: sans-serif;
+  font-size: 0.78rem;
+  color: #6b7280;
+  line-height: 1.45;
+  max-width: 380px;
+}
+
+/* =========================================
+   NOTIFICATION BADGE — platform-specific
+   ========================================= */
+
+.settings-badge-new {
+  display: inline-block;
+  background-color: var(--text-main);
+  color: var(--bg-surface);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: 3px;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+/* =========================================
+   INLINE CONFIRM — onaylama kutusu
+   ========================================= */
+
+.settings-confirm-box {
+  background-color: rgba(0, 0, 0, 0.04);
+  border: 2px solid var(--text-main);
+  border-radius: 4px;
+  padding: 1.25rem;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  animation: confirmSlideIn 0.2s ease;
+}
+
+@keyframes confirmSlideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.settings-confirm-box p {
+  font-family: sans-serif;
+  font-size: 0.85rem;
+  color: var(--text-main);
+  margin: 0;
+  line-height: 1.55;
+}
+
+.settings-confirm-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
+@media (max-width: 900px) {
+  .settings-wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-sidebar {
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0.5rem;
+    gap: 0.25rem;
+  }
+
+  .settings-sidebar-title {
+    display: none;
+  }
+
+  .settings-nav-divider {
+    display: none;
+  }
+
+  .settings-nav-btn {
+    flex: 1 1 auto;
+    justify-content: center;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+    border-radius: 4px;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.75rem;
+    text-align: center;
+  }
+
+  .settings-nav-btn.active {
+    border-left-color: transparent;
+    border-bottom-color: var(--text-main);
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  .settings-nav-btn.danger.active {
+    border-bottom-color: #dc2626;
+  }
+}
+
+@media (max-width: 640px) {
+  .settings-section {
+    padding: 1.5rem;
+  }
+
+  .settings-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .settings-row-control {
+    width: 100%;
+  }
+
+  .settings-select {
+    width: 100%;
+  }
+
+  .settings-actions {
+    flex-wrap: wrap;
+  }
+
+  .danger-action-row {
+    flex-direction: column;
+    gap: 0.875rem;
+  }
+
+  .settings-radio-group.horizontal {
+    flex-direction: column;
+  }
+}

@@ -12,7 +12,7 @@ export const GET_BOOKS = gql`
         username
         fullName
         profilePicture
-      },
+        },
         comments {
           id
           content
@@ -37,7 +37,13 @@ export const GET_BOOKS = gql`
           }
         },
         likedBy,
-        genre,
+        genre{
+          name
+          slug
+          iconUrl
+          hexColor
+          isActive
+        },
         tags,
         imageUrl,
         pageCount,
@@ -66,7 +72,13 @@ export const GET_BOOK_BY_ID = gql`
       title
       description
       imageUrl
-      genre
+      genre{
+          name
+          slug
+          iconUrl
+          hexColor
+          isActive
+        }      
       pageCount
       publishDate
       authorId
@@ -133,6 +145,25 @@ export const GET_BOOK_READER_DATA = gql`
         title
         content
       }
+        genre{
+          name
+          slug
+          iconUrl
+          hexColor
+          isActive
+        }
     }
   }
 `;
+
+export const GET_BOOK_BACKERS = gql`
+  query GetBookBackers($bookId: ID!) {
+    getBookBackers(bookId: $bookId) {
+      id
+      username
+      fullName
+      profilePicture
+    }
+  }
+`;
+ 

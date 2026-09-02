@@ -1,0 +1,104 @@
+.messages-page-wrapper {
+  min-height: calc(100vh - var(--navbar-height));
+  
+  display: flex;
+  justify-content: center;
+
+  align-items: flex-start;
+
+  padding-top: 6rem;
+  padding-bottom: 4rem;
+}
+
+.messages-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 0;
+  height: calc(100vh - var(--navbar-height) - 4rem);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-xl);
+  overflow: hidden;
+  background: var(--color-background-primary);
+}
+
+/* --- SIDEBAR --- */
+.messages-sidebar {
+  border-right: 0.5px solid var(--color-border-tertiary);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-background-primary);
+}
+
+/* --- MAIN --- */
+.messages-main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-background-primary);
+}
+
+.messages-main--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- BOŞ DURUM --- */
+.messages-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem;
+  text-align: center;
+  height: 100%;
+}
+
+.messages-empty-icon {
+  font-size: 48px;
+  margin-bottom: 0.5rem;
+  opacity: 0.6;
+}
+
+/* --- RESPONSIVE --- */
+/* DÜZELTME: Bu iki @media bloğunun sırası tersti. max-width:768px olan
+   blok, max-width:1024px olan bloktan ÖNCE tanımlıydı. 768px'in altındaki
+   bir ekranda (ör. telefon) HER İKİ media query de aynı anda eşleşiyor;
+   CSS'te eşit özgüllükte kurallarda kaynak sırasında SONRA gelen kazanır.
+   Yani 1024px bloğundaki "grid-template-columns: 260px 1fr;" kuralı,
+   768px bloğundaki "grid-template-columns: 1fr;" kuralının ÜZERİNE
+   yazıyordu — telefonda bile sidebar 260px sabit genişlikte kalıyor,
+   sağdaki "main" paneline sadece dar bir şerit (1fr) kalıyor ve içeriği
+   (boş durum yazısı) kartın sağından taşıp kırpılmış görünüyordu.
+   Çözüm: daha dar (daha spesifik) breakpoint'i SONRA tanımlamak, böylece
+   telefon genişliğinde doğru kural (tek sütun) kazanıyor. */
+@media (max-width: 1024px) {
+  .messages-layout {
+    grid-template-columns: 260px 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .messages-page-wrapper {
+    /* Diğer sayfalarda da gördüğümüz desen: sabit 6rem/4rem üst-alt
+       boşluk mobilde de aynı kalıyordu, chat kutusuna gereksiz yere az
+       yer bırakıyordu. */
+    padding-top: 5rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .messages-layout {
+    grid-template-columns: 1fr;
+    height: calc(100vh - var(--navbar-height) - 3rem);
+  }
+
+  .messages-sidebar--hidden {
+    display: none;
+  }
+
+  .messages-main {
+    display: flex;
+  }
+}

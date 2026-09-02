@@ -1,0 +1,126 @@
+/* src/components/ParagraphComment/ParagraphRenderer/ParagraphRenderer.css */
+
+.paragraph-renderer {
+  width: 100%;
+}
+
+.paragraph-block {
+  position: relative;
+  margin-bottom: 0;
+  border-left: 2px solid transparent;
+  padding-left: 12px;
+  transition: border-color 0.2s;
+}
+
+.paragraph-block.has-bookmark {
+  border-left-color: #f59e0b;
+}
+
+.paragraph-bookmark-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  color: #f59e0b;
+  font-weight: 600;
+  margin-bottom: 4px;
+  opacity: 0.85;
+}
+
+.paragraph-action-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 0 16px;
+}
+
+.paragraph-bookmark-btn {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: rgba(0, 0, 0, 0.6);
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+
+.paragraph-bookmark-btn:hover {
+  color: #f59e0b;
+  background: rgba(245,158,11,0.1);
+}
+
+.paragraph-bookmark-btn.active {
+  color: #f59e0b;
+}
+
+.paragraph-content {
+  margin-bottom: 0;
+}
+
+.paragraph-content p {
+  line-height: 1.8;
+}
+
+.paragraph-comment-trigger {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: rgba(0, 0, 0, 0.6);
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.15s;
+  line-height: 1;
+}
+
+.paragraph-comment-trigger:hover,
+.paragraph-comment-trigger.active {
+  color: #2563eb;
+  background: rgba(37,99,235,0.1);
+}
+
+.paragraph-comment-trigger.has-comments {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.paragraph-comment-trigger.has-comments:hover,
+.paragraph-comment-trigger.has-comments.active {
+  color: #2563eb;
+}
+
+.paragraph-comment-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* === MOBILE === */
+@media (max-width: 768px) {
+  .paragraph-block {
+    padding-left: 10px;
+  }
+
+  .paragraph-action-row {
+    gap: 8px;
+    padding: 10px 0 18px;
+  }
+
+  /* Dokunma hedeflerini iOS/Android önerisi olan ~44px'e çıkar */
+  .paragraph-bookmark-btn,
+  .paragraph-comment-trigger {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px 12px;
+    font-size: 1.05rem;
+  }
+
+  .paragraph-comment-count {
+    font-size: 0.78rem;
+  }
+}

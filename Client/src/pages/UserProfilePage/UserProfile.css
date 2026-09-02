@@ -3,20 +3,15 @@
 /* === PAGE WRAPPER === */
 .profile-page {
   min-height: calc(100vh - var(--navbar-height));
-  
   display: flex;
   justify-content: center;
-
   align-items: flex-start;
-
   padding-top: 6rem;
   padding-bottom: 4rem;
-  
-  /* Arka plan: İndex.css'ten gelen kağıt rengi */
-  background-color: var(--bg-app); 
+  background-color: var(--bg-app);
 }
 
-/* Sayfa Geneli Kağıt Dokusu (Noise Overlay) */
+/* Kağıt dokusu */
 .profile-page::before {
   content: '';
   position: absolute;
@@ -24,7 +19,6 @@
   opacity: 0.05;
   pointer-events: none;
   z-index: 0;
-  /* SVG Noise Filtresi */
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
 }
 
@@ -33,20 +27,17 @@
   position: relative;
   z-index: 1;
   background-color: var(--bg-surface);
-  
-  /* Mürekkep Çerçeve */
-  border: 2px solid var(--text-main); 
-  border-radius: 4px; /* Köşeler daha küt */
-  
-  padding: 2.5rem;
-  margin-bottom: 3rem;
-  
-  /* Sert Gölge (Hard Shadow) - Noir Teması */
-  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.15);
-  
-  display: flex;
+  border: 2px solid var(--text-main);
+  border-radius: 4px;
+  padding: 2.5rem 2.5rem 2rem;
+  margin-bottom: 2.5rem;
+  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.12);
+
+  display: grid;
+  /* Avatar sabit, orta esnek, sağ butonlar sabit */
+  grid-template-columns: auto 1fr auto;
   gap: 2.5rem;
-  align-items: flex-start;
+  align-items: start;
 }
 
 /* === HEADER LEFT: AVATAR === */
@@ -54,29 +45,27 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  flex-shrink: 0;
+  gap: 0.875rem;
+  padding-top: 0.25rem;
 }
 
 .avatar-wrapper-lg {
-  width: 160px;
-  height: 160px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
-  
-  /* Avatar Çerçevesi */
-  border: 4px solid var(--bg-app); 
-  outline: 2px solid var(--text-main); /* Çift çizgi efekti */
-  
+  border: 4px solid var(--bg-app);
+  outline: 2px solid var(--text-main);
   overflow: hidden;
   background-color: var(--bg-app);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: transform 0.3s ease;
+  flex-shrink: 0;
 }
 
 .avatar-wrapper-lg:hover {
-  transform: scale(1.02);
+  transform: scale(1.03);
 }
 
 .avatar-img-lg {
@@ -96,111 +85,172 @@
 }
 
 .avatar-placeholder {
-  font-size: 80px !important;
+  font-size: 60px !important;
 }
 
-/* Verified Badge */
+/* Verified Badge — avatarın hemen altında */
 .verified-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.25rem 0.75rem;
-  background-color: var(--text-main); /* Siyah Zemin */
-  color: var(--bg-surface); /* Beyaz Yazı */
+  gap: 0.35rem;
+  padding: 0.2rem 0.65rem;
+  background-color: var(--text-main);
+  color: var(--bg-surface);
   border-radius: 4px;
   font-family: sans-serif;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 /* === HEADER CENTER: INFO & STATS === */
 .header-center {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0;
+  min-width: 0; /* uzun metinlerin taşmasını engelle */
 }
 
 .name-section {
   display: flex;
   flex-direction: column;
+  gap: 0.2rem;
   margin-bottom: 0.5rem;
 }
 
 .name-section h2 {
-  /* Typography.css'ten h2 stili gelecek ama burada eziyoruz */
   margin: 0;
-  font-family: var(--font-main); /* Serif */
-  font-size: 2.25rem;
+  font-family: var(--font-main);
+  font-size: 2rem;
   font-weight: 800;
   color: var(--text-main);
-  line-height: 1.1;
+  line-height: 1.15;
   letter-spacing: -0.02em;
 }
 
 .username-text {
   font-family: sans-serif;
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--text-muted);
   font-weight: 500;
 }
 
-.bio-text {
-  font-family: var(--font-main);
-  font-size: 1.05rem;
-  line-height: 1.6;
-  color: var(--text-main);
-  font-style: italic;
-  margin: 0.75rem 0;
-  max-width: 650px;
+/* Rozetler */
+.profile-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 0.75rem;
 }
 
+.profile-badge {
+  position: relative;
+  font-size: 1.35rem;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.profile-badge:hover {
+  transform: scale(1.15);
+}
+
+.profile-badge::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 130%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 5px 9px;
+  border-radius: 6px;
+  font-size: 11px;
+  white-space: nowrap;
+  z-index: 10;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.profile-badge::before {
+  content: "";
+  position: absolute;
+  bottom: 115%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease;
+}
+
+.profile-badge:hover::after,
+.profile-badge:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Bio */
+.bio-text {
+  font-family: var(--font-main);
+  font-size: 0.975rem;
+  line-height: 1.65;
+  color: var(--text-main);
+  font-style: italic;
+  margin: 0 0 0.75rem;
+  max-width: 580px;
+}
+
+/* Email / Website */
 .contact-info {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5rem;
-  margin-bottom: 1rem;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
 }
 
 .contact-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
+  gap: 0.4rem;
+  font-size: 0.875rem;
   color: var(--text-muted);
   font-weight: 500;
 }
 
-/* --- YENİ İSTATİSTİK SATIRI (SADELEŞTİRİLMİŞ) --- */
+/* İstatistikler */
 .profile-stats-row {
   display: flex;
   align-items: center;
-  gap: 2rem;
-  margin-top: 1rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--accent-start); /* İnce gri çizgi */
+  gap: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--accent-start);
+  flex-wrap: wrap;
 }
 
-.stat-item {
+.stat-item-profile {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  gap: 0.2rem;
 }
 
 .stat-value {
-  font-family: var(--font-main); /* Serif Rakamlar */
-  font-size: 1.75rem;
+  font-family: var(--font-main);
+  font-size: 1.6rem;
   font-weight: 700;
   color: var(--text-main);
   line-height: 1;
-  margin-bottom: 0.25rem;
 }
 
 .stat-label {
   font-family: sans-serif;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--text-muted);
@@ -209,19 +259,26 @@
 
 .stat-divider {
   width: 1px;
-  height: 30px;
+  height: 28px;
   background-color: var(--accent-start);
-  transform: skew(-15deg); /* Hafif eğik çizgi */
+  transform: skew(-15deg);
+  flex-shrink: 0;
 }
 
+/* Views/likes satırı — istatistiklerin hemen altında */
 .mini-stats-row {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-top: 1rem;
-  font-size: 0.85rem;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  font-size: 0.82rem;
   color: var(--text-muted);
   font-family: sans-serif;
+}
+
+.mini-stats-row svg {
+  font-size: 0.95rem !important;
+  vertical-align: middle;
 }
 
 /* === HEADER RIGHT: ACTIONS === */
@@ -229,16 +286,26 @@
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.625rem;
+  /* Kartın üstüne hizala */
+  align-self: start;
+  padding-top: 0.25rem;
+  min-width: 140px;
 }
 
 .my-actions {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.625rem;
 }
 
-/* === EDIT FORM STYLES === */
+.other-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+/* === EDIT FORM === */
 .edit-form-grid {
   display: flex;
   flex-direction: column;
@@ -256,30 +323,29 @@
 /* === TABS === */
 .tabs-wrapper {
   display: flex;
-  gap: 2rem;
+  gap: 0;
   margin-bottom: 2rem;
   border-bottom: 2px solid #e5e5e5;
-  padding-left: 0.5rem;
 }
 
 .tab-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 0.5rem;
+  gap: 0.45rem;
+  padding: 0.75rem 1.25rem;
   background: transparent;
   border: none;
   border-bottom: 3px solid transparent;
-  margin-bottom: -2px; /* Çizgi üstüne binsin */
-  
+  margin-bottom: -2px;
   font-family: sans-serif;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, border-color 0.2s ease;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
 }
 
 .tab-btn:hover {
@@ -288,7 +354,17 @@
 
 .tab-btn.active {
   color: var(--text-main);
-  border-bottom-color: var(--text-main); /* Aktif sekme siyah çizgi */
+  border-bottom-color: var(--text-main);
+}
+
+.draft-count-badge {
+  background: var(--color-warning, #f59e0b);
+  color: white;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 999px;
+  margin-left: 2px;
 }
 
 /* === BOOKS SECTION === */
@@ -298,7 +374,6 @@
 }
 
 .section-title {
-  /* Books grid başlığı */
   font-family: var(--font-main);
   font-size: 1.75rem;
   font-weight: 700;
@@ -328,6 +403,18 @@
   opacity: 0.5;
 }
 
+/* Alıntılar grid */
+.quotes-tab-grid {
+  columns: 2;
+  column-gap: 20px;
+  margin-top: 24px;
+}
+
+.quotes-tab-grid .quote-card {
+  margin-bottom: 20px;
+  break-inside: avoid;
+}
+
 /* === LOADING & ERROR === */
 .loading-state, .error-state {
   display: flex;
@@ -349,79 +436,532 @@
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* === RESPONSIVE MEDIA QUERIES === */
-
-/* Tablet & Mobile */
+/* === RESPONSIVE === */
 @media (max-width: 900px) {
   .profile-header-card {
-    flex-direction: column;
-    align-items: center;
+    grid-template-columns: 1fr;
+    justify-items: center;
     text-align: center;
     padding: 2rem;
-    gap: 2rem;
+    gap: 1.5rem;
   }
 
-  .header-left, .header-center, .header-right {
+  .header-left {
+    padding-top: 0;
+  }
+
+  .header-center {
     width: 100%;
     align-items: center;
-  }
-  
-  .avatar-wrapper-lg {
-    width: 140px;
-    height: 140px;
   }
 
   .bio-text {
     text-align: center;
-    margin-left: auto;
-    margin-right: auto;
   }
 
   .contact-info {
     justify-content: center;
   }
 
-  /* İstatistikleri mobilde ortala ve sıkıştır */
   .profile-stats-row {
-    width: 100%;
     justify-content: center;
-    gap: 1.5rem;
+    gap: 1.25rem;
   }
 
-  .stat-item {
+  .stat-item-profile {
     align-items: center;
   }
-  
+
   .stat-divider {
-    height: 20px;
+    height: 22px;
+  }
+
+  .mini-stats-row {
+    justify-content: center;
+  }
+
+  .header-right {
+    width: 100%;
+    align-items: center;
+    min-width: unset;
+    padding-top: 0;
   }
 
   .my-actions {
     flex-direction: row;
-    width: 100%;
     justify-content: center;
   }
-  
+
+  .other-actions {
+    flex-direction: row;
+    justify-content: center;
+  }
+
   .tabs-wrapper {
     justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    padding: 0.65rem 0.875rem;
   }
 }
 
-/* Small Mobile */
-@media (max-width: 480px) {
+/* --- TIKLANABİLİR İSTATİSTİKLER --- */
+.stat-item-profile.clickable {
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.stat-item-profile.clickable:hover {
+  background-color: var(--bg-muted, #f3f4f6);
+  transform: scale(1.05);
+}
+
+/* --- TAKİPÇİ MODAL UI --- */
+.follow-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.follow-modal-content {
+  background: var(--bg-card, #ffffff);
+  width: 100%;
+  max-width: 400px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+  overflow: hidden;
+  animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.follow-modal-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.close-modal-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted, #6b7280);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.close-modal-btn:hover {
+  background-color: var(--bg-muted, #f3f4f6);
+  color: var(--text-main, #111827);
+}
+
+.follow-modal-list {
+  padding: 10px 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.follow-modal-empty {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.follow-user-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.follow-user-item:hover {
+  background-color: var(--bg-muted, #f9fafb);
+}
+
+.follow-user-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: var(--bg-muted, #e5e7eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  color: var(--text-muted, #9ca3af);
+}
+
+.follow-user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.follow-user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.follow-user-name {
+  font-weight: 600;
+  color: var(--text-main, #111827);
+  font-size: 0.95rem;
+}
+
+.follow-user-username {
+  font-size: 0.85rem;
+  color: var(--text-muted, #6b7280);
+}
+
+@media (max-width: 640px) {
+  .quotes-tab-grid {
+    columns: 1;
+  }
+}
+
+/* =========================================================
+   MOBILE / TABLET POLISH
+   Navbar çakışması, taşan butonlar, istatistik düzeni,
+   uzun metinler ve modal davranışı için son responsive katman.
+   ========================================================= */
+
+.profile-page,
+.profile-page * {
+  box-sizing: border-box;
+}
+
+.profile-page {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+}
+
+.profile-header-card,
+.header-left,
+.header-center,
+.header-right,
+.books-section,
+.tabs-wrapper {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Uzun kullanıcı adı / mail / bio ekranı genişletmesin */
+.name-section,
+.bio-text,
+.contact-info,
+.contact-item,
+.username-text {
+  max-width: 100%;
+}
+
+.contact-item span,
+.username-text,
+.bio-text {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Modal her zaman navbarın üstünde */
+.follow-modal-overlay {
+  z-index: 2000;
+}
+
+@media (max-width: 640px) {
   .profile-page {
-    padding-top: 2rem;
+    /* Navbar fixed olduğu için sayfa fiziksel olarak onun altından başlar.
+       + 1.5rem görsel nefes payı bırakıyoruz. */
+    min-height: 100dvh;
+    padding-top: calc(var(--navbar-height) + 1.5rem);
+    padding-bottom: 2.5rem;
   }
 
+  .profile-header-card {
+    width: 100%;
+    padding: 1.5rem 1rem 1.25rem;
+    gap: 1.15rem;
+    margin-bottom: 1.75rem;
+    overflow: hidden;
+    box-shadow: 5px 7px 0 rgba(0, 0, 0, 0.10);
+  }
+
+  .header-left {
+    gap: 0.65rem;
+  }
+
+  .avatar-wrapper-lg {
+    width: 118px;
+    height: 118px;
+    border-width: 3px;
+  }
+
+  .name-section {
+    width: 100%;
+    align-items: center;
+    margin-bottom: 0.35rem;
+  }
+
+  .name-section h2 {
+    width: 100%;
+    font-size: clamp(1.75rem, 8vw, 2.2rem);
+    line-height: 1.08;
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+
+  .username-text {
+    width: 100%;
+    font-size: 0.92rem;
+    text-align: center;
+  }
+
+  .profile-badges {
+    justify-content: center;
+    margin-bottom: 0.55rem;
+  }
+
+  .bio-text {
+    width: 100%;
+    font-size: 0.94rem;
+    line-height: 1.55;
+    margin-bottom: 0.65rem;
+  }
+
+  .contact-info {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+
+  .contact-item {
+    width: 100%;
+    justify-content: center;
+    gap: 0.45rem;
+    font-size: 0.82rem;
+    line-height: 1.35;
+  }
+
+  .contact-item svg {
+    flex: 0 0 auto;
+  }
+
+  /* Mobilde 4 istatistiği temiz bir 2x2 grid yap.
+     Eski eğik divider'lar küçük ekranda hizayı bozuyordu. */
   .profile-stats-row {
-    gap: 1rem;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    padding-top: 0;
+    border-top: 1px solid var(--accent-start);
+    border-bottom: 1px solid var(--accent-start);
   }
-  
+
+  .stat-item-profile {
+    width: 100%;
+    min-height: 74px;
+    padding: 0.8rem 0.4rem;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .stat-item-profile:nth-of-type(odd) {
+    border-right: 1px solid var(--accent-start);
+  }
+
+  .stat-item-profile:nth-of-type(-n + 2) {
+    border-bottom: 1px solid var(--accent-start);
+  }
+
+  /* DOM içinde divider elemanları da bulunduğu için mobilde tamamen kaldırıyoruz */
+  .profile-stats-row .stat-divider {
+    display: none;
+  }
+
+  .stat-item-profile.clickable {
+    padding: 0.8rem 0.4rem;
+    border-radius: 0;
+  }
+
+  .stat-item-profile.clickable:hover {
+    transform: none;
+  }
+
   .stat-value {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
+    line-height: 1.05;
   }
-  
+
   .stat-label {
-    font-size: 0.65rem;
+    margin-top: 0.18rem;
+    font-size: 0.64rem;
+    letter-spacing: 0.085em;
+  }
+
+  .mini-stats-row {
+    width: 100%;
+    min-height: 24px;
+    margin-top: 0.8rem;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    font-size: 0.78rem;
+  }
+
+  .header-right {
+    width: 100%;
+  }
+
+  /* Ekran görüntüsündeki taşmanın ana sebebi:
+     iki action butonu row'da doğal genişlikleriyle viewport'u aşıyordu. */
+  .my-actions,
+  .other-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+  }
+
+  .my-actions > *,
+  .other-actions > * {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .my-actions > button,
+  .other-actions > button {
+    width: 100%;
+    min-width: 0;
+    min-height: 54px;
+    padding-left: 0.65rem;
+    padding-right: 0.65rem;
+    white-space: normal;
+    line-height: 1.25;
+    text-align: center;
+  }
+
+  .my-actions > button svg,
+  .other-actions > button svg {
+    flex: 0 0 auto;
+  }
+
+  .tabs-wrapper {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    gap: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tabs-wrapper::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab-btn {
+    flex: 0 0 auto;
+    font-size: 0.74rem;
+    padding: 0.65rem 0.7rem;
+  }
+
+  .books-section {
+    width: 100%;
+    overflow: visible;
+  }
+
+  .quotes-tab-grid {
+    columns: 1;
+    margin-top: 16px;
+  }
+
+  .follow-modal-overlay {
+    padding: 1rem;
+    align-items: center;
+  }
+
+  .follow-modal-content {
+    width: min(100%, 400px);
+    max-height: min(80dvh, 620px);
+    border-radius: 12px;
+  }
+
+  .follow-modal-header {
+    padding: 16px;
+  }
+
+  .follow-user-item {
+    padding: 11px 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  .profile-page {
+    padding-top: calc(var(--navbar-height) + 1.25rem);
+  }
+
+  .profile-header-card {
+    padding-left: 0.85rem;
+    padding-right: 0.85rem;
+  }
+
+  .avatar-wrapper-lg {
+    width: 110px;
+    height: 110px;
+  }
+
+  .name-section h2 {
+    font-size: clamp(1.65rem, 8vw, 2rem);
+  }
+
+  .other-actions > button,
+  .my-actions > button {
+    min-height: 52px;
+    font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 360px) {
+  /* Çok dar telefonlarda iki butonu zorla yan yana tutmak yerine alt alta al. */
+  .my-actions,
+  .other-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-header-card {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .contact-item {
+    font-size: 0.78rem;
   }
 }

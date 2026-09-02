@@ -1,0 +1,27 @@
+# bookmark.graphql
+
+type Bookmark {
+  id: ID!
+  bookId: ID!
+  chapterId: ID!
+  chapterIndex: Int!
+  paragraphIndex: Int!
+  chapterTitle: String
+  updatedAt: String
+}
+
+type Query {
+  getBookmark(bookId: ID!): Bookmark
+}
+
+type Mutation {
+  setBookmark(
+    bookId: ID!
+    chapterId: ID!
+    chapterIndex: Int!
+    paragraphIndex: Int!
+    chapterTitle: String
+  ): Bookmark!
+
+  removeBookmark(bookId: ID!): Status!
+}

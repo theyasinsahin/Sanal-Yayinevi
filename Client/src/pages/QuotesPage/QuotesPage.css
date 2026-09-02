@@ -1,0 +1,126 @@
+/* src/pages/QuotesPage/QuotesPage.css */
+.quotes-page {
+  min-height: 100vh;
+  padding: 40px 0 80px;
+}
+
+.quotes-page-header {
+  text-align: center;
+  margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.quotes-page-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-primary, #2563eb);
+}
+
+.quotes-sort-tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  background: var(--bg-muted, #f3f4f6);
+  padding: 4px;
+  border-radius: 12px;
+}
+
+.sort-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-muted, #6b7280);
+  transition: all 0.2s;
+}
+
+.sort-tab.active {
+  background: white;
+  color: var(--color-primary, #2563eb);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.sort-tab:hover:not(.active) { color: var(--text-primary, #1a1a2e); }
+
+/* Tek Sütun Liste Yapısı (Masonry yerine) */
+.quotes-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.quotes-list .quote-card {
+  width: 100%;
+  max-width: 680px; /* Genişliğin çok açılıp okunabilirliği bozmasını engeller */
+  margin: 0;
+}
+
+.quote-card-skeleton {
+  width: 100%;
+  max-width: 680px;
+  height: 200px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 16px;
+  margin: 0;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.quotes-loader-trigger { height: 40px; }
+
+.quotes-end-message {
+  text-align: center;
+  padding: 20px;
+  opacity: 0.6;
+}
+
+.quotes-empty {
+  text-align: center;
+  padding: 80px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  opacity: 0.6;
+}
+
+.quotes-search-wrapper {
+  width: 100%;
+  max-width: 480px;
+  margin: 16px auto 0;
+}
+
+.quotes-search-input {
+  width: 100%;
+  padding: 10px 16px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 999px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: var(--bg-card, #fff);
+}
+
+.quotes-search-input:focus {
+  border-color: var(--color-primary, #2563eb);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}

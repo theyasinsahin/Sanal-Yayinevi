@@ -1,0 +1,268 @@
+/* src/pages/LeaderboardPage/LeaderboardPage.css */
+.leaderboard-page { min-height: 100vh; padding: 40px 0 80px; overflow-x: hidden; }
+
+.leaderboard-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 40px;
+}
+
+.leaderboard-tabs {
+  display: flex;
+  gap: 6px;
+  margin-top: 16px;
+  background: var(--bg-muted, #f3f4f6);
+  padding: 4px;
+  border-radius: 12px;
+}
+
+.leaderboard-tab {
+  padding: 7px 18px;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted, #6b7280);
+  transition: all 0.2s;
+}
+
+.leaderboard-tab.active {
+  background: white;
+  color: var(--color-primary, #2563eb);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* Podium */
+.leaderboard-podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.podium-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--bg-card, #fff);
+  border: 2px solid var(--border-color, #e5e7eb);
+  min-width: 120px;
+  box-sizing: border-box;
+}
+
+.podium-item.podium-first { transform: translateY(-16px); border-color: #f59e0b; }
+.podium-item.rank-gold { border-color: #f59e0b; }
+.podium-item.rank-silver { border-color: #9ca3af; }
+.podium-item.rank-bronze { border-color: #b45309; }
+
+.podium-medal { font-size: 1.8rem; }
+
+.podium-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.podium-avatar-placeholder {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.podium-username {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary, #1a1a2e);
+  text-decoration: none;
+  /* Uzun kullanıcı adları (@yildizfatma680609 gibi) kartı genişletip
+     komşu kartların taşmasına sebep oluyordu; artık kart genişliğinde
+     "…" ile kesiliyor. */
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.podium-points {
+  font-size: 0.75rem;
+  color: var(--text-muted, #6b7280);
+  font-weight: 500;
+}
+
+/* Liste */
+.leaderboard-list { display: flex; flex-direction: column; gap: 8px; }
+
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 12px;
+  transition: box-shadow 0.15s;
+}
+
+.leaderboard-row:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+.leaderboard-row.is-me { border-color: var(--color-primary, #2563eb); background: #eff6ff; }
+
+.leaderboard-rank { font-size: 1.2rem; min-width: 36px; text-align: center; flex-shrink: 0; }
+
+.leaderboard-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0; /* uzun isimler ellipsis ile kesilebilsin diye flex item'ın küçülmesine izin ver */
+  text-decoration: none;
+}
+
+/* DİKKAT: sadece isim/username'i saran div'i hedefliyoruz.
+   ":not(.leaderboard-avatar-placeholder)" olmadan bu kural, profil
+   fotoğrafı olmayan kullanıcılarda avatar yerine render edilen
+   placeholder div'ini de yakalayıp flex: 1 ile yatayda gereksiz yere
+   genişletiyor, yuvarlak yerine oval bir görünüm oluşturuyordu. */
+.leaderboard-user > div:not(.leaderboard-avatar-placeholder) {
+  min-width: 0;
+  flex: 1;
+}
+
+.leaderboard-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.leaderboard-avatar-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.leaderboard-fullname {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary, #1a1a2e);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-username {
+  font-size: 0.78rem;
+  color: var(--text-muted, #6b7280);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-points {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-primary, #2563eb);
+  flex-shrink: 0;
+}
+
+.leaderboard-skeleton {
+  height: 68px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 12px;
+}
+
+.leaderboard-my-rank {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-top: 8px;
+  background: #eff6ff;
+  border: 2px dashed var(--color-primary, #2563eb);
+  border-radius: 12px;
+}
+
+.leaderboard-my-rank-label {
+  flex: 1;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-primary, #2563eb);
+}
+
+/* ============================================================
+   MOBİL — PODYUM TAŞMASI DÜZELTMESİ
+   ------------------------------------------------------------
+   Eski hâlde .podium-item min-width: 120px olduğu için 3 kart +
+   gap'ler dar ekranlarda container'dan taşıyor, 2. ve 3. kartlar
+   ekran dışına kırpılıyordu. Grid'e geçince 3 sütun her zaman
+   mevcut genişliğe eşit şekilde bölünüyor, taşma imkansız hale
+   geliyor.
+   ============================================================ */
+@media (max-width: 640px) {
+  .leaderboard-podium {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: end;
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+
+  .podium-item {
+    min-width: 0; /* eski sabit min-width'i grid'de iptal et */
+    width: 100%;
+    padding: 10px 6px;
+    gap: 4px;
+  }
+
+  .podium-item.podium-first {
+    transform: translateY(-8px);
+  }
+
+  .podium-medal {
+    font-size: 1.25rem;
+  }
+
+  .podium-avatar,
+  .podium-avatar-placeholder {
+    width: 42px;
+    height: 42px;
+  }
+
+  .podium-username {
+    font-size: 0.66rem;
+  }
+
+  .podium-points {
+    font-size: 0.62rem;
+  }
+
+  .leaderboard-header {
+    margin-bottom: 28px;
+  }
+}

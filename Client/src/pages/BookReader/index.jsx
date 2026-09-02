@@ -13,16 +13,30 @@ import {
 import { GET_BOOK_READER_DATA } from '../../graphql/queries/book';
 import { GET_USER_BY_ID } from '../../graphql/queries/user';
 import { INCREMENT_BOOK_VIEW_MUTATION } from '../../graphql/mutations/book';
+import { GET_BOOKMARK } from '../../graphql/queries/bookmark';
+import { SET_BOOKMARK, REMOVE_BOOKMARK } from '../../graphql/mutations/bookmark';
+
+
 import { parseContentToPages } from '../../utils/htmlPageSplitter';
 import { Button } from '../../components/UI/Button';
 
+import ParagraphRenderer from '../../components/ParagraphComment/ParagraphRenderer';
+
 import './BookReader.css';
+
+import QuotePopup from '../../components/Quote/QuotePopup';
+import { useAuth } from '../../context/AuthContext';
+
+import { useReadingTracker } from '../../hooks/useReadingTracker';
 
 const BookReader = () => {
   const { bookId } = useParams();
   const navigate = useNavigate();
 
-  // Reading mode: 'chapter' or 'book'
+  const { user } = useAuth();
+
+  const [showIdleWarning, setShowIdleWarning] = useState(false);
+
   const [readingMode, setReadingMode] = useState('chapter');
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
   const [completedChapters, setCompletedChapters] = useState([]);
@@ -31,10 +45,49 @@ const BookReader = () => {
   const [isFlipping, setIsFlipping] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
 
-
-  // Increment view count
   const [incrementBookViews] = useMutation(INCREMENT_BOOK_VIEW_MUTATION);
   const viewCounted = useRef(false);
+
+  const { data: bookmarkData, refetch: refetchBookmark } = useQuery(GET_BOOKMARK, {
+  variables: { bookId },
+  skip: !bookId || !user,
+});
+
+const [setBookmarkMutation] = useMutation(SET_BOOKMARK);
+const [removeBookmarkMutation] = useMutation(REMOVE_BOOKMARK);
+
+const bookmark = bookmarkData?.getBookmark;
+
+// Ayraç bu chapter'a mı ait?
+const chapterBookmark = bookmark?.chapterIndex === currentChapterIndex 
+  ? bookmark 
+  : null;
+
+const handleSetBookmark = async (paragraphIndex) => {
+  const chapter = chapters[currentChapterIndex];
+  await setBookmarkMutation({
+    variables: {
+      bookId,
+      chapterId: chapter.id,
+      chapterIndex: currentChapterIndex,
+      paragraphIndex,
+      chapterTitle: chapter.title,
+    }
+  });
+  refetchBookmark();
+};
+
+const handleRemoveBookmark = async () => {
+  await removeBookmarkMutation({ variables: { bookId } });
+  refetchBookmark();
+};
+
+  // Hook'u kullan:
+  useReadingTracker({
+    isActive: true,
+    onIdleWarning: () => setShowIdleWarning(true),
+    onIdleResume: () => setShowIdleWarning(false),
+  });
 
   useEffect(() => {
     if (bookId && !viewCounted.current) {
@@ -46,7 +99,6 @@ const BookReader = () => {
     }
   }, [bookId, incrementBookViews]);
 
-  // Fetch book data
   const { data: bookData, loading: bookLoading } = useQuery(GET_BOOK_READER_DATA, {
     variables: { id: bookId },
     skip: !bookId,
@@ -55,7 +107,6 @@ const BookReader = () => {
   const book = bookData?.getBookById;
   const chapters = book?.chapters || [];
 
-  // Fetch author info
   const { data: userData } = useQuery(GET_USER_BY_ID, {
     variables: { id: book?.authorId },
     skip: !book?.authorId,
@@ -65,7 +116,7 @@ const BookReader = () => {
                      userData?.getUserById?.username || 
                      'Unknown Author';
 
-  // Load progress from localStorage
+  // Load progress
   useEffect(() => {
     if (bookId) {
       const saved = localStorage.getItem(`book-progress-${bookId}`);
@@ -81,88 +132,91 @@ const BookReader = () => {
     }
   }, [bookId]);
 
-  // Save progress to localStorage
+  // Save progress
   useEffect(() => {
     if (bookId) {
-      const progress = {
+      localStorage.setItem(`book-progress-${bookId}`, JSON.stringify({
         lastChapter: currentChapterIndex,
         completed: completedChapters,
         timestamp: new Date().toISOString()
-      };
-      localStorage.setItem(`book-progress-${bookId}`, JSON.stringify(progress));
+      }));
     }
   }, [bookId, currentChapterIndex, completedChapters]);
+
+  // KOPYALAMAYA KARŞI KORUMA (DRM)
+  useEffect(() => {
+    const handleCopy = (e) => {
+      // Kullanıcının ekranda seçtiği metni al
+      const selectedText = window.getSelection().toString();
+      
+      // Eğer bir metin seçilmişse ve kopyalamaya çalışıyorsa devreye gir
+      if (selectedText.length > 0) {
+        e.preventDefault(); // Tarayıcının varsayılan kopyalama işlemini iptal et
+
+        // Kendi özel metnimizi oluştur
+        const bookUrl = `${window.location.origin}/book-detail/${bookId}`;
+        const bookTitle = book?.title || 'Bilinmeyen Kitap';
+        
+        const customCopyText = `Kitap: ${bookTitle}\nLink: ${bookUrl}\n\n* Bu platformdaki kitap içeriklerinin doğrudan kopyalanması telif hakları gereği sınırlandırılmıştır. Lütfen alıntı yapma özelliğini kullanınız.`;
+
+        // Panoya (Clipboard) bizim belirlediğimiz metni yazdır
+        if (e.clipboardData) {
+          e.clipboardData.setData('text/plain', customCopyText);
+        }
+      }
+    };
+
+    // Tüm dökümanda copy event'ini dinle
+    document.addEventListener('copy', handleCopy);
+
+    // Bileşen ekrandan kalktığında event listener'ı temizle
+    return () => {
+      document.removeEventListener('copy', handleCopy);
+    };
+  }, [book, bookId]); // Kitap verisi veya ID değiştiğinde güncellenmesi için
+
+  // Bölüm değişince sayfayı en üste al
+  useEffect(() => {
+    if (readingMode === 'chapter') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentChapterIndex, readingMode]);
+
+  // Scroll progress (chapter mode)
+  useEffect(() => {
+    if (readingMode === 'chapter') {
+      const handleScroll = () => {
+        const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const scrollPosition = window.scrollY;
+        if (totalHeight > 0) {
+          setScrollProgress(Math.min((scrollPosition / totalHeight) * 100, 100));
+        }
+      };
+      window.addEventListener('scroll', handleScroll);
+      handleScroll();
+      return () => window.removeEventListener('scroll', handleScroll);
+    } else {
+      setScrollProgress(0);
+    }
+  }, [readingMode, currentChapterIndex]); // currentChapterIndex değişince de sıfırla
 
   // Generate pages for book mode
   useEffect(() => {
     if (book && chapters.length > 0) {
       let allPages = [];
-
-      // Title page
       allPages.push({
         type: 'title_page',
         bookTitle: book.title,
         author: authorName,
-        genre: book.genre || 'Fiction',
+        genre: book.genre?.name || 'Fiction',
       });
-
-      // Chapters
       chapters.forEach((chapter) => {
         const chapterPages = parseContentToPages(chapter.content, chapter.title);
         allPages = [...allPages, ...chapterPages];
       });
-
       setPages(allPages);
     }
   }, [book, chapters, authorName]);
-
-  // Scroll to current chapter
-  useEffect(() => {
-    if (readingMode === 'chapter' && currentChapterIndex >= 0) {
-      const element = document.getElementById(`chapter-${currentChapterIndex}`);
-      if (element) {
-        setTimeout(() => {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-      }
-    }
-  }, [currentChapterIndex, readingMode]);
-
-  // Toggle chapter completion
-  const toggleChapterCompletion = (index) => {
-    setCompletedChapters(prev => {
-      if (prev.includes(index)) {
-        return prev.filter(i => i !== index);
-      } else {
-        return [...prev, index];
-      }
-    });
-  };
-
-  // Navigate to chapter
-  const goToChapter = (index) => {
-    setCurrentChapterIndex(index);
-  };
-
-  // Book mode navigation
-  const changePage = (direction) => {
-    const increment = 2;
-    let newPage = currentPage;
-
-    if (direction === 'next' && currentPage < pages.length - increment) {
-      newPage = currentPage + increment;
-    } else if (direction === 'prev' && currentPage > 0) {
-      newPage = currentPage - increment;
-    } else {
-      return;
-    }
-
-    setIsFlipping(true);
-    setTimeout(() => {
-      setCurrentPage(newPage);
-      setIsFlipping(false);
-    }, 400);
-  };
 
   // Keyboard navigation for book mode
   useEffect(() => {
@@ -176,32 +230,37 @@ const BookReader = () => {
     }
   }, [readingMode, currentPage, pages.length]);
 
-   useEffect(() => {
-    if (readingMode === 'chapter') {
-      const handleScroll = () => {
-        const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-        const scrollPosition = window.scrollY;
-        
-        if (totalHeight > 0) {
-          const progress = (scrollPosition / totalHeight) * 100;
-          setScrollProgress(Math.min(progress, 100));
-        }
-      };
 
-      window.addEventListener('scroll', handleScroll);
-      // İlk açılışta  tetikleyelim
-      handleScroll();
-      
-      return () => window.removeEventListener('scroll', handleScroll);
+  const toggleChapterCompletion = (index) => {
+    setCompletedChapters(prev =>
+      prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
+    );
+  };
+
+  const goToChapter = (index) => {
+    if (index < 0 || index >= chapters.length) return;
+    setCurrentChapterIndex(index);
+  };
+
+  const changePage = (direction) => {
+    const increment = 2;
+    let newPage = currentPage;
+    if (direction === 'next' && currentPage < pages.length - increment) {
+      newPage = currentPage + increment;
+    } else if (direction === 'prev' && currentPage > 0) {
+      newPage = currentPage - increment;
     } else {
-      setScrollProgress(0);
+      return;
     }
-  }, [readingMode]);
+    setIsFlipping(true);
+    setTimeout(() => {
+      setCurrentPage(newPage);
+      setIsFlipping(false);
+    }, 400);
+  };
 
-  // Render page content for book mode
   const renderPageContent = (pageData) => {
     if (!pageData) return null;
-
     if (pageData.type === 'title_page') {
       return (
         <div className="page-inner title-page-content">
@@ -216,12 +275,8 @@ const BookReader = () => {
         </div>
       );
     }
-
-    
-
     return (
       <div className="page-inner">
-        
         {pageData.isChapterStart && (
           <div className="chapter-start-header">
             <h2>{pageData.title}</h2>
@@ -236,12 +291,14 @@ const BookReader = () => {
     );
   };
 
-  // Calculate progress
   const progressPercentage = chapters.length > 0 
     ? (completedChapters.length / chapters.length) * 100 
     : 0;
 
-  // Loading state
+  const currentChapter = chapters[currentChapterIndex];
+  const isFirstChapter = currentChapterIndex === 0;
+  const isLastChapter = currentChapterIndex === chapters.length - 1;
+
   if (bookLoading || !book) {
     return (
       <div className="reader-loading">
@@ -266,6 +323,15 @@ const BookReader = () => {
       {/* CHAPTERS SIDEBAR */}
       <div className="chapters-sidebar">
         <div className="sidebar-header">
+          
+          <button
+            className="sidebar-back-btn"
+            onClick={() => navigate(`/book-detail/${bookId}`)}
+          >
+            <ArrowBack fontSize="small" />
+            <span>Kitap Detayına Dön</span>
+          </button>
+
           <h3>{book.title}</h3>
           <div className="book-progress">
             {completedChapters.length} of {chapters.length} chapters read
@@ -282,17 +348,11 @@ const BookReader = () => {
           {chapters.map((chapter, index) => (
             <div
               key={chapter.id || index}
-              className={`chapter-item ${
-                currentChapterIndex === index ? 'active' : ''
-              } ${
-                completedChapters.includes(index) ? 'completed' : ''
-              }`}
+              className={`chapter-item ${currentChapterIndex === index ? 'active' : ''} ${completedChapters.includes(index) ? 'completed' : ''}`}
               onClick={() => goToChapter(index)}
             >
               <div 
-                className={`chapter-checkbox ${
-                  completedChapters.includes(index) ? 'checked' : ''
-                }`}
+                className={`chapter-checkbox ${completedChapters.includes(index) ? 'checked' : ''}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleChapterCompletion(index);
@@ -300,19 +360,21 @@ const BookReader = () => {
               >
                 {completedChapters.includes(index) && <Check />}
               </div>
-
               <div className="chapter-info">
-                <div className="chapter-number">
-                  Chapter {index + 1}
-                </div>
-                <div className="chapter-title">
-                  {chapter.title}
-                </div>
+                <div className="chapter-number">Chapter {index + 1}</div>
+                <div className="chapter-title">{chapter.title}</div>
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      {showIdleWarning && (
+        <div className="idle-warning-banner">
+          <span>⏸️ Hareketsiz görünüyorsun — puan kazanma duraklatıldı.</span>
+          <button onClick={() => setShowIdleWarning(false)}>Devam Et</button>
+        </div>
+      )}
 
       {/* READING AREA */}
       <div className="reading-area">
@@ -328,81 +390,82 @@ const BookReader = () => {
           </button>
           <button
             className={`control-btn ${readingMode === 'book' ? 'active' : ''}`}
-            onClick={() => setReadingMode('book')}
+            onClick={() => setReadingMode(readingMode === 'book' ? 'chapter' : 'book')}
             title="Book mode"
           >
             <AutoStories />
           </button>
         </div>
 
-        {/* CHAPTER READING MODE */}
-        {readingMode === 'chapter' && (
+        {/* CHAPTER READING MODE — Tek bölüm göster */}
+        {readingMode === 'chapter' && currentChapter && (
           <div className="chapter-reading-mode">
-            
-            {/* Title Page */}
-            <div className="title-page-section">
-              <div className="title-page-ornament">❦</div>
-              <h1>{book.title}</h1>
-              <div className="title-page-author">written by</div>
-              <div className="title-page-author-name">{authorName}</div>
-              <div className="title-page-genre">
-                {book.genre || 'Fiction'}
+
+            {user && (
+              <QuotePopup
+                bookId={bookId}
+                chapterId={currentChapter.id}
+                chapterTitle={currentChapter.title}
+                chapterIndex={currentChapterIndex}
+              />
+            )}
+
+            {/* Bölüm Başlığı */}
+            <div className="chapter-header">
+              <div className="chapter-number-label">
+                Bölüm {currentChapterIndex + 1} / {chapters.length}
               </div>
-              <div className="title-page-ornament">❦</div>
+              <h2>{currentChapter.title}</h2>
             </div>
 
-            {/* Chapters */}
-            {chapters.map((chapter, index) => (
-              <div
-                key={chapter.id || index}
-                id={`chapter-${index}`}
-                className="chapter-section"
+            {/* Bölüm İçeriği */}
+            <ParagraphRenderer
+              content={currentChapter.content}
+              bookId={bookId}
+              chapterId={currentChapter.id}
+              bookmark={chapterBookmark}
+              onSetBookmark={user ? handleSetBookmark : null}
+              onRemoveBookmark={user ? handleRemoveBookmark : null}
+            />
+
+            {/* Bölüm Navigasyonu */}
+            <div className="chapter-navigation">
+              <button
+                className="chapter-nav-btn"
+                onClick={() => goToChapter(currentChapterIndex - 1)}
+                disabled={isFirstChapter}
               >
-                <div className="chapter-header">
-                  <h2>{chapter.title}</h2>
-                </div>
+                <ChevronLeft />
+                Önceki Bölüm
+              </button>
 
-                <div 
-                  className="chapter-content"
-                  dangerouslySetInnerHTML={{ __html: chapter.content }}
-                />
-
-                {/* Chapter Navigation */}
-                <div className="chapter-navigation">
-                  <button
-                    className="chapter-nav-btn"
-                    onClick={() => goToChapter(index - 1)}
-                    disabled={index === 0}
-                  >
-                    <ChevronLeft />
-                    Previous Chapter
-                  </button>
-
-                  <button
-                    className="chapter-nav-btn"
-                    onClick={() => {
-                      if (!completedChapters.includes(index)) {
-                        toggleChapterCompletion(index);
-                      }
-                      if (index < chapters.length - 1) {
-                        goToChapter(index + 1);
-                      }
-                    }}
-                    disabled={index === chapters.length - 1}
-                  >
-                    {completedChapters.includes(index) 
-                      ? 'Next Chapter' 
-                      : 'Mark Complete & Continue'}
-                    <ChevronRight />
-                  </button>
-                </div>
-              </div>
-            ))}
-
-            {/* End Marker */}
-            <div className="end-marker">
-              ✦ THE END ✦
+              <button
+                className="chapter-nav-btn complete-btn"
+                onClick={() => {
+                  if (!completedChapters.includes(currentChapterIndex)) {
+                    toggleChapterCompletion(currentChapterIndex);
+                  }
+                  if (!isLastChapter) {
+                    goToChapter(currentChapterIndex + 1);
+                  }
+                }}
+                disabled={isLastChapter && completedChapters.includes(currentChapterIndex)}
+              >
+                {isLastChapter
+                  ? completedChapters.includes(currentChapterIndex)
+                    ? '✦ Tamamlandı'
+                    : 'Tamamla'
+                  : completedChapters.includes(currentChapterIndex)
+                    ? 'Sonraki Bölüm'
+                    : 'Tamamla ve Devam Et'}
+                {!isLastChapter && <ChevronRight />}
+              </button>
             </div>
+
+            {/* Son bölümdeyse bitiş işareti */}
+            {isLastChapter && (
+              <div className="end-marker">✦ THE END ✦</div>
+            )}
           </div>
         )}
 
@@ -412,7 +475,6 @@ const BookReader = () => {
             <div className="reader-book-mode">
               <div className={`book-container ${isFlipping ? 'flipping' : ''}`}>
                 
-                {/* Left Page */}
                 <div 
                   className="book-page left"
                   onClick={() => changePage('prev')}
@@ -423,10 +485,8 @@ const BookReader = () => {
                   )}
                 </div>
 
-                {/* Book Spine */}
                 <div className="book-spine"></div>
 
-                {/* Right Page */}
                 {currentPage + 1 < pages.length ? (
                   <div 
                     className="book-page right"
@@ -443,25 +503,22 @@ const BookReader = () => {
               </div>
             </div>
 
-            {/* Book Navigation */}
             <div className="book-navigation">
               <Button
-                variant="ghost"
+                variant="outline"
                 onClick={() => changePage('prev')}
                 disabled={currentPage === 0}
                 icon={<ChevronLeft />}
               >
                 Previous
               </Button>
-
               <div className="progress-text">
                 {currentPage === 0 
                   ? 'Cover' 
                   : `Page ${currentPage} of ${pages.length - 1}`}
               </div>
-
               <Button
-                variant="ghost"
+                variant="outline"
                 onClick={() => changePage('next')}
                 disabled={currentPage >= pages.length - 2}
               >

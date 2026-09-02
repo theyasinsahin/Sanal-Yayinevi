@@ -1,0 +1,46 @@
+# src/graphql/typeDefs/recommendation.graphql
+
+enum RecommendationReason {
+  LIKED_GENRE # Beğendiğin türden
+  SAVED_GENRE # Kaydettiğin türden
+  COMMENTED_GENRE # Yorum yaptığın türden
+  QUOTED_GENRE # Alıntı aldığın türden
+  ONBOARDING_GENRE # Tercih ettiğin türden
+  SOCIAL # Takip ettiğin biri beğendi
+  NEW # Yeni eklendi
+  POPULAR # Popüler
+}
+
+type RecommendationResult {
+  book: Book!
+  score: Float!
+  reason: RecommendationReason!
+}
+
+type ReadingProgress {
+  id: ID!
+  userId: ID!
+  bookId: Book!
+  completedChapters: [ID!]!
+  lastReadAt: String!
+  isCompleted: Boolean!
+}
+
+type UserPreference {
+  id: ID!
+  userId: ID!
+  preferredGenres: [Genre!]!
+  onboardingCompleted: Boolean!
+}
+
+extend type Mutation {
+  markChapterAsRead(bookId: ID!, chapterId: ID!): ReadingProgress!
+  saveUserPreference(genreIds: [ID!]!): UserPreference!
+}
+
+extend type Query {
+  getRecommendations(limit: Int, offset: Int): [RecommendationResult!]!
+  getReadingProgress(bookId: ID!): ReadingProgress
+  getUserReadingHistory: [ReadingProgress!]!
+  getUserPreference: UserPreference
+}

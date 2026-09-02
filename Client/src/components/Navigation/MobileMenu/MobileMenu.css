@@ -68,6 +68,33 @@
   overflow: hidden;
 }
 
+/* button olarak render edilen menu item'lar için (tema değiştirici gibi) —
+   tarayıcının varsayılan buton stilini sıfırlayıp .mobile-nav-item ile
+   aynı görünüme getirir */
+.mobile-nav-item--button {
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+/* Bildirim satırı — NotificationBell'e "label" prop'u geçildiğinde
+   ikon+yazıyı TEK bir <button> içinde render ediyor (bkz.
+   NotificationBell/index.jsx), bu yüzden .mobile-nav-item--bell'in
+   kendisi artık NotificationBell'in kök elemanı; ekstra bir tıklama
+   alanı ayarlamaya gerek yok, satırın tamamı zaten tıklanabilir.
+   Panel de document.body'ye portallandığı için (bkz.
+   NotificationBell.css) burada konumu için ayrıca bir override
+   tanımlamaya GEREK YOK — panel bu çekmecenin overflow/z-index
+   bağlamının tamamen dışında render ediliyor ve kendi z-index'iyle
+   (2000) her zaman en üstte görünüyor. */
+/* Ek bir kural gerekmiyor: .mobile-nav-item--bell zaten .mobile-nav-item
+   sınıfından standart padding'i (1.125rem 1.25rem) alıyor, diğer
+   satırlarla aynı görünüyor. İçindeki <button> (bkz. NotificationBell.css
+   .notif-bell-btn--row) padding: 0 olduğu için çift boşluk oluşmuyor. */
+
 .mobile-nav-item::before {
   content: '';
   position: absolute;
@@ -98,6 +125,7 @@
   position: relative;
   z-index: 1;
   font-size: 1.25rem;
+  flex-shrink: 0;
 }
 
 .mobile-nav-item:hover .mobile-icon,
@@ -108,6 +136,25 @@
 .mobile-nav-item span {
   position: relative;
   z-index: 1;
+}
+
+/* Okunmamış mesaj rozeti — desktop navbar'daki .nav-icon-badge ile aynı mantık */
+.mobile-nav-badge {
+  margin-left: auto;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 99px;
+  background: #1D9E75;
+  color: #E1F5EE;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
 }
 
 /* Divider */
@@ -162,16 +209,21 @@
   width: 100%;
 }
 
-/* Animation for items */
+/* Animation for items — artık daha fazla öğe olduğu için 10'a kadar genişletildi */
 .mobile-menu-drawer.open .mobile-nav-item {
   animation: slideInItem 0.4s ease-out backwards;
 }
 
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(1) { animation-delay: 0.1s; }
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(2) { animation-delay: 0.15s; }
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(3) { animation-delay: 0.2s; }
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(4) { animation-delay: 0.25s; }
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(5) { animation-delay: 0.3s; }
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(1)  { animation-delay: 0.05s; }
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(2)  { animation-delay: 0.08s; }
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(3)  { animation-delay: 0.11s; }
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(4)  { animation-delay: 0.14s; }
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(5)  { animation-delay: 0.17s; }
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(6)  { animation-delay: 0.20s; }
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(7)  { animation-delay: 0.23s; }
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(8)  { animation-delay: 0.26s; }
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(9)  { animation-delay: 0.29s; }
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(10) { animation-delay: 0.32s; }
 
 @keyframes slideInItem {
   from {

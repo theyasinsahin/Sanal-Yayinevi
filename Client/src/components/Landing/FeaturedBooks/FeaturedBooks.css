@@ -1,11 +1,11 @@
-.featured-articles-section {
+.featured-books-section {
   padding: 5rem 0;
   background-color: var(--paper-white);
   position: relative;
 }
 
 /* Subtle paper grain */
-.featured-articles-section::before {
+.featured-books-section::before {
   content: '';
   position: absolute;
   top: 0;
@@ -25,7 +25,7 @@
 }
 
 /* Decorative top border - torn paper effect */
-.featured-articles-section::after {
+.featured-books-section::after {
   content: '';
   position: absolute;
   top: 0;
@@ -86,25 +86,28 @@
 }
 
 /* Grid Structure */
-.articles-grid {
+.books-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 2.5rem;
+  /* 300px -> 220px ve gap 2.5rem -> 1.5rem: BookGrid ile tutarlı bir
+     yoğunluk. Bölüm artık daha fazla kitap (bkz. jsx) gösterdiği için
+     bu genişlikte gerçekten birden fazla satır/sütun kullanılıyor. */
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
   position: relative;
   z-index: 1;
 }
 
 /* Card entrance animations - staggered */
-.articles-grid > * {
+.books-grid > * {
   animation: cardFadeIn 0.8s ease-out backwards;
 }
 
-.articles-grid > *:nth-child(1) { animation-delay: 0.1s; }
-.articles-grid > *:nth-child(2) { animation-delay: 0.2s; }
-.articles-grid > *:nth-child(3) { animation-delay: 0.3s; }
-.articles-grid > *:nth-child(4) { animation-delay: 0.4s; }
-.articles-grid > *:nth-child(5) { animation-delay: 0.5s; }
-.articles-grid > *:nth-child(6) { animation-delay: 0.6s; }
+.books-grid > *:nth-child(1) { animation-delay: 0.1s; }
+.books-grid > *:nth-child(2) { animation-delay: 0.2s; }
+.books-grid > *:nth-child(3) { animation-delay: 0.3s; }
+.books-grid > *:nth-child(4) { animation-delay: 0.4s; }
+.books-grid > *:nth-child(5) { animation-delay: 0.5s; }
+.books-grid > *:nth-child(6) { animation-delay: 0.6s; }
 
 @keyframes cardFadeIn {
   from {
@@ -118,7 +121,7 @@
 }
 
 /* Decorative quote marks scattered */
-.featured-articles-section .quote-decoration {
+.featured-books-section .quote-decoration {
   position: absolute;
   font-size: 8rem;
   color: var(--fog);
@@ -128,13 +131,13 @@
   z-index: 0;
 }
 
-.featured-articles-section .quote-decoration:nth-of-type(1) {
+.featured-books-section .quote-decoration:nth-of-type(1) {
   top: 10%;
   left: 5%;
   transform: rotate(-15deg);
 }
 
-.featured-articles-section .quote-decoration:nth-of-type(2) {
+.featured-books-section .quote-decoration:nth-of-type(2) {
   bottom: 15%;
   right: 8%;
   transform: rotate(15deg);
@@ -142,7 +145,7 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .featured-articles-section {
+  .featured-books-section {
     padding: 4rem 0;
   }
 
@@ -162,10 +165,15 @@
   }
 }
 
+/* Mobil: eskiden burada grid tek sütuna (1fr) düşüyor ve tek kart
+   ekranı devasa şekilde kaplıyordu (bkz. ekran görüntüsü). BookGrid'de
+   olduğu gibi 2 sütuna geçiyoruz — kart boyutu makul kalıyor, kart
+   içeriği de BookCard.css'teki container query'ler sayesinde bu
+   genişlikte otomatik sıkışmadan uyum sağlıyor. */
 @media (max-width: 640px) {
-  .articles-grid {
-    grid-template-columns: 1fr;
-    gap: 2rem;
+  .books-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.85rem;
   }
 
   .section-header h2 {
@@ -174,5 +182,17 @@
 
   .section-header h2::before {
     font-size: 1.25rem;
+  }
+}
+
+/* Çok dar ekranlarda (küçük telefonlar) tek sütuna düş, ama kartı
+   ekranın tamamına değil ortalanmış makul bir genişliğe sınırla —
+   BookGrid.css'teki aynı davranışla tutarlı. */
+@media (max-width: 360px) {
+  .books-grid {
+    grid-template-columns: 1fr;
+    max-width: 260px;
+    margin: 0 auto;
+    gap: 1rem;
   }
 }

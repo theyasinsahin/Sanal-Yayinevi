@@ -48,7 +48,14 @@
 /* Kapsayıcı Kutu */
 .cover-upload-wrapper {
   width: 100%;
-  height: 450px; /* Standart kitap boyutu oranı */
+  /* DÜZELTME: Sabit height:450px, genişlik daraldığında (mobil) da
+     aynı kalıyordu — 300px genişlik + 450px yükseklik oranı sadece
+     masaüstünde (form-left-col 300px sabit genişlikte iken) anlamlıydı.
+     Mobilde form-left-col daha dar bir genişliğe küçülse bile kutu
+     450px yükseklikte kalıp orantısız/aşırı uzun görünüyordu ve sayfanın
+     büyük kısmını kaplıyordu. aspect-ratio ile yükseklik artık her zaman
+     genişliğe göre (2:3, kapak oranı) orantılı hesaplanıyor. */
+  aspect-ratio: 2 / 3;
   background-color: var(--bg-app);
   border-radius: var(--radius-md);
   border: 2px dashed #D1D5DB;
@@ -165,5 +172,37 @@
 @media (max-width: 600px) {
   .form-row-2 {
     grid-template-columns: 1fr; /* Küçük ekranda inputları alt alta yap */
+  }
+}
+
+/* DÜZELTME: Sayfanın üst/alt padding'i (6rem/4rem) ve kart iç padding'i
+   (2rem) telefon ekranında da sabit kalıyordu; kapak kutusuyla birlikte
+   kullanıcının başlığa ulaşmadan önce ekranlar dolusu boş alan kaydırması
+   gerekiyordu. Ayrıca 300px genişliğindeki kapak kutusu küçük telefon
+   ekranlarında (ör. 375-400px) neredeyse tüm genişliği ve orantılı olarak
+   çok fazla dikey alanı kaplıyordu — daha küçük bir azami genişlikle
+   (aspect-ratio sayesinde yüksekliği de orantılı küçülüyor) daha makul
+   bir boyuta indirildi. */
+@media (max-width: 480px) {
+  .create-book-page {
+    padding-top: 6rem;
+    padding-bottom: 2.5rem;
+  }
+
+  .page-header {
+    margin-bottom: 1.25rem;
+  }
+
+  .create-book-card {
+    padding: 1.25rem;
+    border-radius: 12px;
+  }
+
+  .book-form-grid {
+    gap: 1.5rem;
+  }
+
+  .form-left-col {
+    max-width: 200px;
   }
 }

@@ -1,0 +1,54 @@
+# src/graphql/typeDefs/message.graphql
+
+enum MessageType {
+  TEXT
+  QUOTE
+  BOOK
+}
+
+type Message {
+  id: ID!
+  conversationId: ID!
+  sender: User
+  content: String!
+  type: MessageType!
+  attachedQuote: Quote
+  attachedBook: Book
+  createdAt: String!
+}
+
+type Conversation {
+  id: ID!
+  participants: [User!]!
+  lastMessage: Message
+  unreadCount: Int!
+  isGroup: Boolean!
+  updatedAt: String!
+}
+
+input SendMessageInput {
+  conversationId: ID!
+  content: String
+  type: MessageType!
+  attachedQuoteId: ID
+  attachedBookId: ID
+}
+
+extend type Mutation {
+  sendMessage(input: SendMessageInput!): Message!
+  markMessagesAsRead(conversationId: ID!): Boolean!
+  deleteMessage(messageId: ID!): Boolean!
+  editMessage(messageId: ID!, content: String!): Message!
+}
+
+extend type Query {
+  getConversations: [Conversation!]!
+  getConversation(conversationId: ID!): Conversation
+  getMessages(conversationId: ID!, limit: Int, offset: Int): [Message!]!
+  getOrCreateConversation(recipientId: ID!): Conversation
+  getUnreadMessageCount: Int!
+}
+
+type Subscription {
+  onNewMessage(conversationId: ID!): Message!
+}

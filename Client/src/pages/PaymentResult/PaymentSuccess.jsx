@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { CheckCircle, Home } from '@mui/icons-material';
+import { CheckCircle, Home, MenuBook } from '@mui/icons-material';
 
 // --- UI KIT ---
 import { MainLayout } from '../../components/Layout/MainLayout';
@@ -12,13 +12,13 @@ import './PaymentResult.css';
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const transactionId = searchParams.get('tid');
+  const bookId = searchParams.get('bookId');
 
   return (
     <MainLayout>
       <div className="payment-result-page">
         <div className="result-card">
           
-          {/* Animasyonlu İkon */}
           <div className="icon-wrapper success">
             <CheckCircle className="result-icon" />
           </div>
@@ -32,7 +32,6 @@ const PaymentSuccess = () => {
             İşleminiz başarıyla kaydedildi ve yazar bilgilendirildi.
           </Typography>
           
-          {/* İşlem ID Kutusu */}
           {transactionId && (
             <div className="detail-box success">
               <span className="detail-label">İşlem Kodu:</span>
@@ -40,12 +39,27 @@ const PaymentSuccess = () => {
             </div>
           )}
 
-          <div className="mt-6">
-            <Link to="/feed" style={{ textDecoration: 'none' }}>
-              <Button variant="primary" size="large" className="w-full" icon={<Home />}>
-                Ana Sayfaya Dön
-              </Button>
-            </Link>
+          <div className="mt-6" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {bookId ? (
+              <>
+                <Link to={`/book-detail/${bookId}`} style={{ textDecoration: 'none' }}>
+                  <Button variant="primary" size="large" className="w-full" icon={<MenuBook />}>
+                    Kitaba Geri Dön
+                  </Button>
+                </Link>
+                <Link to="/feed" style={{ textDecoration: 'none' }}>
+                  <Button variant="outline" size="large" className="w-full" icon={<Home />}>
+                    Ana Sayfaya Dön
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <Link to="/feed" style={{ textDecoration: 'none' }}>
+                <Button variant="primary" size="large" className="w-full" icon={<Home />}>
+                  Ana Sayfaya Dön
+                </Button>
+              </Link>
+            )}
           </div>
           
         </div>

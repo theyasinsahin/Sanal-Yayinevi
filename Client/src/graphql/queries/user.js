@@ -3,11 +3,13 @@ import { gql } from '@apollo/client';
 export const GET_USER_BY_ID = gql`
     query GetUserById($id:ID!){
         getUserById(id: $id){
+          isPremium,
           id,    
           username,
           fullName,
           email,
           savedBooks {
+            status
             id
             title
             author {
@@ -17,7 +19,13 @@ export const GET_USER_BY_ID = gql`
               profilePicture
             }
             imageUrl
-            genre
+            genre{
+              name
+              slug
+              iconUrl
+              hexColor
+              isActive
+            }
             description
             stats {
               views
@@ -28,6 +36,7 @@ export const GET_USER_BY_ID = gql`
           },
           role,
           usersBooks {
+            status
             id
             title
             author {
@@ -37,7 +46,13 @@ export const GET_USER_BY_ID = gql`
               profilePicture
             }
               imageUrl
-            genre
+            genre{
+              name
+              slug
+              iconUrl
+              hexColor
+              isActive
+            }
             description
             stats {
               views
@@ -50,28 +65,25 @@ export const GET_USER_BY_ID = gql`
           profilePicture,
           followers{
             id
+            username
+            profilePicture
+            fullName
           },
           following{
             id
-          }
+            username
+            profilePicture
+            fullName
+          },
         }
-    }
+}
 `;
 
 export const ME_QUERY = gql`
   query Me {
     me {
       id
-      fullName
-      username
       email
-      bio
-      profilePicture
-      followers
-      following
-      savedBooks
-      favouriteAuthors
-      usersBooks
     }
   }
 `;
@@ -81,6 +93,7 @@ export const ME_QUERY = gql`
 export const GET_ALL_USERS = gql`
   query GetAllUsers{
     getAllUsers {
+      isPremium,
       id,
       username,
       email,

@@ -1,34 +1,178 @@
 .feed-page-wrapper {
   min-height: calc(100vh - var(--navbar-height));
-  
   display: flex;
   justify-content: center;
-
   align-items: flex-start;
-
   padding-top: 6rem;
   padding-bottom: 4rem;
 }
 
-/* Grid Layout: Sidebar (280px) + Gap + Content (Rest) */
 .feed-layout-grid {
   display: grid;
   grid-template-columns: 280px 1fr;
-  gap: 3rem;
+  /* 3rem -> 2rem: sidebar ile içerik arasındaki boşluk azaltılınca
+     BookGrid'e kalan alan büyüyor, bu da genelde bir sütun daha
+     kitap sığmasına yardımcı oluyor. */
+  gap: 2rem;
   align-items: start;
 }
 
-/* Header */
 .feed-header {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #E5E7EB;
-  padding-bottom: 1rem;
 }
 
-/* Sonuç Bulunamadı Kutusu */
+/* --- SEKMELER --- */
+.feed-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid #E5E7EB;
+  margin-bottom: 1.5rem;
+}
+
+.feed-tab {
+  position: relative;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6B7280;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.feed-tab:hover {
+  color: #111827;
+}
+
+.feed-tab.active {
+  color: #111827;
+}
+
+.feed-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #111827;
+  border-radius: 2px 2px 0 0;
+}
+
+.feed-tab-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 99px;
+  background: #E1F5EE;
+  color: #0F6E56;
+}
+
+/* --- SIDEBAR TERCİH KUTUSU --- */
+.preference-box {
+  margin-top: 1.5rem;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
+  background: #F9FAFB;
+}
+
+.preference-box-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.preference-genre-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.preference-genre-tag {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 99px;
+  border: 1px solid;
+}
+
+.preference-edit-btn {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6B7280;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.preference-edit-btn:hover {
+  color: #111827;
+}
+
+/* --- ONBOARDING INLINE --- */
+.feed-onboarding {
+  padding: 2rem;
+  border-radius: 16px;
+  border: 1px dashed #D1D5DB;
+  background: #FAFAFA;
+  text-align: center;
+}
+
+.feed-onboarding-genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.genre-pill {
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1.5px solid #E5E7EB;
+  background: transparent;
+  color: #6B7280;
+}
+
+.genre-pill.selected {
+  border-color: currentColor;
+}
+
+.onboarding-save-btn {
+  padding: 10px 32px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: #111827;
+  color: #fff;
+}
+
+.onboarding-save-btn:disabled {
+  background: #E5E7EB;
+  color: #9CA3AF;
+  cursor: not-allowed;
+}
+
+/* --- SONUÇ YOK --- */
 .no-results-box {
   padding: 4rem;
   text-align: center;
@@ -37,21 +181,18 @@
   border: 1px dashed #D1D5DB;
 }
 
-/* Responsive: Tablet ve Mobil */
+/* --- RESPONSIVE --- */
 @media (max-width: 1024px) {
   .feed-layout-grid {
     grid-template-columns: 240px 1fr;
-    gap: 2rem;
+    gap: 1.5rem;
   }
 }
 
 @media (max-width: 768px) {
   .feed-layout-grid {
-    grid-template-columns: 1fr; /* Tek sütuna düş */
+    grid-template-columns: 1fr;
   }
-
-  /* Sidebar mobilde üstte kalsın ama search hariç filtreler gizlenebilir (İsteğe bağlı) */
-  /* Şimdilik alt alta diziyoruz */
   .feed-sidebar {
     margin-bottom: 2rem;
   }

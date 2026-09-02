@@ -27,7 +27,7 @@ export const filterBooks = (books, filters) => {
   if (filters.genre && filters.genre !== 'Tümü') {
     // book.genre veritabanında "slug" olarak mı yoksa "Display Name" olarak mı tutuluyor?
     // Buradaki eşleşmenin birebir olduğundan emin ol.
-    //filtered = filtered.filter((book) => book.genre === filters.genre);
+    filtered = filtered.filter((book) => book.genre === filters.genre);
   }
 
   // --- 3. SIRALAMA (SORT) ---
@@ -35,7 +35,7 @@ export const filterBooks = (books, filters) => {
     switch (filters.sortBy) {
       case 'newest':
         // Tarihe göre yeniden eskiye (createdAt alanı şemada mevcut)
-        filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        filtered.sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate));
         break;
       case 'lastUpdated':
         // Tarihe göre yeniden eskiye (updatedAt alanı şemada mevcut)
@@ -43,7 +43,7 @@ export const filterBooks = (books, filters) => {
         break;
       case 'oldest':
         // Tarihe göre eskiden yeniye
-        filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        filtered.sort((a, b) => new Date(a.publishDate) - new Date(b.publishDate));
         break;
       case 'popular':
         // Düzeltme: likeCount yerine likedBy dizisinin uzunluğuna (length) bakıyoruz.

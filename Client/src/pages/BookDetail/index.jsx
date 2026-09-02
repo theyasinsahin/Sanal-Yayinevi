@@ -31,9 +31,11 @@ import { Button } from '../../components/UI/Button';
 import { Badge } from '../../components/UI/Badge';
 import { Toast } from '../../components/UI/Toast';
 import { Textarea } from '../../components/UI/Textarea';
+import BookFollowButton from '../../components/Books/BookFollowButton';
 
 // --- COMPONENTS ---
 import CommentList from '../../components/Comments/CommentList';
+import BackersSection from '../../components/Books/BackersSection';
 
 import './BookDetail.css';
 
@@ -44,28 +46,28 @@ const BookDetailPage = () => {
   const [commentText, setCommentText] = useState("");
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
 
+  const [optimisticLiked, setOptimisticLiked] = useState(null);
+  const [optimisticSaved, setOptimisticSaved] = useState(null);
+  const [optimisticLikeCount, setOptimisticLikeCount] = useState(null);
+  const [imgLoaded, setImgLoaded] = useState(false);
+
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   // --- QUERIES ---
-  // 1. KİTAP SORGUSU (Artık yorumları getirmiyor, daha hafif)
   const { data: bookData, loading: bookLoading, error: bookError } = useQuery(GET_BOOK_BY_ID, {
     variables: { id }
   });
 
-  // 2. YORUM SORGUSU (Ayrı bir sorgu)
-  // fetchPolicy: "cache-and-network" diyerek yorum eklendiğinde güncel kalmasını sağlıyoruz
   const { 
     data: commentsData, 
     loading: commentsLoading,
-    refetch: refetchComments // Yorum eklenince tetiklemek için
+    refetch: refetchComments
   } = useQuery(GET_COMMENTS_BY_BOOK_ID, {
     variables: { bookId: id },
     fetchPolicy: "cache-and-network"
   });
 
   const book = bookData ? bookData.getBookById : null;
-
-  // Gelen ham (düz) yorum listesi
   const rawComments = commentsData ? commentsData.getCommentsByBookId : [];
 
   const { data: currentUserData } = useQuery(GET_USER_BY_ID, {
@@ -83,12 +85,11 @@ const BookDetailPage = () => {
   const [likeBook] = useMutation(LIKE_BOOK_MUTATION);
   const [toggleSavedBook] = useMutation(TOGGLE_SAVED_BOOK_MUTATION);
   
-  // Yorum Ekleme Mutation Güncellemesi
   const [createComment, { loading: commentSending }] = useMutation(CREATE_COMMENT_MUTATION, {
     onCompleted: () => {
       setCommentText("");
       showToast('Yorum gönderildi', 'success');
-      refetchComments(); // Listeyi yenile
+      refetchComments();
     },
     onError: (err) => {
       console.log("Mutation Hatası:", err);
@@ -109,19 +110,33 @@ const BookDetailPage = () => {
 
   const handleLike = async () => {
     if (!currentUserId) return showToast("Giriş yapmalısınız", 'warning');
-    try { await likeBook({ variables: { bookId: book.id } }); } 
-    catch (err) { /* Token error logic */ }
+    const currentlyLiked = optimisticLiked !== null ? optimisticLiked : isLikedFromServer;
+    const currentCount = optimisticLikeCount !== null ? optimisticLikeCount : (book.stats?.likes || 0);
+    setOptimisticLiked(!currentlyLiked);
+    setOptimisticLikeCount(currentlyLiked ? currentCount - 1 : currentCount + 1);
+    try { 
+      await likeBook({ variables: { bookId: book.id } }); 
+    } catch (err) { 
+      setOptimisticLiked(currentlyLiked);
+      setOptimisticLikeCount(currentCount);
+      showToast("Beğeni işlemi başarısız", 'error');
+    }
   };
 
   const handleSave = async () => {
     if (!currentUserId) return showToast("Giriş yapmalısınız", 'warning');
+    const currentlySaved = optimisticSaved !== null ? optimisticSaved : isSavedFromServer;
+    setOptimisticSaved(!currentlySaved);
+    showToast(!currentlySaved ? 'Kitaplığına eklendi' : 'Kitaplıktan çıkarıldı', 'success');
     try {
       await toggleSavedBook({
         variables: { bookId: book.id },
         refetchQueries: [{ query: GET_USER_BY_ID, variables: { id: currentUserId } }]
       });
-      showToast(isSaved ? 'Kaydedilenlerden çıkarıldı' : 'Kaydedildi', 'success');
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+      setOptimisticSaved(currentlySaved);
+      showToast("Kaydetme işlemi başarısız", 'error');
+    }
   };
 
   const handleShare = () => {
@@ -133,32 +148,107 @@ const BookDetailPage = () => {
     if (!currentUserId) return showToast("Giriş yapmalısınız", 'warning');
     if (!commentText.trim()) return; 
     try {
-        await createComment({ 
+        await createComment({ 
             variables: { 
                 bookId: book.id, 
                 content: commentText 
             } 
         });
     } catch (e) {
-        // Hata zaten useMutation'ın onError kısmında yakalandı ve toast gösterildi.
-        // Burası sadece uygulamanın beyaz ekrana düşmesini engeller.
         console.log("Hata yakalandı (Graceful handling)");
-    }   };
+    }
+  };
 
   // --- RENDER CHECKS ---
-  if (bookLoading) return <MainLayout><div className="p-10 text-center">Yükleniyor...</div></MainLayout>;
-  if (bookError) return <MainLayout><div className="p-10 text-center">Hata: {bookError.message}</div></MainLayout>;
+  if (bookLoading) return (
+    <MainLayout>
+      <div className="book-detail-page">
+        <Container maxWidth="5xl">
+          <div className="back-link" style={{ width: 140, height: 20, background: 'var(--skeleton-base)', borderRadius: 6 }} />
+          <div className="book-detail-grid">
+            <aside className="left-panel">
+              <div className="cover-wrapper">
+                <div style={{
+                  width: '100%',
+                  aspectRatio: '2/3',
+                  background: 'var(--skeleton-base)',
+                  borderRadius: 12,
+                  animation: 'shimmer 1.5s ease-in-out infinite'
+                }} />
+              </div>
+              <div className="meta-info-card">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="meta-row" style={{ gap: '0.5rem' }}>
+                    <div style={{ width: 80, height: 14, background: 'var(--skeleton-base)', borderRadius: 4 }} />
+                    <div style={{ width: 60, height: 14, background: 'var(--skeleton-base)', borderRadius: 4 }} />
+                  </div>
+                ))}
+              </div>
+            </aside>
+            <main className="right-panel">
+              <div className="book-header">
+                <div style={{ width: '75%', height: 36, background: 'var(--skeleton-base)', borderRadius: 8, marginBottom: '0.75rem' }} />
+                <div style={{ width: '40%', height: 36, background: 'var(--skeleton-base)', borderRadius: 8, marginBottom: '1rem' }} />
+                <div style={{ width: 160, height: 16, background: 'var(--skeleton-base)', borderRadius: 4 }} />
+              </div>
+              <div className="action-toolbar">
+                <div className="primary-actions">
+                  <div style={{ width: 140, height: 44, background: 'var(--skeleton-base)', borderRadius: 8 }} />
+                  <div style={{ width: 140, height: 44, background: 'var(--skeleton-base)', borderRadius: 8 }} />
+                </div>
+                <div className="secondary-actions">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} style={{ width: 40, height: 40, background: 'var(--skeleton-base)', borderRadius: 8 }} />
+                  ))}
+                </div>
+              </div>
+              <div className="description-box">
+                <div style={{ width: 140, height: 22, background: 'var(--skeleton-base)', borderRadius: 6, marginBottom: '1rem' }} />
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} style={{ width: i === 4 ? '60%' : '100%', height: 14, background: 'var(--skeleton-base)', borderRadius: 4, marginBottom: '0.5rem' }} />
+                ))}
+              </div>
+            </main>
+          </div>
+        </Container>
+      </div>
+    </MainLayout>
+  );
+
+  if (bookError) return (
+    <MainLayout>
+      <Container maxWidth="5xl">
+        <div style={{ textAlign: 'center', padding: '5rem 1rem' }}>
+          <Typography variant="h4" weight="bold">Kitap açılamadı</Typography>
+          <Typography variant="body" color="muted" style={{ marginTop: '0.5rem' }}>
+            Bu kitaba şu an ulaşılamıyor. Silinmiş ya da geçici bir sorun yaşanıyor olabilir.
+          </Typography>
+          <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+            <Button variant="outline" onClick={() => window.location.reload()}>Tekrar Dene</Button>
+            <Link to="/feed" style={{ textDecoration: 'none' }}>
+              <Button variant="primary">Kitaplığa Dön</Button>
+            </Link>
+          </div>
+        </div>
+      </Container>
+    </MainLayout>
+  );  
+  
   if (!book) return null;
 
   // --- VARIABLES ---
   const author = book.author;
   const isAuthor = currentUserId && book.authorId === currentUserId;
   const isAdmin = currentUserData?.getUserById?.role === 'ADMIN';
-  const isLiked = book.likedBy && currentUserId ? book.likedBy.includes(currentUserId) : false;
-  
+
+  const isLikedFromServer = book.likedBy && currentUserId ? book.likedBy.includes(currentUserId) : false;
   const savedBooks = currentUserData?.getUserById?.savedBooks || [];
-  const isSaved = savedBooks.some(sb => (typeof sb === 'string' ? sb : sb.id) === book.id);
-  
+  const isSavedFromServer = savedBooks.some(sb => (typeof sb === 'string' ? sb : sb.id) === book.id);
+
+  const isLiked = optimisticLiked !== null ? optimisticLiked : isLikedFromServer;
+  const isSaved = optimisticSaved !== null ? optimisticSaved : isSavedFromServer;
+  const likeCount = optimisticLikeCount !== null ? optimisticLikeCount : (book.stats?.likes || 0);
+
   const displayAuthorName = author?.fullName || author?.username || "Bilinmeyen Yazar";
   const formattedPublishDate = book.publishDate ? new Date(book.publishDate).toLocaleDateString() : 'Bilinmiyor';
 
@@ -167,28 +257,40 @@ const BookDetailPage = () => {
       <div className="book-detail-page">
         <Container maxWidth="5xl">
           
-          {/* Navigasyon */}
           <Link to="/feed" className="back-link">
             <ArrowBack fontSize="small" /> Kitaplığa Dön
           </Link>
 
           <div className="book-detail-grid">
             
-            {/* --- SOL PANEL (Kapak & Meta) --- */}
             <aside className="left-panel">
               <div className="cover-wrapper">
                 <img 
                   src={book.imageUrl} 
                   alt={book.title} 
                   className="book-cover-lg"
-                  onError={(e) => { e.target.src = 'https://via.placeholder.com/300x450?text=Resim+Yok'; }}
+                  style={{ display: imgLoaded ? 'block' : 'none' }}
+                  onLoad={() => setImgLoaded(true)}
+                  onError={(e) => { 
+                    e.target.src = 'https://via.placeholder.com/300x450?text=Resim+Yok';
+                    setImgLoaded(true);
+                  }}
                 />
+                {!imgLoaded && (
+                  <div style={{
+                    width: '100%',
+                    aspectRatio: '2/3',
+                    background: 'var(--skeleton-base)',
+                    borderRadius: 12,
+                    animation: 'shimmer 1.5s ease-in-out infinite'
+                  }} />
+                )}
               </div>
 
               <div className="meta-info-card">
                 <div className="meta-row">
                   <span className="meta-label">Kategori:</span>
-                  {/*<Badge variant="neutral" className="capitalize">{book.genre}</Badge>*/}
+                  <Badge variant="neutral" className="capitalize">{book.genre?.name || 'Belirtilmemiş'}</Badge>
                 </div>
                 <div className="meta-row">
                   <span className="meta-label">Sayfa:</span>
@@ -200,37 +302,44 @@ const BookDetailPage = () => {
                 </div>
                 <div className="meta-row">
                   <span className="meta-label">Beğeni:</span>
-                  <span className="meta-value">{book.stats?.likes || 0}</span>
+                  <span className="meta-value">{likeCount}</span>
                 </div>
                 <div className="meta-row">
-                  <span className="meta-label">Desteklenme Sayısı:</span>
-                  <Badge variant="success">{book.backerCount || 0} Kez</Badge>
+                  <span className="meta-label">Desteklenme:</span>
+                  <Badge variant="primary">{book.backerCount || 0} Kez</Badge>
                 </div>
-                 <div className="meta-row">
-                  <span className="meta-label">Desteklenme Tutarı:</span>
-                  <Badge variant="success">{book.currentFunding || 0} TL</Badge>
+                <div className="meta-row">
+                  <span className="meta-label">Toplanan:</span>
+                  <Badge variant="primary">{book.currentFunding || 0} TL</Badge>
                 </div>
+
+                {/* Destekçi avatarları */}
+                {(book.backerCount > 0) && (
+                  <div className="meta-row meta-row--backers">
+                    <BackersSection
+                      bookId={book.id}
+                      backerCount={book.backerCount}
+                    />
+                  </div>
+                )}
               </div>
             </aside>
 
-            {/* --- SAĞ PANEL (İçerik) --- */}
             <main className="right-panel">
               
-              {/* Başlık & Yazar */}
               <div className="book-header">
                 <Typography variant="h2" weight="bold" className="book-title-lg">
                   {book.title}
                 </Typography>
-                
                 <div className="author-link-wrapper">
                   <Typography variant="body" color="muted">Yazar:</Typography>
                   <Link to={`/user/${book.authorId}`} className="author-link">
                     {displayAuthorName}
                   </Link>
                 </div>
+                <BookFollowButton bookId={book.id} />
               </div>
 
-              {/* Aksiyon Butonları (Toolbar) */}
               <div className="action-toolbar">
                 <div className="primary-actions">
                   <Link to={`/book-reader/${book.id}`} className="no-underline">
@@ -238,7 +347,6 @@ const BookDetailPage = () => {
                       Kitabı Oku
                     </Button>
                   </Link>
-
                   <Link to={`/donate/${book.id}`} className="no-underline">
                     <Button variant="success" size="large" icon={<CardGiftcard />}>
                       Destek Ol
@@ -263,7 +371,6 @@ const BookDetailPage = () => {
                 </div>
               </div>
 
-              {/* Yazar/Admin İşlemleri */}
               {(isAuthor || isAdmin) && (
                 <div className="admin-actions">
                    {isAuthor && (
@@ -285,7 +392,6 @@ const BookDetailPage = () => {
                 </div>
               )}
 
-              {/* Açıklama */}
               <div className="description-box">
                 <Typography variant="h5" weight="bold" className="mb-4">Hikaye Özeti</Typography>
                 <Typography variant="body" className="leading-relaxed">
@@ -293,7 +399,6 @@ const BookDetailPage = () => {
                 </Typography>
               </div>
 
-              {/* Yorumlar */}
               <div className="comments-wrapper">
                 <Typography variant="h5" weight="bold" className="mb-4">
                   Yorumlar ({rawComments.length})                
@@ -323,7 +428,7 @@ const BookDetailPage = () => {
                   <div className="p-4 text-center text-gray-500">Yorumlar yükleniyor...</div>
                 ) : (
                   <CommentList 
-                    comments={rawComments} // Düz listeyi gönderiyoruz
+                    comments={rawComments}
                     currentUserId={currentUserId}
                     bookId={id}
                   />

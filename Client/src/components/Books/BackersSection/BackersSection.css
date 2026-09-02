@@ -1,0 +1,170 @@
+.backers-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.backers-label {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* --- AVATAR STACK --- */
+.backers-avatars {
+  display: flex;
+  flex-direction: row-reverse; /* sağdan sola — son eklenen altta kalır */
+  cursor: pointer;
+}
+
+.backers-avatars:hover .backer-avatar {
+  margin-left: -4px; /* hover'da biraz açılsın */
+}
+
+.backer-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--color-background-primary);
+  background: var(--color-background-info);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-info);
+  overflow: hidden;
+  margin-left: -10px;
+  transition: margin-left 0.2s ease, transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.backer-avatar:last-child {
+  margin-left: 0;
+}
+
+.backer-avatar:hover {
+  transform: translateY(-2px);
+}
+
+.backer-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.backer-avatar--more {
+  background: var(--color-background-secondary);
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  border: 2px solid var(--color-border-secondary);
+}
+
+.backer-avatar--skeleton {
+  background: var(--color-background-secondary);
+  animation: backers-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes backers-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* --- MODAL --- */
+.backers-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.backers-modal {
+  background: var(--color-background-primary, #ffffff);
+  border-radius: var(--border-radius-lg, 12px);
+  width: 100%;
+  max-width: 400px;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.backers-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 0.5px solid var(--color-border-tertiary, #e5e7eb);
+  flex-shrink: 0;
+}
+
+.backers-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 15px;
+  cursor: pointer;
+  color: var(--color-text-secondary, #6b7280);
+  padding: 4px 8px;
+  border-radius: var(--border-radius-md, 6px);
+  line-height: 1;
+  transition: background 0.15s;
+}
+
+.backers-modal-close:hover {
+background: var(--color-background-secondary, #f3f4f6);
+}
+
+.backers-modal-list {
+  overflow-y: auto;
+  padding: 0.5rem 0;
+}
+
+.backers-modal-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 1.25rem;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.backers-modal-item:hover {
+  background: var(--color-background-secondary, #f3f4f6);
+}
+
+.backers-modal-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-background-info, #e0e7ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-info, #3730a3);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.backers-modal-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.backers-modal-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}

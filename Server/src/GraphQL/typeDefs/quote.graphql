@@ -1,0 +1,82 @@
+# src/graphql/typeDefs/quote.graphql
+
+type QuoteLocation {
+  startOffset: Int
+  endOffset: Int
+}
+
+input QuoteLocationInput {
+  startOffset: Int
+  endOffset: Int
+}
+
+type QuoteCheckResult {
+  exists: Boolean!
+  quote: Quote
+}
+
+type Quote {
+  id: ID!
+  text: String!
+  note: String
+  user: User
+  book: Book
+  chapterId: ID!
+  chapterTitle: String
+  chapterIndex: Int
+  location: QuoteLocation
+  likedBy: [ID]
+  isRepost: Boolean
+  originalQuote: Quote
+  repostComment: String
+  isSpoiler: Boolean
+  repostedBy: [ID]
+  comments: [QuoteComment]
+  commentCount: Int
+  createdAt: String
+}
+
+type QuoteComment {
+  id: ID!
+  quoteId: ID!
+  content: String!
+  user: User
+  likedBy: [ID]
+  createdAt: String
+}
+
+extend type Query {
+  getQuotesByBook(bookId: ID!): [Quote]
+  getQuotesByUser(userId: ID!): [Quote]
+  getQuotesFeed(limit: Int, offset: Int, sortBy: String): [Quote]
+  searchQuotes(query: String!, limit: Int, offset: Int): [Quote]
+  checkQuoteExists(text: String!, bookId: ID!): QuoteCheckResult!
+  getQuoteComments(quoteId: ID!): [QuoteComment]
+}
+
+extend type Mutation {
+  createQuote(
+    text: String!
+    note: String
+    bookId: ID!
+    chapterId: ID!
+    chapterTitle: String
+    chapterIndex: Int
+    location: QuoteLocationInput
+    isSpoiler: Boolean
+  ): Quote!
+
+  repostQuote(
+    originalQuoteId: ID!
+    repostComment: String
+    isSpoiler: Boolean
+  ): Quote!
+
+  deleteQuote(id: ID!): Status!
+  toggleQuoteLike(id: ID!): Quote!
+
+  addQuoteComment(quoteId: ID!, content: String!): QuoteComment!
+  deleteQuoteComment(id: ID!): Status!
+  toggleQuoteCommentLike(id: ID!): QuoteComment!
+  unrepostQuote(originalQuoteId: ID!): Boolean!
+}

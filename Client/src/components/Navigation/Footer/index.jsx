@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FiFeather, FiInstagram, FiTwitter, FiLinkedin, FiGithub } from 'react-icons/fi';
+import { FiInstagram, FiTwitter, FiLinkedin, FiGithub } from 'react-icons/fi';
 
 // --- UI KIT IMPORTS ---
 import { Container } from '../../UI/Container';
@@ -8,6 +8,7 @@ import { Typography } from '../../UI/Typography';
 import { Button } from '../../UI/Button';
 
 import './Footer.css';
+import Logo from '../../Logo';
 
 const Footer = () => {
   return (
@@ -20,9 +21,9 @@ const Footer = () => {
           {/* 1. SÜTUN: MARKA & AÇIKLAMA */}
           <div className="footer-brand">
             <div className="footer-logo">
-              <FiFeather className="brand-icon" />
+              <Logo />
               <Typography variant="h4" weight="bold" color="white">
-                Quill
+                Betik
               </Typography>
             </div>
             <Typography variant="body" className="brand-desc">
@@ -90,7 +91,7 @@ const Footer = () => {
         {/* --- ALT KISIM (Copyright) --- */}
         <div className="footer-bottom">
           <Typography variant="caption" className="copyright-text">
-            &copy; {new Date().getFullYear()} Quill Sanal Yayınevi. Tüm hakları saklıdır.
+            &copy; {new Date().getFullYear()} Betik. Tüm hakları saklıdır.
           </Typography>
         </div>
 

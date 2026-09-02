@@ -259,7 +259,13 @@
 /* Responsive Design */
 @media (max-width: 960px) {
   .hero-section {
-    padding: 4rem 0 3rem;
+    /* ÖNEMLİ DÜZELTME: Sabit (fixed) navbar 80px yükseklikte ve
+       içeriğin üzerinde duruyor (position: fixed). Buradaki üst boşluk
+       daha önce sabit 4rem (64px) idi — navbar'dan (80px) KISA olduğu
+       için başlığın üst kısmı navbar'ın arkasında kalıp kesiliyordu.
+       calc() ile navbar yüksekliğini baz alıyoruz; navbar boyutu
+       ileride değişse bile bu asla yetersiz kalmaz. */
+    padding: calc(var(--navbar-height) + 1.5rem) 0 3rem;
     min-height: auto;
   }
 

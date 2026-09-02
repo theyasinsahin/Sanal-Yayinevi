@@ -1,6 +1,6 @@
-# 🪶 Quill - Sanal Yayınevi ve Kitle Fonlama Platformu
+# 🪶 Betik - Sanal Yayınevi ve Kitle Fonlama Platformu
 
-Quill, yazarların kitaplarını dijital ortamda yazıp yayınlayabildiği, okurların ise bu kitapları okuyup beğendikleri eserlerin basılması için maddi destekte bulunabildiği (Crowdfunding) modern bir platformdur.
+Betik, yazarların kitaplarını dijital ortamda yazıp yayınlayabildiği, okurların ise bu kitapları okuyup beğendikleri eserlerin basılması için maddi destekte bulunabildiği (Crowdfunding) modern bir platformdur.
 
 ![Project Status](https://img.shields.io/badge/Status-Development-orange)
 ![License](https://img.shields.io/badge/License-MIT-blue)
@@ -91,4 +91,4 @@ CLOUDINARY_URL=cloudinary://...
 CLIENT_URL=http://localhost:3000
 ```
 
-Quill © 2026 - Tüm Hakları Saklıdır.
+Betik © 2026 - Tüm Hakları Saklıdır.

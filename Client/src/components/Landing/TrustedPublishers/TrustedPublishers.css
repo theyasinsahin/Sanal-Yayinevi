@@ -123,10 +123,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--paper-white);
-  border: 2px solid var(--fog);
-  border-radius: 6px;
-  padding: 1.5rem;
+  padding: 1rem;
   box-shadow: var(--shadow-sm);
   transition: all 0.4s ease;
   position: relative;
@@ -138,11 +135,8 @@
   content: '';
   position: absolute;
   inset: 0;
-  opacity: 0.08;
   pointer-events: none;
-  background-image: 
-    url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E");
-}
+ }
 
 /* Corner fold effect */
 .logo-wrapper::after {
@@ -152,11 +146,7 @@
   right: 0;
   width: 0;
   height: 0;
-  border-style: solid;
-  border-width: 0 15px 15px 0;
-  border-color: transparent var(--cream) transparent transparent;
   filter: drop-shadow(-1px 1px 2px rgba(26, 26, 26, 0.1));
-  opacity: 0;
   transition: opacity 0.4s ease;
 }
 
@@ -171,7 +161,6 @@
 
 .publisher-logo-link:hover .logo-wrapper {
   background-color: var(--aged-paper);
-  border-color: var(--ink-black);
   box-shadow: 
     var(--shadow-md),
     0 0 0 1px var(--ash-gray);
@@ -182,10 +171,6 @@
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  filter: 
-    grayscale(100%) 
-    contrast(1.2) 
-    brightness(0.85);
   opacity: 0.7;
   transition: all 0.5s ease;
   position: relative;
@@ -194,11 +179,7 @@
 
 /* Hover - slightly less faded */
 .publisher-logo-link:hover .publisher-img {
-  filter: 
-    grayscale(100%) 
-    contrast(1.3) 
-    brightness(0.75);
-  opacity: 0.9;
+  opacity: 1;
   transform: scale(1.05);
 }
 

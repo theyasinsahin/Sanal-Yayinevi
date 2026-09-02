@@ -1,0 +1,610 @@
+/* src/pages/SessionDetail/SessionDetail.css */
+
+/* --- TEMEL DEĞİŞKENLER & AYARLAR --- */
+:root {
+  --sd-bg-page: #f9fafb;
+  --sd-bg-card: #ffffff;
+  --sd-border: #e5e7eb;
+  --sd-text-main: #111827;
+  --sd-text-muted: #6b7280;
+  --sd-text-light: #9ca3af;
+  --sd-primary: #2563eb;
+  --sd-primary-hover: #1d4ed8;
+  --sd-danger: #ef4444;
+  --sd-danger-hover: #dc2626;
+  --sd-radius: 12px;
+  --sd-max-width: 800px; /* Okunabilirlik için ideal maksimum genişlik */
+}
+
+
+.session-detail {
+  padding: 40px 0 80px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 4rem; /* Navbar'ın üstüne gelmesini engellemek için */
+}
+
+/* Sadece bu sayfa için kapsayıcıyı daraltıyoruz ki yazılar çok uzayıp göz yormasın */
+.session-detail > div {
+  max-width: var(--sd-max-width);
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* --- GERİ BUTONU --- */
+.session-detail-back {
+  background: none;
+  border: none;
+  color: var(--sd-text-muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+}
+
+.session-detail-back:hover {
+  color: var(--sd-text-main);
+}
+
+/* --- KAHRAMAN ALANI (HERO / BAŞLIK) --- */
+.session-detail-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.session-detail-hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.session-detail-tag {
+  font-size: 0.85rem;
+  color: var(--sd-primary);
+  background: rgba(37, 99, 235, 0.1);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.session-detail-hero-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.session-detail-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--sd-text-main);
+  line-height: 1.2;
+  margin: 0;
+  letter-spacing: -0.02em;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
+}
+
+.session-detail-description {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: var(--sd-text-muted);
+  margin: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Hero Yazar Bilgisi */
+.session-detail-hero-footer {
+  margin-top: 12px;
+}
+
+.session-detail-author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.session-detail-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--sd-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: var(--sd-text-muted);
+}
+
+.session-detail-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.session-detail-author-name {
+  font-weight: 600;
+  color: var(--sd-text-main);
+}
+
+.session-detail-author-sep {
+  color: var(--sd-border);
+}
+
+.session-detail-participant-count {
+  color: var(--sd-text-muted);
+  font-size: 0.9rem;
+}
+
+.session-detail-divider {
+  width: 100%;
+  height: 1px;
+  background-color: var(--sd-border);
+  margin: 0 0 40px 0;
+}
+
+/* --- YAZI GÖNDERME ALANI (COMPOSER) --- */
+.entry-composer {
+  background: var(--sd-bg-card);
+  border: 1px solid var(--sd-border);
+  border-radius: var(--sd-radius);
+  padding: 16px;
+  margin-bottom: 40px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.entry-composer:focus-within {
+  border-color: var(--sd-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.entry-composer-input {
+  width: 100%;
+  border: none;
+  resize: none;
+  outline: none;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--sd-text-main);
+  background: transparent;
+  font-family: inherit;
+  min-height: 80px;
+}
+
+.entry-composer-input::placeholder {
+  color: var(--sd-text-light);
+}
+
+.entry-composer-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--sd-border);
+}
+
+.entry-composer-hint {
+  font-size: 0.85rem;
+  color: var(--sd-text-light);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.entry-composer-hint kbd {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-family: inherit;
+  font-size: 0.75rem;
+  color: var(--sd-text-muted);
+}
+
+/* --- YAZI KARTLARI (ENTRY CARD) --- */
+.session-entries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.entry-card {
+  background: var(--sd-bg-card);
+  border: 1px solid var(--sd-border);
+  border-radius: var(--sd-radius);
+  padding: 24px 32px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.entry-card:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+.entry-card--own {
+  border-left: 4px solid var(--sd-primary); /* Kullanıcının kendi yazısını ayırıcı özellik */
+}
+
+/* Yazar Üst Bilgisi */
+.entry-card-author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.entry-card-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--sd-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: var(--sd-text-muted);
+  flex-shrink: 0;
+}
+
+.entry-card-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.entry-card-author-info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.entry-card-name {
+  font-weight: 600;
+  color: var(--sd-text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.entry-card-name > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.entry-card-own-tag {
+  background: var(--sd-primary);
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.entry-card-date {
+  font-size: 0.85rem;
+  color: var(--sd-text-light);
+  margin-top: 2px;
+}
+
+/* Seçenekler Menüsü */
+.entry-card-menu-wrapper {
+  position: relative;
+}
+
+.entry-card-menu-btn {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--sd-text-light);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.entry-card-menu-btn:hover {
+  background: #f3f4f6;
+  color: var(--sd-text-main);
+}
+
+.entry-card-menu-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid var(--sd-border);
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  padding: 4px;
+  min-width: 120px;
+  z-index: 10;
+}
+
+.entry-card-menu-item {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.entry-card-menu-item--danger {
+  color: var(--sd-danger);
+}
+
+.entry-card-menu-item--danger:hover {
+  background: #fef2f2;
+}
+
+/* Yazı İçeriği (Makale Görünümü) */
+.entry-card-content {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #374151; /* Daha yumuşak bir siyah, okuması kolay */
+  white-space: pre-wrap; /* Paragraf boşluklarını korur */
+  word-wrap: break-word;
+  margin-bottom: 24px;
+}
+
+/* Alt Aksiyonlar */
+.entry-card-footer {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid #f3f4f6;
+  padding-top: 16px;
+}
+
+.entry-card-like-btn {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--sd-text-muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+}
+
+.entry-card-like-btn:hover {
+  background: #fef2f2;
+  color: var(--sd-danger);
+}
+
+.entry-card-like-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.entry-card-like-btn--liked {
+  color: var(--sd-danger);
+}
+
+.entry-card-like-btn--liked .entry-card-like-icon {
+  transform: scale(1.1);
+}
+
+/* --- ÖZEL OTURUM GİRİŞİ (ACCESS GATE) --- */
+.session-access-gate {
+  min-height: calc(100vh - var(--navbar-height));
+  
+  display: flex;
+  justify-content: center;
+
+  align-items: flex-start;
+
+  padding-top: 6rem;
+  padding-bottom: 4rem;
+  padding-left: 16px;
+  padding-right: 16px;
+  box-sizing: border-box;
+}
+
+.session-access-gate-inner {
+  background: var(--sd-bg-card);
+  border: 1px solid var(--sd-border);
+  border-radius: var(--sd-radius);
+  padding: 40px;
+  max-width: 400px;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 3rem;
+}
+
+.session-access-icon {
+  font-size: 3rem;
+  margin-bottom: 8px;
+}
+
+.session-access-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--sd-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+  text-align: center;
+  letter-spacing: 2px;
+}
+
+.session-access-input:focus {
+  border-color: var(--sd-primary);
+}
+
+.session-access-error {
+  text-align: center;
+  margin-top: -20px;
+  margin-bottom: 20px;
+}
+
+/* --- YÜKLENİYOR & İSKELETLER (SKELETONS) --- */
+.entry-card-skeleton {
+  height: 200px;
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--sd-radius);
+  margin-bottom: 32px;
+}
+
+.session-detail-skeleton-header {
+  height: 120px;
+  max-width: 600px;
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+  margin-bottom: 40px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* --- BOŞ DURUMLAR --- */
+.session-entries-empty {
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--sd-bg-card);
+  border: 1px dashed var(--sd-border);
+  border-radius: var(--sd-radius);
+}
+
+.session-detail-not-found {
+  min-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.session-closed-banner {
+  margin-top: 40px;
+  padding: 16px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+}
+
+/* --- RESPONSIVE TASARIM --- */
+@media (max-width: 640px) {
+  .session-detail {
+    padding: 20px 16px 60px;
+    margin-top: 5rem;
+  }
+
+  .session-access-gate {
+    padding-top: 3rem;
+  }
+
+  .session-access-gate-inner {
+    padding: 28px 20px;
+  }
+
+  .session-detail-hero {
+    margin-bottom: 28px;
+  }
+
+  .session-detail-hero-title-row {
+    gap: 12px;
+  }
+
+  .session-detail-hero-title-row .btn,
+  .session-detail-hero-title-row button {
+    flex-shrink: 0;
+  }
+
+  .entry-composer {
+    padding: 12px;
+    margin-bottom: 28px;
+  }
+
+  .entry-card {
+    padding: 20px 16px;
+  }
+
+  .entry-card-author {
+    gap: 10px;
+  }
+
+  .entry-card-avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .session-detail-title {
+    font-size: 1.75rem;
+  }
+  
+  .entry-card-content {
+    font-size: 1rem;
+  }
+  
+  .entry-composer-hint {
+    display: none; /* Mobilde klavye kısayolu ipucunu gizle */
+  }
+
+  .session-entries-list {
+    gap: 20px;
+  }
+
+  .session-detail-skeleton-header {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .session-detail {
+    padding: 16px 12px 48px;
+  }
+
+  .entry-card {
+    padding: 16px 12px;
+  }
+
+  .session-detail-title {
+    font-size: 1.5rem;
+  }
+}

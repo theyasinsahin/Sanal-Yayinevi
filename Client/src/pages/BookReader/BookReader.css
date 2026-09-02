@@ -61,6 +61,25 @@
   box-shadow: var(--shadow-md);
 }
 
+.sidebar-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  padding: 0.4rem 0;
+  margin-bottom: 1rem;
+  transition: color 0.2s;
+  width: 100%;
+}
+
+.sidebar-back-btn:hover {
+  color: var(--text-default);
+}
+
 /* Paper texture on sidebar */
 .chapters-sidebar::before {
   content: '';
@@ -597,6 +616,41 @@
   .reader-book-mode {
     margin-left: 280px;
   }
+}
+
+/* BookReader.css'e ekle */
+.idle-warning-banner {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a2e;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.88rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  z-index: 999;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+.idle-warning-banner button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 @media (max-width: 768px) {

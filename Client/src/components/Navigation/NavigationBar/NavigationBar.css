@@ -64,11 +64,11 @@
 }
 
 /* Logo icon - vintage book/quill */
-.logo-icon {
-  font-size: 2rem;
-  color: var(--ink-black);
-  filter: drop-shadow(1px 1px 0 rgba(26, 26, 26, 0.1));
-}
+/*.logo-icon {
+    background-image: url('/images/betik.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+}*/
 
 /* Logo text - classic typography */
 .logo-text {
@@ -271,6 +271,71 @@
 /* Helper Classes */
 .h-full {
   height: 100%;
+}
+
+/* --- MESAJ / BİLDİRİM İKON BUTONU --- */
+.nav-icon-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 4px;
+  background-color: var(--cream);
+  border: 2px solid var(--fog);
+  color: var(--ink-black);
+  text-decoration: none;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+}
+
+/* profile-btn ile aynı inner border efekti */
+.nav-icon-btn::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid var(--ash-gray);
+  opacity: 0.5;
+}
+
+.nav-icon-btn:hover {
+  background-color: var(--ink-black);
+  border-color: var(--ink-black);
+  color: var(--paper-white);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.nav-icon-btn:hover::before {
+  border-color: var(--paper-white);
+}
+
+.nav-icon-btn svg {
+  font-size: 1.4rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* Okunmamış badge */
+.nav-icon-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 99px;
+  background: #1D9E75;
+  color: #E1F5EE;
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  border: 2px solid var(--paper-white);
+  line-height: 1;
 }
 
 /* Bookmark indicator for current page */

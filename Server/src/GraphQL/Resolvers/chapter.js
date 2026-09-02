@@ -1,7 +1,8 @@
 import * as ChapterService from '../../services/chapterService.js';
 import * as UserService from '../../services/userService.js';
 import * as BookService from '../../services/bookService.js';
-import { authenticateUser } from '../../utils/auth.js';
+import * as BookFollowService from '../../services/bookFollowService.js';
+
 
 export default {
   Query: {
@@ -25,29 +26,32 @@ export default {
   },
 
     Mutation: {
-        createChapter: async (_, { bookId, title, content, pageCount }, { req, User }) => {
-            const user = await authenticateUser(req, User);
-            if (!user) throw new Error("Giriş yapmalısınız.");
+        createChapter: async (_, { bookId, title, content, pageCount }, { user }) => {
+  if (!user) throw new Error("Giriş yapmalısınız.");
 
-            // Yetki Kontrolü
-            const book = await BookService.findBookById(bookId);
-            if (!book) throw new Error("Kitap bulunamadı.");
-            
-            if (book.authorId.toString() !== user._id.toString() && user.role !== 'ADMIN') {
-                throw new Error("Yetkiniz yok.");
-            }
+  const book = await BookService.findBookById(bookId);
+  if (!book) throw new Error("Kitap bulunamadı.");
+  
+  if (book.authorId.toString() !== user._id.toString() && user.role !== 'ADMIN') {
+    throw new Error("Yetkiniz yok.");
+  }
 
-            return ChapterService.createChapter({
-                bookId,
-                title,
-                content,
-                pageCount: pageCount || 0,
-                authorId: user._id
-            });
-        },
+  const chapter = await ChapterService.createChapter({
+    bookId,
+    title,
+    content,
+    pageCount: pageCount || 0,
+    authorId: user._id
+  });
 
-        updateChapter: async (_, { chapterId, title, content, pageCount }, { req, User }) => {
-            const user = await authenticateUser(req, User);
+  // Takipçilere bildirim gönder — await etmiyoruz, kullanıcıyı bekletmesin
+  BookFollowService.notifyBookFollowers(bookId, title, book.title)
+    .catch(err => console.error('Bildirim gönderilemedi:', err));
+
+  return chapter;
+},
+
+        updateChapter: async (_, { chapterId, title, content, pageCount }, { user }) => {
             if (!user) throw new Error("Giriş yapmalısınız.");
 
             const chapter = await ChapterService.findChapterById(chapterId);
@@ -66,8 +70,7 @@ export default {
             });
         },
 
-        deleteChapter: async (_, { id }, { req, User }) => {
-            const user = await authenticateUser(req, User);
+        deleteChapter: async (_, { id }, { user }) => {
             if (!user) throw new Error("Giriş yapmalısınız.");
 
             const chapter = await ChapterService.findChapterById(id);

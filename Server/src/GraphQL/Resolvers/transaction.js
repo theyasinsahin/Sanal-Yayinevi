@@ -4,8 +4,7 @@ import { authenticateUser } from '../../utils/auth.js';
 
 export default {
     Query: {
-        getMyTransactions: async (_, __, { req, User }) => {
-            const user = await authenticateUser(req, User);
+        getMyTransactions: async (_, __, { user }) => {
             if (!user) throw new Error("Giriş yapmalısınız.");
             
             // Servis üzerinden kullanıcının işlemlerini getir
@@ -27,12 +26,14 @@ export default {
                 .populate('bookId')   // Hangi Kitaba (Book)
                 .sort({ createdAt: -1 }); // En yeniden eskiye
         },
+        
+        getBookBackers: async (_, { bookId }) => {
+            return TransactionService.findBackersByBookId(bookId);
+        },
     },
 
     Mutation: {
-        initializePayment: async (_, { bookId, amount }, { req, User }) => {
-            // 1. Kullanıcı Doğrulama
-            const user = await authenticateUser(req, User);
+        initializePayment: async (_, { bookId, amount }, { user, req }) => {
             if (!user) throw new Error("Ödeme yapmak için giriş yapmalısınız.");
 
             // 2. Kitap Kontrolü

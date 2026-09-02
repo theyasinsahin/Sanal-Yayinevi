@@ -6,25 +6,37 @@ import {
   Email, 
   Lock, 
   HowToReg, 
-  AlternateEmail 
+  AlternateEmail,
+  VpnKey 
 } from '@mui/icons-material';
 
 // --- GRAPHQL & UTILS ---
-import { REGISTER } from '../../../graphql/mutations/user';
+import { REGISTER, SEND_REGISTRATION_CODE } from '../../../graphql/mutations/user';
+
+import PasswordStrengthIndicator from '../../../components/UI/PasswordStrengthIndicator';
+import { validatePassword } from '../../../utils/PasswordValidation';
 
 // --- UI KIT IMPORTS ---
 import { Typography } from '../../../components/UI/Typography';
 import { Button } from '../../../components/UI/Button';
 import { Input } from '../../../components/UI/Input';
 import { Container } from '../../../components/UI/Container';
+import { GoogleLogin } from '@react-oauth/google';
 
-// CSS (AuthPages.css ortak kullanılıyor)
 import '../AuthPages.css';
 import { MainLayout } from '../../../components/Layout/MainLayout';
+
+// Google'ın redirect ux_mode'unda credential'ı POST edeceği backend endpoint'i.
+// Bu domain, Google Cloud Console'daki OAuth Client ID'nin
+// "Authorized JavaScript origins" listesinde olmalı.
+const GOOGLE_LOGIN_URI = 'http://localhost:5000/auth/google/callback';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
   
+  // --- STATE'LER ---
+  const [step, setStep] = useState(1); // 1: Form, 2: Doğrulama
+  const [verificationCode, setVerificationCode] = useState('');
   const [formData, setFormData] = useState({
     username: '',
     fullName: '',
@@ -32,163 +44,258 @@ const RegisterPage = () => {
     password: '',
   });
 
-  // Checkbox state'i (Form submit için gerekli olabilir)
-  const [termsAccepted, setTermsAccepted] = useState(true);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  
+  // Backend'den dönen özel { code, message } yanıtlarını tutmak için
+  const [customError, setCustomError] = useState('');
+  const [customSuccess, setCustomSuccess] = useState('');
 
-  const [register, { loading, error, data }] = useMutation(REGISTER);
+  // --- MUTATION'LAR ---
+  const [sendCode, { loading: codeLoading, error: codeError }] = useMutation(SEND_REGISTRATION_CODE);
+  const [register, { loading: regLoading, error: regError }] = useMutation(REGISTER);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  // 1. ADIM: E-posta Gönderme
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!termsAccepted) {
-      alert("Lütfen kullanım koşullarını kabul edin.");
+    setCustomError(''); // Yeni istek öncesi eski hataları temizle
+
+    if (!termsAccepted) return alert("Lütfen kullanım koşullarını kabul edin.");
+
+    // Şifre validasyonu
+    const { isValid } = validatePassword(formData.password);
+    if (!isValid) {
+      setCustomError("Şifreniz gereken koşulları sağlamıyor.");
       return;
     }
 
     try {
-      const res = await register({ variables: formData });
+      const res = await sendCode({ 
+        variables: { email: formData.email, username: formData.username } 
+      });
       
-      // Kayıt başarılıysa 2 saniye sonra login'e at
-      if (res.data && res.data.register) {
-        setTimeout(() => {
-            navigate('/login');
-        }, 2000);
+      const result = res.data.sendRegistrationCode;
+
+      // Backend 200 (başarılı) döndüyse 2. adıma geç
+      if (result.code === 200) {
+        setStep(2); 
+      } else {
+        // Backend 400 (hata) döndüyse mesajı ekrana yazdır
+        setCustomError(result.message);
       }
     } catch (err) {
-      console.error("Kayıt hatası:", err.message);
+      // GraphQL isteği hiç gidemezse (örn. internet kopukluğu)
+      setCustomError("Sunucuya ulaşılamıyor: " + err.message);
+    }
+  };
+
+  // 2. ADIM: Kod Onayı ve Gerçek Kayıt
+  const handleVerifySubmit = async (e) => {
+    e.preventDefault();
+    setCustomError('');
+
+    try {
+      const res = await register({ 
+        variables: { ...formData, code: verificationCode } 
+      });
+      
+      const result = res.data.register;
+
+      if (result.code === 200) {
+        // Kayıt başarılıysa başarı mesajını göster ve giriş sayfasına at
+        setCustomSuccess(result.message);
+        setTimeout(() => navigate('/login'), 2000);
+      } else {
+        // Geçersiz kod vb. durumlarda hatayı ekrana bas
+        setCustomError(result.message);
+      }
+    } catch (err) {
+      setCustomError("Sunucuya ulaşılamıyor: " + err.message);
     }
   };
 
   return (
     <MainLayout>
-    <div className="auth-page-wrapper">
-      <Container maxWidth="lg">
-        <div className="auth-card">
-          
-          {/* --- Header --- */}
-          <div className="auth-header">
-            <div className="auth-icon-circle">
-              <HowToReg fontSize="large" style={{ color: '#8b4513' }} />
-            </div>
-            <Typography variant="h3" weight="bold" className="text-center mb-2">
-              Yeni Hesap Oluştur
-            </Typography>
-            <Typography variant="body" color="muted" className="text-center">
-              Quill ailesine katılmak için bilgilerinizi girin
-            </Typography>
-          </div>
-
-          {/* --- Mesajlar (Hata / Başarı) --- */}
-          {error && (
-            <div className="auth-error-box">
-              <Typography variant="small" color="danger">
-                {error.message || "Kayıt işlemi başarısız oldu."}
-              </Typography>
-            </div>
-          )}
-
-          {data && (
-            <div className="auth-success-box">
-              <Typography variant="body" className="success-text">
-                🎉 Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz...
-              </Typography>
-            </div>
-          )}
-
-          {/* --- Form --- */}
-          <form onSubmit={handleSubmit} className="auth-form">
+      <div className="auth-page-wrapper">
+        <Container maxWidth="lg">
+          <div className="auth-card">
             
-            {/* İki input yan yana (Ad Soyad - Kullanıcı Adı) */}
-            <div className="form-row">
-              <Input
-                label="Tam Adınız"
-                name="fullName"
-                placeholder="Ad Soyad"
-                value={formData.fullName}
-                onChange={handleChange}
-                icon={<Person fontSize="small" />}
-                required
-                disabled={loading}
-              />
-              
-              <Input
-                label="Kullanıcı Adı"
-                name="username"
-                placeholder="kullaniciadi"
-                value={formData.username}
-                onChange={handleChange}
-                icon={<AlternateEmail fontSize="small" />}
-                required
-                disabled={loading}
-              />
+            <div className="auth-header">
+              <div className="auth-icon-circle">
+                <HowToReg fontSize="large" style={{ color: '#8b4513' }} />
+              </div>
+              <Typography variant="h3" weight="bold" className="text-center mb-2">
+                {step === 1 ? "Yeni Hesap Oluştur" : "E-postanı Doğrula"}
+              </Typography>
+              <Typography variant="body" color="muted" className="text-center">
+                {step === 1 
+                  ? "Betik ailesine katılmak için bilgilerinizi girin" 
+                  : `${formData.email} adresine gönderilen kodu girin.`}
+              </Typography>
             </div>
 
-            <Input
-              label="E-Posta"
-              name="email"
-              type="email"
-              placeholder="ornek@email.com"
-              value={formData.email}
-              onChange={handleChange}
-              icon={<Email fontSize="small" />}
-              required
-              disabled={loading}
-            />
+            {/* HATA MESAJLARI (Backend Custom Error VEYA GraphQL Network Error) */}
+            {(codeError || regError || customError) && (
+              <div className="auth-error-box">
+                <Typography variant="small" color="danger">
+                  {customError || codeError?.message || regError?.message || "Bir sorun oluştu."}
+                </Typography>
+              </div>
+            )}
 
-            <Input
-              label="Şifre"
-              name="password"
-              type="password"
-              placeholder="••••••••"
-              value={formData.password}
-              onChange={handleChange}
-              icon={<Lock fontSize="small" />}
-              required
-              disabled={loading}
-            />
+            {/* BAŞARI MESAJI */}
+            {customSuccess && (
+              <div className="auth-success-box">
+                <Typography variant="body" className="success-text">
+                  🎉 {customSuccess} Yönlendiriliyorsunuz...
+                </Typography>
+              </div>
+            )}
 
-            {/* Terms Checkbox (Özel UI Input olmadığı için HTML+CSS kullanıyoruz) */}
-            <div className="terms-wrapper">
-              <input 
-                type="checkbox" 
-                id="terms" 
-                className="terms-checkbox"
-                checked={termsAccepted}
-                onChange={(e) => setTermsAccepted(e.target.checked)}
-                required 
-              />
-              <label htmlFor="terms" className="terms-label">
-                <Link to="/kullanim-kosullari" className="link">Kullanım Koşulları</Link>'nı okudum ve kabul ediyorum.
-              </label>
-            </div>
+            {/* --- ADIM 1: KAYIT FORMU --- */}
+            {step === 1 && (
+              <form onSubmit={handleRegisterSubmit} className="auth-form">
+                {/* DÜZELTME: Google butonu ve "VEYA E-POSTA İLE" ayırıcısı
+                    önceden yanlışlıkla .form-row (2 sütunlu grid) içindeydi.
+                    Bu yüzden CSS Grid onları da otomatik olarak sütunlara
+                    yerleştiriyordu: 1. satır [Google | Ayırıcı],
+                    2. satır [Tam Adınız | Kullanıcı Adı]. Ayırıcı metni
+                    2 satıra sarınca o satırın yüksekliği değişiyor ve
+                    Tam Adınız / Kullanıcı Adı farklı hizalarda başlıyordu.
+                    Artık form-row SADECE gerçekten yan yana olması gereken
+                    iki input'u sarmalıyor; Google butonu ve ayırıcı kendi
+                    tam genişlikte satırlarında. */}
+                <div className="google-auth-wrapper mb-4">
+                  {/* ux_mode="redirect": popup + postMessage yerine gerçek sayfa
+                      yönlendirmesi kullanır (COOP sorununu tamamen ortadan
+                      kaldırır). useOneTap kaldırıldı — o da iframe/postMessage
+                      tabanlı olduğu için aynı türde sorunlara açıktı. */}
+                  <GoogleLogin
+                      ux_mode="redirect"
+                      login_uri={GOOGLE_LOGIN_URI}
+                      onError={() => setCustomError("Google penceresi açılamadı veya iptal edildi.")}
+                  />
+                </div>
 
-            <Button 
-              type="submit" 
-              variant="primary" 
-              size="large" 
-              isLoading={loading}
-              className="w-full"
-            >
-              Kayıt Ol
-            </Button>
+                <div className="auth-divider">
+                    <span className="divider-text">VEYA E-POSTA İLE</span>
+                </div>
+
+                <div className="form-row">
+                  <Input 
+                    label="Tam Adınız" 
+                    name="fullName" 
+                    value={formData.fullName} 
+                    onChange={handleChange} 
+                    icon={<Person fontSize="small" />} 
+                    required 
+                    disabled={codeLoading} 
+                  />
+                  <Input 
+                    label="Kullanıcı Adı" 
+                    name="username" 
+                    value={formData.username} 
+                    onChange={handleChange} 
+                    icon={<AlternateEmail fontSize="small" />} 
+                    required 
+                    disabled={codeLoading} 
+                  />
+                </div>
+                <Input 
+                  label="E-Posta" 
+                  name="email" 
+                  type="email" 
+                  value={formData.email} 
+                  onChange={handleChange} 
+                  icon={<Email fontSize="small" />} 
+                  required 
+                  disabled={codeLoading} 
+                />
+                <Input 
+                  label="Şifre" 
+                  name="password" 
+                  type="password" 
+                  value={formData.password} 
+                  onChange={handleChange} 
+                  icon={<Lock fontSize="small" />} 
+                  required 
+                  disabled={codeLoading} 
+                />
+                <PasswordStrengthIndicator password={formData.password} />
+                
+                <div className="terms-wrapper">
+                  <input 
+                    type="checkbox" 
+                    id="terms" 
+                    checked={termsAccepted} 
+                    onChange={(e) => setTermsAccepted(e.target.checked)} 
+                    required 
+                  />
+                  <label htmlFor="terms" className="terms-label">
+                    <Link to="/kullanim-kosullari" className="link">Kullanım Koşulları</Link>'nı kabul ediyorum.
+                  </label>
+                </div>
+
+                <Button 
+                  type="submit" 
+                  variant="primary" 
+                  size="large" 
+                  isLoading={codeLoading} 
+                  className="w-full"
+                >
+                  Doğrulama Kodu Gönder
+                </Button>
+              </form>
+            )}
+
+            {/* --- ADIM 2: KOD ONAY FORMU --- */}
+            {step === 2 && (
+              <form onSubmit={handleVerifySubmit} className="auth-form">
+                <Input
+                  label="Doğrulama Kodu"
+                  name="code"
+                  placeholder="000000"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value)}
+                  icon={<VpnKey fontSize="small" />}
+                  required
+                  disabled={regLoading || customSuccess !== ''} // Başarıdan sonra formu kilitle
+                />
+                <Button 
+                  type="submit" 
+                  variant="primary" 
+                  size="large" 
+                  isLoading={regLoading} 
+                  className="w-full"
+                  disabled={customSuccess !== ''}
+                >
+                  Kayıt İşlemini Tamamla
+                </Button>
+                <Button 
+                  variant="text" 
+                  onClick={() => {
+                    setStep(1);
+                    setCustomError(''); // Geri dönerken hataları temizle
+                  }} 
+                  className="w-full mt-2" 
+                  disabled={regLoading || customSuccess !== ''}
+                >
+                  Bilgileri Düzenle
+                </Button>
+              </form>
+            )}
 
             <div className="auth-footer">
               <Typography variant="body" color="muted">
-                Zaten hesabın var mı?{' '}
-                <Link to="/login" className="register-link">
-                  Giriş Yap
-                </Link>
+                Zaten hesabın var mı? <Link to="/login" className="register-link">Giriş Yap</Link>
               </Typography>
             </div>
-
-          </form>
-        </div>
-      </Container>
-    </div>
+          </div>
+        </Container>
+      </div>
     </MainLayout>
   );
 };

@@ -1,8 +1,11 @@
 .book-grid {
   display: grid;
-  /* DEĞİŞİKLİK: 280px -> 160px yaptık. Artık yan yana daha çok kart sığacak. */
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem; /* Boşluğu da biraz azalttık (2rem -> 1.5rem) */
+  /* 280px -> 200px: aynı satırda daha fazla kart sığıyor (ör. 950px'lik
+     bir içerik alanında 3 yerine 4-5 kart). Kartın içeriği artık
+     BookCard.css'teki container query'ler sayesinde bu genişliklerde de
+     sıkışmadan okunaklı kalıyor. */
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.25rem;
   width: 100%;
 }
 
@@ -12,4 +15,40 @@
   background-color: #F9FAFB;
   border-radius: var(--radius-md);
   border: 1px dashed #E5E7EB;
+}
+
+/* --- TABLET / KÜÇÜLEN SIDEBAR ALANI --- */
+/* FeedPage'de sidebar 1024px altında daralıyor ama layout hâlâ 2 sütunlu
+   (sidebar + main); burada da min kart genişliğini biraz düşürerek
+   sütun sayısının gereksiz yere 1'e düşmesini engelliyoruz. */
+@media (max-width: 1024px) {
+  .book-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.1rem;
+  }
+}
+
+/* --- MOBİL --- */
+/* 280px'lik minimum kart genişliği, telefon ekranında (~360-400px)
+   tek sütuna sıkışıp kartın devasa görünmesine sebep oluyordu
+   (bkz. "Öne Çıkan Yazılar" ekran görüntüsü). Telefon genişliklerinde
+   sabit 2 sütuna geçiyoruz — kart boyutu makul kalıyor, kaydırma
+   deneyimi de tanıdık bir kitaplık/mağaza ızgarası gibi oluyor. */
+@media (max-width: 640px) {
+  .book-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.85rem;
+  }
+}
+
+/* Çok dar ekranlarda (küçük telefonlar) 2 sütun bile sıkışık kalabiliyor,
+   tek sütuna düş ama kart genişliğini ekranın tamamına değil, ortalanmış
+   makul bir genişliğe sınırla. */
+@media (max-width: 360px) {
+  .book-grid {
+    grid-template-columns: 1fr;
+    max-width: 260px;
+    margin: 0 auto;
+    gap: 1rem;
+  }
 }

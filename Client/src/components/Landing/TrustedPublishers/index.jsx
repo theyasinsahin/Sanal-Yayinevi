@@ -11,28 +11,64 @@ const TrustedPublishers = () => {
   const publishers = [
     {
       id: 1,
-      name: "Klasik Kitap",
-      logo: "/images/publishers/klasik.png",
-      website: "https://ornekyayinevi1.com"
+      name: "Can Yayınları",
+      logo: "/images/publishers/can-yayinlari.png",
+      website: "https://www.canyayinlari.com/"
     },
     {
       id: 2,
-      name: "Modern Yayınlar",
-      logo: "/images/publishers/modern.png",
-      website: "https://ornekyayinevi2.com"
+      name: "İthaki Yayınları",
+      logo: "/images/publishers/ithaki-yayinlari.png",
+      website: "https://www.ithakiyayingrubu.com/"
     },
     {
       id: 3,
-      name: "Bilim Kurgu Yayın",
-      logo: "/images/publishers/bilimkurgu.png",
-      website: "https://ornekyayinevi3.com"
+      name: "Nesin Yayınevi",
+      logo: "/images/publishers/nesin-yayinlari-logo.png",
+      website: "https://www.nesinyayinevi.com/"
     },
     {
       id: 4,
-      name: "Anadolu Kitaplığı",
-      logo: "/images/publishers/anadolu.png",
-      website: "https://ornekyayinevi4.com"
-    }
+      name: "Melekler Yayıncılık",
+      logo: "/images/publishers/logo-melekler-2022-son-.avif",
+      website: "https://www.melekleryayincilik.com/"
+    },
+    {
+      id: 5,
+      name: "Ketebe Yayınları",
+      logo: "/images/publishers/ketebe-logo-min.svg",
+      website: "https://www.ketebe.com/"
+    },
+    {
+      id: 6,
+      name: "İletişim Yayınları",
+      logo: "/images/publishers/iletisim-yayinlari.png",
+      website: "https://iletisim.com.tr/"
+    },
+    {
+      id: 7,
+      name: "tubitak-yayinlari",
+      logo: "/images/publishers/tubitak-yayinlari.png",
+      website: "https://yayinlar.tubitak.gov.tr/"
+    },
+    {
+      id: 8,
+      name: "Yapı Kredi Yayınları",
+      logo: "/images/publishers/yky-yayinlari.jfif",
+      website: "https://www.yapikrediyayinlari.com.tr/"
+    },/*
+    {
+      id: 9,
+      name: "Pegasus Yayınları",
+      logo: "/images/publishers/pegasus-yayinlari.png",
+      website: "https://www.pegasusyayinlari.com/"
+    },
+    {
+      id: 10,
+      name: "Kronik Kitap",
+      logo: "/images/publishers/kronik-kitap.png",
+      website: "https://www.kronikkitap.com/"
+    }*/
   ];
 
   return (

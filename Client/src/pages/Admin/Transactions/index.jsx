@@ -24,8 +24,6 @@ const AdminTransactions = () => {
     return new Date(parseInt(dateString)).toLocaleDateString('tr-TR', options);
   };
 
-  console.log('Transactions:', transactions);
-
   return (
     <AdminLayout title="Finansal İşlemler">
       

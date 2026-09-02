@@ -1,0 +1,15 @@
+# bookFollow.graphql
+
+type Query {
+  isFollowingBook(bookId: ID!): Boolean!
+  getFollowedBooks: [Book]
+}
+
+type Mutation {
+  toggleBookFollow(bookId: ID!): ToggleBookFollowResult!
+}
+
+type ToggleBookFollowResult {
+  isFollowing: Boolean!
+  followCount: Int!
+}

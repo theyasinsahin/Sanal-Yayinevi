@@ -1,0 +1,71 @@
+# src/graphql/typeDefs/score.graphql
+
+type UserScore {
+  id: ID!
+  userId: User
+  totalPoints: Int
+  dailyPoints: Int
+  weeklyPoints: Int
+  monthlyPoints: Int
+  stats: ScoreStats
+  createdAt: String
+}
+
+type ScoreStats {
+  quotesCreated: Int
+  commentsCreated: Int
+  repostsCreated: Int
+  booksPublished: Int
+  chaptersAdded: Int
+  minutesRead: Int
+}
+
+type Badge {
+  id: ID!
+  key: String!
+  name: String!
+  description: String!
+  icon: String
+}
+
+type UserBadge {
+  id: ID!
+  badge: Badge
+  earnedAt: String
+}
+
+type LeaderboardEntry {
+  rank: Int!
+  user: User
+  points: Int!
+}
+
+type UserRank {
+  rank: Int
+  points: Int
+}
+
+type Notification {
+  id: ID!
+  type: String!
+  title: String!
+  message: String!
+  icon: String
+  isRead: Boolean!
+  meta: JSON
+  createdAt: String
+}
+
+extend type Mutation {
+  addReadingMinutes(minutes: Int!): UserScore
+  markNotificationsRead: Boolean
+}
+
+extend type Query {
+  getLeaderboard(period: String): [LeaderboardEntry]
+  getUserScore(userId: ID!): UserScore
+  getUserRank(userId: ID!, period: String): UserRank
+  getUserBadges(userId: ID!): [UserBadge]
+  getNotifications: [Notification]
+  getUnreadNotificationCount: Int
+}

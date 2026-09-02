@@ -2,6 +2,7 @@ import express from 'express';
 import iyzipay from '../config/iyzico.js'; // Iyzico yapılandırman
 import Transaction from '../models/transaction.js';
 import Book from '../models/book.js';
+import Notification from '../models/notification.js';
 
 const router = express.Router();
 
@@ -38,6 +39,16 @@ router.post('/callback', async (req, res) => {
                     transaction.status = 'SUCCESS';
                     transaction.paymentProviderId = result.paymentId; // Iyzico ID'si
                     transaction.paidAt = new Date();
+                    const book = await Book.findById(transaction.bookId);
+                    await Notification.create({
+                        userId: book.authorId,
+                        type: 'FUNDING_RECEIVED',
+                        title: 'Yeni Bağış Aldın! 💰',
+                        message: `${transaction.amount} TL bağış kazandın: ${book.title}`,
+                        icon: '💰',
+                        meta: { bookId: transaction.bookId },
+                    });
+
                     await transaction.save();
 
                     // 2. Kitabın İstatistiklerini Güncelle (Para Ekle)
@@ -49,9 +60,9 @@ router.post('/callback', async (req, res) => {
                         }
                     });
                 }
-
+                
                 // 3. Frontend'e Yönlendir (Success Page)
-                return res.redirect(`${process.env.CLIENT_URL}/payment/success?tid=${transactionId}`);
+                return res.redirect(`${process.env.CLIENT_URL}/payment/success?tid=${transactionId}&bookId=${transaction.bookId}`);
 
             } catch (dbError) {
                 console.error('Veritabanı Kayıt Hatası:', dbError);

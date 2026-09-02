@@ -20,7 +20,7 @@ const AdminLayout = ({ children, title }) => {
       {/* SIDEBAR */}
       <aside className="admin-sidebar">
         <div className="admin-logo">
-          <Typography variant="h5" weight="bold" color="white">Quill Admin</Typography>
+          <Typography variant="h5" weight="bold" color="white">Betik Admin</Typography>
         </div>
         
         <nav className="admin-nav">

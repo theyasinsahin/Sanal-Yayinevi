@@ -28,11 +28,14 @@ import { Badge } from '../../components/UI/Badge';
 import { Select } from '../../components/UI/Select';
 import { CostCalculatorModal } from '../../components/Books/CostCalculatorModal';
 
+import { useAuth } from '../../context/AuthContext';
 import './BookDashboard.css';
 
 const BookDashboard = () => {
   const { bookId } = useParams();
   const navigate = useNavigate();
+
+  const { user } = useAuth();
 
   // --- QUERY & MUTATIONS ---
   const { data: bookData, loading: bookLoading, error: bookError } = useQuery(GET_BOOK_BY_ID, {
@@ -148,6 +151,7 @@ const BookDashboard = () => {
             bookId: bookId,
             title: newChapterTitle,
             content: '',
+            userId: user?.id
           },
         });
         setNewChapterTitle('');

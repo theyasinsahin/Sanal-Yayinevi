@@ -23,49 +23,45 @@ export default {
     }
   },
 
-    Mutation: {
-        createComment: async (_, { bookId, content }, { req, User }) => {
-            const user = await authenticateUser(req, User);
-            if(!user) throw new Error("Giriş yapmalısınız");
-            
-            // Kitap referansını güncelleme işini Service içindeki createComment'e ekleyebilirsin
-            // veya burada basitçe bırakabilirsin. Service'i güncellemeni öneririm.
-            return CommentService.createComment({
-                userId: user._id,
-                bookId,
-                content,
-                date: new Date().toISOString()
-            });
-        },
+  Mutation: {
+      createComment: async (_, { bookId, content }, { user }) => {
+          if(!user) throw new Error("Giriş yapmalısınız");
+          
+          // Kitap referansını güncelleme işini Service içindeki createComment'e ekleyebilirsin
+          // veya burada basitçe bırakabilirsin. Service'i güncellemeni öneririm.
+          return CommentService.createComment({
+              userId: user._id,
+              bookId,
+              content,
+              date: new Date().toISOString()
+          });
+      },
 
-        replyToComment: async (_, { bookId, content, parentCommentId }, { req, User }) => {
-            const user = await authenticateUser(req, User);
-            if(!user) throw new Error("Giriş yapmalısınız");
+      replyToComment: async (_, { bookId, content, parentCommentId }, { user }) => {
+          if(!user) throw new Error("Giriş yapmalısınız");
 
-            return CommentService.createReply(user, bookId, content, parentCommentId);
-        },
+          return CommentService.createReply(user, bookId, content, parentCommentId);
+      },
 
-        deleteComment: async (_, { id }, { req, User }) => {
-            const user = await authenticateUser(req, User);
-            if(!user) throw new Error("Giriş yapmalısınız");
+      deleteComment: async (_, { id }, { user }) => {
+          if(!user) throw new Error("Giriş yapmalısınız");
 
-            const comment = await CommentService.findCommentById(id);
-            
-            // Yetki: Yorum sahibi mi?
-            if (comment.userId.toString() !== user._id.toString()) {
-                throw new Error("Yetkiniz yok.");
-            }
+          const comment = await CommentService.findCommentById(id);
+          
+          // Yetki: Yorum sahibi mi?
+          if (comment.userId.toString() !== user._id.toString()) {
+              throw new Error("Yetkiniz yok.");
+          }
 
-            return CommentService.deleteCommentRecursive(id);
-        },
+          return CommentService.deleteCommentRecursive(id);
+      },
 
-        toggleCommentLike: async (_, { commentId }, { req, User }) => {
-            const user = await authenticateUser(req, User);
-            if(!user) throw new Error("Giriş yapmalısınız");
-            
-            return CommentService.toggleLike(commentId, user._id);
-        }
-    },
+      toggleCommentLike: async (_, { commentId }, { user }) => {
+          if(!user) throw new Error("Giriş yapmalısınız");
+          
+          return CommentService.toggleLike(commentId, user._id);
+      }
+  },
 
   // FIELD RESOLVERS (İlişkileri Çözme)
   Comment: {

@@ -1,0 +1,48 @@
+# src/graphql/typeDefs/genre.graphql
+
+extend type Query {
+  """
+  Tüm türleri listeler.
+  includeInactive: true verilirse pasif (silinmiş) türleri de getirir.
+  """
+  getAllGenres(includeInactive: Boolean): [Genre!]!
+
+  """
+  URL slug'ına göre tek bir türü getirir (Örn: 'bilim-kurgu')
+  """
+  getGenreBySlug(slug: String!): Genre
+}
+
+extend type Mutation {
+  createGenre(
+    name: String!
+    slug: String!
+    description: String
+    iconUrl: String
+    hexColor: String
+  ): Genre!
+
+  updateGenre(
+    id: ID!
+    name: String
+    slug: String
+    description: String
+    iconUrl: String
+    hexColor: String
+    isActive: Boolean
+  ): Genre!
+
+  deleteGenre(id: ID!): Genre!
+}
+
+type Genre {
+  id: ID!
+  name: String!
+  slug: String!
+  description: String
+  iconUrl: String
+  hexColor: String
+  isActive: Boolean
+  createdAt: String
+  updatedAt: String
+}

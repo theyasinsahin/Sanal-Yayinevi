@@ -16,6 +16,31 @@
   overflow: hidden;
 }
 
+/* DÜZELTME: .google-auth-wrapper için hiç CSS kuralı yoktu — LoginPage'de
+   inline style ile ortalanmaya çalışılıyordu, RegisterPage'de o bile yoktu.
+   Asıl sorun şu: @react-oauth/google kütüphanesi butonu render ederken
+   genellikle sabit bir piksel genişliği kullanıyor (parent genişliğine göre
+   otomatik küçülmüyor). Dar/mobil ekranlarda bu sabit genişlik konteynerden
+   taşıyor; flex ile "ortalama" da taşan kısmı eşit dağıtmıyor gibi görünüp
+   sağa kaymış bir izlenim veriyor. max-width:100% zorlaması ile Google'ın
+   render ettiği elemanı (ve varsa içindeki iframe'i) konteynerin gerçek
+   genişliğine sıkıştırıyoruz. */
+.google-auth-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.google-auth-wrapper > * {
+  max-width: 100%;
+}
+
+.google-auth-wrapper iframe {
+  max-width: 100% !important;
+}
+
 /* Vintage ledger lines background */
 .auth-page-wrapper::before {
   content: '';
@@ -63,6 +88,14 @@
   animation: authCardFadeIn 0.8s ease-out;
   max-width: 480px;
   width: 100%;
+  /* DÜZELTME: box-sizing:border-box olmadan, 3rem'lik padding
+     width:100%'in ÜSTÜNE ekleniyordu (96px fazladan). Bu da kartı
+     kapsayıcısından geniş render edip sağa taşırıyordu — overflow:hidden
+     de taşan kısmı sessizce kırpıp sanki kart sağa yaslanmış gibi bir
+     görüntü veriyordu. border-box ile padding artık width'in içinde
+     hesaplanıyor. */
+  box-sizing: border-box;
+  margin: 0 auto;
 }
 
 @keyframes authCardFadeIn {
@@ -397,6 +430,47 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
+  align-items: start;
+}
+
+/* Grid item'ların (Input bileşenleri) kendi kolonlarının tam
+   genişliğine yayılmasını garanti eder — bileşenin kendi iç
+   genişlik davranışından bağımsız olarak sağa/sola kaymayı önler. */
+.form-row > * {
+  width: 100%;
+  min-width: 0;
+}
+
+/* DÜZELTME: RegisterPage "auth-divider" + "divider-text" class'larını
+   kullanıyordu ama bunlar için hiç CSS kuralı tanımlı değildi (LoginPage
+   aynı görünümü inline style ile sağlıyordu). Sonuç: RegisterPage'de
+   "VEYA E-POSTA İLE" satırı düz, ortalanmamış, çizgisiz bir metin olarak
+   görünüyordu. */
+.auth-divider {
+  position: relative;
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.auth-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--fog);
+  z-index: 0;
+}
+
+.divider-text {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  background-color: var(--paper-white);
+  padding: 0 10px;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  color: var(--graphite);
 }
 
 /* CHECKBOX & TERMS */
@@ -532,16 +606,26 @@
   .auth-page-wrapper {
     padding-top: 4rem;
     padding-bottom: 2rem;
+    /* DÜZELTME: Kenar boşluğu artık kartın kendi margin'i yerine
+       wrapper'ın padding'inden geliyor — böylece kart, width:100%
+       ile birlikte hep kapsayıcısının GERÇEK genişliğine göre
+       hesaplanıyor, taşma olmuyor. */
+    padding-left: 1rem;
+    padding-right: 1rem;
+    box-sizing: border-box;
   }
 
   .auth-card {
     padding: 2rem 1.5rem;
-    margin: 0 1rem;
+    /* Eski "margin: 0 1rem;" kaldırıldı — width:100%'in üstüne
+       margin eklemek kartı kapsayıcısından geniş yapıp sağa
+       taşırıyordu. Kenar boşluğu artık yukarıdaki wrapper padding'i
+       ile sağlanıyor. */
   }
 
   .form-row {
     grid-template-columns: 1fr;
-    gap: 0;
+    gap: 1rem;
   }
 
   .auth-header h2 {

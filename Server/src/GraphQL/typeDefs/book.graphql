@@ -1,0 +1,87 @@
+# src/graphql/typeDefs/book.graphql
+
+extend type Mutation {
+  createBook(
+    title: String!
+    genreId: ID!
+    description: String!
+    tags: [String]
+    imageUrl: String!
+  ): Book!
+
+  deleteBook(id: ID!): Status!
+
+  updateBook(
+    bookId: ID!
+    title: String
+    genre: String
+    description: String
+  ): Book!
+
+  incrementBookViews(id: ID!): Book!
+  likeBook(bookId: ID!): Book!
+  updateBookStatus(
+    bookId: ID!
+    status: String!
+    fundingTarget: Float
+    printConfig: PrintConfigInput
+  ): Book!
+}
+
+extend type Query {
+  getBookById(id: ID!): Book
+  getBooksByAuthorId(authorId: ID!): [Book!]
+  getBooksByGenre(genre: String!): [Book!]
+  getBookByTitle(title: String!): Book
+  searchBooks(query: String!): [Book!]
+  getAllBooks: [Book!]
+}
+
+input PrintConfigInput {
+  paperType: String
+  coverType: String
+  dimension: String
+  estimatedPageCount: Int
+}
+
+type PrintConfig {
+  paperType: String!
+  coverType: String!
+  dimension: String!
+  estimatedPageCount: Int!
+}
+
+type BookStats {
+  views: Int!
+  shares: Int!
+  likes: Int!
+}
+
+type Book {
+  id: ID!
+  title: String!
+  authorId: ID!
+  author: User!
+  imageUrl: String!
+  pageCount: Int!
+  genreId: ID
+  genre: Genre
+  description: String!
+  stats: BookStats
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  publishDate: DateTime!
+
+  # Crowdfunding ile ilgili alanlar
+  fundingTarget: Float
+  currentFunding: Float
+  backerCount: Int
+  status: String
+  # İlişkiler (Tipler otomatik tanınacak)
+  comments: [Comment!]
+  chapters: [Chapter!]
+  tags: [String]
+  likedBy: [ID!]
+  commentCount: Int!
+  printConfig: PrintConfig
+}

@@ -1,0 +1,61 @@
+# src/graphql/typeDefs/session.graphql
+
+enum SessionType {
+  OPEN
+  FOLLOWERS_ONLY
+  PRIVATE
+}
+
+type Session {
+  id: ID!
+  title: String!
+  description: String
+  type: SessionType!
+  createdBy: User!
+  isActive: Boolean!
+  tags: [String]
+  participantCount: Int!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type SessionEntry {
+  id: ID!
+  sessionId: ID!
+  user: User!
+  content: String!
+  likedBy: [ID]
+  likeCount: Int!
+  createdAt: String!
+}
+
+input CreateSessionInput {
+  title: String!
+  description: String
+  type: SessionType!
+  accessCode: String
+  tags: [String]
+}
+
+extend type Mutation {
+  createSession(input: CreateSessionInput!): Session!
+  addSessionEntry(
+    sessionId: ID!
+    content: String!
+    accessCode: String
+  ): SessionEntry!
+  deleteSessionEntry(entryId: ID!): Boolean!
+  toggleSessionEntryLike(entryId: ID!): SessionEntry!
+  closeSession(sessionId: ID!): Boolean!
+}
+
+extend type Query {
+  getSessions(limit: Int, offset: Int): [Session!]!
+  getSession(sessionId: ID!): Session
+  getSessionEntries(sessionId: ID!, limit: Int, offset: Int): [SessionEntry!]!
+  verifySessionAccessCode(sessionId: ID!, accessCode: String!): Boolean!
+}
+
+extend type Subscription {
+  onNewSessionEntry(sessionId: ID!): SessionEntry!
+}

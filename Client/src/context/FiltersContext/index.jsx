@@ -12,11 +12,11 @@ export const FiltersProvider = ({ children }) => {
     sortBy: 'newest',
     
     // 2. ARAMA: Arama çubuğu için gerekli alan
-    searchQuery: ''
+    search: ''
   });
 
   // Filtre güncelleme fonksiyonu
-  // Kullanımı: updateFilters('searchQuery', 'yeni değer') veya updateFilters('genre', 'Roman')
+  // Kullanımı: updateFilters('search', 'yeni değer') veya updateFilters('genre', 'Roman')
   const updateFilters = (type, value) => {
     setFilters(prev => ({
       ...prev,

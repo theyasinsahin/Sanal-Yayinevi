@@ -1,0 +1,38 @@
+# src/graphql/typeDefs/chapter.graphql
+
+extend type Query {
+  getChaptersByBookId(bookId: ID!): [Chapter!]
+  getChapterById(id: ID!): Chapter
+  getAllChapters: [Chapter!]
+  # Yazarın tüm bölümlerini çekmek nadir bir senaryodur ama kalabilir
+  getChaptersByAuthorId(authorId: ID!): [Chapter!]
+}
+
+extend type Mutation {
+  createChapter(
+    bookId: ID!
+    title: String!
+    content: String!
+    pageCount: Int
+  ): Chapter!
+
+  updateChapter(
+    chapterId: ID!
+    title: String
+    content: String
+    pageCount: Int
+  ): Chapter!
+
+  deleteChapter(id: ID!): Status!
+}
+
+type Chapter {
+  id: ID!
+  bookId: ID!
+  authorId: ID!
+  title: String!
+  content: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  pageCount: Int!
+}

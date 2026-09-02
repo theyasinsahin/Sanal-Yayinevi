@@ -1,3 +1,5 @@
+// src/graphql/schema.js
+
 import { join } from 'path';
 import { loadFilesSync } from '@graphql-tools/load-files';
 import { mergeTypeDefs, mergeResolvers } from '@graphql-tools/merge';

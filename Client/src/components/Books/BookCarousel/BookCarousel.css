@@ -1,0 +1,72 @@
+.book-carousel {
+  position: relative;
+  width: 100%;
+}
+
+.carousel-track {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE */
+  padding: 8px 4px 16px;
+}
+
+.carousel-track::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* Masaüstü: 3 yerine 4 kart göster (gap 20px, 3 gap = 60px) */
+.carousel-item {
+  flex: 0 0 calc((100% - 60px) / 4);
+  scroll-snap-align: start;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--bg-surface, #ffffff);
+  color: var(--text-default, #1a202c);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: box-shadow 0.2s;
+}
+
+.carousel-btn:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.carousel-btn.prev { left: -20px; }
+.carousel-btn.next { right: -20px; }
+
+.carousel-empty {
+  color: var(--text-muted, #718096);
+  padding: 2rem 0;
+  text-align: center;
+}
+
+/* Mobil: bir sonraki kartın kenarı görünsün ki kaydırılabilir olduğu
+   belli olsun (85% -> 80%, hafif bir "peek" efekti) */
+@media (max-width: 640px) {
+  .carousel-item {
+    flex: 0 0 80%;
+  }
+  .carousel-btn { display: none; }
+}
+
+/* Tablet: 2 yerine 3 kart göster */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .carousel-item {
+    flex: 0 0 calc((100% - 40px) / 3);
+  }
+}

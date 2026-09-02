@@ -1,0 +1,34 @@
+# paragraphComment.graphql
+
+type ParagraphComment {
+  id: ID!
+  bookId: ID!
+  chapterId: ID!
+  paragraphIndex: Int!
+  content: String!
+  user: User
+  likedBy: [ID]
+  createdAt: String
+}
+
+type ParagraphCommentCount {
+  paragraphIndex: Int!
+  count: Int!
+}
+
+type Query {
+  getParagraphComments(chapterId: ID!, paragraphIndex: Int!): [ParagraphComment]
+  getParagraphCommentCounts(chapterId: ID!): [ParagraphCommentCount]
+}
+
+type Mutation {
+  addParagraphComment(
+    bookId: ID!
+    chapterId: ID!
+    paragraphIndex: Int!
+    content: String!
+  ): ParagraphComment!
+
+  deleteParagraphComment(id: ID!): Status!
+  toggleParagraphCommentLike(id: ID!): ParagraphComment!
+}

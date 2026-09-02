@@ -18,9 +18,12 @@ const CommentItem = ({ comment, currentUserId, bookId, isReply = false }) => {
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [replyText, setReplyText] = useState("");
 
+  // Optimistic UI state
+  const [optimisticLiked, setOptimisticLiked] = useState(null);     // null = sunucudan gelen değeri kullan
+  const [optimisticLikeCount, setOptimisticLikeCount] = useState(null);
+
   const refetchOptions = [{ query: GET_COMMENTS_BY_BOOK_ID, variables: { bookId } }];
 
-  // Mutations (Hata yönetimi üst bileşendeki gibi yapılabilir, şimdilik alert)
   const [deleteComment] = useMutation(DELETE_COMMENT_MUTATION, {
     refetchQueries: refetchOptions
   });
@@ -42,6 +45,25 @@ const CommentItem = ({ comment, currentUserId, bookId, isReply = false }) => {
     }
   };
 
+  const handleLike = async () => {
+    if (!currentUserId) return;
+
+    const currentlyLiked = optimisticLiked !== null ? optimisticLiked : isLikedFromServer;
+    const currentCount = optimisticLikeCount !== null ? optimisticLikeCount : (comment.likedBy?.length || 0);
+
+    // Optimistic: UI'ı anında güncelle
+    setOptimisticLiked(!currentlyLiked);
+    setOptimisticLikeCount(currentlyLiked ? currentCount - 1 : currentCount + 1);
+
+    try {
+      await toggleLike({ variables: { commentId: comment.id } });
+    } catch (err) {
+      // Hata gelirse geri al
+      setOptimisticLiked(currentlyLiked);
+      setOptimisticLikeCount(currentCount);
+    }
+  };
+
   const handleReplySubmit = async () => {
     if (!replyText.trim()) return;
     await replyToComment({
@@ -55,7 +77,13 @@ const CommentItem = ({ comment, currentUserId, bookId, isReply = false }) => {
   const profilePic = author?.profilePicture;
   const dateStr = comment.date ? new Date(comment.date).toLocaleDateString() : '';
   const isMyComment = currentUserId && author?.id === currentUserId;
-  const isLiked = currentUserId && (comment.likedBy || []).includes(currentUserId);
+
+  // Sunucudan gelen gerçek değer
+  const isLikedFromServer = currentUserId ? (comment.likedBy || []).includes(currentUserId) : false;
+
+  // Optimistic varsa onu, yoksa sunucudan geleni kullan
+  const isLiked = optimisticLiked !== null ? optimisticLiked : isLikedFromServer;
+  const likeCount = optimisticLikeCount !== null ? optimisticLikeCount : (comment.likedBy?.length || 0);
 
   return (
     <div className={`comment-item ${isReply ? 'is-reply' : ''}`}>
@@ -63,41 +91,34 @@ const CommentItem = ({ comment, currentUserId, bookId, isReply = false }) => {
       {/* Header */}
       <div className="comment-header">
         <div className="user-group">
-           <div className="avatar-wrapper">
-             {profilePic ? (
-               <img 
-                 src={profilePic} 
-                 alt={username} 
-                 className="avatar-image" // Class ismi değişti
-                 loading="lazy"
-                 onError={(e) => {
-                   // Resim yüklenmezse resmi gizle, fallback ikonu göster
-                   e.target.style.display = 'none'; 
-                   e.target.parentElement.nextSibling.style.display = 'block'; 
-                 }}
-               />
-             ) : (
-               <AccountCircle className="avatar-fallback-icon" />
-             )}
-             
-             {/* Resim patlarsa veya yoksa arkada bu ikon gözüksün diye buraya da koyabiliriz 
-                 ama yukarıdaki ternary mantığı zaten bunu yönetiyor. */}
-           </div>
-           
-           {/* Eğer resim yoksa fallback olarak gösterilecek ikon (JSX yapına göre) */}
-           {!profilePic && <AccountCircle className="avatar-fallback-icon" style={{display: 'none'}} />}
+          <div className="avatar-wrapper">
+            {profilePic ? (
+              <img 
+                src={profilePic} 
+                alt={username} 
+                className="avatar-image"
+                loading="lazy"
+                onError={(e) => {
+                  e.target.style.display = 'none'; 
+                  e.target.parentElement.nextSibling.style.display = 'block'; 
+                }}
+              />
+            ) : (
+              <AccountCircle className="avatar-fallback-icon" />
+            )}
+          </div>
+          
+          {!profilePic && <AccountCircle className="avatar-fallback-icon" style={{display: 'none'}} />}
 
-
-
-           <div className="user-meta">
-             <span className="username">{username}</span>
-             <span className="date">{dateStr}</span>
-           </div>
+          <div className="user-meta">
+            <span className="username">{username}</span>
+            <span className="date">{dateStr}</span>
+          </div>
         </div>
         
         {isMyComment && (
           <button onClick={handleDelete} className="delete-icon-btn">
-             <Delete fontSize="small" />
+            <Delete fontSize="small" />
           </button>
         )}
       </div>
@@ -109,47 +130,44 @@ const CommentItem = ({ comment, currentUserId, bookId, isReply = false }) => {
 
       {/* Actions */}
       <div className="comment-actions">
-         <button onClick={() => toggleLike({ variables: { commentId: comment.id } })} className={`action-link ${isLiked ? 'liked' : ''}`}>
-            {isLiked ? <Favorite fontSize="inherit"/> : <FavoriteBorder fontSize="inherit"/>}
-            <span>{comment.likedBy?.length || 0}</span>
-         </button>
+        <button onClick={handleLike} className={`action-link ${isLiked ? 'liked' : ''}`}>
+          {isLiked ? <Favorite fontSize="inherit"/> : <FavoriteBorder fontSize="inherit"/>}
+          <span>{likeCount}</span>
+        </button>
 
-         <button onClick={() => setShowReplyInput(!showReplyInput)} className="action-link">
-            <Reply fontSize="inherit"/>
-            <span>Yanıtla</span>
-         </button>
+        <button onClick={() => setShowReplyInput(!showReplyInput)} className="action-link">
+          <Reply fontSize="inherit"/>
+          <span>Yanıtla</span>
+        </button>
       </div>
 
       {/* Reply Input */}
       {showReplyInput && (
         <div className="reply-form">
           <Input 
-             placeholder={`@${username} kullanıcısına yanıt ver...`}
-             value={replyText}
-             onChange={(e) => setReplyText(e.target.value)}
-             className="mb-2"
+            placeholder={`@${username} kullanıcısına yanıt ver...`}
+            value={replyText}
+            onChange={(e) => setReplyText(e.target.value)}
+            className="mb-2"
           />
           <div className="flex justify-end">
-             <Button size="small" variant="dark" onClick={handleReplySubmit} isLoading={replyLoading}>
-               Gönder
-             </Button>
+            <Button size="small" variant="dark" onClick={handleReplySubmit} isLoading={replyLoading}>
+              Gönder
+            </Button>
           </div>
         </div>
       )}
 
       {/* Replies (Recursive) */}
       {!isReply && comment.replies && comment.replies.length > 0 && (
-        
-        /* BURASI ÇOK ÖNEMLİ: CSS'teki dikey çizgi bu div'e bağlı */
         <div className="replies-wrapper">
-          
           {comment.replies.map(reply => (
             <CommentItem 
               key={reply.id} 
               comment={reply} 
               currentUserId={currentUserId} 
               bookId={bookId}
-              isReply={true} // Bu prop, avatarın küçülmesini tetikler
+              isReply={true}
             />
           ))}
         </div>

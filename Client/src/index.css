@@ -1,6 +1,8 @@
 :root {
   --navbar-height: 80px;
 
+  --skeleton-base: #e2e8f0; /* light mode */
+
   /* === VINTAGE LITERARY COLOR PALETTE === */
   /* Blacks & Grays - Ink & Charcoal */
   --ink-black: #1a1a1a;
@@ -77,6 +79,124 @@
   --texture-opacity: 0.15;
   --texture-opacity-light: 0.08;
   --texture-opacity-heavy: 0.25;
+
+   /* === Semantic: Badge / Button / Input durumları === */
+  --color-success-bg:      #f0f7f0;
+  --color-success-text:    #2d5016;
+  --color-success-border:  #2d5016;
+ 
+  --color-warning-bg:      var(--sepia-light);
+  --color-warning-text:    #8b4513;
+  --color-warning-border:  #8b4513;
+ 
+  --color-danger-bg:       var(--paper-white);
+  --color-danger-text:     #8b0000;
+  --color-danger-border:   #8b0000;
+ 
+  /* === PasswordStrengthIndicator === */
+  --color-strength-very-weak: #ef4444;
+  --color-strength-weak:      #f97316;
+  --color-strength-medium:    #ca8a04;
+  --color-strength-good:      #16a34a;
+  --color-strength-strong:    #15803d;
+  --color-strength-track:     #e5e7eb;
+  --color-strength-text-muted:#6b7280;
+  --color-strength-rule-fail: #9ca3af;
+  --color-rule-pass-icon:     #16a34a;
+  --color-rule-fail-icon:     #d1d5db;
+ 
+  /* === ProgressBar === */
+  --color-progress-track-bg: linear-gradient(135deg, #E2E8F0 0%, #F1F5F9 100%);
+  --color-progress-label:    #64748B;
+ 
+  /* === Toast === */
+  --color-toast-success:     #059669;
+  --color-toast-success-end: #065f46;
+  --color-toast-error:       #dc2626;
+  --color-toast-error-end:   #991b1b;
+  --color-toast-info:        #2563eb;
+  --color-toast-info-end:    #1d4ed8;
+  --color-toast-warning:     #d97706;
+  --color-toast-warning-end: #b45309;
+  --color-toast-warning-fg:  #1a1a1a;
+ 
+  /* === accent-start (ayraç rengi — UserProfile & UserSettings kullanıyor) === */
+  --accent-start: rgba(26, 26, 26, 0.12);
+}
+
+[data-theme="dark"] {
+  /* === Temel arka plan & metin (önceki plandaki token'lar) === */
+  --bg-app:     #0f0f0d;
+  --bg-surface: #1a1916;
+  --bg-elevated:#242220;
+  --text-main:  #e8e4d8;
+  --text-muted: #8e8a7e;
+  --text-subtle:#5a5750;
+ 
+  --border-light:  1px solid rgba(232,228,216,0.07);
+  --border-medium: 1px solid rgba(232,228,216,0.13);
+  --border-heavy:  2px solid rgba(232,228,216,0.22);
+  --border-dashed: 2px dashed rgba(232,228,216,0.18);
+ 
+  --shadow-sm:    0 2px 4px  rgba(0,0,0,0.4);
+  --shadow-md:    0 4px 8px  rgba(0,0,0,0.5);
+  --shadow-lg:    0 8px 16px rgba(0,0,0,0.55);
+  --shadow-xl:    0 12px 24px rgba(0,0,0,0.6);
+  --shadow-paper: 2px 4px 8px rgba(0,0,0,0.45);
+ 
+  --skeleton-base: #2a2826;
+  --sepia-light:   #1e1c18;
+  --sepia-medium:  #2e2b25;
+  --sepia-dark:    #4a4640;
+  --accent-start:  rgba(232,228,216,0.10);
+ 
+  /* === Semantic: Badge / Button / Input === */
+  --color-success-bg:      #0d2b0a;
+  --color-success-text:    #7ec96b;
+  --color-success-border:  #4a8c3a;
+ 
+  --color-warning-bg:      #2b1a08;
+  --color-warning-text:    #d4956b;
+  --color-warning-border:  #a06030;
+ 
+  --color-danger-bg:       #2b0a0a;
+  --color-danger-text:     #e87070;
+  --color-danger-border:   #a03030;
+ 
+  /* === PasswordStrengthIndicator === */
+  --color-strength-very-weak: #f87171;
+  --color-strength-weak:      #fb923c;
+  --color-strength-medium:    #fbbf24;
+  --color-strength-good:      #4ade80;
+  --color-strength-strong:    #22c55e;
+  --color-strength-track:     #374151;
+  --color-strength-text-muted:#9ca3af;
+  --color-strength-rule-fail: #6b7280;
+  --color-rule-pass-icon:     #4ade80;
+  --color-rule-fail-icon:     #4b5563;
+ 
+  /* === ProgressBar === */
+  --color-progress-track-bg: linear-gradient(135deg, #1e2533 0%, #252d3d 100%);
+  --color-progress-label:    #94a3b8;
+ 
+  /* === Toast === */
+  --color-toast-success:     #065f46;
+  --color-toast-success-end: #064e3b;
+  --color-toast-error:       #991b1b;
+  --color-toast-error-end:   #7f1d1d;
+  --color-toast-info:        #1e40af;
+  --color-toast-info-end:    #1e3a8a;
+  --color-toast-warning:     #92400e;
+  --color-toast-warning-end: #78350f;
+  --color-toast-warning-fg:  #fef3c7;
+}
+
+*, *::before, *::after {
+  transition:
+    background-color 0.3s ease,
+    border-color     0.2s ease,
+    color            0.2s ease,
+    box-shadow       0.3s ease;
 }
 
 /* === GLOBAL STYLES === */

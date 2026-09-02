@@ -74,6 +74,28 @@
   border-bottom: none;
 }
 
+/* Destekçi avatarları satırı — tam genişlik, dikey ortalanmış */
+.meta-row--backers {
+  justify-content: flex-start;
+  padding-top: 1rem;
+}
+
+.backers-modal-list{
+  background: var(--paper-white);
+  border-radius: var(--radius-sm);
+  border: 1px solid #E5E7EB;
+  max-height: 300px;
+  opacity: 0.85;
+  box-shadow: var(--shadow-md);
+}
+
+.backers-modal-header {
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--text-main);
+  background: var(--paper-white);
+}
+
 .meta-label {
   color: var(--text-muted);
 }
@@ -184,6 +206,16 @@
 .flex { display: flex; }
 .justify-end { justify-content: flex-end; }
 .capitalize { text-transform: capitalize; }
+
+@keyframes shimmer {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.book-detail-page [style*="skeleton-base"] {
+  animation: shimmer 1.5s ease-in-out infinite;
+}
 
 /* Responsive */
 @media (max-width: 900px) {

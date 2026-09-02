@@ -1,0 +1,32 @@
+/* src/components/Books/BookFollowButton/BookFollowButton.css */
+.book-follow-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  background: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary, #1a1a2e);
+  transition: all 0.2s;
+}
+
+.book-follow-btn:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+  background: rgba(37,99,235,0.05);
+}
+
+.book-follow-btn.following {
+  background: rgba(37,99,235,0.08);
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.book-follow-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

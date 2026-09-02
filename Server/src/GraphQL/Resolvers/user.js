@@ -6,7 +6,7 @@ import { authenticateUser } from '../../utils/auth.js';
 export default {
   // ANA SORGULAR
   Query: {
-    getUserById: async (_, { id }) => UserService.findUserById(id),
+    getUserById: async (_, { id }, context) => UserService.findUserById(id),
     
     getUserByUsername: async (_, { username }) => UserService.findUserByUsername(username),
     
@@ -14,8 +14,7 @@ export default {
     
     getAllUsers: async () => UserService.getAllUsers(),
 
-    me: async (_, __, { req, User }) => { // User modelini context'ten veya service'den alabilirsin
-      const user = await authenticateUser(req, User);
+    me: async (_, __, { user }) => { // User modelini context'ten veya service'den alabilirsin
       if (!user) throw new Error("Giriş yapmalısınız.");
       return user;
     },
@@ -33,10 +32,33 @@ export default {
   },
 
   Mutation: {
+
+    forgotPassword: async (_, { email }) => {
+      return UserService.forgotPassword(email);
+    },
+
+    resetPassword: async (_, { token, newPassword }) => {
+      return UserService.resetPassword(token, newPassword);
+    },
+
+    googleAuth: async (_, { token }) => {
+        return await UserService.googleAuth(token);
+    },
+
+    sendRegistrationCode: async (_, { email, username, }) => {
+        try {
+            return await UserService.sendRegistrationCode(email, username);
+        } catch (e) {
+            console.error("SEND CODE ERROR =>", e); // <--- SERVER'DA GÖRMEK İÇİN BUNU EKLE
+            return { code: 400, message: e.message };
+        }
+    },
+
     register: async (_, args) => {
         try {
             return await UserService.registerUser(args);
         } catch (e) {
+            console.error("REGISTER ERROR =>", e); // <--- SERVER'DA GÖRMEK İÇİN BUNU EKLE
             return { code: 400, message: e.message };
         }
     },
@@ -45,8 +67,7 @@ export default {
         return UserService.loginUser(email, password);
     },
 
-    toggleFollowUser: async (_, { followId }, { req, User }) => {
-        const user = await authenticateUser(req, User);
+    toggleFollowUser: async (_, { followId }, { user }) => {
         if(!user) throw new Error("Giriş yapmalısınız");
         
         if (user._id.toString() === followId) throw new Error("Kendinizi takip edemezsiniz.");
@@ -54,15 +75,13 @@ export default {
         return UserService.toggleFollow(user._id, followId);
     },
 
-    toggleSaveBook: async (_, { bookId }, { req, User }) => {
-        const user = await authenticateUser(req, User);
+    toggleSaveBook: async (_, { bookId }, { user }) => {
         if(!user) throw new Error("Giriş yapmalısınız");
 
         return UserService.toggleSaveBook(user._id, bookId);
     },
 
-    updateProfile: async (_, args, { req, User }) => {
-        const user = await authenticateUser(req, User);
+    updateProfile: async (_, args, { user }) => {
         if(!user) throw new Error("Giriş yapmalısınız");
 
         // Basit güncelleme olduğu için direkt model kullanabilir veya
@@ -71,42 +90,89 @@ export default {
         return await user.save();
     },
     
-    // deleteUserById çok karmaşık (diğer tablolardan silme vs.),
-    // Onu UserService'e taşıyıp buradan tek satırla çağırabilirsin.
-    deleteUserById: async (_, { id }, { req, User }) => {
-         // ... Auth check ...
-         // return UserService.deleteUserCompletely(id);
+    deleteUserById: async (_, { id }) => {
+         //return UserService.deleteUserCompletely(id);
          return { code: 200, message: "Bu fonksiyon service'e taşınmalı." };
-    }
+    },
+
+    // ── Hesap ───────────────────────────────────────────────
+    changeEmail: async (_, args, { user }) => {
+      if (!user) throw new Error('Giriş yapmalısınız.');
+      return UserService.changeEmail(user._id, args);
+    },
+ 
+    changePassword: async (_, args, { user }) => {
+      if (!user) throw new Error('Giriş yapmalısınız.');
+      return UserService.changePassword(user._id, args);
+    },
+
+    // ── Ayarlar ─────────────────────────────────────────────
+    updatePrivacySettings: async (_, { privacySettings }, { user }) => {
+      if (!user) throw new Error('Giriş yapmalısınız.');
+      return UserService.updatePrivacySettings(user._id, privacySettings);
+    },
+ 
+    updateNotificationSettings: async (_, { notificationSettings }, { user }) => {
+      if (!user) throw new Error('Giriş yapmalısınız.');
+      return UserService.updateNotificationSettings(user._id, notificationSettings);
+    },
+ 
+    updateAuthorSettings: async (_, { authorSettings }, { user }) => {
+      if (!user) throw new Error('Giriş yapmalısınız.');
+      return UserService.updateAuthorSettings(user._id, authorSettings);
+    },
+
+    // ── Hesap Yönetimi ──────────────────────────────────────
+    deactivateAccount: async (_, __, { user }) => {
+      if (!user) throw new Error('Giriş yapmalısınız.');
+      return UserService.deactivateAccount(user._id);
+    },
+ 
+    deleteAccount: async (_, __, { user }) => {
+      if (!user) throw new Error('Giriş yapmalısınız.');
+      return UserService.deleteAccountCompletely(user._id);
+    },
 },
 
   // ALAN ÇÖZÜCÜLER (Field Resolvers)
   // Bir User çekildiğinde, onun içindeki ilişkisel veriler istendiğinde burası çalışır.
   User: {
-    // 1. usersBooks: Kullanıcının yazdığı kitaplar
-    usersBooks: async (parent) => {
-       // Service'e ID array'ini gönderiyoruz
-       return await BookService.findBooksByIds(parent.usersBooks);
-    },
+  // isOwner kontrolü: parent._id ile query yapan kullanıcı aynı mı?
+  // Context'ten currentUserId gelmeli — yoksa basit authorId sorgusu yap
+  usersBooks: async (parent, _, context) => {
+    return await BookService.findBooksByAuthorId(parent._id);
+  },
 
-    // 2. savedBooks: Kullanıcının kaydettiği kitaplar
-    savedBooks: async (parent) => {
-       return await BookService.findBooksByIds(parent.savedBooks);
-    },
-    
-    // 3. followers: Takipçiler
-    followers: async (parent) => {
-       return await UserService.findUsersByIds(parent.followers);
-    },
+  savedBooks: async (parent) => {
+    return await BookService.findBooksByIds(parent.savedBooks);
+  },
 
-    // 4. following: Takip edilenler
-    following: async (parent) => {
-       return await UserService.findUsersByIds(parent.following);
-    },
+  followers: async (parent) => {
+    return await UserService.findUsersByIds(parent.followers);
+  },
 
-    // 5. donations: Bağış Geçmişi
-    donations: async (parent) => {
-        return await TransactionService.findTransactionsByUserId(parent._id);
-    }
-  }
+  following: async (parent) => {
+    return await UserService.findUsersByIds(parent.following);
+  },
+
+  donations: async (parent) => {
+    return await TransactionService.findTransactionsByUserId(parent._id);
+  },
+
+  // Ayar alanları — başka kullanıcının profilinde null dön
+    privacySettings: (parent, _, { user }) => {
+      if (!user || user._id.toString() !== parent._id.toString()) return null;
+      return parent.privacySettings;
+    },
+ 
+    notificationSettings: (parent, _, { user }) => {
+      if (!user || user._id.toString() !== parent._id.toString()) return null;
+      return parent.notificationSettings;
+    },
+ 
+    authorSettings: (parent, _, { user }) => {
+      if (!user || user._id.toString() !== parent._id.toString()) return null;
+      return parent.authorSettings;
+    },
+},
 };

@@ -1,6 +1,5 @@
 import React from 'react';
 import { Apps } from '@mui/icons-material';
-import { genres } from '../../../Data/genresData'; // Data klasörünün yeri değişmediyse
 import { useFilters } from '../../../context/FiltersContext';
 
 // UI Kit
@@ -8,7 +7,8 @@ import { Typography } from '../../UI/Typography';
 
 import './FeedFilters.css';
 
-const FeedFilters = () => {
+// Props olarak 'genres' listesini FeedPage'den alıyoruz
+const FeedFilters = ({ genres = [] }) => {
   const { filters, updateFilters } = useFilters();
 
   return (
@@ -30,17 +30,25 @@ const FeedFilters = () => {
             <span className="category-text">Tümü</span>
           </button>
 
-          {/* Diğer Kategoriler */}
-          {Object.values(genres).map(genre => (
+          {/* Dinamik Kategoriler (Veritabanından Gelen) */}
+          {genres.map(genre => (
             <button
-              key={genre.id}
+              key={genre.id || genre._id}
               className={`category-pill ${filters.genre === genre.slug ? 'active' : ''}`}
+              style={filters.genre === genre.slug ? { borderColor: genre.hexColor, backgroundColor: `${genre.hexColor}15` } : {}}
               onClick={() => {
+                // Eğer zaten seçiliyse 'Tümü'ne dön, değilse bu türün slug'ını seç
                 const nextGenre = filters.genre === genre.slug ? 'Tümü' : genre.slug;
                 updateFilters('genre', nextGenre);
               }}
             >
-              <span className="category-text">{genre.name}</span>
+              {/* Varsa iconUrl kullanılabilir, yoksa direkt text */}
+              {genre.iconUrl && (
+                <img src={genre.iconUrl} alt="" className="category-custom-icon" style={{ width: 16, height: 16, marginRight: 8 }} />
+              )}
+              <span className="category-text" style={{ color: filters.genre === genre.slug ? genre.hexColor : 'inherit' }}>
+                {genre.name}
+              </span>
             </button>
           ))}
         </div>
@@ -58,14 +66,14 @@ const FeedFilters = () => {
             { value: 'popular', label: 'En Popüler' },
             { value: 'oldest', label: 'En Eski' },
             { value: 'lastUpdated', label: 'En Son Güncellenen' },
-
           ].map(option => (
             <label key={option.value} className="sort-option">
               <input
                 type="radio"
                 name="sort"
                 value={option.value}
-                checked={filters.sortBy === option.value}
+                // Opsiyonel zincirleme ile 'undefined' hatasını engelliyoruz
+                checked={filters?.sortBy === option.value}
                 onChange={e => updateFilters('sortBy', e.target.value)}
               />
               <span className="radio-label">{option.label}</span>

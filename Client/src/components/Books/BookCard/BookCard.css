@@ -10,6 +10,12 @@
   height: 100%;
   position: relative;
   box-shadow: var(--shadow-sm);
+  /* Kartın kendi genişliğine göre stil değiştirebilmesi için container query
+     tanımlıyoruz. Böylece kart; grid'de, carousel'de veya ileride başka bir
+     yerde farklı genişliklerde render edilse bile (viewport'tan bağımsız
+     olarak) kendi gerçek boyutuna göre optimum görünümü bulur. */
+  container-type: inline-size;
+  container-name: book-card;
 }
 
 /* Paper texture overlay */
@@ -376,25 +382,164 @@
   z-index: 10;
 }
 
-/* Responsive */
-@media (max-width: 640px) {
+/* Paylaş butonu — stat-item stilini miras alır, sadece farklar */
+.book-card-share-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--graphite);
+  transition: all 0.3s ease;
+}
+
+.book-card-share-btn:hover {
+  color: var(--ink-black);
+  transform: scale(1.05);
+}
+
+.book-card-share-btn:hover .stat-icon {
+  color: var(--ink-black);
+}
+
+/* ============================================================
+   BOYUT UYARLAMA — CONTAINER QUERIES
+   ------------------------------------------------------------
+   Artık kart, viewport genişliğine değil KENDİ render edildiği
+   genişliğe göre uyarlanıyor. Böylece grid'de sütun sayısını
+   artırıp kartları daraltınca (masaüstünde de!) içerik otomatik
+   olarak sıkışmadan küçülüyor; aynı bilgiler (kapak, başlık,
+   yazar, özet, okuma süresi, istatistikler, paylaş) hep kalıyor,
+   sadece boyutları/boşlukları optimize ediliyor.
+
+   İki kademe:
+   - <=230px  : "kompakt" kart (çoğu grid/carousel senaryosu)
+   - <=165px  : "mini" kart (çok dar sütunlar / küçük telefonlar)
+   ============================================================ */
+
+@container book-card (max-width: 230px) {
   .card-content {
-    padding: 1rem;
+    padding: 0.85rem;
   }
 
   .book-title {
-    font-size: 1rem;
+    font-size: 0.95rem;
+    -webkit-line-clamp: 2;
+    margin-bottom: 0.4rem;
+  }
+
+  .book-author {
+    font-size: 0.78rem;
+    margin-bottom: 0.55rem;
   }
 
   .book-excerpt {
-    font-size: 0.8125rem;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    -webkit-line-clamp: 2;
+    margin-bottom: 0.55rem;
+  }
+
+  .reading-time {
+    font-size: 0.65rem;
+    padding: 0.25rem 0.55rem;
+    margin-bottom: 0.55rem;
   }
 
   .card-stats {
-    padding-top: 0.75rem;
+    padding-top: 0.65rem;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.6rem;
   }
 
-  .stat-item {
-    font-size: 0.75rem;
+  .stat-item,
+  .book-card-share-btn {
+    font-size: 0.72rem;
+  }
+
+  .meta-overlay {
+    top: 8px;
+    right: 8px;
+    gap: 4px;
+  }
+
+  .status-badge {
+    bottom: 8px;
+    left: 8px;
+    padding: 4px 8px;
+    font-size: 0.6rem;
+  }
+}
+
+@container book-card (max-width: 165px) {
+  .card-media {
+    padding-top: 132%; /* biraz daha kısa kapak, dikeyde yer kazandırır */
+  }
+
+  .card-content {
+    padding: 0.6rem;
+  }
+
+  .book-title {
+    font-size: 0.82rem;
+    line-height: 1.35;
+    margin-bottom: 0.3rem;
+  }
+
+  .book-author {
+    font-size: 0.68rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .book-excerpt {
+    font-size: 0.7rem;
+    line-height: 1.4;
+    margin-bottom: 0.4rem;
+  }
+
+  .reading-time {
+    font-size: 0.58rem;
+    padding: 0.2rem 0.45rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .card-stats {
+    padding-top: 0.5rem;
+    gap: 0.3rem 0.5rem;
+  }
+
+  .stat-item,
+  .book-card-share-btn {
+    font-size: 0.65rem;
+    gap: 3px;
+  }
+
+  .stat-icon {
+    font-size: 0.75rem !important;
+  }
+
+  .status-badge {
+    font-size: 0.55rem;
+    padding: 3px 6px;
+  }
+}
+
+/* Skeleton — kartın kendi genişliğini ölçemediği için (container'ın
+   kendisi olduğundan) burada viewport genişliğine göre yaklaşık bir
+   yükseklik veriyoruz; gerçek karttaki oranla tutarlı kalması yeterli. */
+@media (max-width: 640px) {
+  .skeleton {
+    min-height: 340px;
+  }
+}
+
+@media (max-width: 400px) {
+  .skeleton {
+    min-height: 250px;
   }
 }

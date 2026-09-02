@@ -99,3 +99,23 @@ export const createPaymentForm = async (user, book, amount, ip) => {
 export const findTransactionsByUserId = async (userId) => {
     return await Transaction.find({ userId: userId }).sort({ createdAt: -1 });
 };
+
+export const findBackersByBookId = async (bookId) => {
+  const transactions = await Transaction.find({
+    bookId,
+    status: 'SUCCESS',
+  })
+    .populate('userId', 'username fullName profilePicture')
+    .sort({ createdAt: -1 });
+
+  // Aynı kullanıcı birden fazla destek vermişse tekrarı kaldır
+  const seen = new Set();
+  return transactions
+    .filter(t => {
+      const id = t.userId?._id?.toString();
+      if (!id || seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    })
+    .map(t => ({ ...t.userId.toObject(), id: t.userId._id.toString() }));
+};

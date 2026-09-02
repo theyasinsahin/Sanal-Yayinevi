@@ -1,9 +1,29 @@
-import React from 'react';
+import React, {useMemo} from 'react';
 import BookCard from '../BookCard'; 
 import { Typography } from '../../UI/Typography';
 import './BookGrid.css';
 
-const BookGrid = ({ books }) => {
+const BookGrid = ({ books, loading, skeletonCount = 6, recommendations = [] }) => {
+
+
+  const reasonMap = useMemo(() => {
+    const map = {};
+    for (const { book, reason } of recommendations) {
+      if (book?.id) map[book.id] = reason;
+    }
+    return map;
+  }, [recommendations]);
+
+  // Veri çekilirken skeleton kartlar göster
+  if (loading) {
+    return (
+      <div className="book-grid">
+        {Array.from({ length: skeletonCount }).map((_, index) => (
+          <BookCard key={`skeleton-${index}`} skeleton />
+        ))}
+      </div>
+    );
+  }
 
   if (!Array.isArray(books) || books.length === 0) {
     return (
@@ -15,27 +35,18 @@ const BookGrid = ({ books }) => {
     );
   }
 
-  // İlk elemana bakarak ID listesi mi yoksa Obje listesi mi geldiğini anla
   const firstElement = books[0];
   const isIdArray = typeof firstElement === 'string' || typeof firstElement === 'number';
 
   return (
     <div className="book-grid">
       {isIdArray ? (
-        // ID Listesi geldiyse (örn: Favorilerim sayfası)
         books.map(bookId => (
-          <BookCard
-            bookId={bookId} 
-            key={bookId}
-          />
+          <BookCard bookId={bookId} key={bookId} reason={reasonMap[bookId]} />
         ))
       ) : (
-        // Obje Listesi geldiyse (örn: Feed sayfası)
         books.map(book => (
-          <BookCard
-            book={book}  
-            key={book.id || book._id}  
-          />
+          <BookCard book={book} key={book.id || book._id} reason={reasonMap[book.id || book._id]} />
         ))
       )}
     </div>

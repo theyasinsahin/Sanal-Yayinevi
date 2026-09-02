@@ -35,7 +35,7 @@ const AdminBooks = () => {
             <tr key={book.id}>
               <td>
                 <img 
-                  src={book.imageUrl} 
+                  src={book.imageUrl}
                   alt="cover" 
                   style={{width:40, height:60, borderRadius:4, objectFit:'cover'}}
                 />
@@ -43,7 +43,7 @@ const AdminBooks = () => {
               <td style={{fontWeight:600}}>{book.title}</td>
               {/* book.author populate edilmemiş olabilir, kontrol et */}
               <td>{typeof book.authorId === 'object' ? book.authorId.username : "ID: " + book.authorId.substring(0,6)}...</td>
-              {/*<td><Badge variant="neutral">{book.genre}</Badge></td>*/}
+              {<td><Badge variant="neutral">{book.genre.name}</Badge></td>}
               <td>
                 <div style={{display:'flex', gap: 10}}>
                   <Link to={`/book-detail/${book.id}`} target="_blank">
