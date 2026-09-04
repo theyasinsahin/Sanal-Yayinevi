@@ -21,7 +21,7 @@ import { MainLayout } from '../../../components/Layout/MainLayout';
 // Google'ın redirect ux_mode'unda credential'ı POST edeceği backend endpoint'i.
 // Bu domain, Google Cloud Console'daki OAuth Client ID'nin
 // "Authorized JavaScript origins" listesinde olmalı.
-const GOOGLE_LOGIN_URI = 'http://localhost:5000/auth/google/callback';
+const GOOGLE_LOGIN_URI = 'https://sanal-yayinevi.onrender.com/auth/google/callback';
 
 const LoginPage = () => {
   const navigate = useNavigate();
