@@ -17,9 +17,9 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { FiltersProvider } from "./context/FiltersContext";
 import { ToastProvider } from './context/ToastContext';
 
-import ScrollToTop from './components/ScrollToTop';
-
 import NavigationBar from "./components/Navigation/NavigationBar";
+import ScrollToTop from './components/ScrollToTop';
+import InstallPrompt from './components/InstallPrompt';
 
 import LandingPage from "./pages/Landing";
 import FeedPage from "./pages/Feed";
@@ -139,15 +139,22 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// --- ROOT LAYOUT ---
-// RouterProvider'ın render ettiği tüm route'ların ortak atası.
-// ScrollToTop burada, Router context'inin İÇİNDE render edilir,
-// bu yüzden useLocation() güvenle çalışır. Outlet, aşağıdaki
-// children route'larının render edileceği yeri belirtir.
+// --- KÖK LAYOUT (createBrowserRouter için) ---
+// createBrowserRouter (<Routes>/<BrowserRouter> değil, "data router"
+// API'si) kullanıldığında, tüm route'larda ortak çalışan bir şey
+// (burada: her route değişiminde sayfayı en üste kaydırmak) istiyorsak
+// bunu tek tek her sayfaya eklemek yerine, TÜM route'ları saran bir
+// "kök route" tanımlayıp içine <ScrollToTop /> + <Outlet /> koyuyoruz.
+// <Outlet />, o an eşleşen alt route'un element'ini (LandingPage,
+// FeedPage, vb.) aynen eskisi gibi render eder — hiçbir sayfanın kendi
+// davranışı değişmiyor, sadece hepsi artık ortak bu sarmalayıcının
+// içinden geçiyor.
 const RootLayout = () => (
   <>
     <ScrollToTop />
     <Outlet />
+    {/* Mobilde "Ana ekrana ekle" banner'ı — tüm sayfalarda tek yerden */}
+    <InstallPrompt />
   </>
 );
 

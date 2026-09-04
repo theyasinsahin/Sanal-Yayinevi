@@ -1,22 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="./images/betik.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#000000" />
+
+    <!-- Favicon: modern tarayıcılar SVG'yi tercih eder, ICO eski
+         tarayıcılar/Windows kısayolları için fallback -->
+    <link rel="icon" href="%PUBLIC_URL%/icons/favicon.ico" sizes="any" />
+    <link rel="icon" href="%PUBLIC_URL%/images/betik.svg" type="image/svg+xml" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- PWA / adres çubuğu rengi — manifest.json'daki theme_color ile aynı -->
+    <meta name="theme-color" content="#F7F3EC" />
+
     <meta
       name="description"
-      content="Publish or Read Books Online"
+      content="Betik — kaleminizden çıkan eserlerin gerçek bir kitaba dönüşme yolculuğu. Kitap oku, yaz ve paylaş."
     />
-    <link rel="apple-touch-icon" href="" />
+
+    <!-- iOS: "Ana Ekrana Ekle" ile açıldığında tarayıcı çubuğu olmadan,
+         bağımsız bir uygulama gibi çalışsın -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Betik" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/icons/apple-touch-icon.png" />
+
+    <!-- Android/Chrome: eski "mobile-web-app-capable" meta'sı, bazı
+         Chromium sürümlerinde manifest'e ek olarak hâlâ kontrol edilir -->
+    <meta name="mobile-web-app-capable" content="yes" />
+
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Open+Sans:wght@300;400;700&display=swap" rel="stylesheet">
 
     <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
+      manifest.json, uygulama telefona/masaüstüne "yüklendiğinde"
+      kullanılan meta verileri (isim, ikonlar, tema rengi vb.) sağlar.
+      https://developers.google.com/web/fundamentals/web-app-manifest/
+    -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-        -->
 
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.

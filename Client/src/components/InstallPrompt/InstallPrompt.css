@@ -1,0 +1,152 @@
+/* src/components/InstallPrompt/InstallPrompt.css */
+
+.install-prompt {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1500; /* NavigationBar (1000) üstünde, NotificationBell paneli (2000) altında */
+  padding: 0.75rem;
+  /* iPhone'larda alttaki home-indicator çentiğine yapışmasın */
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  animation: install-prompt-slide-up 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes install-prompt-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.install-prompt-inner {
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem 0.9rem;
+  background: var(--paper-white, #fff);
+  border: 2px solid var(--fog, #e5e7eb);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg, 0 8px 32px rgba(0,0,0,0.16));
+}
+
+.install-prompt-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--aged-paper, #f3f0e8);
+  border: 1px solid var(--fog, #e5e7eb);
+}
+
+.install-prompt-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.install-prompt-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.install-prompt-title {
+  margin: 0;
+  font-family: var(--font-serif, serif);
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--ink-black, #1a1a1a);
+}
+
+.install-prompt-subtitle {
+  margin: 2px 0 0;
+  font-family: var(--font-sans, sans-serif);
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--graphite, #555);
+}
+
+.install-prompt-ios-steps {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+  font-family: var(--font-sans, sans-serif);
+  font-size: 0.78rem;
+  color: var(--graphite, #555);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.install-prompt-ios-steps li {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.install-prompt-actions {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+}
+
+.install-prompt-install-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  justify-content: center;
+  white-space: nowrap;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--ink-black, #1a1a1a);
+  color: var(--paper-white, #fff);
+  font-family: var(--font-sans, sans-serif);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.install-prompt-install-btn:hover {
+  opacity: 0.85;
+}
+
+.install-prompt-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--graphite, #6b7280);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.install-prompt-close-btn:hover {
+  background: var(--bg-muted, #f3f4f6);
+}
+
+/* Masaüstünde bu banner'ı göstermiyoruz — kurulum sadece mobil için
+   isteniyor; NavigationBar'ın hamburger'a geçtiği eşikle tutarlı. */
+@media (min-width: 769px) {
+  .install-prompt {
+    display: none;
+  }
+}
