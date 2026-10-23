@@ -12,3 +12,5 @@ Client/.env
 Server/node_modules/
 Server/dist/
 Server/.env
+
+todolist.txt
