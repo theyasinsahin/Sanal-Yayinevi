@@ -24,9 +24,10 @@ import Logo from '../../Logo';
 const ThemeToggle = () => {
   const { theme, setTheme } = useTheme();
   const next = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light';
+  const themeLabels = { light: 'Açık', dark: 'Koyu', system: 'Sistem' };
   const icons = { light: <LightMode />, dark: <DarkMode />, system: <SettingsBrightness /> };
   return (
-    <button onClick={() => setTheme(next)} title={`Tema: ${theme}`}>
+    <button onClick={() => setTheme(next)} title={`Tema: ${themeLabels[theme]}`}>
       {icons[theme]}
     </button>
   );

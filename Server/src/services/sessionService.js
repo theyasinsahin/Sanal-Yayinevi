@@ -47,7 +47,7 @@ export const createSession = async (userId, input) => {
   // Yazar kontrolü
   const user = await User.findById(userId).select('isPremium isVerified');
   if (!user?.isPremium) {
-    throw new Error('Oturum açmak için doğrulanmış premium bir kullanıcı olmanız gerekir.');
+    throw new Error('Oturum açmak için doğrulanmış ücretli bir üye olmanız gerekir.');
   }
 
   const { title, description, type, accessCode, tags } = input;

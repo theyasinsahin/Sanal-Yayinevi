@@ -61,7 +61,7 @@ export const updateChapter = async (chapterId, data) => {
 // DELETE (SOFT DELETE)
 export const deleteChapter = async (id) => {
   const chapter = await Chapter.findOne({ _id: id, isDeleted: false });
-  if (!chapter) throw new Error("Chapter not found");
+  if (!chapter) throw new Error("Bölüm bulunamadı.");
 
   chapter.isDeleted = true;
   chapter.deletedAt = new Date();
@@ -73,7 +73,7 @@ export const deleteChapter = async (id) => {
   // Sayfa sayısını güncelle
   await updateBookTotalPageCount(chapter.bookId);
 
-  return { code: 200, message: "Chapter deleted successfully" };
+  return { code: 200, message: "Bölüm başarıyla silindi." };
 };
 
 // Bir kitap soft-delete edildiğinde tüm bölümlerini soft-delete etmek için

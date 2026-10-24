@@ -110,7 +110,7 @@ const LoginPage = () => {
               token ile geri yönlendirir. Bu akışta onSuccess ÇAĞRILMAZ —
               sonuç URL üzerinden GoogleCallback sayfasında işlenir. */}
           <div className="google-auth-wrapper">
-            <GoogleLogin
+            <GoogleLogin locale="tr"
               ux_mode="redirect"
               login_uri={GOOGLE_LOGIN_URI}
               onError={() => setCustomError("Google penceresi açılamadı veya iptal edildi.")}

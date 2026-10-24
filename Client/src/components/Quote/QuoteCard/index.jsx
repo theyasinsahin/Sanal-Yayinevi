@@ -173,7 +173,7 @@ const QuoteCard = ({ quote }) => {
           <Link to={`/user/${displayUser?.id}`} className="quote-card-repost-user">
             @{displayUser?.username}
           </Link>
-          <span>repostladı</span>
+          <span>yeniden paylaştı</span>
         </div>
       )}
 
@@ -192,7 +192,7 @@ const QuoteCard = ({ quote }) => {
     {showSpoiler && (
       <div className="spoiler-overlay" onClick={() => setSpoilerRevealed(true)}>
         <span className="spoiler-icon">⚠️</span>
-        <span className="spoiler-label">Spoiler içeriyor</span>
+        <span className="spoiler-label">Sürprizbozan içeriyor</span>
         <span className="spoiler-hint">Görmek için tıkla</span>
       </div>
     )}
@@ -259,7 +259,7 @@ const QuoteCard = ({ quote }) => {
             <button
               className={`quote-card-action-btn ${repostDone ? 'reposted' : ''}`}
               onClick={() => repostDone ? handleRepost() : setShowRepostInput(!showRepostInput)}
-              title={repostDone ? 'Repostu geri al' : 'Repostla'}
+              title={repostDone ? 'Yeniden paylaşımı geri al' : 'Yeniden Paylaş'}
             >
               <Repeat fontSize="small" />
               <span>{repostCount}</span>
@@ -293,7 +293,7 @@ const QuoteCard = ({ quote }) => {
         <div className="quote-card-repost-input">
           <textarea
             className="quote-card-textarea"
-            placeholder="Repost yorumu ekle... (opsiyonel)"
+            placeholder="Yeniden paylaşım yorumu ekle... (isteğe bağlı)"
             value={repostComment}
             onChange={(e) => setRepostComment(e.target.value)}
             rows={2}
@@ -311,7 +311,7 @@ const QuoteCard = ({ quote }) => {
               disabled={reposting}
             >
               <Repeat fontSize="small" />
-              {reposting ? 'Repostlanıyor...' : 'Repostla'}
+              {reposting ? 'Paylaşılıyor...' : 'Yeniden Paylaş'}
             </button>
           </div>
         </div>

@@ -306,7 +306,7 @@ export const sendRegistrationCode = async (email, username) => {
   // Önce çakışma var mı kontrol et (silinmiş hesaplar hariç — email/username tekrar kullanılabilsin mi
   // istersen burada isDeleted:false filtresi eklenebilir; şu an mevcut davranış korunuyor)
   const existingUser = await User.findOne({ $or: [{ email }, { username }] });
-  if (existingUser) throw new Error('Email veya kullanıcı adı zaten kullanımda.');
+  if (existingUser) throw new Error('E-posta veya kullanıcı adı zaten kullanımda.');
 
   const code = Math.floor(100000 + Math.random() * 900000).toString();
 

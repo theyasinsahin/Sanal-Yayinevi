@@ -119,7 +119,7 @@ const DangerZone = ({ profile, showToast }) => {
               Hesabı Kalıcı Olarak Sil
             </span>
             <span className="danger-action-desc">
-              Tüm kitaplarınız, alıntılarınız, session'larınız ve profil verileriniz
+              Tüm kitaplarınız, alıntılarınız, oturumlarınız ve profil verileriniz
               geri dönüşü olmayan biçimde silinir. Yayınlanmış kitaplarınız da kaldırılır.
             </span>
           </div>

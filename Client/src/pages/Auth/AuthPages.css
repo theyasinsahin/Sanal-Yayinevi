@@ -567,7 +567,7 @@
 }
 
 .auth-card .signature-line::before {
-  content: 'Signature:';
+  content: 'İmza:';
   position: absolute;
   top: -0.75rem;
   left: 0;

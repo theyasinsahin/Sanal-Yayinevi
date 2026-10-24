@@ -12,7 +12,7 @@ const NOTIFICATION_GROUPS = [
     label: 'Sosyal',
     rows: [
       { key: 'newFollower',     label: 'Yeni Takipçi',          sub: 'Biri sizi takip ettiğinde.' },
-      { key: 'mentionInSession',label: 'Session\'da Bahsedilme', sub: 'Bir session\'da etiketlendiğinizde.' },
+      { key: 'mentionInSession',label: 'Oturumda Bahsedilme', sub: 'Bir oturumda etiketlendiğinizde.' },
     ],
   },
   {
@@ -22,7 +22,7 @@ const NOTIFICATION_GROUPS = [
       { key: 'bookComment',  label: 'Kitaba Yorum',      sub: 'Kitabınıza birisi yorum yaptığında.' },
       { key: 'bookLike',     label: 'Kitaba Beğeni',     sub: 'Kitabınız beğenildiğinde.' },
       { key: 'quoteLike',    label: 'Alıntıya Beğeni',   sub: 'Bir alıntınız beğenildiğinde.' },
-      { key: 'sessionReply', label: 'Session Yanıtı',    sub: 'Yazdığınız bir session\'a yanıt geldiğinde.' },
+      { key: 'sessionReply', label: 'Oturum Yanıtı',    sub: 'Bir oturumda yazdığınız iletiye yanıt geldiğinde.' },
     ],
   },
   {

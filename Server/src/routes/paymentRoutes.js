@@ -11,7 +11,7 @@ router.post('/callback', async (req, res) => {
     const { token } = req.body;
 
     if (!token) {
-        return res.status(400).send('Token not found');
+        return res.status(400).send('Ödeme doğrulama anahtarı bulunamadı.');
     }
 
     // Bu token ile Iyzico'ya soruyoruz: "Bu işlemin akıbeti nedir?"

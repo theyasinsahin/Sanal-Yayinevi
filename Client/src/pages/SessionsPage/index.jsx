@@ -276,7 +276,7 @@ const SessionsPage = () => {
                     Oturum açmak ister misin?
                   </Typography>
                   <Typography variant="caption" color="muted">
-                    Premium üyeler kendi oturumlarını oluşturabilir.
+                    Ücretli üyeler kendi oturumlarını oluşturabilir.
                   </Typography>
                 </div>
                 <Button
@@ -284,7 +284,7 @@ const SessionsPage = () => {
                   size="small"
                   onClick={() => navigate('/premium')}
                 >
-                  Premium'a Geç
+                  Ücretli Üyeliğe Geç
                 </Button>
               </div>
             )}

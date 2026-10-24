@@ -12,7 +12,7 @@ export default {
 
     getChapterById: async (_, { id }) => {
       const chapter = await ChapterService.findChapterById(id);
-      if (!chapter) throw new Error("Chapter not found");
+      if (!chapter) throw new Error("Bölüm bulunamadı.");
       return chapter;
     },
 

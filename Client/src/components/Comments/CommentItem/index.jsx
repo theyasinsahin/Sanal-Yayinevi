@@ -75,7 +75,7 @@ const CommentItem = ({ comment, currentUserId, bookId, isReply = false }) => {
   const author = comment.userId;
   const username = author?.username || "Bilinmeyen";
   const profilePic = author?.profilePicture;
-  const dateStr = comment.date ? new Date(comment.date).toLocaleDateString() : '';
+  const dateStr = comment.date ? new Date(comment.date).toLocaleDateString('tr-TR') : '';
   const isMyComment = currentUserId && author?.id === currentUserId;
 
   // Sunucudan gelen gerçek değer

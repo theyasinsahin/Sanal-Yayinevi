@@ -64,7 +64,7 @@ export const repostQuote = async (userId, originalQuoteId, repostComment, isSpoi
 
   // Aynı kullanıcı zaten repost etmiş mi?
   if (original.repostedBy.includes(userId)) {
-    throw new Error('Bu alıntıyı zaten repostladınız.');
+    throw new Error('Bu alıntıyı zaten yeniden paylaştınız.');
   }
 
   // Repost kaydını oluştur
@@ -257,7 +257,7 @@ export const unrepostQuote = async (userId, originalQuoteId) => {
     originalQuoteId,
     isRepost: true,
   });
-  if (!repost) throw new Error('Repost bulunamadı.');
+  if (!repost) throw new Error('Yeniden paylaşım bulunamadı.');
 
   await Quote.findByIdAndDelete(repost._id);
 

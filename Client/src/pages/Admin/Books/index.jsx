@@ -36,7 +36,7 @@ const AdminBooks = () => {
               <td>
                 <img 
                   src={book.imageUrl}
-                  alt="cover" 
+                  alt="Kitap kapağı"
                   style={{width:40, height:60, borderRadius:4, objectFit:'cover'}}
                 />
               </td>
