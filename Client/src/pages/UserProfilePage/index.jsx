@@ -95,7 +95,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
   const [updateUser, { loading: updating }] = useMutation(UPDATE_USER_MUTATION, {
     onCompleted: () => {
       setIsEditing(false);
-      showToast('Profile updated successfully', 'success');
+      showToast('Profil başarıyla güncellendi.', 'success');
       refetch();
     },
     onError: (err) => showToast(err.message, 'error')
@@ -178,7 +178,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
 
   const handleSave = async () => {
     if (!editForm.username.trim()) {
-      showToast("Username required", 'error');
+      showToast("Kullanıcı adı zorunludur.", 'error');
       return;
     }
     await updateUser({ variables: { ...editForm } });
@@ -206,8 +206,8 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
 
   const formatNumber = (num) => {
     if (!num) return '0';
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+    if (num >= 1000000) return `${(num / 1000000).toLocaleString('tr-TR', { maximumFractionDigits: 1 })} mn`;
+    if (num >= 1000) return `${(num / 1000).toLocaleString('tr-TR', { maximumFractionDigits: 1 })} bin`;
     return num.toString();
   };
 
@@ -264,7 +264,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
               
               {!isEditing && profile.isVerified && (
                 <div className="verified-badge">
-                  <Verified style={{ fontSize: '1rem' }} /><span>Verified</span>
+                  <Verified style={{ fontSize: '1rem' }} /><span>Doğrulanmış</span>
                 </div>
               )}
             </div>
@@ -272,12 +272,12 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
             <div className="header-center">
               {isEditing ? (
                 <div className="edit-form-grid">
-                   <Input label="Full Name" value={editForm.fullName} onChange={(e) => setEditForm({...editForm, fullName: e.target.value})} />
-                   <Input label="Username" value={editForm.username} onChange={(e) => setEditForm({...editForm, username: e.target.value})} required />
-                   <Textarea label="Bio" value={editForm.bio} onChange={(e) => setEditForm({...editForm, bio: e.target.value})} rows={3} />
+                   <Input label="Ad Soyad" value={editForm.fullName} onChange={(e) => setEditForm({...editForm, fullName: e.target.value})} />
+                   <Input label="Kullanıcı Adı" value={editForm.username} onChange={(e) => setEditForm({...editForm, username: e.target.value})} required />
+                   <Textarea label="Hakkımda" value={editForm.bio} onChange={(e) => setEditForm({...editForm, bio: e.target.value})} rows={3} />
                    <div className="edit-actions">
-                     <Button variant="primary" onClick={handleSave} isLoading={updating} icon={<Save fontSize="small"/>}>Save</Button>
-                     <Button variant="outline" onClick={() => setIsEditing(false)} icon={<Cancel fontSize="small"/>}>Cancel</Button>
+                     <Button variant="primary" onClick={handleSave} isLoading={updating} icon={<Save fontSize="small"/>}>Kaydet</Button>
+                     <Button variant="outline" onClick={() => setIsEditing(false)} icon={<Cancel fontSize="small"/>}>İptal</Button>
                    </div>
                 </div>
               ) : (
@@ -316,21 +316,21 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
                       <span className="stat-value">
                         {isMe ? (profile.usersBooks?.length || 0) : publishedBooks.length}
                       </span>
-                      <span className="stat-label">Books</span>
+                      <span className="stat-label">Kitaplar</span>
                     </div>
                     <div className="stat-divider"></div>
                     
                     {/* YENİ: Tıklanabilir Followers */}
                     <div className="stat-item-profile clickable" onClick={() => openModal('followers')}>
                       <span className="stat-value">{formatNumber(followerCount)}</span>
-                      <span className="stat-label">Followers</span>
+                      <span className="stat-label">Takipçiler</span>
                     </div>
                     <div className="stat-divider"></div>
 
                     {/* YENİ: Tıklanabilir Following */}
                     <div className="stat-item-profile clickable" onClick={() => openModal('following')}>
                       <span className="stat-value">{formatNumber(profile.following?.length || 0)}</span>
-                      <span className="stat-label">Following</span>
+                      <span className="stat-label">Takip Edilenler</span>
                     </div>
                     <div className="stat-divider"></div>
                     
@@ -344,16 +344,16 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
                         <div className="stat-divider"></div>
                         <div className="stat-item-profile">
                           <span className="stat-value">{profile.savedBooks?.length || 0}</span>
-                          <span className="stat-label">Saved</span>
+                          <span className="stat-label">Kaydedilenler</span>
                         </div>
                       </>
                     )}
                   </div>
                   
                   <div className="mini-stats-row">
-                     <span><TrendingUp fontSize="small"/> {formatNumber(totalViews)} views</span>
+                     <span><TrendingUp fontSize="small"/> {formatNumber(totalViews)} görüntülenme</span>
                      <span>&bull;</span>
-                     <span><Star fontSize="small"/> {formatNumber(totalLikes)} likes</span>
+                     <span><Star fontSize="small"/> {formatNumber(totalLikes)} beğeni</span>
                   </div>
                 </>
               )}
@@ -363,8 +363,8 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
               {isMe ? (
                 !isEditing && (
                   <div className="my-actions">
-                    <Button variant="outline" onClick={() => setIsEditing(true)} icon={<Edit fontSize="small"/>}>Edit</Button>
-                    <Button variant="outline" onClick={handleLogout} icon={<Logout fontSize="small"/>}>Logout</Button>
+                    <Button variant="outline" onClick={() => setIsEditing(true)} icon={<Edit fontSize="small"/>}>Düzenle</Button>
+                    <Button variant="outline" onClick={handleLogout} icon={<Logout fontSize="small"/>}>Çıkış Yap</Button>
                   </div>
                 )
               ) : (
@@ -375,7 +375,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
                     isLoading={followLoading}
                     icon={isFollowing ? <PersonRemove /> : <PersonAdd />}
                   >
-                    {isFollowing ? 'Unfollow' : 'Follow'}
+                    {isFollowing ? 'Takibi Bırak' : 'Takip Et'}
                   </Button>
 
                   <Button

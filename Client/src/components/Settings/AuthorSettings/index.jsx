@@ -9,10 +9,10 @@ import { UPDATE_AUTHOR_SETTINGS_MUTATION } from '../../../graphql/mutations/user
 
 const LANGUAGE_OPTIONS = [
   { value: 'tr', label: 'Türkçe' },
-  { value: 'en', label: 'English' },
-  { value: 'de', label: 'Deutsch' },
-  { value: 'fr', label: 'Français' },
-  { value: 'es', label: 'Español' },
+  { value: 'en', label: 'İngilizce' },
+  { value: 'de', label: 'Almanca' },
+  { value: 'fr', label: 'Fransızca' },
+  { value: 'es', label: 'İspanyolca' },
 ];
 
 const GENRE_OPTIONS = [

@@ -60,17 +60,17 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
     fundingTarget,
   } = book;
 
-  const displayAuthor    = author?.fullName || author?.username || 'Anonymous';
+  const displayAuthor    = author?.fullName || author?.username || 'Anonim';
   const finalCoverImage  = imageUrl
     ? getOptimizedImage(imageUrl, 300, 450)
-    : 'https://via.placeholder.com/300x450?text=No+Cover';
+    : 'https://via.placeholder.com/300x450?text=Kapak+Yok';
   const estimatedReadTime = pageCount ? Math.ceil(pageCount / 3) : 0;
   const isTrending        = stats?.views > 1000;
 
   const formatNumber = (num) => {
     if (!num) return '0';
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+    if (num >= 1000000) return `${(num / 1000000).toLocaleString('tr-TR', { maximumFractionDigits: 1 })} mn`;
+    if (num >= 1000) return `${(num / 1000).toLocaleString('tr-TR', { maximumFractionDigits: 1 })} bin`;
     return num.toString();
   };
 
@@ -91,20 +91,20 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
             alt={title}
             className="cover-image"
             loading="lazy"
-            onError={(e) => { e.target.src = 'https://via.placeholder.com/300x450?text=Error'; }}
+            onError={(e) => { e.target.src = 'https://via.placeholder.com/300x450?text=Gorsel+Yuklenemedi'; }}
           />
 
           <div className="meta-overlay">
             {pageCount && (
               <Badge variant="neutral" className="shadow-sm">
                 <Pages style={{ fontSize: 12 }} />
-                {pageCount}p
+                {pageCount}s.
               </Badge>
             )}
             {isTrending && (
               <Badge variant="warning" className="shadow-sm badge-glow">
                 <TrendingUp style={{ fontSize: 12 }} />
-                Trending
+                Popüler
               </Badge>
             )}
           </div>
@@ -112,11 +112,11 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
           {status === 'FUNDING' && (
             <div className="status-badge funding">
               <Star style={{ fontSize: 14 }} />
-              <span>Funding</span>
+              <span>Fonlanıyor</span>
             </div>
           )}
           {status === 'PUBLISHED' && (
-            <div className="status-badge published">Published</div>
+            <div className="status-badge published">Yayımlandı</div>
           )}
         </div>
 
@@ -132,7 +132,7 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
           )}
 
           <div className="book-author">
-            <Typography variant="caption" color="muted">by</Typography>
+            <Typography variant="caption" color="muted">Yazar:</Typography>
             <Typography variant="caption" weight="medium" color="primary">
               {displayAuthor}
             </Typography>
@@ -141,13 +141,13 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
           <Typography variant="body" color="muted" className="book-excerpt">
             {description
               ? description.length > 120 ? description.substring(0, 120) + '...' : description
-              : 'No description available.'}
+              : 'Henüz açıklama eklenmemiş.'}
           </Typography>
 
           {estimatedReadTime > 0 && (
             <div className="reading-time">
               <Typography variant="caption" color="muted">
-                ~{estimatedReadTime} min read
+                ~{estimatedReadTime} dk okuma
               </Typography>
             </div>
           )}
@@ -159,15 +159,15 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
           )}
 
           <div className="card-stats">
-            <div className="stat-item" title="Views">
+            <div className="stat-item" title="Görüntülenme">
               <EyeIcon className="stat-icon" />
               <span>{formatNumber(stats?.views || 0)}</span>
             </div>
-            <div className="stat-item" title="Comments">
+            <div className="stat-item" title="Yorumlar">
               <CommentIcon className="stat-icon" />
               <span>{formatNumber(commentCount || 0)}</span>
             </div>
-            <div className="stat-item" title="Likes">
+            <div className="stat-item" title="Beğeniler">
               <FavoriteBorder className="stat-icon" />
               <span>{formatNumber(stats?.likes || 0)}</span>
             </div>

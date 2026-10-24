@@ -19,7 +19,7 @@ const FONT_SIZES = [
 
 const LANGUAGES = [
   { value: 'tr', label: 'Türkçe' },
-  { value: 'en', label: 'English' },
+  { value: 'en', label: 'İngilizce' },
 ];
 
 // localStorage anahtarları

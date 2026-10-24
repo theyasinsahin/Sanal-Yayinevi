@@ -173,7 +173,7 @@ const RegisterPage = () => {
                       yönlendirmesi kullanır (COOP sorununu tamamen ortadan
                       kaldırır). useOneTap kaldırıldı — o da iframe/postMessage
                       tabanlı olduğu için aynı türde sorunlara açıktı. */}
-                  <GoogleLogin
+                  <GoogleLogin locale="tr"
                       ux_mode="redirect"
                       login_uri={GOOGLE_LOGIN_URI}
                       onError={() => setCustomError("Google penceresi açılamadı veya iptal edildi.")}

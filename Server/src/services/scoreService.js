@@ -108,7 +108,7 @@ export const onRepostCreated = async (userId) => {
     { $inc: { 'stats.repostsCreated': 1 } },
     { upsert: true, new: true }
   );
-  await Notification.create({ userId, type: 'POINTS_EARNED', title: `+${POINTS.repost} Puan!`, message: 'Alıntı repostladığın için puan kazandın.', icon: '⭐', meta: { points: POINTS.repost } });
+  await Notification.create({ userId, type: 'POINTS_EARNED', title: `+${POINTS.repost} Puan!`, message: 'Alıntıyı yeniden paylaştığın için puan kazandın.', icon: '⭐', meta: { points: POINTS.repost } });
   await checkAndAwardBadges(userId, score.stats);
 };
 

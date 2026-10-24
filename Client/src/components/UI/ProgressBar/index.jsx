@@ -7,8 +7,8 @@ export const ProgressBar = ({ current, target }) => {
     return (
         <div className="progress-wrapper">
             <div className="progress-labels">
-                <span className="current">₺{current.toLocaleString()}</span>
-                <span className="target">Hedef: ₺{target.toLocaleString()}</span>
+                <span className="current">₺{current.toLocaleString('tr-TR')}</span>
+                <span className="target">Hedef: ₺{target.toLocaleString('tr-TR')}</span>
             </div>
             <div className="progress-track">
                 <div 

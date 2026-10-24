@@ -47,7 +47,7 @@ const AdminDashboard = () => {
       .slice(0, 7); // Ekrana sığacak kadar al
 
   return (
-    <AdminLayout title="Dashboard">
+    <AdminLayout title="Yönetim Paneli">
       
       {/* İSTATİSTİK KARTLARI */}
       <div className="stats-grid-admin">
@@ -66,7 +66,7 @@ const AdminDashboard = () => {
         <div className="admin-stat-card">
            <Typography variant="h6" color="muted">Toplam Fon</Typography>
            <Typography variant="h3" weight="bold" className="text-green-600">
-             ₺{totalRevenue.toLocaleString()}
+             ₺{totalRevenue.toLocaleString('tr-TR')}
            </Typography>
         </div>
       </div>
@@ -110,7 +110,7 @@ const AdminDashboard = () => {
                           )}
                        </p>
                        <span className="text-xs text-gray-400">
-                          {new Date(parseInt(act.date)).toLocaleDateString()}
+                          {new Date(parseInt(act.date)).toLocaleDateString('tr-TR')}
                        </span>
                     </div>
                  </div>

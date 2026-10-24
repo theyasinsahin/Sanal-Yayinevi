@@ -118,7 +118,7 @@ const QuotePopup = ({ bookId, chapterId, chapterTitle, chapterIndex }) => {
     >
       {saved ? (
         <div className="quote-popup-saved">
-          <Check fontSize="small" /> {existingQuote ? 'Repost edildi!' : 'Alıntı kaydedildi!'}
+          <Check fontSize="small" /> {existingQuote ? 'Yeniden paylaşıldı!' : 'Alıntı kaydedildi!'}
         </div>
       ) : existingQuote ? (
         /* Mevcut alıntı var — Repost UI */
@@ -132,16 +132,16 @@ const QuotePopup = ({ bookId, chapterId, chapterTitle, chapterIndex }) => {
           </div>
           <p className="quote-popup-existing-info">
             <strong>@{existingQuote.user?.username}</strong> tarafından alıntılandı.
-            Repostlayarak destek verebilirsin.
+            Yeniden paylaşarak destek verebilirsin.
           </p>
 
           {existingQuote.repostedBy?.includes(existingQuote.user?.id) ? (
-            <p className="quote-popup-already-reposted">Zaten repostladınız.</p>
+            <p className="quote-popup-already-reposted">Zaten yeniden paylaştınız.</p>
           ) : (
             <>
               <textarea
                 className="quote-note-input"
-                placeholder="Repost yorumu ekle... (opsiyonel)"
+                placeholder="Yeniden paylaşım yorumu ekle... (isteğe bağlı)"
                 value={repostComment}
                 onChange={(e) => setRepostComment(e.target.value)}
                 rows={2}
@@ -152,7 +152,7 @@ const QuotePopup = ({ bookId, chapterId, chapterTitle, chapterIndex }) => {
                   checked={repostIsSpoiler}
                   onChange={(e) => setRepostIsSpoiler(e.target.checked)}
                 />
-                <span>⚠️ Bu alıntı spoiler içeriyor</span>
+                <span>⚠️ Bu alıntı sürprizbozan içeriyor</span>
               </label>
               <button
                 className="quote-popup-btn primary full"
@@ -160,7 +160,7 @@ const QuotePopup = ({ bookId, chapterId, chapterTitle, chapterIndex }) => {
                 disabled={reposting}
               >
                 <Repeat fontSize="small" />
-                {reposting ? 'Repostlanıyor...' : 'Repostla'}
+                {reposting ? 'Paylaşılıyor...' : 'Yeniden Paylaş'}
               </button>
             </>
           )}
@@ -180,7 +180,7 @@ const QuotePopup = ({ bookId, chapterId, chapterTitle, chapterIndex }) => {
           {showNoteInput && (
             <div className="quote-popup-note">
               <textarea
-                placeholder="Notunuzu ekleyin... (opsiyonel)"
+                placeholder="Notunuzu ekleyin... (isteğe bağlı)"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 rows={2}
@@ -194,7 +194,7 @@ const QuotePopup = ({ bookId, chapterId, chapterTitle, chapterIndex }) => {
                   checked={isSpoiler}
                   onChange={(e) => setIsSpoiler(e.target.checked)}
                 />
-                <span>⚠️ Bu alıntı spoiler içeriyor</span>
+                <span>⚠️ Bu alıntı sürprizbozan içeriyor</span>
               </label>
               <button className="quote-popup-btn primary full" onClick={handleSave} disabled={creating}>
                 {creating ? 'Kaydediliyor...' : 'Kaydet'}
