@@ -1,3 +1,4 @@
+import { emailChangedEmail, passwordResetEmail, registrationEmail } from '../emails/templates.js';
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
@@ -15,8 +16,8 @@ import * as SessionService from './sessionService.js';
 
 import { validatePassword } from '../utils/passwordValidation.js';
 
-import dotenv from 'dotenv';
-dotenv.config();
+import '../config/environment.js';
+
 
 import { OAuth2Client } from 'google-auth-library';
 
@@ -38,16 +39,9 @@ export const changeEmail = async (userId, { newEmail, currentPassword }) => {
 
   // İsteğe bağlı: doğrulama maili gönder
   await transporter.sendMail({
-    from: process.env.EMAIL_USER,
+    from: { name: 'Betik', address: process.env.EMAIL_USER },
     to: newEmail,
-    subject: 'Quill - E-posta Değişikliği',
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
-        <h2>E-posta Değişikliği</h2>
-        <p>E-posta adresiniz başarıyla değiştirildi.</p>
-        <p style="color:#888; margin-top:16px;">Eğer bu işlemi siz yapmadıysanız hemen bizimle iletişime geçin.</p>
-      </div>
-    `
+    ...emailChangedEmail(),
   });
 
   return { code: 200, message: 'E-posta güncellendi.' };
@@ -71,21 +65,9 @@ export const forgotPassword = async (email) => {
   const resetUrl = `${process.env.CLIENT_URL}/reset-password/${token}`;
 
   await transporter.sendMail({
-    from: process.env.EMAIL_USER,
+    from: { name: 'Betik', address: process.env.EMAIL_USER },
     to: email,
-    subject: 'Quill - Şifre Sıfırlama',
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
-        <h2>Şifre Sıfırlama</h2>
-        <p>Şifrenizi sıfırlamak için aşağıdaki bağlantıya tıklayın:</p>
-        <a href="${resetUrl}" 
-           style="display:inline-block; padding: 12px 24px; background:#2563EB; color:#fff; border-radius:6px; text-decoration:none;">
-          Şifremi Sıfırla
-        </a>
-        <p style="color:#888; margin-top:16px;">Bu bağlantı <b>1 saat</b> geçerlidir.</p>
-        <p style="color:#888;">Eğer bu isteği siz yapmadıysanız bu e-postayı görmezden gelebilirsiniz.</p>
-      </div>
-    `
+    ...passwordResetEmail({ resetUrl }),
   });
 
   return { code: 200, message: 'Eğer bu e-posta kayıtlıysa sıfırlama bağlantısı gönderildi.' };
@@ -335,10 +317,9 @@ export const sendRegistrationCode = async (email, username) => {
   );
 
   await transporter.sendMail({
-    from: process.env.EMAIL_USER,
+    from: { name: 'Betik', address: process.env.EMAIL_USER },
     to: email,
-    subject: 'Quill - Doğrulama Kodu',
-    text: `Doğrulama kodunuz: ${code}`
+    ...registrationEmail({ code, username }),
   });
 
   return { code: 200, message: 'Doğrulama kodu e-postanıza gönderildi.' };
