@@ -1,11 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FiInstagram, FiTwitter, FiLinkedin, FiGithub } from 'react-icons/fi';
+import Newsletter from './Newsletter';
+import SocialLinks from './SocialLinks';
 
 // --- UI KIT IMPORTS ---
 import { Container } from '../../UI/Container';
 import { Typography } from '../../UI/Typography';
-import { Button } from '../../UI/Button';
+
 
 import './Footer.css';
 import Logo from '../../Logo';
@@ -31,12 +32,7 @@ const Footer = () => {
             </Typography>
             
             {/* Sosyal Medya İkonları */}
-            <div className="social-links">
-              <a href="#" className="social-icon"><FiInstagram /></a>
-              <a href="#" className="social-icon"><FiTwitter /></a>
-              <a href="#" className="social-icon"><FiLinkedin /></a>
-              <a href="#" className="social-icon"><FiGithub /></a>
-            </div>
+            <SocialLinks />
           </div>
 
           {/* 2. SÜTUN: PLATFORM */}
@@ -48,7 +44,7 @@ const Footer = () => {
               <li><Link to="/feed">Keşfet</Link></li>
               <li><Link to="/create-book">Kitap Yaz</Link></li>
               <li><Link to="/authors">Yazarlar</Link></li>
-              <li><Link to="/publishers">Yayınevleri</Link></li>
+              <li><Link to="/published-books">Basılan Eserler</Link></li>
             </ul>
           </div>
 
@@ -74,16 +70,7 @@ const Footer = () => {
               Yeni çıkan kitaplar ve yazarlık ipuçları için bültenimize abone olun.
             </Typography>
             
-            <form className="newsletter-form" onSubmit={(e) => e.preventDefault()}>
-              <input 
-                type="email" 
-                placeholder="E-posta adresiniz" 
-                className="footer-input"
-              />
-              <Button variant="primary" size="medium" className="w-full">
-                Abone Ol
-              </Button>
-            </form>
+            <Newsletter />
           </div>
 
         </div>
