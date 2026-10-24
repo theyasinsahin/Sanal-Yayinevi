@@ -1,0 +1,60 @@
+type PublicAuthor {
+  id: ID!
+  username: String!
+  fullName: String!
+  bio: String!
+  profilePicture: String!
+  bookCount: Int!
+  pageCount: Int!
+}
+
+type AuthorPage {
+  authors: [PublicAuthor!]!
+  total: Int!
+  page: Int!
+  pageSize: Int!
+  totalPages: Int!
+}
+
+type CommunitySocials {
+  instagram: String
+  x: String
+  linkedin: String
+  tiktok: String
+}
+
+type CommunityConfig {
+  email: String!
+  phone: String!
+  socials: CommunitySocials!
+}
+
+input ContactMessageInput {
+  name: String!
+  email: String!
+  subject: String!
+  message: String!
+  website: String
+}
+
+input NewsletterSubscriptionInput {
+  email: String!
+  consent: Boolean!
+  website: String
+}
+
+enum NewsletterAction {
+  confirm
+  unsubscribe
+}
+
+extend type Query {
+  getAuthors(page: Int = 1, pageSize: Int = 12): AuthorPage!
+  getCommunityConfig: CommunityConfig!
+}
+
+extend type Mutation {
+  sendContactMessage(input: ContactMessageInput!): Status!
+  subscribeNewsletter(input: NewsletterSubscriptionInput!): Status!
+  manageNewsletter(token: String!, action: NewsletterAction!): Status!
+}

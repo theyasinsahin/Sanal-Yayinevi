@@ -1,4 +1,5 @@
 import React from 'react';
+import { AuthorsPage, PublishedBooksPage, AboutPage, ContactPage, LegalPage, NewsletterPage } from './pages/Community';
 import {
   ApolloClient,
   InMemoryCache,
@@ -165,6 +166,13 @@ const router = createBrowserRouter([
     children: [
       { path: "/", element: <LandingPage /> },
       { path: "/feed", element: <FeedPage /> },
+      { path: "/authors", element: <AuthorsPage /> },
+      { path: "/published-books", element: <PublishedBooksPage /> },
+      { path: "/about", element: <AboutPage /> },
+      { path: "/contact", element: <ContactPage /> },
+      { path: "/terms", element: <LegalPage kind="terms" /> },
+      { path: "/privacy", element: <LegalPage kind="privacy" /> },
+      { path: "/newsletter", element: <NewsletterPage /> },
       { path: "/book-detail/:id", element: <Layout><BookDetailPage /></Layout> },
       { path: "/book-reader/:bookId", element: <Layout><BookReader /></Layout> },
 

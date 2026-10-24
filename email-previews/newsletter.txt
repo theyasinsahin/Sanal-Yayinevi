@@ -1,0 +1,15 @@
+Betik · Bülten aboneliğini doğrula
+
+BETİK
+Yeni hikâyelerden haberdar ol.
+
+Betik’ten haber almak için aboneliğini doğrula (24 saat geçerli):
+https://example.test/newsletter?token=example-preview-token&action=confirm
+
+Onay vermeden aboneliğin aktif olmaz.
+Abonelikten çıkmak için bu bağlantıyı sakla:
+https://example.test/newsletter?token=example-preview-token&action=unsubscribe
+
+Bu isteği sen göndermediysen doğrulama bağlantısını kullanma. Bağlantılarını kimseyle paylaşma.
+
+Betik · Her hikâye bir okurla büyür.
