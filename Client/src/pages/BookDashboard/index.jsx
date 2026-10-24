@@ -6,7 +6,8 @@ import {
   Add, 
   Save, 
   FolderOpen, 
-  Edit, 
+  MenuOpen,
+  Close,
   Visibility, 
   Delete,
   ArrowBack
@@ -65,6 +66,7 @@ const BookDashboard = () => {
   const [isSaved, setIsSaved] = useState(true);
   const [notification, setNotification] = useState({ isVisible: false, message: '', type: '' });
   const [showCostModal, setShowCostModal] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const isJustLoaded = useRef(false);
 
@@ -132,6 +134,7 @@ const BookDashboard = () => {
       setSelectedChapter(chapterId);
       setContent(chapter?.content || '');
       setIsSaved(true);
+      setIsMobileSidebarOpen(false);
     };
     
     if (!isSaved) {
@@ -218,9 +221,28 @@ const BookDashboard = () => {
 
   return (
     <div className="dashboard-container">
-      
+      {/* Mobil: bölüm menüsü açılınca editörü örten karartma */}
+      {isMobileSidebarOpen && (
+        <button
+          type="button"
+          className="dashboard-sidebar-backdrop"
+          aria-label="Bölüm menüsünü kapat"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        />
+      )}
+
       {/* --- SIDEBAR --- */}
-      <aside className="dashboard-sidebar">
+      <aside
+        id="dashboard-chapter-sidebar"
+        className={`dashboard-sidebar ${isMobileSidebarOpen ? 'mobile-open' : ''}`}
+      >
+        <div className="dashboard-sidebar-mobile-header">
+          <strong>Kitap bölümleri</strong>
+          <button type="button" className="dashboard-mobile-icon-button"
+            aria-label="Menüyü kapat" onClick={() => setIsMobileSidebarOpen(false)}>
+            <Close />
+          </button>
+        </div>
         {/* Kitap Bilgisi */}
         <div className="book-summary">
           <div className="book-cover-mini">
@@ -280,6 +302,7 @@ const BookDashboard = () => {
                 </div>
                 <button 
                   className="delete-btn"
+                  aria-label={`${chapter.title} bölümünü sil`}
                   onClick={(e) => handleDeleteChapter(e, chapter.id)}
                 >
                   <Delete fontSize="small" />
@@ -345,6 +368,19 @@ const BookDashboard = () => {
 
       {/* --- EDITOR AREA --- */}
       <main className="dashboard-main">
+        <div className="dashboard-mobile-toolbar">
+          <button
+            type="button"
+            className="dashboard-mobile-chapters-button"
+            aria-controls="dashboard-chapter-sidebar"
+            aria-expanded={isMobileSidebarOpen}
+            onClick={() => setIsMobileSidebarOpen(true)}
+          >
+            <MenuOpen fontSize="small" />
+            Bölümler ({chapters.length})
+          </button>
+          <span className="dashboard-mobile-book-name">{book?.title}</span>
+        </div>
         {selectedChapter ? (
           <>
             <header className="editor-topbar">
@@ -380,8 +416,15 @@ const BookDashboard = () => {
           <div className="empty-state">
              <Typography variant="h4" color="muted">Hoşgeldiniz</Typography>
              <Typography variant="body" color="muted">
-               Düzenlemek için soldan bir bölüm seçin veya yeni bir bölüm oluşturun.
+               Düzenlemek için bir bölüm seçin veya yeni bir bölüm oluşturun.
              </Typography>
+             <button
+               type="button"
+               className="dashboard-empty-action"
+               onClick={() => setIsMobileSidebarOpen(true)}
+             >
+               <FolderOpen fontSize="small" /> Bölümleri Aç
+             </button>
           </div>
         )}
       </main>

@@ -1,5 +1,5 @@
 /* src/pages/LeaderboardPage/LeaderboardPage.css */
-.leaderboard-page { min-height: 100vh; padding: 40px 0 80px; overflow-x: hidden; }
+.leaderboard-page { min-height: 100vh; padding: 90px 0 80px; overflow-x: hidden; }
 
 .leaderboard-header {
   text-align: center;
