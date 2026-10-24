@@ -1,7 +1,7 @@
 import Iyzipay from 'iyzipay';
-import dotenv from 'dotenv';
+import './environment.js';
 
-dotenv.config();
+
 
 const iyzipay = new Iyzipay({
     apiKey: process.env.IYZICO_API_KEY,

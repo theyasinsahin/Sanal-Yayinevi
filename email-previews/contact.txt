@@ -1,0 +1,19 @@
+Betik · Yeni iletişim mesajı
+
+BETİK
+Okunmayı bekleyen bir mesaj.
+
+İletişim formundan yeni mesaj.
+Gönderen: Deniz Yılmaz
+E-posta: deniz@example.test
+Konu: Hikâyemi paylaşmak istiyorum
+
+Merhaba Betik ekibi,
+
+Yazmaya başladığım hikâyemi okurlarla buluşturmak istiyorum. Önerilerinizi paylaşabilir misiniz?
+
+Teşekkürler.
+
+Bu e-postayı yanıtlayarak gönderene ulaşabilirsin.
+
+Betik · Her hikâye bir okurla büyür.

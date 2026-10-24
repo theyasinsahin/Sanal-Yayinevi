@@ -1,9 +1,9 @@
+import './src/config/environment.js';
 // Temel Kütüphaneler
 import http from 'http';
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import * as dotenv from 'dotenv';
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServer } from '@apollo/server';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
@@ -20,11 +20,6 @@ import { authenticateUser } from './src/utils/auth.js';
 import formatError from './src/utils/formatError.js';
 import paymentRoutes from './src/routes/paymentRoutes.js';
 import googleAuthRoutes from './src/routes/googleAuthRoutes.js';
-
-// 1. Ortam Değişkenlerini Yükle
-dotenv.config({
-  path: process.env.NODE_ENV === "production" ? ".env.prod" : ".env",
-});
 
 const PORT = process.env.PORT || 5000;
 
