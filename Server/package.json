@@ -7,6 +7,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
+    "mail:verify": "node src/scripts/verifyMail.js",
+    "mail:preview": "node src/scripts/previewEmails.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "seed:badges": "node src/scripts/seedBadges.js",
     "seed:books": "node src/scripts/seedBook.js",

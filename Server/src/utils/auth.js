@@ -1,8 +1,6 @@
 import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
-dotenv.config({
-  path: process.env.NODE_ENV === "production" ? ".env.prod" : ".env",
-});
+import '../config/environment.js';
+
 
 export const authenticateUser = async (req, User) => {
   // 1. Token var mı kontrol et
