@@ -1,0 +1,19 @@
+.social-share-overlay { position: fixed; inset: 0; background: rgba(26,26,26,.6); display: flex; align-items: center; justify-content: center; padding: 1rem; z-index: 12000; }
+.social-share-dialog { width: min(100%, 640px); max-height: calc(100dvh - 2rem); overflow-y: auto; padding: 1.5rem; background: var(--bg-surface); color: var(--text-main); border: var(--border-medium); border-radius: var(--radius-lg); box-shadow: var(--shadow-xl); }
+.social-share-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.25rem; }
+.social-share-header h2 { font-size: 1.5rem; }
+.social-share-preview { display: flex; align-items: flex-start; gap: 1rem; padding: 1rem; background: var(--bg-app); border: var(--border-light); border-radius: var(--radius-md); }
+.social-share-preview img { width: 100px; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm); }
+.social-share-preview div { min-width: 0; }
+.social-share-preview h3 { font-size: 1rem; overflow-wrap: anywhere; margin-bottom: .5rem; }
+.social-share-preview p, .social-share-story p { font-size: .875rem; color: var(--text-muted); overflow-wrap: anywhere; }
+.social-share-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin: 1.25rem 0; }
+.social-share-actions .btn { font-size: .8rem; text-decoration: none; text-transform: none; min-height: 44px; }
+.social-share-story { border-top: var(--border-medium); padding-top: 1.25rem; }
+.social-share-story h3 { margin-bottom: .5rem; font-size: 1.1rem; }
+.social-share-link-label { display: flex; flex-direction: column; gap: .5rem; font-family: var(--font-sans); font-size: .8rem; }
+.social-share-link-label input { width: 100%; min-width: 0; background: var(--bg-app); border: var(--border-medium); border-radius: var(--radius-sm); padding: .75rem; color: var(--text-main); font: inherit; }
+.social-share-dialog > .ui-notice { margin-top: 1rem; }
+.social-share-dialog :focus-visible { outline: 2px solid var(--text-main); outline-offset: 3px; }
+.social-share-inline-error { color: var(--color-danger-text); font-size: .8rem; }
+@media (max-width: 480px) { .social-share-dialog { padding: 1rem; } .social-share-preview img { width: 64px; } .social-share-actions > .btn { flex: 1 1 auto; } }

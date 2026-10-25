@@ -20,6 +20,7 @@ import { authenticateUser } from './src/utils/auth.js';
 import formatError from './src/utils/formatError.js';
 import paymentRoutes from './src/routes/paymentRoutes.js';
 import googleAuthRoutes from './src/routes/googleAuthRoutes.js';
+import socialShareRoutes from './src/routes/socialShareRoutes.js';
 
 const PORT = process.env.PORT || 5000;
 
@@ -59,6 +60,7 @@ const startServer = async () => {
     }));
 
     app.use('/api/payment', paymentRoutes);
+    app.use('/share', socialShareRoutes);
 
     // Google Identity Services'ın ux_mode="redirect" modunda POST ettiği
     // credential'ı karşılayan endpoint. Bu, tarayıcının gerçek bir sayfa

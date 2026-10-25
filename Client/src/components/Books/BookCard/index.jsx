@@ -20,6 +20,7 @@ import { Badge } from '../../UI/Badge';
 import { ProgressBar } from '../../UI/ProgressBar';
 import ReasonBadge from '../../Recommendation/ReasonBadge';
 import ShareModal from '../../Messaging/ShareModal';
+import SocialShareDialog from '../../Sharing/SocialShareDialog';
 
 import './BookCard.css';
 import PrintedBookCard from '../PrintedBookCard';
@@ -28,6 +29,7 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [shareOpen, setShareOpen] = useState(false);
+  const [messageOpen, setMessageOpen] = useState(false);
 
   const { data: bookData, loading: bookLoading, error: bookError } = useQuery(GET_BOOK_BY_ID, {
     variables: { id: bookId },
@@ -174,11 +176,12 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
               <span>{formatNumber(stats?.likes || 0)}</span>
             </div>
 
-            {/* Paylaş — sadece giriş yapılmışsa */}
-            {user && (
+            {/* Sosyal paylaşım ve mevcut Betik mesajlaşması */}
+            {(status !== 'DRAFT' || user) && (
               <button
                 className="stat-item book-card-share-btn"
-                title="Arkadaşa gönder"
+                title="Kitabı paylaş"
+                aria-label="Kitabı paylaş"
                 onClick={handleShareClick}
               >
                 <Share className="stat-icon" />
@@ -190,9 +193,12 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
 
       {/* ShareModal */}
       {shareOpen && (
+        <SocialShareDialog target={{ type: 'BOOK', id }} onClose={() => setShareOpen(false)} onSendInBetik={user ? () => setMessageOpen(true) : undefined} />
+      )}
+      {messageOpen && (
         <ShareModal
-          isOpen={shareOpen}
-          onClose={() => setShareOpen(false)}
+          isOpen={messageOpen}
+          onClose={() => setMessageOpen(false)}
           type="BOOK"
           attachedBookId={id}
           attachedBook={book}

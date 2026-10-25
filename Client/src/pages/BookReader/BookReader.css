@@ -279,6 +279,7 @@
 }
 
 /* Title Page */
+.chapter-header > .btn { margin-top: 1rem; }
 .title-page-section {
   min-height: 100vh;
   display: flex;
