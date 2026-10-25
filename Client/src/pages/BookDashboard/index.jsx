@@ -321,7 +321,9 @@ const BookDashboard = () => {
                     book?.status === 'FUNDING' ? 'warning' :
                     book?.status === 'DRAFT' ? 'neutral' : 'primary'
                 }>
-                    {book?.status}
+                    {book?.status === 'PUBLISHED' ? 'Yayında' : 
+                     book?.status === 'FUNDING' ? 'Fonlama Aşamasında' : 
+                     book?.status === 'DRAFT' ? 'Taslak' : 'Yazım Aşamasında'}
                 </Badge>
              </div>
 
