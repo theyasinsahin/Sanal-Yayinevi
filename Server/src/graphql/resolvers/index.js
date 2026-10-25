@@ -1,3 +1,4 @@
+import followRequestResolvers from './followRequest.js';
 import communityResolvers from './community.js';
 import userResolvers from "./user.js";
 import bookResolvers from "./book.js";
@@ -19,6 +20,7 @@ import bookFollowResolvers from "./bookFollow.js";
 // Tüm resolver modüllerini bir dizi içine koyup gönderiyoruz.
 // schema.js içindeki mergeResolvers bunları otomatik birleştirecek.
 export default [
+    followRequestResolvers,
     communityResolvers,
     userResolvers,
     bookResolvers,

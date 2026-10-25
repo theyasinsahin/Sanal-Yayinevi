@@ -39,6 +39,20 @@ describe('Chapter Resolvers', () => {
     });
 
     describe('MUTATIONS', () => {
+        it('updateChapter persists empty content and recalculates total pages', async () => {
+            const chapter = await Chapter.create({ bookId: mockBook._id, title: 'Clear', content: 'Old text', pageCount: 5, authorId: mockUser._id });
+            const other = await Chapter.create({ bookId: mockBook._id, title: 'Keep', content: 'Other text', pageCount: 2, authorId: mockUser._id });
+            mockBook.chapters = [chapter._id, other._id];
+            mockBook.pageCount = 7;
+            await mockBook.save();
+
+            await chapterResolvers.Mutation.updateChapter(null, { chapterId: chapter._id, content: '', pageCount: 0 }, context);
+
+            expect((await Chapter.findById(chapter._id)).content).toBe('');
+            expect((await Book.findById(mockBook._id)).pageCount).toBe(2);
+            expect((await Chapter.findById(other._id)).content).toBe('Other text');
+        });
+
         it('createChapter should add chapter and update book page count', async () => {
             const args = { bookId: mockBook._id, title: 'New Ch', content: '...', pageCount: 20 };
             const res = await chapterResolvers.Mutation.createChapter(null, args, context);

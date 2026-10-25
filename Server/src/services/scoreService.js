@@ -1,4 +1,5 @@
 // src/services/scoreService.js
+import { pendingFollowRequestCount } from './followService.js';
 import UserScore from '../models/userScore.js';
 import PointEvent from '../models/pointEvent.js';
 import Badge from '../models/badge.js';
@@ -260,7 +261,7 @@ export const getUserScore = async (userId) => {
 };
 
 export const getNotifications = async (userId) => {
-  return await Notification.find({ userId })
+  return await Notification.find({ userId, type: { $ne: 'FOLLOW_REQUEST' } })
     .sort({ createdAt: -1 })
     .limit(20);
 };
@@ -271,5 +272,9 @@ export const markNotificationsRead = async (userId) => {
 };
 
 export const getUnreadCount = async (userId) => {
-  return await Notification.countDocuments({ userId, isRead: false });
+  const [unread, pending] = await Promise.all([
+    Notification.countDocuments({ userId, isRead: false, type: { $ne: 'FOLLOW_REQUEST' } }),
+    pendingFollowRequestCount(userId),
+  ]);
+  return unread + pending;
 };

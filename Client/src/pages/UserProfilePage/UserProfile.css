@@ -592,6 +592,7 @@
 
 .follow-user-item {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 12px;
   padding: 12px 20px;
@@ -625,7 +626,12 @@
 .follow-user-info {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-width: 80px;
+  overflow-wrap: anywhere;
 }
+
+.remove-follower-action { display: inline-flex; flex-shrink: 0; margin-left: auto; }
 
 .follow-user-name {
   font-weight: 600;

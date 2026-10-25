@@ -7,13 +7,13 @@ import {
   Person, Email, Link as LinkIcon, 
   Book, Bookmark, 
   Edit, Save, Cancel, Close,
-  PersonAdd, PersonRemove, Logout,
+  Logout,
   Verified, TrendingUp, Star, Chat, Settings
 } from '@mui/icons-material';
 
 import { useAuth } from '../../context/AuthContext';
 import { GET_USER_BY_ID } from '../../graphql/queries/user';
-import { UPDATE_USER_MUTATION, TOGGLE_FOLLOW_MUTATION } from '../../graphql/mutations/user';
+import { UPDATE_USER_MUTATION } from '../../graphql/mutations/user';
 import { GET_USER_SCORE, GET_USER_BADGES } from '../../graphql/queries/score';
 import { GET_FOLLOWED_BOOKS } from '../../graphql/queries/bookFollow';
 
@@ -32,12 +32,12 @@ import { FormatQuote } from '@mui/icons-material';
 import { GET_QUOTES_BY_USER } from '../../graphql/queries/quote';
 import QuoteCard from '../../components/Quote/QuoteCard';
 import UserSettings from '../../components/Settings/UserSettings';
+import UserFollowButton from '../../components/Follow/UserFollowButton';
+import RemoveFollowerButton from '../../components/Follow/RemoveFollowerButton';
 
 import './UserProfile.css';
 
 const UserProfile = () => {
-  const [optimisticFollowing, setOptimisticFollowing] = useState(null);
-  const [optimisticFollowerCount, setOptimisticFollowerCount] = useState(null);
 
   const { userId } = useParams();
   const { user: authUser, logout } = useAuth();
@@ -59,7 +59,7 @@ const UserProfile = () => {
   const isMe = authUser && targetId === authUser.id;
 
   // Queries
-  const { data, loading, error, refetch } = useQuery(GET_USER_BY_ID, {
+  const { data, loading, error, refetch, startPolling, stopPolling } = useQuery(GET_USER_BY_ID, {
     variables: { id: targetId },
     skip: !targetId,
     fetchPolicy: 'network-only'
@@ -72,6 +72,11 @@ const UserProfile = () => {
   const userQuotes = quotesData?.getQuotesByUser || [];
 
   const profile = data?.getUserById;
+  useEffect(() => {
+    if (!isMe && profile?.followStatus === 'PENDING') startPolling(15000);
+    else stopPolling();
+    return () => stopPolling();
+  }, [isMe, profile?.followStatus, startPolling, stopPolling]);
   const canView = isMe || profile?.canViewProfile !== false;
   const canViewLibrary = isMe || profile?.canViewLibrary === true;
   const canViewFollowList = isMe || profile?.canViewFollowList !== false;
@@ -113,9 +118,6 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
     onError: (err) => showToast(err.message, 'error')
   });
 
-  const [toggleFollow, { loading: followLoading }] = useMutation(TOGGLE_FOLLOW_MUTATION, {
-    onError: (err) => showToast(err.message, 'error')
-  });
 
   // Hooks
   const { getOrCreateConversation, loading: convLoading } = useGetOrCreateConversation();
@@ -150,29 +152,6 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
   const showToast = (message, type = 'info') => 
     setToast({ show: true, message, type });
 
-  const handleFollowToggle = async () => {
-    if (!authUser) {
-      showToast("Mesaj göndermek için giriş yapmalısınız.", 'warning');
-      return;
-    }
-
-    const currentlyFollowing = optimisticFollowing !== null ? optimisticFollowing : isFollowing;
-    const currentCount = optimisticFollowerCount !== null 
-      ? optimisticFollowerCount 
-      : (profile?.followers?.length || 0);
-
-    setOptimisticFollowing(!currentlyFollowing);
-    setOptimisticFollowerCount(currentlyFollowing ? currentCount - 1 : currentCount + 1);
-
-    try {
-      await toggleFollow({ variables: { followId: targetId } });
-      await refetch();
-    } catch (err) {
-      setOptimisticFollowing(currentlyFollowing);
-      setOptimisticFollowerCount(currentCount);
-      showToast("İşlem başarısız", 'error');
-    }
-  };
 
   const handleMessageClick = async () => {
     if (!authUser) {
@@ -202,15 +181,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
     navigate('/login');
   };
 
-  const isFollowingFromServer = profile?.followers?.some(f => {
-    const fId = typeof f === 'object' ? f.id : f;
-    return fId === authUser?.id;
-  });
-
-  const isFollowing = optimisticFollowing !== null ? optimisticFollowing : isFollowingFromServer;
-  const followerCount = optimisticFollowerCount !== null 
-    ? optimisticFollowerCount 
-    : (profile?.followers?.length || 0);
+  const followerCount = profile?.followers?.length || 0;
 
   const totalViews = profile?.usersBooks?.reduce((sum, book) => 
     sum + (book.stats?.views || 0), 0) || 0;
@@ -232,7 +203,6 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
   const closeModal = () => setFollowModal({ show: false, type: 'followers' });
   useEffect(() => {
     setActiveTab('published'); setIsEditing(false);
-    setOptimisticFollowing(null); setOptimisticFollowerCount(null);
     setFollowModal({ show: false, type: 'followers' });
   }, [targetId]);
 
@@ -356,16 +326,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
                       <span className="stat-value">⭐ {userScore?.totalPoints || 0}</span>
                       <span className="stat-label">Puan</span>
                     </div>
-                    
-                    {isMe && (
-                      <>
-                        <div className="stat-divider"></div>
-                        <div className="stat-item-profile">
-                          <span className="stat-value">{profile.savedBooks?.length || 0}</span>
-                          <span className="stat-label">Kaydedilenler</span>
-                        </div>
-                      </>
-                    )}
+                  
                   </div>
                   
                   <div className="mini-stats-row">
@@ -387,14 +348,9 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
                 )
               ) : (
                 <div className="other-actions">
-                  <Button
-                    variant={isFollowing ? 'outline' : 'primary'}
-                    onClick={handleFollowToggle}
-                    isLoading={followLoading}
-                    icon={isFollowing ? <PersonRemove /> : <PersonAdd />}
-                  >
-                    {isFollowing ? 'Takibi Bırak' : 'Takip Et'}
-                  </Button>
+                  <UserFollowButton key={targetId} targetId={targetId} status={profile.followStatus}
+                    onUpdate={refetch} showToast={showToast} />
+                  {profile.followStatus === 'PENDING' && <span role="status">Takip isteği onay bekliyor.</span>}
 
                   <Button
                     variant="outline"
@@ -556,6 +512,9 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
                         <span className="follow-user-name">{uName}</span>
                         <span className="follow-user-username">@{uUsername}</span>
                       </div>
+                      {isMe && followModal.type === 'followers' && <RemoveFollowerButton
+                        followerId={uid} username={uUsername} onUpdate={refetch} showToast={showToast}
+                      />}
                     </div>
                   );
                 });
