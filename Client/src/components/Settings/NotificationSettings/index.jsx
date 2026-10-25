@@ -11,7 +11,7 @@ const NOTIFICATION_GROUPS = [
     id: 'social',
     label: 'Sosyal',
     rows: [
-      { key: 'newFollower',     label: 'Yeni Takipçi',          sub: 'Biri sizi takip ettiğinde.' },
+      { key: 'newFollower',     label: 'Yeni Takipçi',          sub: 'Onayladığınız takip isteği sonrası bilgi bildirimi. Onay bekleyen istekler her zaman gösterilir.' },
       { key: 'mentionInSession',label: 'Oturumda Bahsedilme', sub: 'Bir oturumda etiketlendiğinizde.' },
     ],
   },

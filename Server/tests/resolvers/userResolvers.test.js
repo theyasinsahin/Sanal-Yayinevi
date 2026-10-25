@@ -30,6 +30,7 @@ const userResolvers = userResolversModule.default;
 import { connect, clearDatabase, closeDatabase } from '../db.js';
 import Verification from '../../src/models/verification.js';
 import User from '../../src/models/user.js';
+import FollowRequest from '../../src/models/followRequest.js';
 import Book from '../../src/models/book.js';
 import Comment from '../../src/models/comment.js';
 import Chapter from '../../src/models/chapter.js';
@@ -106,13 +107,14 @@ describe('User Resolvers (Queries & Mutations)', () => {
             expect(res.token).toBe('fake_jwt_token');
         });
 
-        it('toggleFollowUser should update lists', async () => {
+        it('toggleFollowUser should request approval without changing follow lists', async () => {
             const target = await User.create({ username: 'target', fullName: 'T', email: 't@t.com', password: '123' });
             
             await userResolvers.Mutation.toggleFollowUser(null, { followId: target._id }, context);
             
             const updatedMe = await User.findById(mockUser._id);
-            expect(updatedMe.following).toContainEqual(target._id);
+            expect(updatedMe.following).not.toContainEqual(target._id);
+            expect(await FollowRequest.exists({ requesterId: mockUser._id, recipientId: target._id, status: 'PENDING' })).not.toBeNull();
         });
     });
 

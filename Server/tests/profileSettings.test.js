@@ -16,6 +16,7 @@ const { default: Quote } = await import('../src/models/quote.js');
 const { default: Notification } = await import('../src/models/notification.js');
 const { default: Comment } = await import('../src/models/comment.js');
 const users = await import('../src/services/userService.js');
+const follows = await import('../src/services/followService.js');
 const messages = await import('../src/services/messageService.js');
 const books = await import('../src/services/bookService.js');
 const chapters = await import('../src/services/chapterService.js');
@@ -78,17 +79,18 @@ test('message permissions apply to both new and existing conversations; outsider
   await expect(messages.markMessagesAsRead(conversation._id, outsider._id)).rejects.toThrow('yetkiniz');
   await users.updatePrivacySettings(recipient._id, { allowMessages: 'followers' });
   await expect(messages.sendMessage(sender._id, { conversationId: conversation._id, content: 'test' })).rejects.toThrow('sınırlandırmış');
-  await users.toggleFollow(sender._id, recipient._id);
+  const request = await users.toggleFollow(sender._id, recipient._id);
+  await expect(messages.sendMessage(sender._id, { conversationId: conversation._id, content: 'onay beklerken' })).rejects.toThrow('sınırlandırmış');
+  await follows.respondToFollowRequest(recipient._id, request.request._id, true);
   expect((await messages.sendMessage(sender._id, { conversationId: conversation._id, content: 'izinli' })).content).toBe('izinli');
 });
 
-test.each(['newFollower', 'bookLike', 'bookComment', 'quoteLike'])('%s suppresses real event notifications when disabled', async preference => {
+test.each(['bookLike', 'bookComment', 'quoteLike'])('%s suppresses real event notifications when disabled', async preference => {
   const owner = await createUser('owner');
   const actor = await createUser('actor');
   const book = await Book.create({ title: 'Kitap', authorId: owner._id, status: 'WRITING' });
   const quote = await Quote.create({ text: 'Alıntı', normalizedText: 'alinti', userId: owner._id, bookId: book._id, chapterId: book._id });
   const events = {
-    newFollower: () => users.toggleFollow(actor._id, owner._id),
     bookLike: () => books.toggleLike(book._id, actor._id),
     bookComment: () => comments.createComment({ userId: actor._id, bookId: book._id, content: 'Yorum' }),
     quoteLike: () => quotes.toggleQuoteLike(quote._id, actor._id),

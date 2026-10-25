@@ -104,6 +104,18 @@
 }
 .topbar-left { display: flex; align-items: center; gap: 1rem; min-width: 0; }
 .topbar-left > :first-child { min-width: 0; overflow-wrap: anywhere; }
+.dashboard-save-button {
+  flex-shrink: 0;
+  min-width: 118px;
+  min-height: 42px;
+  padding: 0.6rem 1rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  align-self: center;
+}
+.dashboard-save-button .btn-icon { display: inline-flex; align-items: center; line-height: 0; }
+.editor-save-status { min-width: 0; }
+.editor-save-status .ui-badge { white-space: normal; line-height: 1.4; }
 .quill-wrapper {
   flex: 1 1 auto;
   min-height: 0;

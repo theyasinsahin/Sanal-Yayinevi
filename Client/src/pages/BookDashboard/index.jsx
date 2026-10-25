@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useLayoutEffect, useRef, useMemo } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react';
+import { useParams, Link, useNavigate, useBlocker } from 'react-router-dom';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { 
@@ -19,6 +19,7 @@ import { GET_BOOK_BY_ID } from '../../graphql/queries/book';
 import { UPDATE_BOOK_STATUS_MUTATION } from '../../graphql/mutations/book';
 import { CREATE_CHAPTER_MUTATION, UPDATE_CHAPTER_MUTATION, DELETE_CHAPTER_MUTATION } from '../../graphql/mutations/chapter';
 import { parseContentToPages } from '../../utils/htmlPageSplitter';
+import useChapterAutosave from '../../hooks/useChapterAutosave';
 
 // --- UI KIT ---
 import { Button } from '../../components/UI/Button';
@@ -26,7 +27,6 @@ import { Typography } from '../../components/UI/Typography';
 import { Input } from '../../components/UI/Input';
 import { Toast } from '../../components/UI/Toast';
 import { Badge } from '../../components/UI/Badge';
-import { Select } from '../../components/UI/Select';
 import { CostCalculatorModal } from '../../components/Books/CostCalculatorModal';
 
 import { useAuth } from '../../context/AuthContext';
@@ -44,32 +44,74 @@ const BookDashboard = () => {
     skip: !bookId,
     fetchPolicy: "network-only" 
   });
+  const fetchedBook = bookData?.getBookById;
 
   // Status Mutation
   const [updateStatus, { loading: statusLoading }] = useMutation(UPDATE_BOOK_STATUS_MUTATION, {
-     refetchQueries: [{ query: GET_BOOK_BY_ID, variables: { id: bookId } }]
+     refetchQueries: [{ query: GET_BOOK_BY_ID, variables: { id: bookId } }],
+     awaitRefetchQueries: true
   });
 
   const [addChapter] = useMutation(CREATE_CHAPTER_MUTATION, {
-    refetchQueries: [{ query: GET_BOOK_BY_ID, variables: { id: bookId } }]
+    refetchQueries: [{ query: GET_BOOK_BY_ID, variables: { id: bookId } }],
+    awaitRefetchQueries: true,
   });
   
   const [saveChapterContent] = useMutation(UPDATE_CHAPTER_MUTATION);
   const [deleteChapterMutation] = useMutation(DELETE_CHAPTER_MUTATION);
 
+  const persistChapter = useCallback(async ({ chapterId, content, title }) => {
+    const pageCount = parseContentToPages(content, title).length;
+    const response = await saveChapterContent({ variables: { chapterId, content, pageCount } });
+    if (!response.data?.updateChapter) throw new Error('Bölüm kaydedilemedi.');
+    return response.data.updateChapter;
+  }, [saveChapterContent]);
+  const { manager, chapters, selectedChapter, content, status: saveStatus, hasUnsaved } = useChapterAutosave({ bookId, save: persistChapter });
+
   // --- STATE ---
   const [book, setBook] = useState(null);
-  const [chapters, setChapters] = useState([]);
-  const [selectedChapter, setSelectedChapter] = useState(null);
-  const [content, setContent] = useState('');
   const [newChapterTitle, setNewChapterTitle] = useState('');
-  const [isSaved, setIsSaved] = useState(true);
   const [notification, setNotification] = useState({ isVisible: false, message: '', type: '' });
   const [showCostModal, setShowCostModal] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-  const isJustLoaded = useRef(false);
   const dashboardRef = useRef(null);
+  const [isActionBusy, setIsActionBusy] = useState(false);
+  const actionBusy = useRef(false);
+  const notificationTimer = useRef(null);
+  const showNotification = useCallback((message, type) => {
+    clearTimeout(notificationTimer.current);
+    setNotification({ isVisible: true, message, type });
+    notificationTimer.current = setTimeout(() => setNotification({ isVisible: false, message: '', type: '' }), 3000);
+  }, []);
+  useEffect(() => () => clearTimeout(notificationTimer.current), []);
+  const blocker = useBlocker(manager.hasUnsaved);
+  const { state: blockerState, proceed, reset } = blocker;
+  const editorLocked = isActionBusy || blockerState === 'blocked';
+  useEffect(() => {
+    if (blockerState !== 'blocked') return undefined;
+    let active = true;
+    manager.flush().then(() => { if (active) proceed(); }).catch(() => {
+      if (!active) return;
+      showNotification('Değişiklikler kaydedilemedi.', 'error');
+      if (window.confirm('Değişiklikler kaydedilemedi. Kaydetmeden ayrılmak istiyor musunuz?')) proceed();
+      else reset();
+    });
+    return () => { active = false; };
+  }, [blockerState, proceed, reset, manager, showNotification]);
+
+  const runAfterSaving = async operation => {
+    if (actionBusy.current || blockerState === 'blocked') return false;
+    actionBusy.current = true; setIsActionBusy(true);
+    try {
+      await manager.flush();
+      await operation();
+      return true;
+    } catch (error) {
+      showNotification(error.message || 'İşlem tamamlanamadı. Değişiklikleriniz korunuyor.', 'error');
+      return false;
+    } finally { actionBusy.current = false; setIsActionBusy(false); }
+  };
 
   // Gerçek üst konuma göre kalan yüksekliği hesapla. Böylece navbar veya
   // üst layout boşlukları için sabit 64px gibi bir tahminde bulunmayız.
@@ -109,7 +151,7 @@ const BookDashboard = () => {
       window.visualViewport?.removeEventListener('resize', measure);
       observer?.disconnect();
     };
-  }, [bookLoading, bookError]);
+  }, [bookLoading, bookError, book?.id]);
 
 
   // --- HANDLERS ---
@@ -118,14 +160,14 @@ const BookDashboard = () => {
   const togglePublish = async () => {
      const newStatus = book.status === 'DRAFT' ? 'WRITING' : 'DRAFT';
      if(window.confirm(newStatus === 'WRITING' ? "Kitap herkese görünür olacak. Onaylıyor musunuz?" : "Kitap yayından kaldırılıp taslağa çekilecek.")) {
-        await updateStatus({ variables: { bookId, status: newStatus } });
+        await runAfterSaving(() => updateStatus({ variables: { bookId, status: newStatus } }));
      }
   };
 
   // 2. Tamamlandı İşaretleme
   const markAsCompleted = async () => {
      if(window.confirm("Kitabın yazım aşamasını bitirdiniz mi?")) {
-        await updateStatus({ variables: { bookId, status: 'COMPLETED' } });
+        await runAfterSaving(() => updateStatus({ variables: { bookId, status: 'COMPLETED' } }));
      }
   };
 
@@ -140,126 +182,52 @@ const BookDashboard = () => {
     ],
   }), []);
 
-  // --- EFFECT: DATA LOAD ---
+  // Keep drafts authoritative when mutations or status changes refetch the book.
   useEffect(() => {
-    if (bookData && bookData.getBookById) {
-      const fetchedBook = bookData.getBookById;
-      setBook(fetchedBook);
-      const fetchedChapters = fetchedBook.chapters || [];
-      setChapters(fetchedChapters);
+    if (!fetchedBook || fetchedBook.id !== bookId) return;
+    setBook(fetchedBook);
+    manager.load(fetchedBook.chapters || []);
+  }, [fetchedBook, bookId, manager]);
 
-      // İlk yüklemede, eğer bölüm varsa ve henüz bir seçim yapılmamışsa
-      if (!selectedChapter && fetchedChapters.length > 0) {
-        isJustLoaded.current = true;
-        setSelectedChapter(fetchedChapters[0].id);
-        setContent(fetchedChapters[0].content || '');
-        setIsSaved(true);
-      }
-    }
-  }, [bookData]);
-
-  // --- HANDLERS ---
-
-  const handleContentChange = (value) => {
-    setContent(value);
-    if (isJustLoaded.current) {
-      isJustLoaded.current = false;
-      return;
-    }
-    setIsSaved(false);
+  const handleContentChange = (value, delta, source) => {
+    if (source === 'api' || source === 'silent' || editorLocked) return;
+    manager.edit(value);
   };
 
-  const handleChapterSelect = (chapterId) => {
-    const switchChapter = () => {
-      isJustLoaded.current = true;
-      const chapter = chapters.find(c => c.id === chapterId);
-      setSelectedChapter(chapterId);
-      setContent(chapter?.content || '');
-      setIsSaved(true);
-      setIsMobileSidebarOpen(false);
-    };
-    
-    if (!isSaved) {
-      if (window.confirm('Değişiklikleriniz kaydedilmedi. Devam etmek istiyor musunuz?')) {
-        switchChapter();
-      }
-    } else {
-      switchChapter();
-    }
+  const handleChapterSelect = chapterId => {
+    if (chapterId === selectedChapter) { setIsMobileSidebarOpen(false); return; }
+    runAfterSaving(() => { manager.select(chapterId); setIsMobileSidebarOpen(false); });
   };
 
   const addNewChapter = async () => {
-    if (newChapterTitle.trim() && bookId) {
-      try {
-        await addChapter({
-          variables: {
-            bookId: bookId,
-            title: newChapterTitle,
-            content: '',
-            userId: user?.id
-          },
-        });
-        setNewChapterTitle('');
-      } catch (err) {
-        alert("Hata: " + err.message);
-      }
-    }
+    if (!newChapterTitle.trim() || !bookId) return;
+    await runAfterSaving(async () => {
+      await addChapter({ variables: { bookId, title: newChapterTitle.trim(), content: '', userId: user?.id } });
+      setNewChapterTitle('');
+    });
   };
 
-  const handleDeleteChapter = async (e, chapterId) => {
-    e.stopPropagation(); 
-    if (window.confirm("Bu bölümü silmek istediğinize emin misiniz?")) {
-      try {
-        await deleteChapterMutation({ variables: { id: chapterId } });
-        setChapters(prev => prev.filter(c => c.id !== chapterId));
-        if (selectedChapter === chapterId) {
-            setSelectedChapter(null);
-            setContent('');
-            setIsSaved(true);
-        }
-        showNotification('Bölüm silindi', 'success');
-      } catch (err) {
-        alert("Silme hatası: " + err.message);
-      }
-    }
+  const handleDeleteChapter = async (event, chapterId) => {
+    event.stopPropagation();
+    if (!window.confirm('Bu bölümü silmek istediğinize emin misiniz?')) return;
+    await runAfterSaving(async () => {
+      await deleteChapterMutation({ variables: { id: chapterId } });
+      manager.remove(chapterId);
+      showNotification('Bölüm silindi', 'success');
+    });
   };
 
   const saveChapter = async () => {
-    if (selectedChapter) {
-      try {
-        const currentChapterTitle = chapters.find(c => c.id === selectedChapter)?.title || "";
-        const calculatedPages = parseContentToPages(content, currentChapterTitle);
-        const pageCount = calculatedPages.length;
-
-        const { data: updatedData } = await saveChapterContent({
-          variables: {
-            chapterId: selectedChapter,
-            content: content,
-            pageCount: pageCount 
-          },
-        });
-
-        if (updatedData && updatedData.updateChapter) {
-          setChapters(prev => prev.map(ch => 
-            ch.id === selectedChapter ? { ...ch, content, pageCount } : ch
-          ));
-          setIsSaved(true);
-          showNotification('Kaydedildi!', 'success');
-        }
-      } catch (err) {
-        showNotification('Hata oluştu', 'error');
-      }
-    }
+    try { await manager.flush(); showNotification('Kaydedildi!', 'success'); }
+    catch { showNotification('Değişiklikler kaydedilemedi. Yeniden deneyin.', 'error'); }
   };
-
-  const showNotification = (message, type) => {
-    setNotification({ isVisible: true, message, type });
-    setTimeout(() => setNotification({ isVisible: false, message: '', type: '' }), 3000);
-  };
+  const savedPageCount = chapters.reduce((sum, chapter) => sum + (chapter.pageCount || 0), 0);
+  const saveMessages = { saved: 'Kaydedildi', saving: 'Kaydediliyor…', pending: 'Otomatik kayıt bekleniyor…', error: 'Kaydedilemedi — Kaydet ile tekrar deneyin.' };
 
   // --- RENDER ---
   if (bookLoading) return <div className="p-8 text-center">Yükleniyor...</div>;
   if (bookError) return <div className="p-8 text-center text-red-600">Hata: {bookError.message}</div>;
+  if (!book) return <div className="p-8 text-center">Kitap yükleniyor…</div>;
 
   return (
     <div className="dashboard-container" ref={dashboardRef}>
@@ -326,7 +294,7 @@ const BookDashboard = () => {
               onKeyDown={(e) => e.key === 'Enter' && addNewChapter()}
               className="mb-2"
             />
-            <Button variant="secondary" size="small" onClick={addNewChapter} className="w-full">
+            <Button variant="secondary" size="small" onClick={addNewChapter} disabled={editorLocked} className="w-full">
                <Add fontSize="small" /> Ekle
             </Button>
           </div>
@@ -344,6 +312,7 @@ const BookDashboard = () => {
                 </div>
                 <button 
                   className="delete-btn"
+                  disabled={editorLocked}
                   aria-label={`${chapter.title} bölümünü sil`}
                   onClick={(e) => handleDeleteChapter(e, chapter.id)}
                 >
@@ -374,7 +343,7 @@ const BookDashboard = () => {
                       variant={book.status === 'DRAFT' ? 'success' : 'danger'} 
                       size="small" 
                       onClick={togglePublish}
-                      isLoading={statusLoading}
+                      isLoading={statusLoading || isActionBusy}
                       className="w-full"
                     >
                        {book.status === 'DRAFT' ? 'Yayınla (Görünür Yap)' : 'Taslağa Çek'}
@@ -398,7 +367,7 @@ const BookDashboard = () => {
                     <Button 
                       variant="warning" 
                       size="small" 
-                      onClick={() => setShowCostModal(true)}
+                      onClick={() => runAfterSaving(() => setShowCostModal(true))}
                       className="w-full"
                     >
                        Baskı Maliyeti Hesapla
@@ -430,14 +399,17 @@ const BookDashboard = () => {
                 <Typography variant="h5" weight="bold">
                   {chapters.find(c => c.id === selectedChapter)?.title}
                 </Typography>
-                <Badge variant={isSaved ? 'success' : 'warning'}>
-                  {isSaved ? 'Kaydedildi' : 'Kaydedilmedi'}
-                </Badge>
+                <span role={saveStatus === 'error' ? 'alert' : 'status'} aria-live="polite" className="editor-save-status">
+                  <Badge variant={saveStatus === 'saved' ? 'success' : saveStatus === 'error' ? 'danger' : 'warning'}>{saveMessages[saveStatus]}</Badge>
+                </span>
               </div>
               <Button 
                 variant="primary" 
                 onClick={saveChapter} 
-                disabled={isSaved}
+                className="dashboard-save-button"
+                aria-label="Bölümü kaydet"
+                aria-busy={saveStatus === 'saving'}
+                disabled={!hasUnsaved || saveStatus === 'saving' || editorLocked}
                 icon={<Save />}
               >
                 Kaydet
@@ -447,6 +419,7 @@ const BookDashboard = () => {
             <div className="quill-wrapper">
               <ReactQuill
                 theme="snow"
+                readOnly={editorLocked}
                 value={content}
                 onChange={handleContentChange}
                 modules={modules}
@@ -474,10 +447,10 @@ const BookDashboard = () => {
       {/* MODAL: BASKI MALİYETİ HESAPLAMA */}
        {showCostModal && (
           <CostCalculatorModal 
-             book={book} 
-             pageCount={book.pageCount}
+             book={{ ...book, pageCount: savedPageCount }}
+             pageCount={savedPageCount}
              onClose={() => setShowCostModal(false)}
-             onConfirm={async (data) => {
+             onConfirm={async (data) => runAfterSaving(async () => {
                  await updateStatus({ 
                      variables: { 
                         bookId, 
@@ -488,7 +461,7 @@ const BookDashboard = () => {
                  });
                  setShowCostModal(false);
                  alert("Kitap fonlamaya açıldı!");
-             }}
+             })}
           />
        )}
 

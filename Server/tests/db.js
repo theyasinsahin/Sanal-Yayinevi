@@ -1,11 +1,11 @@
 import mongoose from 'mongoose';
-import { MongoMemoryServer } from 'mongodb-memory-server';
+import { MongoMemoryReplSet } from 'mongodb-memory-server';
 
 let mongod;
 
 // Testler başlamadan önce sanal veritabanına bağlan
 export const connect = async () => {
-    mongod = await MongoMemoryServer.create();
+    mongod = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
     const uri = mongod.getUri();
     await mongoose.connect(uri);
 };

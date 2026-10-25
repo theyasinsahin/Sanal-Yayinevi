@@ -1,0 +1,29 @@
+enum FollowStatus { NOT_FOLLOWING PENDING FOLLOWING }
+enum FollowRequestStatus { PENDING ACCEPTED REJECTED CANCELLED }
+
+type FollowRequest {
+  id: ID!
+  requester: User!
+  status: FollowRequestStatus!
+  createdAt: String!
+}
+
+type FollowRequestPage { items: [FollowRequest!]! total: Int! }
+type FollowActionResult {
+  code: Int!
+  message: String!
+  followStatus: FollowStatus!
+  request: FollowRequest
+}
+
+extend type User { followStatus: FollowStatus! }
+extend type Query {
+  getIncomingFollowRequests(limit: Int = 20, offset: Int = 0): FollowRequestPage!
+}
+extend type Mutation {
+  requestFollowUser(targetId: ID!): FollowActionResult!
+  cancelFollowRequest(targetId: ID!): FollowActionResult!
+  unfollowUser(targetId: ID!): FollowActionResult!
+  removeFollower(followerId: ID!): FollowActionResult!
+  respondToFollowRequest(requestId: ID!, accept: Boolean!): FollowActionResult!
+}
