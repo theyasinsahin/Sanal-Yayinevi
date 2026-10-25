@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -69,6 +69,48 @@ const BookDashboard = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const isJustLoaded = useRef(false);
+  const dashboardRef = useRef(null);
+
+  // Gerçek üst konuma göre kalan yüksekliği hesapla. Böylece navbar veya
+  // üst layout boşlukları için sabit 64px gibi bir tahminde bulunmayız.
+  useLayoutEffect(() => {
+    const element = dashboardRef.current;
+    if (!element) return undefined;
+
+    // Başka bir sayfadan kalan scroll pozisyonu editörün üstünü kesmesin.
+    window.scrollTo(0, 0);
+
+    let frame = null;
+    const measure = () => {
+      if (frame !== null) window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+        const viewportOffset = window.visualViewport?.offsetTop ?? 0;
+        const top = element.getBoundingClientRect().top - viewportOffset;
+        const remaining = Math.max(240, viewportHeight - Math.max(0, top));
+        element.style.setProperty('--dashboard-measured-height', `${remaining}px`);
+        frame = null;
+      });
+    };
+
+    measure();
+    window.addEventListener('resize', measure);
+    window.addEventListener('orientationchange', measure);
+    window.visualViewport?.addEventListener('resize', measure);
+    const observer = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(measure)
+      : null;
+    if (element.parentElement) observer?.observe(element.parentElement);
+
+    return () => {
+      if (frame !== null) window.cancelAnimationFrame(frame);
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('orientationchange', measure);
+      window.visualViewport?.removeEventListener('resize', measure);
+      observer?.disconnect();
+    };
+  }, [bookLoading, bookError]);
+
 
   // --- HANDLERS ---
   
@@ -220,7 +262,7 @@ const BookDashboard = () => {
   if (bookError) return <div className="p-8 text-center text-red-600">Hata: {bookError.message}</div>;
 
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-container" ref={dashboardRef}>
       {/* Mobil: bölüm menüsü açılınca editörü örten karartma */}
       {isMobileSidebarOpen && (
         <button
@@ -321,9 +363,7 @@ const BookDashboard = () => {
                     book?.status === 'FUNDING' ? 'warning' :
                     book?.status === 'DRAFT' ? 'neutral' : 'primary'
                 }>
-                    {book?.status === 'PUBLISHED' ? 'Yayında' : 
-                     book?.status === 'FUNDING' ? 'Fonlama Aşamasında' : 
-                     book?.status === 'DRAFT' ? 'Taslak' : 'Yazım Aşamasında'}
+                    {book?.status}
                 </Badge>
              </div>
 
