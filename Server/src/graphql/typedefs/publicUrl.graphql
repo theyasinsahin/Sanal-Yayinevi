@@ -1,0 +1,9 @@
+enum PublicRouteType { PROFILE BOOK SESSION }
+type PublicRoute { id: ID!, path: String!, chapterId: ID }
+extend type Query {
+  resolvePublicRoute(type: PublicRouteType!, reference: String!, legacy: Boolean, chapter: String): PublicRoute
+}
+extend type User { publicPath: String! }
+extend type Book { publicPath: String! }
+extend type Chapter { publicPath: String! }
+extend type Session { publicPath: String! }

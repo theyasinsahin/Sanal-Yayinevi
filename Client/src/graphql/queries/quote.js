@@ -5,11 +5,11 @@ const QUOTE_FIELDS = gql`
   fragment QuoteFields on Quote {
     id text note chapterTitle chapterIndex pageNumber likedBy isRepost repostComment repostedBy createdAt isSpoiler
     user { id username fullName profilePicture }
-    book { id title imageUrl }
+    book { publicPath id title imageUrl }
     originalQuote {
       id text note chapterTitle pageNumber
       user { id username fullName profilePicture }
-      book { id title imageUrl }
+      book { publicPath id title imageUrl }
     }
     commentCount
   }
@@ -63,7 +63,7 @@ export const CHECK_QUOTE_EXISTS = gql`
       quote {
         id text
         user { id username profilePicture }
-        book { id title }
+        book { publicPath id title }
         likedBy repostedBy
       }
     }

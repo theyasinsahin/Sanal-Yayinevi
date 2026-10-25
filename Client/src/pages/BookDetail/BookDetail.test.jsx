@@ -42,10 +42,18 @@ beforeEach(() => {
   Object.defineProperty(navigator, 'share', { configurable: true, value: undefined });
 });
 
-const show = () => render(<MockedProvider addTypename={false} mocks={[{
+const show = (path = '/book-detail/book-1') => render(<MockedProvider addTypename={false} mocks={[{
   request: { query: GET_SOCIAL_SHARE, variables: { type: 'BOOK', id: 'book-1' } },
   result: { data: { getSocialShare: { type: 'BOOK', id: 'book-1', title: book.title, description: book.description, path: '/book-detail/book-1', imagePath: '/social-share/book.jpg', webOrigin: 'https://betik.example' } } },
-}]}><MemoryRouter initialEntries={['/book-detail/book-1']}><Routes><Route path="/book-detail/:id" element={<BookDetail />} /></Routes></MemoryRouter></MockedProvider>);
+}]}><MemoryRouter initialEntries={[path]}><Routes><Route path="/book-detail/:id" element={<BookDetail />} /><Route path="/kitap/:slug" element={<BookDetail resolvedId="book-1" />} /></Routes></MemoryRouter></MockedProvider>);
+
+test('a readable book address queries comments and content with the resolved ID', () => {
+  show('/kitap/roman-author');
+  expect(screen.getByRole('button', { name: 'Kitabı paylaş' })).toBeInTheDocument();
+  expect(useQuery).toHaveBeenCalledWith(GET_BOOK_BY_ID, expect.objectContaining({ variables: { id: 'book-1' } }));
+  expect(useQuery).toHaveBeenCalledWith(GET_COMMENTS_BY_BOOK_ID, expect.objectContaining({ variables: { bookId: 'book-1' } }));
+  expect(screen.getByRole('link', { name: 'Yazar' })).toHaveAttribute('href', '/yazar/author');
+});
 
 test.each(['DIGITAL', 'PRINTED'])('%s book detail opens social/story options without copying a link on click', async kind => {
   book = { ...baseBook, kind, publicationStatus: 'APPROVED', printedAuthor: 'Yazar', publisher: 'Yayınevi', publicationYear: 2024 };

@@ -1,3 +1,4 @@
+import { profilePath } from '../../utils/publicPaths';
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useApolloClient, useMutation, useQuery } from '@apollo/client';
@@ -62,7 +63,7 @@ export default function FollowRequests() {
     {message && <p role="status">{message}</p>}
     {!loading && !error && total === 0 && <p className="notif-message">Onay bekleyen takip isteği yok.</p>}
     {requests.map(request => <div className="follow-request-item" key={request.id}>
-      <Link to={`/user/${request.requester.id}`} className="follow-request-person">
+      <Link to={profilePath(request.requester)} className="follow-request-person">
         {request.requester.profilePicture && <img src={request.requester.profilePicture} alt="" />}
         <span><strong>{request.requester.fullName || request.requester.username}</strong><br />@{request.requester.username}</span>
       </Link>

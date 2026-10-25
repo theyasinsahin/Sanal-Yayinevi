@@ -6,6 +6,7 @@ import Quote from '../models/quote.js';
 import User from '../models/user.js';
 import Session from '../models/session.js';
 import { canViewProfile } from '../utils/profileAccess.js';
+import { bookPath, chapterPath, profilePath, sessionPath } from './publicUrlService.js';
 
 export const SHARE_TYPES = ['BOOK', 'CHAPTER', 'QUOTE', 'PROFILE', 'SESSION'];
 const publicStatuses = ['WRITING', 'COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'];
@@ -56,20 +57,27 @@ export function shareWebOrigin(candidate) {
 }
 
 export async function getSocialShare(type, id) {
-  if (!SHARE_TYPES.includes(type) || !mongoose.isObjectIdOrHexString(id)) throw unavailable();
+  if (!SHARE_TYPES.includes(type)) throw unavailable();
+  const model = { BOOK: Book, CHAPTER: Chapter, PROFILE: User, SESSION: Session }[type];
+  if (model) {
+    const record = await model.findOne(type === 'PROFILE' ? { username: id } : { urlSlug: id }).select('_id').lean().exec();
+    if (record) id = String(record._id);
+    else if (!mongoose.isObjectIdOrHexString(id)) throw unavailable();
+  }
+  if (!mongoose.isObjectIdOrHexString(id)) throw unavailable();
   let title, description, path;
   if (type === 'BOOK') {
     const book = await publicBook(id);
     title = book.title;
     description = plainSummary(book.description) || `${book.title} kitabını Betik'te keşfet.`;
-    path = `/book-detail/${book.id}`;
+    path = await bookPath(book);
   } else if (type === 'CHAPTER') {
     const chapter = await Chapter.findOne({ _id: id, isDeleted: false });
     if (!chapter) throw unavailable();
     const book = await publicBook(chapter.bookId);
     title = `${chapter.title} — ${book.title}`;
     description = `${book.title} kitabının “${chapter.title}” bölümünü Betik'te oku.`;
-    path = `/book-reader/${book.id}?chapter=${chapter.id}`;
+    path = await chapterPath(chapter);
   } else if (type === 'QUOTE') {
     const quote = await getPublicQuote(id);
     title = `${quote.bookId.title} kitabından bir alıntı`;
@@ -82,13 +90,14 @@ export async function getSocialShare(type, id) {
     const publicProfile = canViewProfile(profile, null);
     title = publicProfile ? `${profile.fullName || profile.username} — Betik` : 'Betik profil bağlantısı';
     description = publicProfile ? plainSummary(profile.bio) || 'Yazarın kitaplarını ve paylaşımlarını Betik’te keşfet.' : 'Bu profilin paylaşımları, sahibinin gizlilik tercihlerine göre görüntülenir.';
-    path = `/user/${profile.id}`;
+    path = profilePath(profile);
   } else {
     const session = await Session.findOne({ _id: id, isDeleted: false, isActive: true, type: 'OPEN' });
     if (!session || !await activeUser(session.createdBy)) throw unavailable();
     title = session.title;
     description = plainSummary(session.description) || 'Betik’teki bu oturuma katıl ve düşüncelerini paylaş.';
-    path = `/sessions/${session.id}`;
+    path = await sessionPath(session);
   }
-  return { type, id: String(id), title: plainSummary(title, 180), description, path, imagePath: `/social-share/${type.toLowerCase()}.jpg`, webOrigin: shareWebOrigin() };
+  const shareKey = decodeURIComponent(path.split('/').pop());
+  return { type, id: String(id), shareKey, title: plainSummary(title, 180), description, path, imagePath: `/social-share/${type.toLowerCase()}.jpg`, webOrigin: shareWebOrigin() };
 }

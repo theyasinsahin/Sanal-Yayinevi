@@ -1,3 +1,4 @@
+import { bookPath, readerPath } from '../../utils/publicPaths';
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, Link, useNavigate, useBlocker } from 'react-router-dom';
 import ReactQuill from 'react-quill';
@@ -229,7 +230,7 @@ const BookDashboard = () => {
   if (bookLoading) return <div className="p-8 text-center">Yükleniyor...</div>;
   if (bookError) return <div className="p-8 text-center text-red-600">Hata: {bookError.message}</div>;
   if (!book) return <div className="p-8 text-center">Kitap yükleniyor…</div>;
-  if (book.kind === 'PRINTED' && !book.canEditContent) return <div className="ui-notice" role="status">Bu kitaba içerik eklemek için yazar hak talebinizin onaylanması gerekir. <Link className="ui-text-link" to={`/book-detail/${bookId}`}>Kitaba dön</Link></div>;
+  if (book.kind === 'PRINTED' && !book.canEditContent) return <div className="ui-notice" role="status">Bu kitaba içerik eklemek için yazar hak talebinizin onaylanması gerekir. <Link className="ui-text-link" to={bookPath(book)}>Kitaba dön</Link></div>;
 
   return (
     <div className="dashboard-container" ref={dashboardRef}>
@@ -268,7 +269,7 @@ const BookDashboard = () => {
 
         {/* Aksiyon Butonları */}
         <div className="sidebar-actions">
-           <Link to={`/book-reader/${bookId}`} className="w-full no-underline">
+           <Link to={readerPath(book)} className="w-full no-underline">
               <Button variant="outline" size="small" className="w-full" icon={<Visibility fontSize="small"/>}>
                 Okuyucu Modu
               </Button>

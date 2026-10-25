@@ -1,3 +1,4 @@
+import { profilePath } from '../../utils/publicPaths';
 // src/pages/LeaderboardPage/index.jsx
 import React, { useState } from 'react';
 import { useQuery } from '@apollo/client';
@@ -103,7 +104,7 @@ const LeaderboardPage = () => {
                     className={`podium-item ${style.className} ${actualRank === 1 ? 'podium-first' : ''}`}
                   >
                     <span className="podium-medal">{style.icon}</span>
-                    <Link to={`/user/${entry.user?.id}`}>
+                    <Link to={profilePath(entry.user)}>
                       {/* ── FIX: referrerPolicy + onError ── */}
                       <SafeAvatar
                         src={entry.user?.profilePicture}
@@ -113,7 +114,7 @@ const LeaderboardPage = () => {
                         placeholderSize="medium"
                       />
                     </Link>
-                    <Link to={`/user/${entry.user?.id}`} className="podium-username">
+                    <Link to={profilePath(entry.user)} className="podium-username">
                       @{entry.user?.username}
                     </Link>
                     <span className="podium-points">{displayPoints(entry.points)} puan</span>
@@ -141,7 +142,7 @@ const LeaderboardPage = () => {
                     <span className="leaderboard-rank">
                       {style ? style.icon : `#${entry.rank}`}
                     </span>
-                    <Link to={`/user/${entry.user?.id}`} className="leaderboard-user">
+                    <Link to={profilePath(entry.user)} className="leaderboard-user">
                       {/* ── FIX: referrerPolicy + onError ── */}
                       <SafeAvatar
                         src={entry.user?.profilePicture}

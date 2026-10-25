@@ -1,3 +1,4 @@
+import { sessionPath } from '../../utils/publicPaths';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -329,7 +330,7 @@ const SessionsPage = () => {
               <SessionCard
                 key={session.id}
                 session={session}
-                onClick={() => navigate(`/sessions/${session.id}`)}
+                onClick={() => navigate(sessionPath(session))}
               />
             ))}
           </div>

@@ -1,3 +1,4 @@
+import { bookPath } from '../../../utils/publicPaths';
 import React from 'react';
 import { useQuery } from '@apollo/client';
 import { Delete, Visibility } from '@mui/icons-material';
@@ -46,7 +47,7 @@ const AdminBooks = () => {
               {<td><Badge variant="neutral">{book.genre.name}</Badge></td>}
               <td>
                 <div style={{display:'flex', gap: 10}}>
-                  <Link to={`/book-detail/${book.id}`} target="_blank">
+                  <Link to={bookPath(book)} target="_blank">
                     <Button size="small" variant="outline"><Visibility fontSize="small"/></Button>
                   </Link>
                   <Button size="small" variant="danger" onClick={() => handleDelete(book.id)}>

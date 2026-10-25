@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 const BookSchema = new mongoose.Schema({
+  urlSlug: { type: String, unique: true, sparse: true },
   kind: { type: String, enum: ['DIGITAL', 'PRINTED'], default: 'DIGITAL' },
   isbn: { type: String },
   printedAuthor: { type: String, default: '' },

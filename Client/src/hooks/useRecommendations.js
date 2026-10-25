@@ -7,6 +7,7 @@ const RECOMMENDATION_FIELDS = gql`
     score
     reason
     book {
+      publicPath
       id
       title
       description

@@ -1,3 +1,4 @@
+import { profilePath, readerPath } from '../../../utils/publicPaths';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery } from '@apollo/client';
@@ -64,8 +65,8 @@ export default function PrintedBookDetail({ book, comments, commentsLoading, cur
       <aside className="printed-detail-cover">{book.imageUrl && failedUrl !== book.imageUrl ? <img src={book.imageUrl} alt={`${book.title} kapağı`} onError={() => setFailedUrl(book.imageUrl)} /> : <div className="printed-cover-placeholder">{book.title}</div>}</aside>
       <div className="printed-detail-intro"><Badge variant="neutral">Basılı eser</Badge><h1>{book.title}</h1><p className="printed-detail-author">{book.printedAuthor}</p>
         <dl className="printed-metadata"><div><dt>Yayınevi</dt><dd>{book.publisher}</dd></div><div><dt>Basım yılı</dt><dd>{book.publicationYear}</dd></div><div><dt>Sayfa</dt><dd>{book.pageCount}</dd></div><div><dt>ISBN</dt><dd>{book.isbn || 'Belirtilmedi'}</dd></div></dl>
-        <div className="printed-actions">{approved && book.purchaseUrl && <a className="btn btn-primary btn-medium" href={book.purchaseUrl} target="_blank" rel="noopener noreferrer">Satın alma sayfası ↗</a>}{approved && book.chapters?.length > 0 && <Link className="ui-text-link" to={`/book-reader/${book.id}`}>Yazarın paylaştığı bölümleri oku</Link>}{book.canEditContent && <Link className="ui-text-link" to={`/dashboard/${book.id}`}>Bölüm ekle / düzenle</Link>}</div>
-        {book.author && <p className="printed-detail-hint">Betik'te onaylanan yazar: <Link to={`/user/${book.author.id}`} className="ui-text-link">{book.author.fullName || book.author.username}</Link></p>}
+        <div className="printed-actions">{approved && book.purchaseUrl && <a className="btn btn-primary btn-medium" href={book.purchaseUrl} target="_blank" rel="noopener noreferrer">Satın alma sayfası ↗</a>}{approved && book.chapters?.length > 0 && <Link className="ui-text-link" to={readerPath(book)}>Yazarın paylaştığı bölümleri oku</Link>}{book.canEditContent && <Link className="ui-text-link" to={`/dashboard/${book.id}`}>Bölüm ekle / düzenle</Link>}</div>
+        {book.author && <p className="printed-detail-hint">Betik'te onaylanan yazar: <Link to={profilePath(book.author)} className="ui-text-link">{book.author.fullName || book.author.username}</Link></p>}
       </div>
     </article>
     {approved && <BookShareButton book={book} />}

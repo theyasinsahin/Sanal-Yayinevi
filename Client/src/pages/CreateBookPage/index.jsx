@@ -1,3 +1,4 @@
+import { bookPath } from '../../utils/publicPaths';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@apollo/client';
@@ -109,7 +110,7 @@ const CreateBookPage = () => {
       };
 
       const response = await createBook({ variables });
-      navigate(`/book-detail/${response.data.createBook.id}`);
+      navigate(bookPath(response.data.createBook));
 
     } catch (error) {
       console.error("Hata:", error);

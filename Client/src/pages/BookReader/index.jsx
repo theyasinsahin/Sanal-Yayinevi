@@ -1,3 +1,4 @@
+import { bookPath } from '../../utils/publicPaths';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client';
@@ -30,11 +31,12 @@ import { useAuth } from '../../context/AuthContext';
 
 import { useReadingTracker } from '../../hooks/useReadingTracker';
 
-const BookReader = () => {
-  const { bookId } = useParams();
+const BookReader = ({ resolvedId, resolvedChapterId } = {}) => {
+  const params = useParams();
+  const bookId = resolvedId || params.bookId;
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const requestedChapterId = searchParams.get('chapter');
+  const requestedChapterId = resolvedChapterId || searchParams.get('chapter');
   const appliedChapterLink = useRef('');
   const [missingSharedChapter, setMissingSharedChapter] = useState(false);
 
@@ -174,7 +176,7 @@ const handleRemoveBookmark = async () => {
         e.preventDefault(); // Tarayıcının varsayılan kopyalama işlemini iptal et
 
         // Kendi özel metnimizi oluştur
-        const bookUrl = `${window.location.origin}/book-detail/${bookId}`;
+        const bookUrl = `${window.location.origin}${bookPath(book)}`;
         const bookTitle = book?.title || 'Bilinmeyen Kitap';
         
         const customCopyText = `Kitap: ${bookTitle}\nLink: ${bookUrl}\n\n* Bu platformdaki kitap içeriklerinin doğrudan kopyalanması telif hakları gereği sınırlandırılmıştır. Lütfen alıntı yapma özelliğini kullanınız.`;
@@ -346,7 +348,7 @@ const handleRemoveBookmark = async () => {
           
           <button
             className="sidebar-back-btn"
-            onClick={() => navigate(`/book-detail/${bookId}`)}
+            onClick={() => navigate(bookPath(book || { id: bookId }))}
           >
             <ArrowBack fontSize="small" />
             <span>Kitap Detayına Dön</span>
@@ -403,7 +405,7 @@ const handleRemoveBookmark = async () => {
         <div className="reader-controls">
           <button
             className="control-btn"
-            onClick={() => navigate(`/book-detail/${bookId}`)}
+            onClick={() => navigate(bookPath(book || { id: bookId }))}
             title="Kitaba dön"
           >
             <ArrowBack />

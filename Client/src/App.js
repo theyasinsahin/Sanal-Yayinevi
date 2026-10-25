@@ -1,3 +1,4 @@
+import PublicContentRoute from './components/Route/PublicContentRoute';
 import React from 'react';
 import { AuthorsPage, AboutPage, ContactPage, LegalPage, NewsletterPage } from './pages/Community';
 import PrintedBooksPage from './pages/PrintedBooks';
@@ -173,8 +174,13 @@ const router = createBrowserRouter([
       { path: "/terms", element: <LegalPage kind="terms" /> },
       { path: "/privacy", element: <LegalPage kind="privacy" /> },
       { path: "/newsletter", element: <NewsletterPage /> },
-      { path: "/book-detail/:id", element: <BookDetailPage /> },
-      { path: "/book-reader/:bookId", element: <Layout><BookReader /></Layout> },
+      { path: "/yazar/:username", element: <PublicContentRoute type="PROFILE"><UserProfilePage /></PublicContentRoute> },
+      { path: "/kitap/:slug", element: <PublicContentRoute type="BOOK"><BookDetailPage /></PublicContentRoute> },
+      { path: "/kitap/:slug/oku", element: <Layout><PublicContentRoute type="BOOK" reader><BookReader /></PublicContentRoute></Layout> },
+      { path: "/kitap/:slug/bolum/:chapterSlug", element: <Layout><PublicContentRoute type="BOOK" reader><BookReader /></PublicContentRoute></Layout> },
+      { path: "/oturum/:slug", element: <PublicContentRoute type="SESSION"><SessionDetail /></PublicContentRoute> },
+      { path: "/book-detail/:id", element: <PublicContentRoute type="BOOK" legacy><BookDetailPage /></PublicContentRoute> },
+      { path: "/book-reader/:bookId", element: <Layout><PublicContentRoute type="BOOK" legacy reader><BookReader /></PublicContentRoute></Layout> },
 
       { path: "/create-book",
         element: <ProtectedRoute><CreateBookPage /></ProtectedRoute>
@@ -186,7 +192,7 @@ const router = createBrowserRouter([
         element: <ProtectedRoute><UserProfilePage /></ProtectedRoute>
       },
 
-      { path: "/user/:userId", element: <UserProfilePage /> },
+      { path: "/user/:userId", element: <PublicContentRoute type="PROFILE" legacy><UserProfilePage /></PublicContentRoute> },
       { path: "/login", element: <LoginPage /> },
       { path: "/register", element: <RegisterPage /> },
       // Google'ın redirect akışında (ux_mode="redirect") backend
@@ -212,7 +218,7 @@ const router = createBrowserRouter([
       },
 
       { path: "/sessions", element: <SessionsPage /> },
-      { path: "/sessions/:sessionId", element: <SessionDetail /> },
+      { path: "/sessions/:sessionId", element: <PublicContentRoute type="SESSION" legacy><SessionDetail /></PublicContentRoute> },
 
       { path: "/admin",
         element: <AdminRoute><AdminDashboard /></AdminRoute>

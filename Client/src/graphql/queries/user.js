@@ -19,6 +19,7 @@ export const GET_USER_BY_ID = gql`
           fullName,
           email,
           savedBooks {
+            publicPath
             kind printedAuthor publisher publicationYear isbn
             status
             id
@@ -47,6 +48,7 @@ export const GET_USER_BY_ID = gql`
           },
           role,
           usersBooks {
+            publicPath
             kind printedAuthor publisher publicationYear isbn
             status
             id

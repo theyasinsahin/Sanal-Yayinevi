@@ -1,3 +1,4 @@
+import { profilePath } from '../../utils/publicPaths';
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Person from '@mui/icons-material/Person';
@@ -28,7 +29,7 @@ function Discover() { return <div className="community-cta"><Link to="/feed">Kit
 
 function AuthorCard({ author }) {
   const [broken, setBroken] = useState(false);
-  return <Link to={`/user/${author.id}`} className="community-card">
+  return <Link to={profilePath(author)} className="community-card">
     {author.profilePicture && !broken ? <img loading="lazy" className="community-avatar" src={author.profilePicture} alt="" onError={() => setBroken(true)} /> : <Person className="community-avatar" aria-hidden="true" />}
     <h2>{author.fullName || author.username}</h2><p>@{author.username}</p>{author.bio && <p className="community-bio">{author.bio}</p>}<strong>{author.bookCount} kitap</strong><p>{author.pageCount} sayfa</p>
   </Link>;

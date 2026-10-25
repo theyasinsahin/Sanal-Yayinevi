@@ -1,3 +1,4 @@
+import { bookPath } from '../../../utils/publicPaths';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
@@ -78,7 +79,7 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
     return num.toString();
   };
 
-  const handleBookClick = () => navigate(`/book-detail/${id}`);
+  const handleBookClick = () => navigate(bookPath(book));
 
   const handleShareClick = (e) => {
     e.stopPropagation(); // kartın navigate'ini tetikleme

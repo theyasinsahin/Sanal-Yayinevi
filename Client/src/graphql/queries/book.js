@@ -4,6 +4,7 @@ import { PRINTED_BOOK_FIELDS } from '../printedBooks';
 export const GET_BOOKS = gql`
   query GetAllBooks{
     getAllBooks{
+      publicPath
         id,
         title,
         description,
@@ -70,6 +71,7 @@ export const GET_BOOK_BY_ID = gql`
   ${PRINTED_BOOK_FIELDS}
   query GetBookById($id: ID!) {
     getBookById(id: $id) {
+      publicPath
       ...PrintedBookFields
       id
       title
@@ -141,6 +143,7 @@ export const GET_BOOK_BY_ID = gql`
 export const GET_BOOK_READER_DATA = gql`
   query GetBookReaderData($id: ID!) {
     getBookById(id: $id) {
+      publicPath
       id
       title
       authorId
