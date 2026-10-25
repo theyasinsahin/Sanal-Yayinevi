@@ -59,7 +59,7 @@ const NavigationBar = () => {
               <Link to="/quotes" className="nav-item">
                 <Typography variant="body" weight="medium">Alıntılar</Typography>
               </Link>
-              <Link to="/published-books" className="nav-item">
+              <Link to="/printed-books" className="nav-item">
                 <Typography variant="body" weight="medium">Basılı Kitaplar</Typography>
               </Link>
 

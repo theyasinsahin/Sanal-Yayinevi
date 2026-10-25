@@ -58,7 +58,7 @@ export default function PrintedBookDetail({ book, comments, commentsLoading, cur
     } catch (failure) { setQuoteError(failure.message.includes('QUOTE_EXISTS:') ? 'Bu alıntı daha önce paylaşıldı. Kitabın alıntılarını inceleyebilirsiniz.' : failure.message); }
   }
   return <MainLayout><div className="printed-page"><Container maxWidth="5xl">
-    <Link to="/published-books" className="ui-text-link">← Basılı kitaplara dön</Link>
+    <Link to="/printed-books" className="ui-text-link">← Basılı kitaplara dön</Link>
     <article className="printed-detail-layout">
       <aside className="printed-detail-cover">{book.imageUrl && failedUrl !== book.imageUrl ? <img src={book.imageUrl} alt={`${book.title} kapağı`} onError={() => setFailedUrl(book.imageUrl)} /> : <div className="printed-cover-placeholder">{book.title}</div>}</aside>
       <div className="printed-detail-intro"><Badge variant="neutral">Basılı eser</Badge><h1>{book.title}</h1><p className="printed-detail-author">{book.printedAuthor}</p>

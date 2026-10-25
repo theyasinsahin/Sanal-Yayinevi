@@ -44,7 +44,7 @@ const Footer = () => {
               <li><Link to="/feed">Keşfet</Link></li>
               <li><Link to="/create-book">Kitap Yaz</Link></li>
               <li><Link to="/authors">Yazarlar</Link></li>
-              <li><Link to="/published-books">Basılı Kitaplar</Link></li>
+              <li><Link to="/printed-books">Basılı Kitaplar</Link></li>
             </ul>
           </div>
 

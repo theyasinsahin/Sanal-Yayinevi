@@ -1,6 +1,6 @@
 # Basılı kitap kataloğu ve yazar hak talepleri
 
-Basılı kitaplar `/published-books`, yönetim kuyruğu `/admin/printed-books` adresindedir. Normal dijital kitap oluşturma ve fonlama akışı ayrı kalır. Mevcut `Book` kayıtları `kind` alanı yokken de dijital kitap kabul edilir.
+Basılı kitaplar `/printed-books`, yönetim kuyruğu `/admin/printed-books` adresindedir. Normal dijital kitap oluşturma ve fonlama akışı ayrı kalır. Mevcut `Book` kayıtları `kind` alanı yokken de dijital kitap kabul edilir.
 
 ## Başvuru ve yayın
 

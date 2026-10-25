@@ -141,7 +141,7 @@ const NotificationBell = ({ label, className = '' }) => {
                       <p className="notif-title">{notif.title}</p>
                       <p className="notif-message">{notif.message}</p>
                       <span className="notif-time">{timeAgo(notif.createdAt)}</span>
-                      {notif.type === 'BOOK_REVIEW' && <Link className="ui-text-link" to={user?.role === 'ADMIN' ? '/admin/printed-books' : notif.meta?.bookId ? `/book-detail/${notif.meta.bookId}` : '/published-books'} onClick={() => setOpen(false)}>Başvuruyu görüntüle</Link>}
+                      {notif.type === 'BOOK_REVIEW' && <Link className="ui-text-link" to={user?.role === 'ADMIN' ? '/admin/printed-books' : notif.meta?.bookId ? `/book-detail/${notif.meta.bookId}` : '/printed-books'} onClick={() => setOpen(false)}>Başvuruyu görüntüle</Link>}
                     </div>
                   </div>
                 ))}

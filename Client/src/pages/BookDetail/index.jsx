@@ -236,7 +236,7 @@ const BookDetailPage = () => {
     </MainLayout>
   );  
   
-  if (!book) return <MainLayout><Container maxWidth="5xl"><section className="printed-panel"><Typography variant="h2">Kitap bulunamadı</Typography><p>Bu kayıt henüz yayımlanmamış veya erişime kapalı olabilir.</p><Link className="ui-text-link" to="/published-books">Basılı kitaplara dön</Link></section></Container></MainLayout>;
+  if (!book) return <MainLayout><Container maxWidth="5xl"><section className="printed-panel"><Typography variant="h2">Kitap bulunamadı</Typography><p>Bu kayıt henüz yayımlanmamış veya erişime kapalı olabilir.</p><Link className="ui-text-link" to="/printed-books">Basılı kitaplara dön</Link></section></Container></MainLayout>;
   if (book.kind === 'PRINTED') return <><PrintedBookDetail book={book} comments={rawComments} commentsLoading={commentsLoading} currentUserId={currentUserId} commentText={commentText} onCommentChange={event => setCommentText(event.target.value)} onCommentSubmit={handleCommentSubmit} commentSending={commentSending} refresh={refreshBook} /><Toast isVisible={toast.show} message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} /></>;
 
   // --- VARIABLES ---

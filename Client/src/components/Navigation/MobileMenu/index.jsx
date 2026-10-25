@@ -63,7 +63,7 @@ const MobileMenu = ({ isOpen, onClose }) => {
             <FormatQuote className="mobile-icon" />
             <Typography variant="body" weight="medium">Alıntılar</Typography>
           </Link>
-          <Link to="/published-books" className="mobile-nav-item" onClick={onClose}>
+          <Link to="/printed-books" className="mobile-nav-item" onClick={onClose}>
             <MenuBook className="mobile-icon" />
             <Typography variant="body" weight="medium">Basılı Kitaplar</Typography>
           </Link>
