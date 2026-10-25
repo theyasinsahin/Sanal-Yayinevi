@@ -81,7 +81,7 @@ const LoginPage = () => {
           {/* Başlık */}
           <div className="auth-header">
             <div className="auth-icon-circle">
-              <LoginIcon fontSize="large" style={{ color: '#8b4513' }} />
+              <LoginIcon fontSize="large" />
             </div>
             <Typography variant="h3" weight="bold" className="text-center mb-2">
               Betik'e Giriş
@@ -93,7 +93,7 @@ const LoginPage = () => {
 
           {/* Hata Mesajları (Standart veya Google hatası) */}
           {(error || customError) && (
-            <div className="auth-error-box">
+            <div className="ui-notice ui-notice--error" role="alert">
               <Typography variant="small" color="danger">
                 {customError || (error?.message === "Failed to fetch" ? "Geçici bir sorun yaşanıyor olabilir. Lütfen biraz sonra tekrar deneyin." : "Giriş yapılamadı. Bilgilerinizi kontrol edin.")}
               </Typography>
@@ -115,11 +115,8 @@ const LoginPage = () => {
           </div>
 
           {/* AYIRICI ÇİZGİ */}
-          <div className="auth-divider" style={{ textAlign: 'center', margin: '1rem 0', position: 'relative' }}>
-            <Typography variant="small" color="muted" style={{ background: '#fff', padding: '0 10px', position: 'relative', zIndex: 1 }}>
-              VEYA E-POSTA İLE
-            </Typography>
-            <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, borderTop: '1px solid #eee', zIndex: 0 }}></div>
+          <div className="auth-divider">
+            <span className="divider-text">VEYA E-POSTA İLE</span>
           </div>
 
           {/* Form */}
@@ -149,7 +146,7 @@ const LoginPage = () => {
             />
 
             <div className="auth-options">
-              <Link to="/sifremi-unuttum" className="forgot-password-link">
+              <Link to="/sifremi-unuttum" className="ui-text-link">
                 Şifremi Unuttum
               </Link>
             </div>
@@ -167,7 +164,7 @@ const LoginPage = () => {
             <div className="auth-footer">
               <Typography variant="body" color="muted">
                 Hesabın yok mu?{' '}
-                <Link to="/register" className="register-link">
+                <Link to="/register" className="ui-text-link">
                   Kayıt Ol
                 </Link>
               </Typography>

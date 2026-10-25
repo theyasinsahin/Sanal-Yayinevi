@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import 'react-quill/dist/quill.snow.css';
 
 import './index.css';
+import './styles/feedback.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';

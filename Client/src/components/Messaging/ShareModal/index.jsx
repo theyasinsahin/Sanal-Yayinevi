@@ -176,7 +176,7 @@ const ShareModal = ({ isOpen, onClose, type, attachedBookId, attachedBook, attac
           </div>
         )}
 
-        {sendError && <p role="alert">{sendError}</p>}
+        {sendError && <p className="ui-notice ui-notice--error" role="alert">{sendError}</p>}
         {/* Gönder */}
         <div className="share-modal-footer">
           <Button variant="outline" onClick={onClose}>
