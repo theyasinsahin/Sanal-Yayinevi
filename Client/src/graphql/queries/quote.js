@@ -15,6 +15,11 @@ const QUOTE_FIELDS = gql`
   }
 `;
 
+export const GET_QUOTE_BY_ID = gql`
+  ${QUOTE_FIELDS}
+  query GetQuoteById($id: ID!) { getQuoteById(id: $id) { ...QuoteFields } }
+`;
+
 export const GET_QUOTES_FEED = gql`
   ${QUOTE_FIELDS}
   query GetQuotesFeed($limit: Int, $offset: Int, $sortBy: String) {

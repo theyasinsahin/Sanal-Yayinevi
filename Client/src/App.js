@@ -39,6 +39,7 @@ import PaymentFailure from "./pages/PaymentResult/PaymentFailure";
 import ForgotPasswordPage from './pages/Auth/ForgotPassword';
 import ResetPasswordPage from './pages/Auth/ResetPassword';
 import QuotesPage from './pages/QuotesPage';
+import QuoteDetail from './pages/QuoteDetail';
 import LeaderboardPage from './pages/LeaderboardPage';
 import MessagesPage from './pages/MessagesPage';
 import SessionsPage  from './pages/SessionsPage';
@@ -199,6 +200,7 @@ const router = createBrowserRouter([
       { path: "/payment/success", element: <PaymentSuccess /> },
       { path: "/payment/failure", element: <PaymentFailure /> },
       { path: "/quotes", element: <QuotesPage /> },
+      { path: '/quotes/:quoteId', element: <QuoteDetail /> },
       { path: "/leaderboard", element: <LeaderboardPage /> },
 
       // Messages — ProtectedRoute ile sar, giriş yapılmamışsa login'e yönlendir

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client';
 import { 
   ArrowBack, 
@@ -25,6 +25,7 @@ import ParagraphRenderer from '../../components/ParagraphComment/ParagraphRender
 import './BookReader.css';
 
 import QuotePopup from '../../components/Quote/QuotePopup';
+import SocialShareButton from '../../components/Sharing/SocialShareButton';
 import { useAuth } from '../../context/AuthContext';
 
 import { useReadingTracker } from '../../hooks/useReadingTracker';
@@ -32,6 +33,10 @@ import { useReadingTracker } from '../../hooks/useReadingTracker';
 const BookReader = () => {
   const { bookId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestedChapterId = searchParams.get('chapter');
+  const appliedChapterLink = useRef('');
+  const [missingSharedChapter, setMissingSharedChapter] = useState(false);
 
   const { user } = useAuth();
 
@@ -102,10 +107,11 @@ const handleRemoveBookmark = async () => {
   const { data: bookData, loading: bookLoading } = useQuery(GET_BOOK_READER_DATA, {
     variables: { id: bookId },
     skip: !bookId,
+    fetchPolicy: 'cache-and-network',
   });
 
   const book = bookData?.getBookById;
-  const chapters = book?.chapters || [];
+  const chapters = useMemo(() => book?.chapters || [], [book]);
 
   const { data: userData } = useQuery(GET_USER_BY_ID, {
     variables: { id: book?.authorId },
@@ -134,6 +140,19 @@ const handleRemoveBookmark = async () => {
 
   // Save progress
   useEffect(() => {
+    if (!book || bookLoading) return;
+    const key = `${bookId}:${requestedChapterId || ''}`;
+    if (appliedChapterLink.current === key) return;
+    appliedChapterLink.current = key;
+    setMissingSharedChapter(false);
+    if (!requestedChapterId) return;
+    const index = chapters.findIndex(chapter => chapter.id === requestedChapterId);
+    if (index < 0) { setMissingSharedChapter(true); return; }
+    setReadingMode('chapter');
+    setCurrentChapterIndex(index);
+  }, [book, chapters, bookLoading, bookId, requestedChapterId]);
+
+  useEffect(() => {
     if (bookId) {
       localStorage.setItem(`book-progress-${bookId}`, JSON.stringify({
         lastChapter: currentChapterIndex,
@@ -146,6 +165,7 @@ const handleRemoveBookmark = async () => {
   // KOPYALAMAYA KARŞI KORUMA (DRM)
   useEffect(() => {
     const handleCopy = (e) => {
+      if (document.activeElement?.closest('[data-social-share-copy], .social-share-dialog')) return;
       // Kullanıcının ekranda seçtiği metni al
       const selectedText = window.getSelection().toString();
       
@@ -398,6 +418,7 @@ const handleRemoveBookmark = async () => {
         </div>
 
         {/* CHAPTER READING MODE — Tek bölüm göster */}
+        {missingSharedChapter && <p className="ui-notice" role="status">Paylaşılan bölüm bulunamadı. Kitabın diğer bölümlerini okuyabilirsiniz.</p>}
         {readingMode === 'chapter' && currentChapter && (
           <div className="chapter-reading-mode">
 
@@ -416,6 +437,7 @@ const handleRemoveBookmark = async () => {
                 Bölüm {currentChapterIndex + 1} / {chapters.length}
               </div>
               <h2>{currentChapter.title}</h2>
+              <SocialShareButton type="CHAPTER" id={currentChapter.id} label="Bölümü paylaş" />
             </div>
 
             {/* Bölüm İçeriği */}

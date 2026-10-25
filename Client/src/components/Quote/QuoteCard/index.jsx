@@ -18,6 +18,7 @@ import { useAuth } from '../../../context/AuthContext';
 import './QuoteCard.css';
 
 import ShareModal from '../../Messaging/ShareModal';
+import SocialShareDialog from '../../Sharing/SocialShareDialog';
 import { IosShare } from '@mui/icons-material';
 
 // useAuth zaten import edilmiş, değişiklik yok
@@ -43,6 +44,7 @@ const QuoteCard = ({ quote }) => {
   const [commentText, setCommentText] = useState('');
 
   const [shareOpen, setShareOpen] = useState(false);
+  const [messageOpen, setMessageOpen] = useState(false);
 
   // QuoteCard'da state ekle:
   const [spoilerRevealed, setSpoilerRevealed] = useState(false);
@@ -276,16 +278,15 @@ const QuoteCard = ({ quote }) => {
             <span>{likeCount}</span>
           </button>
 
-          {/* Paylaş, sadece giriş yapılmışsa */}
-          {user && (
+          {/* Herkese açık alıntının sosyal paylaşımı */}
             <button
               className="quote-card-action-btn"
-              title="Arkadaşa gönder"
+              title="Alıntıyı paylaş"
+              aria-label="Alıntıyı paylaş"
               onClick={() => setShareOpen(true)}
             >
               <IosShare fontSize="small" />
             </button>
-          )}
         </div>
       </div>
 
@@ -376,9 +377,12 @@ const QuoteCard = ({ quote }) => {
 
       {/* ShareModal */}
       {shareOpen && (
+        <SocialShareDialog target={{ type: 'QUOTE', id: displayQuote.id }} onClose={() => setShareOpen(false)} onSendInBetik={user ? () => setMessageOpen(true) : undefined} />
+      )}
+      {messageOpen && (
         <ShareModal
-          isOpen={shareOpen}
-          onClose={() => setShareOpen(false)}
+          isOpen={messageOpen}
+          onClose={() => setMessageOpen(false)}
           type="QUOTE"
           attachedQuoteId={displayQuote.id}
           attachedQuote={displayQuote}

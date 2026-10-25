@@ -34,6 +34,7 @@ import QuoteCard from '../../components/Quote/QuoteCard';
 import UserSettings from '../../components/Settings/UserSettings';
 import UserFollowButton from '../../components/Follow/UserFollowButton';
 import RemoveFollowerButton from '../../components/Follow/RemoveFollowerButton';
+import SocialShareButton from '../../components/Sharing/SocialShareButton';
 
 import './UserProfile.css';
 
@@ -339,6 +340,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
             </div>
 
             <div className="header-right">
+              {!isEditing && <SocialShareButton type="PROFILE" id={targetId} label="Profili paylaş" />}
               {isMe ? (
                 !isEditing && (
                   <div className="my-actions">

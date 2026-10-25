@@ -20,6 +20,7 @@ import { UPDATE_BOOK_STATUS_MUTATION } from '../../graphql/mutations/book';
 import { CREATE_CHAPTER_MUTATION, UPDATE_CHAPTER_MUTATION, DELETE_CHAPTER_MUTATION } from '../../graphql/mutations/chapter';
 import { parseContentToPages } from '../../utils/htmlPageSplitter';
 import useChapterAutosave from '../../hooks/useChapterAutosave';
+import SocialShareButton from '../../components/Sharing/SocialShareButton';
 
 // --- UI KIT ---
 import { Button } from '../../components/UI/Button';
@@ -404,9 +405,9 @@ const BookDashboard = () => {
                   <Badge variant={saveStatus === 'saved' ? 'success' : saveStatus === 'error' ? 'danger' : 'warning'}>{saveMessages[saveStatus]}</Badge>
                 </span>
               </div>
-              <Button 
-                variant="primary" 
-                onClick={saveChapter} 
+              <div className="editor-topbar-actions">
+                {book.status !== 'DRAFT' && <SocialShareButton type="CHAPTER" id={selectedChapter} label="Bölümü paylaş" beforeOpen={() => manager.flush()} disabled={editorLocked} />}
+              <Button variant="primary" onClick={saveChapter}
                 className="dashboard-save-button"
                 aria-label="Bölümü kaydet"
                 aria-busy={saveStatus === 'saving'}
@@ -415,6 +416,7 @@ const BookDashboard = () => {
               >
                 Kaydet
               </Button>
+              </div>
             </header>
 
             <div className="quill-wrapper">

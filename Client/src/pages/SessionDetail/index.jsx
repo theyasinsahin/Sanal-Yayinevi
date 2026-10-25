@@ -17,6 +17,7 @@ import {
   useCloseSession,
 } from '../../hooks/useSessions';
 import './SessionDetail.css';
+import SocialShareButton from '../../components/Sharing/SocialShareButton';
 
 import { useLazyQuery } from '@apollo/client';
 import { VERIFY_SESSION_ACCESS_CODE } from '../../graphql/queries/session'; // query'i ekleyeceksin
@@ -415,6 +416,7 @@ const { session, loading: sessionLoading, error: sessionError } = useGetSession(
 
             <div className="session-detail-hero-title-row">
               <h1 className="session-detail-title">{session.title}</h1>
+              {session.type === 'OPEN' && session.isActive && <SocialShareButton type="SESSION" id={session.id} label="Oturumu paylaş" />}
               {isCreator && session.isActive && (
                 <Button
                   variant="danger"

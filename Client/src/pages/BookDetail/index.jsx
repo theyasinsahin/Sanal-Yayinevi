@@ -5,7 +5,6 @@ import {
   ArrowBack, 
   FavoriteBorder, 
   Favorite, 
-  Share, 
   BookmarkBorder, 
   Bookmark, 
   MenuBook, 
@@ -37,6 +36,7 @@ import BookFollowButton from '../../components/Books/BookFollowButton';
 import CommentList from '../../components/Comments/CommentList';
 import BackersSection from '../../components/Books/BackersSection';
 import PrintedBookDetail from '../../components/Books/PrintedBookDetail';
+import BookShareButton from '../../components/Books/BookShareButton';
 
 import './BookDetail.css';
 
@@ -139,11 +139,6 @@ const BookDetailPage = () => {
       setOptimisticSaved(currentlySaved);
       showToast("Kaydetme işlemi başarısız", 'error');
     }
-  };
-
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    showToast('Link kopyalandı!', 'success');
   };
 
   const handleCommentSubmit = async () => {
@@ -370,7 +365,7 @@ const BookDetailPage = () => {
                      className={isSaved ? 'text-blue-600' : ''}
                      icon={isSaved ? <Bookmark /> : <BookmarkBorder />}
                    />
-                   <Button variant="ghost" onClick={handleShare} icon={<Share />} />
+                   {book.status !== 'DRAFT' && <BookShareButton book={book} variant="ghost" />}
                 </div>
               </div>
 
