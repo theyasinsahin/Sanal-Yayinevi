@@ -125,11 +125,6 @@ export const UPDATE_NOTIFICATION_SETTINGS_MUTATION = gql`
         bookLike
         quoteLike
         sessionReply
-        publishingOffer
-        offerUpdate
-        emailDigest
-        emailOffers
-        emailMarketing
       }
     }
   }
@@ -140,8 +135,6 @@ export const UPDATE_AUTHOR_SETTINGS_MUTATION = gql`
     updateAuthorSettings(authorSettings: $authorSettings) {
       id
       authorSettings {
-        defaultLanguage
-        publishingVisible
         copyrightNote
         weeklyWordGoal
         preferredGenres

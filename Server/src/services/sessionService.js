@@ -1,9 +1,11 @@
 // src/services/sessionService.js
 import bcrypt from 'bcryptjs';
+import { notifyUser } from './notificationService.js';
+import { inactiveUserIds } from '../utils/activeUsers.js';
 import Session from '../models/session.js';
 import SessionEntry from '../models/sessionEntry.js';
 import User from '../models/user.js';
-import { pubsub } from '../../index.js';
+import { pubsub } from '../config/pubsub.js';
 
 import * as ScoreService from './scoreService.js';
 
@@ -47,7 +49,7 @@ export const createSession = async (userId, input) => {
   // Yazar kontrolü
   const user = await User.findById(userId).select('isPremium isVerified');
   if (!user?.isPremium) {
-    throw new Error('Oturum açmak için doğrulanmış premium bir kullanıcı olmanız gerekir.');
+    throw new Error('Oturum açmak için doğrulanmış ücretli bir üye olmanız gerekir.');
   }
 
   const { title, description, type, accessCode, tags } = input;
@@ -79,7 +81,7 @@ export const createSession = async (userId, input) => {
 };
 
 export const getSessions = async (limit = 20, offset = 0) => {
-  return Session.find({ isActive: true, isDeleted: false })
+  return Session.find({ isActive: true, isDeleted: false, createdBy: { $nin: await inactiveUserIds() } })
     .populate('createdBy', 'username fullName profilePicture')
     .sort({ createdAt: -1 })
     .skip(offset)
@@ -87,7 +89,7 @@ export const getSessions = async (limit = 20, offset = 0) => {
 };
 
 export const getSessionById = async (sessionId, userId) => {
-  const session = await Session.findOne({ _id: sessionId, isDeleted: false })
+  const session = await Session.findOne({ _id: sessionId, isDeleted: false, createdBy: { $nin: await inactiveUserIds() } })
     .populate('createdBy', 'username fullName profilePicture');
 
   if (!session) return null;
@@ -116,7 +118,7 @@ export const getSessionById = async (sessionId, userId) => {
 };
 
 export const closeSession = async (sessionId, userId) => {
-  const session = await Session.findOne({ _id: sessionId, isDeleted: false });
+  const session = await Session.findOne({ _id: sessionId, isDeleted: false, createdBy: { $nin: await inactiveUserIds() } });
   if (!session) throw new Error('Oturum bulunamadı.');
   if (session.createdBy.toString() !== userId.toString()) {
     throw new Error('Sadece oturumu açan kişi kapatabilir.');
@@ -129,7 +131,7 @@ export const closeSession = async (sessionId, userId) => {
 // --- SESSION ENTRY ---
 
 export const addSessionEntry = async (userId, sessionId, content, accessCode = null) => {
-  const session = await Session.findOne({ _id: sessionId, isDeleted: false });
+  const session = await Session.findOne({ _id: sessionId, isDeleted: false, createdBy: { $nin: await inactiveUserIds() } });
   if (!session) throw new Error('Oturum bulunamadı.');
 
   // PRIVATE tipinde accessCode ile doğrulama
@@ -162,6 +164,22 @@ export const addSessionEntry = async (userId, sessionId, content, accessCode = n
     });
   }
 
+  const mentionedNames = [...new Set(content.match(/@[\p{L}\p{N}_]+(?:[.-][\p{L}\p{N}_]+)*/gu) || [])].map(name => name.slice(1));
+  const mentioned = await User.find({ username: { $in: mentionedNames }, isDeleted: false, isActive: { $ne: false } });
+  const recipients = new Set([String(session.createdBy), ...(await SessionEntry.distinct('userId', { sessionId, isDeleted: false })).map(String)]);
+  for (const recipient of mentioned) {
+    // A mention never grants access to a restricted session.
+    if (session.type === 'FOLLOWERS_ONLY') {
+      const creator = await User.findById(session.createdBy);
+      if (String(recipient._id) !== String(creator._id) && !creator.followers.some(id => String(id) === String(recipient._id))) continue;
+    }
+    if (session.type === 'PRIVATE' && !recipients.has(String(recipient._id))) continue;
+    const sent = await notifyUser(recipient._id, 'mentionInSession', { type: 'SESSION_MENTION', title: 'Oturumda senden bahsedildi', message: session.title + ' oturumunda etiketlendin.', icon: '💬', meta: { sessionId } }, userId);
+    if (sent) recipients.delete(String(recipient._id));
+  }
+  for (const recipientId of recipients) {
+    await notifyUser(recipientId, 'sessionReply', { type: 'SESSION_REPLY', title: 'Oturuma yeni bir ileti eklendi', message: session.title + ' oturumunda yeni bir ileti var.', icon: '💬', meta: { sessionId } }, userId);
+  }
   const populated = await populateEntry(SessionEntry.findById(entry._id));
 
   pubsub.publish(NEW_SESSION_ENTRY, {
@@ -173,7 +191,7 @@ export const addSessionEntry = async (userId, sessionId, content, accessCode = n
 };
 
 export const getSessionEntries = async (sessionId, limit, offset, userId) => {
-  const session = await Session.findOne({ _id: sessionId, isDeleted: false });
+  const session = await Session.findOne({ _id: sessionId, isDeleted: false, createdBy: { $nin: await inactiveUserIds() } });
   if (!session) throw new Error('Oturum bulunamadı.');
 
   // FOLLOWERS_ONLY kontrolü — getSessionById'deki aynı düzeltme burada da
@@ -194,7 +212,7 @@ export const getSessionEntries = async (sessionId, limit, offset, userId) => {
   }
 
   return populateEntry(
-    SessionEntry.find({ sessionId, isDeleted: false })
+    SessionEntry.find({ sessionId, isDeleted: false, userId: { $nin: await inactiveUserIds() } })
       .sort({ createdAt: 1 })
       .skip(offset)
       .limit(limit)
@@ -244,7 +262,7 @@ export const toggleSessionEntryLike = async (entryId, userId) => {
 };
 
 export const verifySessionAccessCode = async (sessionId, accessCode) => {
-  const session = await Session.findOne({ _id: sessionId, isDeleted: false });
+  const session = await Session.findOne({ _id: sessionId, isDeleted: false, createdBy: { $nin: await inactiveUserIds() } });
 
   if (!session) throw new Error('Oturum bulunamadı.');
   if (session.type !== 'PRIVATE') return true;

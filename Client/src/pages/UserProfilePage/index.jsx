@@ -72,6 +72,18 @@ const UserProfile = () => {
   const userQuotes = quotesData?.getQuotesByUser || [];
 
   const profile = data?.getUserById;
+  const canView = isMe || profile?.canViewProfile !== false;
+  const canViewLibrary = isMe || profile?.canViewLibrary === true;
+  const canViewFollowList = isMe || profile?.canViewFollowList !== false;
+  useEffect(() => {
+    if (!profile) return;
+    let meta = document.querySelector('meta[name="robots"]');
+    const existed = Boolean(meta);
+    const previous = meta?.getAttribute('content');
+    if (!meta) { meta = document.createElement('meta'); meta.name = 'robots'; document.head.appendChild(meta); }
+    meta.content = profile.isSearchIndexable ? 'index,follow' : 'noindex,nofollow';
+    return () => { if (!existed) meta.remove(); else meta.setAttribute('content', previous || ''); };
+  }, [profile]);
 
   const { data: scoreData } = useQuery(GET_USER_SCORE, {
     variables: { userId: targetId },
@@ -95,7 +107,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
   const [updateUser, { loading: updating }] = useMutation(UPDATE_USER_MUTATION, {
     onCompleted: () => {
       setIsEditing(false);
-      showToast('Profile updated successfully', 'success');
+      showToast('Profil başarıyla güncellendi.', 'success');
       refetch();
     },
     onError: (err) => showToast(err.message, 'error')
@@ -154,6 +166,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
 
     try {
       await toggleFollow({ variables: { followId: targetId } });
+      await refetch();
     } catch (err) {
       setOptimisticFollowing(currentlyFollowing);
       setOptimisticFollowerCount(currentCount);
@@ -178,7 +191,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
 
   const handleSave = async () => {
     if (!editForm.username.trim()) {
-      showToast("Username required", 'error');
+      showToast("Kullanıcı adı zorunludur.", 'error');
       return;
     }
     await updateUser({ variables: { ...editForm } });
@@ -206,8 +219,8 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
 
   const formatNumber = (num) => {
     if (!num) return '0';
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+    if (num >= 1000000) return `${(num / 1000000).toLocaleString('tr-TR', { maximumFractionDigits: 1 })} mn`;
+    if (num >= 1000) return `${(num / 1000).toLocaleString('tr-TR', { maximumFractionDigits: 1 })} bin`;
     return num.toString();
   };
 
@@ -217,6 +230,11 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
   // YENİ: Modal Yardımcı Fonksiyonları
   const openModal = (type) => setFollowModal({ show: true, type });
   const closeModal = () => setFollowModal({ show: false, type: 'followers' });
+  useEffect(() => {
+    setActiveTab('published'); setIsEditing(false);
+    setOptimisticFollowing(null); setOptimisticFollowerCount(null);
+    setFollowModal({ show: false, type: 'followers' });
+  }, [targetId]);
 
   if (loading) return <MainLayout><div className="loading-state"><div className="loading-spinner"></div></div></MainLayout>;
 
@@ -264,7 +282,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
               
               {!isEditing && profile.isVerified && (
                 <div className="verified-badge">
-                  <Verified style={{ fontSize: '1rem' }} /><span>Verified</span>
+                  <Verified style={{ fontSize: '1rem' }} /><span>Doğrulanmış</span>
                 </div>
               )}
             </div>
@@ -272,12 +290,12 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
             <div className="header-center">
               {isEditing ? (
                 <div className="edit-form-grid">
-                   <Input label="Full Name" value={editForm.fullName} onChange={(e) => setEditForm({...editForm, fullName: e.target.value})} />
-                   <Input label="Username" value={editForm.username} onChange={(e) => setEditForm({...editForm, username: e.target.value})} required />
-                   <Textarea label="Bio" value={editForm.bio} onChange={(e) => setEditForm({...editForm, bio: e.target.value})} rows={3} />
+                   <Input label="Ad Soyad" value={editForm.fullName} onChange={(e) => setEditForm({...editForm, fullName: e.target.value})} />
+                   <Input label="Kullanıcı Adı" value={editForm.username} onChange={(e) => setEditForm({...editForm, username: e.target.value})} required />
+                   <Textarea label="Hakkımda" value={editForm.bio} onChange={(e) => setEditForm({...editForm, bio: e.target.value})} rows={3} />
                    <div className="edit-actions">
-                     <Button variant="primary" onClick={handleSave} isLoading={updating} icon={<Save fontSize="small"/>}>Save</Button>
-                     <Button variant="outline" onClick={() => setIsEditing(false)} icon={<Cancel fontSize="small"/>}>Cancel</Button>
+                     <Button variant="primary" onClick={handleSave} isLoading={updating} icon={<Save fontSize="small"/>}>Kaydet</Button>
+                     <Button variant="outline" onClick={() => setIsEditing(false)} icon={<Cancel fontSize="small"/>}>İptal</Button>
                    </div>
                 </div>
               ) : (
@@ -302,7 +320,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
                   )}
 
                   <div className="contact-info">
-                    <div className="contact-item"><Email fontSize="small" /><span>{profile.email}</span></div>
+                    {isMe && <div className="contact-item"><Email fontSize="small" /><span>{profile.email}</span></div>}
                   </div>
 
                   <div className="profile-stats-row">
@@ -316,21 +334,21 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
                       <span className="stat-value">
                         {isMe ? (profile.usersBooks?.length || 0) : publishedBooks.length}
                       </span>
-                      <span className="stat-label">Books</span>
+                      <span className="stat-label">Kitaplar</span>
                     </div>
                     <div className="stat-divider"></div>
                     
                     {/* YENİ: Tıklanabilir Followers */}
-                    <div className="stat-item-profile clickable" onClick={() => openModal('followers')}>
-                      <span className="stat-value">{formatNumber(followerCount)}</span>
-                      <span className="stat-label">Followers</span>
+                    <div className="stat-item-profile clickable" onClick={() => canViewFollowList && openModal('followers')}>
+                      <span className="stat-value">{canViewFollowList ? formatNumber(followerCount) : 'Gizli'}</span>
+                      <span className="stat-label">Takipçiler</span>
                     </div>
                     <div className="stat-divider"></div>
 
                     {/* YENİ: Tıklanabilir Following */}
-                    <div className="stat-item-profile clickable" onClick={() => openModal('following')}>
-                      <span className="stat-value">{formatNumber(profile.following?.length || 0)}</span>
-                      <span className="stat-label">Following</span>
+                    <div className="stat-item-profile clickable" onClick={() => canViewFollowList && openModal('following')}>
+                      <span className="stat-value">{canViewFollowList ? formatNumber(profile.following?.length || 0) : 'Gizli'}</span>
+                      <span className="stat-label">Takip Edilenler</span>
                     </div>
                     <div className="stat-divider"></div>
                     
@@ -344,16 +362,16 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
                         <div className="stat-divider"></div>
                         <div className="stat-item-profile">
                           <span className="stat-value">{profile.savedBooks?.length || 0}</span>
-                          <span className="stat-label">Saved</span>
+                          <span className="stat-label">Kaydedilenler</span>
                         </div>
                       </>
                     )}
                   </div>
                   
                   <div className="mini-stats-row">
-                     <span><TrendingUp fontSize="small"/> {formatNumber(totalViews)} views</span>
+                     <span><TrendingUp fontSize="small"/> {formatNumber(totalViews)} görüntülenme</span>
                      <span>&bull;</span>
-                     <span><Star fontSize="small"/> {formatNumber(totalLikes)} likes</span>
+                     <span><Star fontSize="small"/> {formatNumber(totalLikes)} beğeni</span>
                   </div>
                 </>
               )}
@@ -363,8 +381,8 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
               {isMe ? (
                 !isEditing && (
                   <div className="my-actions">
-                    <Button variant="outline" onClick={() => setIsEditing(true)} icon={<Edit fontSize="small"/>}>Edit</Button>
-                    <Button variant="outline" onClick={handleLogout} icon={<Logout fontSize="small"/>}>Logout</Button>
+                    <Button variant="outline" onClick={() => setIsEditing(true)} icon={<Edit fontSize="small"/>}>Düzenle</Button>
+                    <Button variant="outline" onClick={handleLogout} icon={<Logout fontSize="small"/>}>Çıkış Yap</Button>
                   </div>
                 )
               ) : (
@@ -375,11 +393,13 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
                     isLoading={followLoading}
                     icon={isFollowing ? <PersonRemove /> : <PersonAdd />}
                   >
-                    {isFollowing ? 'Unfollow' : 'Follow'}
+                    {isFollowing ? 'Takibi Bırak' : 'Takip Et'}
                   </Button>
 
                   <Button
                     variant="outline"
+                    disabled={!profile.canMessage}
+                    title={!profile.canMessage ? 'Bu kullanıcı mesaj almayı sınırlandırmış.' : undefined}
                     onClick={handleMessageClick}
                     isLoading={convLoading}
                     icon={<Chat fontSize="small" />}
@@ -404,7 +424,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
               <Book /><span>Yayınlananlar</span>
             </button>
 
-            {isMe && (
+            {canViewLibrary && (
               <button className={`tab-btn ${activeTab === 'saved' ? 'active' : ''}`} onClick={() => setActiveTab('saved')}>
                 <Bookmark /><span>Kitaplık</span>
               </button>
@@ -450,16 +470,17 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
           </div>
 
           <div className="books-section">
-            {activeTab === 'published' && (
+            {!canView && <p role="status">Bu profil yalnızca takipçilere açık. İçerikleri görmek için kullanıcıyı takip edin.</p>}
+            {canView && activeTab === 'published' && (
               <BookCarousel books={publishedBooks} loading={loading} />
             )}
-            {isMe && activeTab === 'saved' && (
+            {canViewLibrary && activeTab === 'saved' && (
               <BookCarousel books={profile.savedBooks} loading={loading} />
             )}
             {isMe && activeTab === 'drafts' && (
               <BookCarousel books={draftBooks} loading={loading} />
             )}
-            {activeTab === 'quotes' && (
+            {canView && activeTab === 'quotes' && (
               <div className="quotes-tab-grid">
                 {userQuotes.length === 0 ? (
                   <Typography variant="body" color="muted">Henüz alıntı yok.</Typography>
@@ -474,6 +495,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
 
             {isMe && activeTab === 'settings' && (
               <UserSettings
+                key={profile.id}
                 profile={profile}
                 onUpdate={() => refetch()}
                 showToast={showToast}

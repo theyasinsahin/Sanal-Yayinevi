@@ -1,3 +1,4 @@
+
 /* Overlay (Backdrop) */
 .mobile-menu-overlay {
   position: fixed;
@@ -8,8 +9,7 @@
   background: rgba(15, 23, 42, 0.6);
   backdrop-filter: blur(8px);
   z-index: 998;
-  
-  /* Animation States */
+
   opacity: 0;
   visibility: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -28,11 +28,15 @@
   width: 85%;
   max-width: 320px;
   height: calc(100vh - var(--navbar-height));
-  background: linear-gradient(180deg, var(--bg-surface) 0%, #F8FAFC 100%);
+  background: linear-gradient(
+    180deg,
+    var(--bg-surface) 0%,
+    #F8FAFC 100%
+  );
   z-index: 999;
   box-shadow: -10px 0 40px rgba(0, 0, 0, 0.1);
   transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  
+
   display: flex;
   flex-direction: column;
   border-left: 1px solid rgba(99, 102, 241, 0.1);
@@ -49,28 +53,39 @@
   flex-direction: column;
   gap: 0.5rem;
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
 }
 
-/* Menu Items */
+/* =========================================
+   MOBILE NAVIGATION ITEMS
+   Desktop ile uyumlu hover efekti
+   ========================================= */
+
 .mobile-nav-item {
   display: flex;
   align-items: center;
   gap: 1rem;
   padding: 1.125rem 1.25rem;
   text-decoration: none;
-  color: #334155;
-  border-radius: 14px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  font-family: var(--font-sans);
   font-weight: 600;
   font-size: 0.95rem;
+  color: var(--graphite);
+
+  border-radius: 4px;
+  background: transparent;
+
+  transition:
+    color var(--transition-base),
+    background-color var(--transition-base);
+
   position: relative;
-  overflow: hidden;
+  cursor: pointer;
 }
 
-/* button olarak render edilen menu item'lar için (tema değiştirici gibi) —
-   tarayıcının varsayılan buton stilini sıfırlayıp .mobile-nav-item ile
-   aynı görünüme getirir */
+/* Button olarak kullanılan menü öğeleri */
 .mobile-nav-item--button {
   width: 100%;
   border: none;
@@ -80,65 +95,96 @@
   font-family: inherit;
 }
 
-/* Bildirim satırı — NotificationBell'e "label" prop'u geçildiğinde
-   ikon+yazıyı TEK bir <button> içinde render ediyor (bkz.
-   NotificationBell/index.jsx), bu yüzden .mobile-nav-item--bell'in
-   kendisi artık NotificationBell'in kök elemanı; ekstra bir tıklama
-   alanı ayarlamaya gerek yok, satırın tamamı zaten tıklanabilir.
-   Panel de document.body'ye portallandığı için (bkz.
-   NotificationBell.css) burada konumu için ayrıca bir override
-   tanımlamaya GEREK YOK — panel bu çekmecenin overflow/z-index
-   bağlamının tamamen dışında render ediliyor ve kendi z-index'iyle
-   (2000) her zaman en üstte görünüyor. */
-/* Ek bir kural gerekmiyor: .mobile-nav-item--bell zaten .mobile-nav-item
-   sınıfından standart padding'i (1.125rem 1.25rem) alıyor, diğer
-   satırlarla aynı görünüyor. İçindeki <button> (bkz. NotificationBell.css
-   .notif-bell-btn--row) padding: 0 olduğu için çift boşluk oluşmuyor. */
+/* NotificationBell satırı da standart
+   mobile-nav-item stillerini kullanır. */
 
-.mobile-nav-item::before {
+/* Desktop navbar'daki kesikli alt çizgi.
+   Çizgi sadece metnin altında oluşur. */
+.mobile-nav-item span {
+  position: relative;
+  z-index: 1;
+}
+
+/* Metin altındaki kesikli çizgi */
+.mobile-nav-item span::after {
   content: '';
   position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, #EFF6FF 0%, #F0F9FF 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  bottom: -5px;
+  left: 0;
+  width: 0;
+  height: 2px;
+
+  background: repeating-linear-gradient(
+    90deg,
+    var(--ink-black) 0px,
+    var(--ink-black) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+
+  transition: width var(--transition-base);
+  pointer-events: none;
 }
 
-.mobile-nav-item:hover {
-  color: var(--primary);
-  transform: translateX(4px);
+/* Hover efekti - Desktop ile aynı */
+@media (hover: hover) {
+  .mobile-nav-item:hover {
+    color: var(--ink-black);
+  }
+
+  .mobile-nav-item:hover span::after {
+    width: 100%;
+  }
 }
 
-.mobile-nav-item:hover::before {
-  opacity: 1;
-}
-
+/* Active State */
 .mobile-nav-item.active {
-  background: linear-gradient(135deg, #EFF6FF 0%, #E0E7FF 100%);
-  color: var(--primary);
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+  color: var(--ink-black);
+  font-weight: 700;
+  background: transparent;
+  box-shadow: none;
 }
+
+/* Aktif sayfada düz alt çizgi */
+.mobile-nav-item.active span::after {
+  width: 100%;
+  background: var(--ink-black);
+}
+
+/* Klavye ile erişilebilirlik */
+.mobile-nav-item:focus-visible {
+  outline: 2px solid var(--ink-black);
+  outline-offset: 3px;
+}
+
+/* =========================================
+   ICONS
+   ========================================= */
 
 .mobile-icon {
-  color: #64748B;
-  transition: color 0.3s ease;
+  color: var(--graphite);
+  transition: color var(--transition-base);
   position: relative;
   z-index: 1;
   font-size: 1.25rem;
   flex-shrink: 0;
 }
 
-.mobile-nav-item:hover .mobile-icon,
+/* Desktop renk davranışı */
+@media (hover: hover) {
+  .mobile-nav-item:hover .mobile-icon {
+    color: var(--ink-black);
+  }
+}
+
 .mobile-nav-item.active .mobile-icon {
-  color: var(--primary);
+  color: var(--ink-black);
 }
 
-.mobile-nav-item span {
-  position: relative;
-  z-index: 1;
-}
+/* =========================================
+   UNREAD MESSAGE BADGE
+   ========================================= */
 
-/* Okunmamış mesaj rozeti — desktop navbar'daki .nav-icon-badge ile aynı mantık */
 .mobile-nav-badge {
   margin-left: auto;
   min-width: 20px;
@@ -149,44 +195,96 @@
   color: #E1F5EE;
   font-size: 11px;
   font-weight: 700;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   position: relative;
   z-index: 1;
   flex-shrink: 0;
 }
 
-/* Divider */
+/* Rozetin altına çizgi eklenmesini engelle */
+.mobile-nav-badge::after {
+  display: none;
+}
+
+/* =========================================
+   DIVIDER
+   ========================================= */
+
 .divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(99, 102, 241, 0.2),
+    transparent
+  );
   margin: 0.75rem 0;
 }
 
-/* Action Area (Bottom Section) */
+/* =========================================
+   ACTION AREA
+   ========================================= */
+
 .mobile-action-area {
   margin-top: auto;
   padding-top: 1rem;
   border-top: 1px solid rgba(99, 102, 241, 0.1);
 }
 
-/* Logout button styling */
+/* =========================================
+   LOGOUT BUTTON
+   ========================================= */
+
 .mobile-nav-item.logout {
-  background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%);
+  background: linear-gradient(
+    135deg,
+    #FEF2F2 0%,
+    #FEE2E2 100%
+  );
   color: #DC2626;
 }
 
-.mobile-nav-item.logout:hover {
-  background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
-  transform: translateX(4px);
+/* Logout hover davranışı korunuyor */
+@media (hover: hover) {
+  .mobile-nav-item.logout:hover {
+    background: linear-gradient(
+      135deg,
+      #FEE2E2 0%,
+      #FECACA 100%
+    );
+    color: #DC2626;
+  }
+}
+
+/* Logout için kırmızı kesikli çizgi */
+.mobile-nav-item.logout span::after {
+  background: repeating-linear-gradient(
+    90deg,
+    #DC2626 0px,
+    #DC2626 4px,
+    transparent 4px,
+    transparent 8px
+  );
 }
 
 .mobile-nav-item.logout .mobile-icon {
   color: #EF4444;
 }
 
-/* Smooth scroll for content */
+@media (hover: hover) {
+  .mobile-nav-item.logout:hover .mobile-icon {
+    color: #DC2626;
+  }
+}
+
+/* =========================================
+   SCROLLBAR
+   ========================================= */
+
 .mobile-menu-content::-webkit-scrollbar {
   width: 6px;
 }
@@ -204,34 +302,85 @@
   background: rgba(99, 102, 241, 0.4);
 }
 
-/* Helper Class */
+/* =========================================
+   HELPER CLASS
+   ========================================= */
+
 .w-full {
   width: 100%;
 }
 
-/* Animation for items — artık daha fazla öğe olduğu için 10'a kadar genişletildi */
+/* =========================================
+   MENU OPEN ANIMATIONS
+   ========================================= */
+
 .mobile-menu-drawer.open .mobile-nav-item {
   animation: slideInItem 0.4s ease-out backwards;
 }
 
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(1)  { animation-delay: 0.05s; }
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(2)  { animation-delay: 0.08s; }
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(3)  { animation-delay: 0.11s; }
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(4)  { animation-delay: 0.14s; }
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(5)  { animation-delay: 0.17s; }
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(6)  { animation-delay: 0.20s; }
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(7)  { animation-delay: 0.23s; }
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(8)  { animation-delay: 0.26s; }
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(9)  { animation-delay: 0.29s; }
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(10) { animation-delay: 0.32s; }
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(2) {
+  animation-delay: 0.08s;
+}
+
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(3) {
+  animation-delay: 0.11s;
+}
+
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(4) {
+  animation-delay: 0.14s;
+}
+
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(5) {
+  animation-delay: 0.17s;
+}
+
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(6) {
+  animation-delay: 0.20s;
+}
+
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(7) {
+  animation-delay: 0.23s;
+}
+
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(8) {
+  animation-delay: 0.26s;
+}
+
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(9) {
+  animation-delay: 0.29s;
+}
+
+.mobile-menu-drawer.open .mobile-nav-item:nth-child(10) {
+  animation-delay: 0.32s;
+}
 
 @keyframes slideInItem {
   from {
     opacity: 0;
     transform: translateX(20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+/* Hareket azaltma tercihi */
+@media (prefers-reduced-motion: reduce) {
+  .mobile-menu-drawer,
+  .mobile-menu-overlay,
+  .mobile-nav-item,
+  .mobile-nav-item span::after,
+  .mobile-icon {
+    transition-duration: 0.01ms;
+  }
+
+  .mobile-menu-drawer.open .mobile-nav-item {
+    animation: none;
   }
 }

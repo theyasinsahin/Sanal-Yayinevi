@@ -567,7 +567,7 @@
 }
 
 .auth-card .signature-line::before {
-  content: 'Signature:';
+  content: 'İmza:';
   position: absolute;
   top: -0.75rem;
   left: 0;
@@ -604,7 +604,7 @@
 /* RESPONSIVE */
 @media (max-width: 640px) {
   .auth-page-wrapper {
-    padding-top: 4rem;
+    padding-top: 6rem;
     padding-bottom: 2rem;
     /* DÜZELTME: Kenar boşluğu artık kartın kendi margin'i yerine
        wrapper'ın padding'inden geliyor — böylece kart, width:100%

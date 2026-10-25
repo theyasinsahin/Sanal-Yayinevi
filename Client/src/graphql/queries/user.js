@@ -3,6 +3,15 @@ import { gql } from '@apollo/client';
 export const GET_USER_BY_ID = gql`
     query GetUserById($id:ID!){
         getUserById(id: $id){
+          canViewProfile
+          canViewLibrary
+          canViewFollowList
+          canMessage
+          isSearchIndexable
+          weeklyWritingWords
+          privacySettings { isProfilePublic isLibraryPublic isFollowListPublic allowMessages showInSearchEngines }
+          notificationSettings { newFollower mentionInSession bookComment bookLike quoteLike sessionReply }
+          authorSettings { copyrightNote weeklyWordGoal preferredGenres }
           isPremium,
           id,    
           username,
@@ -98,6 +107,8 @@ export const GET_ALL_USERS = gql`
       username,
       email,
       bio
+      role
+      authorSettings { copyrightNote }
     }
   }
 `;

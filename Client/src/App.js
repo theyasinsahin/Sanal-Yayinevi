@@ -53,15 +53,12 @@ import AdminTransactions from './pages/Admin/Transactions';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { ME_QUERY } from './graphql/queries/user';
 
-import { ThemeProvider } from './context/ThemeContext';
+import { ReadingPreferencesProvider } from './context/ReadingPreferencesContext';
 
+
+import { API_URL, WS_URL } from './config/api';
 
 // --- APOLLO SETUP ---
-// Backend adresi artık koda sabit yazılmıyor; .env dosyasından okunuyor.
-// REACT_APP_API_URL tanımlı değilse (örn. .env dosyası unutulduysa)
-// geliştirme ortamında localhost'a düşer, böylece eski davranış bozulmaz.
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
-const WS_URL  = process.env.REACT_APP_WS_URL  || "ws://localhost:5000/graphql";
 
 const httpLink = createHttpLink({
   uri: API_URL,
@@ -194,6 +191,7 @@ const router = createBrowserRouter([
       // ?token=...&user=... ile yönlendirir.
       { path: "/auth/callback", element: <GoogleCallback /> },
       { path: "/sifremi-unuttum", element: <ForgotPasswordPage /> },
+      { path: "/forgot-password", element: <Navigate to="/sifremi-unuttum" replace /> },
       { path: "/reset-password/:token", element: <ResetPasswordPage /> },
       { path: "/donate/:bookId", element: <DonationPage /> },
       { path: "/payment/success", element: <PaymentSuccess /> },
@@ -234,13 +232,13 @@ function App() {
     <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || "620840983651-ue12o2dcdbr9o7iv0dkmhj4ed6vstno4.apps.googleusercontent.com"}>
       <ApolloProvider client={client}>
         <AuthProvider>
-          <ThemeProvider>
+          <ReadingPreferencesProvider>
             <ToastProvider>
               <FiltersProvider>
                 <RouterProvider router={router} future={{ v7_startTransition: true }} />
               </FiltersProvider>
             </ToastProvider>
-          </ThemeProvider>
+          </ReadingPreferencesProvider>
         </AuthProvider>
       </ApolloProvider>
     </GoogleOAuthProvider>

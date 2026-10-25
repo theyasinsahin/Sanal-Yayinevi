@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import { WarningAmber, DeleteForever, VisibilityOff } from '@mui/icons-material';
+import { DeleteForever, VisibilityOff } from '@mui/icons-material';
 import { Button }   from '../../UI/Button';
 import { Input }    from '../../UI/Input';
 import {
@@ -44,14 +44,14 @@ const DangerZone = ({ profile, showToast }) => {
 
   const handleDeactivate = async () => {
     setDeactivating(true);
-    await deactivateAccount();
+    await deactivateAccount().catch(() => {});
   };
 
   const handleDelete = async () => {
-    if (deleteInput.trim().toLowerCase() !== CONFIRM_PHRASE) {
+    if (deleteInput.trim().toLocaleLowerCase('tr-TR') !== CONFIRM_PHRASE) {
       showToast(`Lütfen tam olarak "${CONFIRM_PHRASE}" yazın.`, 'error'); return;
     }
-    await deleteAccount();
+    await deleteAccount().catch(() => {});
   };
 
   return (
@@ -59,7 +59,7 @@ const DangerZone = ({ profile, showToast }) => {
       <div className="settings-section-header">
         <h2 className="settings-section-title" style={{ color: '#dc2626' }}>Tehlikeli Bölge</h2>
         <p className="settings-section-desc">
-          Bu işlemler geri alınamaz. Lütfen dikkatlice okuyun.
+          Devre dışı bırakma geri alınabilir; hesap silme işlemi uygulamadan geri alınamaz.
         </p>
       </div>
 
@@ -119,8 +119,7 @@ const DangerZone = ({ profile, showToast }) => {
               Hesabı Kalıcı Olarak Sil
             </span>
             <span className="danger-action-desc">
-              Tüm kitaplarınız, alıntılarınız, session'larınız ve profil verileriniz
-              geri dönüşü olmayan biçimde silinir. Yayınlanmış kitaplarınız da kaldırılır.
+              Profiliniz, kitaplarınız, alıntılarınız ve oturumlarınız erişime kapatılır. Bu hesapla tekrar giriş yapamazsınız.
             </span>
           </div>
           <div style={{ flexShrink: 0 }}>
@@ -152,7 +151,7 @@ const DangerZone = ({ profile, showToast }) => {
                 variant="primary"
                 onClick={handleDelete}
                 isLoading={deleting}
-                disabled={deleteInput.trim().toLowerCase() !== CONFIRM_PHRASE}
+                disabled={deleteInput.trim().toLocaleLowerCase('tr-TR') !== CONFIRM_PHRASE}
                 style={{ background: '#dc2626', borderColor: '#dc2626' }}
               >
                 Kalıcı Olarak Sil
@@ -168,21 +167,6 @@ const DangerZone = ({ profile, showToast }) => {
         )}
       </div>
 
-      {/* Uyarı notu */}
-      <div style={{
-        display: 'flex', gap: '0.6rem', alignItems: 'flex-start',
-        marginTop: '1.5rem', padding: '1rem',
-        background: 'rgba(245, 158, 11, 0.07)',
-        border: '1px solid rgba(245, 158, 11, 0.4)',
-        borderRadius: '4px',
-      }}>
-        <WarningAmber style={{ color: '#f59e0b', flexShrink: 0, marginTop: '1px' }} fontSize="small" />
-        <p style={{ margin: 0, fontFamily: 'sans-serif', fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.55 }}>
-          Hesabınızı silmeden önce yayınevleriyle aktif müzakereleriniz varsa,
-          teklifleriniz de iptal olacaktır. Silme işleminden önce tüm anlaşmaları
-          tamamladığınızdan emin olun.
-        </p>
-      </div>
     </div>
   );
 };

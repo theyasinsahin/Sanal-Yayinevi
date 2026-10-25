@@ -34,7 +34,7 @@ const AdminTransactions = () => {
          </div>
          <div className="text-sm text-gray-500 font-medium">
             Toplam İşlem Hacmi: <span className="text-indigo-600 font-bold text-lg ml-2">
-                ₺{transactions.reduce((acc, t) => acc + t.amount, 0).toLocaleString()}
+                ₺{transactions.reduce((acc, t) => acc + t.amount, 0).toLocaleString('tr-TR')}
             </span>
          </div>
       </div>
@@ -49,7 +49,7 @@ const AdminTransactions = () => {
                 <div className="flex items-center gap-3">
                    <img 
                      src={trx.userId?.profilePicture || 'https://via.placeholder.com/40'} 
-                     alt="avatar" 
+                     alt="Profil fotoğrafı"
                      className="w-8 h-8 rounded-full object-cover"
                    />
                    <div className="flex flex-col">

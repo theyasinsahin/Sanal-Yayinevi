@@ -376,7 +376,7 @@ const BookDetailPage = () => {
                    {isAuthor && (
                      <Link to={`/dashboard/${book.id}`} className="no-underline">
                        <Button variant="outline" size="small" icon={<Edit fontSize="small"/>}>
-                         Düzenle
+                         Yazmaya Devam Et
                        </Button>
                      </Link>
                    )}

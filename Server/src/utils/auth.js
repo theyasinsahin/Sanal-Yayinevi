@@ -16,7 +16,8 @@ export const authenticateUser = async (req, User) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     // 3. Kullanıcı veritabanında hala var mı?
-    const user = await User.findById(decoded.userId).select('-password');
+    const user = await User.findOne({ _id: decoded.userId, isDeleted: false, isActive: { $ne: false } }).select('-password');
+    if (user && (decoded.version ?? 0) !== (user.authVersion ?? 0)) return null;
     return user; // Kullanıcıyı dön
 
   } catch (error) {

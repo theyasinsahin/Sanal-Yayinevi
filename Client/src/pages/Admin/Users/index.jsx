@@ -29,14 +29,14 @@ const AdminUsers = () => {
     <AdminLayout title="Kullanıcı Yönetimi">
       {loading ? <p>Yükleniyor...</p> : (
         <AdminTable 
-          columns={['Avatar', 'Kullanıcı Adı', 'Email', 'Rol', 'İşlemler']}
+          columns={['Profil Fotoğrafı', 'Kullanıcı Adı', 'E-posta', 'Rol', 'Telif Notu', 'İşlemler']}
           data={users}
           renderRow={(user) => (
             <tr key={user.id}>
               <td>
                 <img 
                   src={user.profilePicture || 'https://via.placeholder.com/40'} 
-                  alt="avatar" 
+                  alt="Profil fotoğrafı"
                   style={{width:40, height:40, borderRadius:'50%', objectFit:'cover'}}
                 />
               </td>
@@ -44,9 +44,10 @@ const AdminUsers = () => {
               <td>{user.email}</td>
               <td>
                 <Badge variant={user.role === 'ADMIN' ? 'primary' : 'neutral'}>
-                  {user.role || 'USER'}
+                  {user.role === 'ADMIN' ? 'Yönetici' : 'Kullanıcı'}
                 </Badge>
               </td>
+              <td>{user.authorSettings?.copyrightNote || '—'}</td>
               <td>
                 <div style={{display:'flex', gap: 10}}>
                   <Button size="small" variant="danger" onClick={() => handleDeleteUser(user.id)}>

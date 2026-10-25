@@ -1,4 +1,5 @@
 // src/services/paragraphCommentService.js
+import { inactiveUserIds } from '../utils/activeUsers.js';
 import ParagraphComment from '../models/paragraphComment.js';
 
 const populate = (query) =>
@@ -6,13 +7,13 @@ const populate = (query) =>
 
 export const getParagraphComments = async (chapterId, paragraphIndex) => {
   return await populate(
-    ParagraphComment.find({ chapterId, paragraphIndex }).sort({ createdAt: 1 })
+    ParagraphComment.find({ chapterId, paragraphIndex, isDeleted: { $ne: true }, userId: { $nin: await inactiveUserIds() } }).sort({ createdAt: 1 })
   );
 };
 
 export const getParagraphCommentCounts = async (chapterId) => {
   const results = await ParagraphComment.aggregate([
-    { $match: { chapterId: new (await import('mongoose')).default.Types.ObjectId(chapterId) } },
+    { $match: { isDeleted: { $ne: true }, userId: { $nin: await inactiveUserIds() }, chapterId: new (await import('mongoose')).default.Types.ObjectId(chapterId) } },
     { $group: { _id: '$paragraphIndex', count: { $sum: 1 } } },
     { $project: { paragraphIndex: '$_id', count: 1, _id: 0 } },
   ]);

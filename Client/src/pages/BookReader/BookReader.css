@@ -367,7 +367,7 @@
 }
 
 .chapter-content {
-  font-size: 1.125rem;
+  font-size: var(--reading-font-size, 18px);
   line-height: 1.9;
   color: var(--ink-black);
   text-align: justify;
@@ -523,8 +523,9 @@
 }
 
 .content-text {
+  overflow-y: auto;
   flex: 1;
-  font-size: 1.05rem;
+  font-size: var(--reading-font-size, 18px);
   line-height: 1.8;
   color: var(--ink-black);
   text-align: justify;
@@ -679,7 +680,7 @@
   }
 
   .chapter-content {
-    font-size: 1.0625rem;
+    font-size: var(--reading-font-size, 18px);
   }
 
   .book-container {

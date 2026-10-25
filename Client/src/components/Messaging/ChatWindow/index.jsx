@@ -29,6 +29,7 @@ const ChatWindow = ({ conversationId, onBack }) => {
   const navigate = useNavigate();
 
   const [inputValue, setInputValue]     = useState('');
+  const [sendError, setSendError] = useState('');
   const [editingId, setEditingId]       = useState(null);
   const [editingValue, setEditingValue] = useState('');
 
@@ -77,10 +78,11 @@ const ChatWindow = ({ conversationId, onBack }) => {
     const content = inputValue.trim();
     if (!content) return;
     setInputValue('');
+    setSendError('');
     try {
       await sendMessage({ conversationId, content, type: 'TEXT' });
     } catch (err) {
-      console.error('Mesaj gönderilemedi:', err);
+      setSendError(err.message || 'Mesaj gönderilemedi.');
       setInputValue(content);
     }
   };
@@ -183,6 +185,7 @@ const ChatWindow = ({ conversationId, onBack }) => {
         ))}
       </div>
 
+      {sendError && <p role="alert">{sendError}</p>}
       {/* INPUT */}
       <div className="chat-input-area">
         <Input

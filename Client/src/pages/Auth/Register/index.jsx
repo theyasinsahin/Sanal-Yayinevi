@@ -26,10 +26,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import '../AuthPages.css';
 import { MainLayout } from '../../../components/Layout/MainLayout';
 
-// Google'ın redirect ux_mode'unda credential'ı POST edeceği backend endpoint'i.
-// Bu domain, Google Cloud Console'daki OAuth Client ID'nin
-// "Authorized JavaScript origins" listesinde olmalı.
-const GOOGLE_LOGIN_URI = 'https://sanal-yayinevi.onrender.com/auth/google/callback';
+import { GOOGLE_LOGIN_URI } from '../../../config/api';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -173,7 +170,7 @@ const RegisterPage = () => {
                       yönlendirmesi kullanır (COOP sorununu tamamen ortadan
                       kaldırır). useOneTap kaldırıldı — o da iframe/postMessage
                       tabanlı olduğu için aynı türde sorunlara açıktı. */}
-                  <GoogleLogin
+                  <GoogleLogin locale="tr"
                       ux_mode="redirect"
                       login_uri={GOOGLE_LOGIN_URI}
                       onError={() => setCustomError("Google penceresi açılamadı veya iptal edildi.")}

@@ -10,7 +10,7 @@ export default {
 
     getCommentById: async (_, { id }) => {
       const comment = await CommentService.findCommentById(id);
-      if (!comment) throw new Error("Comment not found");
+      if (!comment) throw new Error("Yorum bulunamadı.");
       return comment;
     },
 

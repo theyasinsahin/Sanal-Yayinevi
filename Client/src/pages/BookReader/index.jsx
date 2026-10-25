@@ -114,7 +114,7 @@ const handleRemoveBookmark = async () => {
 
   const authorName = userData?.getUserById?.fullName || 
                      userData?.getUserById?.username || 
-                     'Unknown Author';
+                     'Bilinmeyen Yazar';
 
   // Load progress
   useEffect(() => {
@@ -208,7 +208,7 @@ const handleRemoveBookmark = async () => {
         type: 'title_page',
         bookTitle: book.title,
         author: authorName,
-        genre: book.genre?.name || 'Fiction',
+        genre: book.genre?.name || 'Kurgu',
       });
       chapters.forEach((chapter) => {
         const chapterPages = parseContentToPages(chapter.content, chapter.title);
@@ -267,7 +267,7 @@ const handleRemoveBookmark = async () => {
           <div className="ornament-top">❦</div>
           <h1>{pageData.bookTitle}</h1>
           <div className="author-info">
-            <div className="by">by</div>
+            <div className="Yazar:">Yazar:</div>
             <div className="name">{pageData.author}</div>
           </div>
           <div className="genre">{pageData.genre}</div>
@@ -303,7 +303,7 @@ const handleRemoveBookmark = async () => {
     return (
       <div className="reader-loading">
         <div className="spinner"></div>
-        <p>Preparing your book...</p>
+        <p>Kitabınız hazırlanıyor...</p>
       </div>
     );
   }
@@ -334,7 +334,7 @@ const handleRemoveBookmark = async () => {
 
           <h3>{book.title}</h3>
           <div className="book-progress">
-            {completedChapters.length} of {chapters.length} chapters read
+            {chapters.length} bölümden {completedChapters.length} tanesi okundu
           </div>
           <div className="progress-bar">
             <div 
@@ -361,7 +361,7 @@ const handleRemoveBookmark = async () => {
                 {completedChapters.includes(index) && <Check />}
               </div>
               <div className="chapter-info">
-                <div className="chapter-number">Chapter {index + 1}</div>
+                <div className="chapter-number">Bölüm {index + 1}</div>
                 <div className="chapter-title">{chapter.title}</div>
               </div>
             </div>
@@ -384,14 +384,14 @@ const handleRemoveBookmark = async () => {
           <button
             className="control-btn"
             onClick={() => navigate(`/book-detail/${bookId}`)}
-            title="Back to book"
+            title="Kitaba dön"
           >
             <ArrowBack />
           </button>
           <button
             className={`control-btn ${readingMode === 'book' ? 'active' : ''}`}
             onClick={() => setReadingMode(readingMode === 'book' ? 'chapter' : 'book')}
-            title="Book mode"
+            title="Kitap görünümü"
           >
             <AutoStories />
           </button>
@@ -464,7 +464,7 @@ const handleRemoveBookmark = async () => {
 
             {/* Son bölümdeyse bitiş işareti */}
             {isLastChapter && (
-              <div className="end-marker">✦ THE END ✦</div>
+              <div className="end-marker">✦ SON ✦</div>
             )}
           </div>
         )}
@@ -497,7 +497,7 @@ const handleRemoveBookmark = async () => {
                   </div>
                 ) : (
                   <div className="book-page right empty-page">
-                    <div className="end-text">END</div>
+                    <div className="end-text">SON</div>
                   </div>
                 )}
               </div>
@@ -510,19 +510,19 @@ const handleRemoveBookmark = async () => {
                 disabled={currentPage === 0}
                 icon={<ChevronLeft />}
               >
-                Previous
+                Önceki
               </Button>
               <div className="progress-text">
                 {currentPage === 0 
-                  ? 'Cover' 
-                  : `Page ${currentPage} of ${pages.length - 1}`}
+                  ? 'Kapak'
+                  : `Sayfa ${currentPage} / ${pages.length - 1}`}
               </div>
               <Button
                 variant="outline"
                 onClick={() => changePage('next')}
                 disabled={currentPage >= pages.length - 2}
               >
-                Next
+                Sonraki
                 <ChevronRight />
               </Button>
             </div>

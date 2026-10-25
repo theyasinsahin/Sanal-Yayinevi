@@ -20,12 +20,12 @@ const AdminLayout = ({ children, title }) => {
       {/* SIDEBAR */}
       <aside className="admin-sidebar">
         <div className="admin-logo">
-          <Typography variant="h5" weight="bold" color="white">Betik Admin</Typography>
+          <Typography variant="h5" weight="bold" color="white">Betik Yönetim</Typography>
         </div>
         
         <nav className="admin-nav">
           <NavLink to="/admin" end className={({ isActive }) => `admin-link ${isActive ? 'active' : ''}`}>
-            <Dashboard fontSize="small" /> Dashboard
+            <Dashboard fontSize="small" /> Yönetim Paneli
           </NavLink>
           <NavLink to="/admin/users" className={({ isActive }) => `admin-link ${isActive ? 'active' : ''}`}>
             <People fontSize="small" /> Kullanıcılar

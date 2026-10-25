@@ -65,8 +65,8 @@ Projeyi yerel ortamınızda çalıştırmak için aşağıdaki adımları izleyi
 ### 1. Repoyu Klonlayın
 
 ```bash
-git clone [https://github.com/username/quill-project.git](https://github.com/username/quill-project.git)
-cd quill-project
+git clone https://github.com/theyasinsahin/Sanal-Yayinevi.git Betik
+cd Betik
 2. Backend Kurulumu
 Bash
 cd Server
@@ -83,7 +83,7 @@ Backend klasöründe .env dosyası oluşturup şu değerleri girmelisiniz:
 
 Kod snippet'i
 PORT=4000
-MONGO_URI=mongodb+srv://<kullanici>:<sifre>@cluster.mongodb.net/quill
+MONGO_URI=mongodb+srv://<kullanici>:<sifre>@cluster.mongodb.net/betik
 JWT_SECRET=cok_gizli_anahtar_buraya
 IYZICO_API_KEY=iyzico_api_key_buraya
 IYZICO_SECRET_KEY=iyzico_secret_key_buraya

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, Close, Person, LightMode, DarkMode, SettingsBrightness } from '@mui/icons-material';
+import { Menu, Close, Person } from '@mui/icons-material';
 import { FiMessageCircle } from 'react-icons/fi';
 
 // --- BİLEŞENLER & HOOKS ---
@@ -15,22 +15,11 @@ import { Typography } from '../../UI/Typography';
 import NotificationBell from '../../Notification/NotificationBell';
 import { useUnreadMessageCount } from '../../../hooks/useMessages';
 
-import { useTheme } from '../../../context/ThemeContext';
 
 import './NavigationBar.css';
 import Logo from '../../Logo';
 
 
-const ThemeToggle = () => {
-  const { theme, setTheme } = useTheme();
-  const next = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light';
-  const icons = { light: <LightMode />, dark: <DarkMode />, system: <SettingsBrightness /> };
-  return (
-    <button onClick={() => setTheme(next)} title={`Tema: ${theme}`}>
-      {icons[theme]}
-    </button>
-  );
-};
 
 
 const NavigationBar = () => {

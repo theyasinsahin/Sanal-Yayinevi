@@ -23,11 +23,11 @@ export function rateLimit(req) {
 
 }
 function requireMail() {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) throw new Error('Mail is not configured');
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) throw new Error('E-posta hizmeti yapılandırılmamış.');
 }
 function clientUrl() {
   const url = new URL(process.env.CLIENT_URL);
-  if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Invalid client URL');
+  if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Geçersiz uygulama adresi.');
   return url.origin;
 }
 export const authorPipeline = (page, pageSize) => [
@@ -35,7 +35,7 @@ export const authorPipeline = (page, pageSize) => [
   { $group: { _id: '$authorId', bookCount: { $sum: 1 }, pageCount: { $sum: { $ifNull: ['$pageCount', 0] } } } },
   { $lookup: { from: User.collection.name, localField: '_id', foreignField: '_id', as: 'author' } },
   { $unwind: '$author' },
-  { $match: { 'author.isDeleted': false, 'author.isActive': { $ne: false }, 'author.privacySettings.isProfilePublic': { $ne: false }, 'author.authorSettings.publishingVisible': { $ne: false } } },
+  { $match: { 'author.isDeleted': false, 'author.isActive': { $ne: false }, 'author.privacySettings.isProfilePublic': { $ne: false } } },
   { $sort: { 'author.username': 1, _id: 1 } },
   { $facet: { total: [{ $count: 'count' }], authors: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }, { $project: { _id: 0, id: '$_id', bookCount: 1, pageCount: 1, username: '$author.username', fullName: '$author.fullName', bio: '$author.bio', profilePicture: '$author.profilePicture' } }] } },
 ];
@@ -61,7 +61,7 @@ export async function sendContactMessage({ name, email, subject, message, websit
   if (website || !text(name, 2, 100) || !validEmail(email) || !text(subject, 3, 150) || !text(message, 10, 5000)) throw new GraphQLError('Lütfen form alanlarını kontrol edin.', { extensions: { code: 'BAD_USER_INPUT' } });
   requireMail();
   const result = await mailer.sendMail({ from: { name: 'Betik', address: process.env.EMAIL_USER }, to: contactRecipient(), replyTo: email, ...contactMessageEmail({ name: name.trim(), email, subject: subject.trim(), message: message.trim() }) });
-  if (!result.accepted?.length) throw new Error('Mail rejected');
+  if (!result.accepted?.length) throw new Error('E-posta gönderimi kabul edilmedi.');
   return { message: 'Mesajınız e-posta servisine iletildi.' };
 }
 export async function subscribeNewsletter({ email, consent, website }, req) {
@@ -80,7 +80,7 @@ export async function subscribeNewsletter({ email, consent, website }, req) {
   } catch (error) { if (error.code === 11000) return response; throw error; }
   try {
     const result = await mailer.sendMail({ from: { name: 'Betik', address: process.env.EMAIL_USER }, to: normalized, ...newsletterConfirmationEmail({ confirmUrl: `${origin}/newsletter?token=${token}&action=confirm`, unsubscribeUrl: `${origin}/newsletter?token=${token}&action=unsubscribe` }) });
-    if (!result.accepted?.length) throw new Error('Mail rejected');
+    if (!result.accepted?.length) throw new Error('E-posta gönderimi kabul edilmedi.');
   } catch (error) {
     await Subscription.updateOne({ _id: subscription._id, tokenHash: hash(token) }, { $unset: { requestedAt: 1, tokenHash: 1, tokenExpiresAt: 1 } });
     throw error;

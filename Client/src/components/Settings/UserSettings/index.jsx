@@ -39,7 +39,7 @@ const UserSettings = ({ profile, onUpdate, showToast }) => {
       <aside className="settings-sidebar">
         <span className="settings-sidebar-title">Ayarlar</span>
 
-        {SECTIONS.map((s, i) => (
+        {SECTIONS.map(s => (
           <React.Fragment key={s.id}>
             {/* Danger zone'dan önce ayraç */}
             {s.id === 'danger' && <div className="settings-nav-divider" />}

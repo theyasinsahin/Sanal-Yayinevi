@@ -117,9 +117,7 @@ export const useNewMessageSubscription = (conversationId) => {
 
 // --- Mesaj gönderme ---
 export const useSendMessage = () => {
-  const [sendMessageMutation, { loading }] = useMutation(SEND_MESSAGE, {
-    onError: (err) => console.error('Mesaj gönderilemedi:', err),
-  });
+  const [sendMessageMutation, { loading }] = useMutation(SEND_MESSAGE);
 
   const sendMessage = async ({ conversationId, content, type = 'TEXT', attachedQuoteId, attachedBookId }) => {
     const { data } = await sendMessageMutation({

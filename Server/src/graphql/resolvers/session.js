@@ -1,7 +1,7 @@
 // src/graphql/resolvers/session.js
 import * as SessionService from '../../services/sessionService.js';
 import { withFilter } from 'graphql-subscriptions';
-import { pubsub } from '../../../index.js';
+import { pubsub } from '../../config/pubsub.js';
 
 const NEW_SESSION_ENTRY = 'NEW_SESSION_ENTRY';
 
@@ -115,7 +115,7 @@ export default {
   Subscription: {
     onNewSessionEntry: {
       subscribe: withFilter(
-        () => pubsub.asyncIterator(NEW_SESSION_ENTRY),
+        () => pubsub.asyncIterableIterator(NEW_SESSION_ENTRY),
         (payload, variables) => {
           return payload.sessionId === variables.sessionId;
         }

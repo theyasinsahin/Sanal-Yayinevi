@@ -198,7 +198,7 @@
 /* Bio */
 .bio-text {
   font-family: var(--font-main);
-  font-size: 0.975rem;
+  font-size: var(--reading-font-size, 18px);
   line-height: 1.65;
   color: var(--text-main);
   font-style: italic;
@@ -748,7 +748,7 @@
 
   .bio-text {
     width: 100%;
-    font-size: 0.94rem;
+    font-size: var(--reading-font-size, 18px);
     line-height: 1.55;
     margin-bottom: 0.65rem;
   }
