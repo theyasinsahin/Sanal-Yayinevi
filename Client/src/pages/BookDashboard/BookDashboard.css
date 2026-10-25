@@ -7,6 +7,7 @@
   width: 100%;
   background-color: #F9FAFB;
   overflow: hidden;
+  margin-top: -100px;
 }
 .dashboard-sidebar {
   width: 300px;
@@ -171,7 +172,6 @@
   .dashboard-container {
     height: calc(100vh - var(--navbar-height, 64px));
     height: calc(100dvh - var(--navbar-height, 64px));
-    margin-top: var(--navbar-height, 64px);
     isolation: isolate;
   }
   .dashboard-sidebar {
