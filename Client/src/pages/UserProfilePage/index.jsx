@@ -1,3 +1,4 @@
+import { useLiveScoreQuery } from '../../hooks/useLiveScoreQuery';
 import { profilePath } from '../../utils/publicPaths';
 import { useGetOrCreateConversation } from '../../hooks/useMessages';
 
@@ -92,12 +93,12 @@ const UserProfile = ({ resolvedId } = {}) => {
     return () => { if (!existed) meta.remove(); else meta.setAttribute('content', previous || ''); };
   }, [profile]);
 
-  const { data: scoreData } = useQuery(GET_USER_SCORE, {
+  const { data: scoreData } = useLiveScoreQuery(GET_USER_SCORE, {
     variables: { userId: targetId },
     skip: !targetId,
   });
 
-  const { data: badgeData } = useQuery(GET_USER_BADGES, {
+  const { data: badgeData } = useLiveScoreQuery(GET_USER_BADGES, {
     variables: { userId: targetId },
     skip: !targetId,
   });

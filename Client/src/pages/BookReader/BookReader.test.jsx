@@ -14,7 +14,7 @@ jest.mock('../../components/Quote/QuotePopup', () => ({ __esModule: true, defaul
 jest.mock('../../components/Sharing/SocialShareButton', () => ({ __esModule: true, default: ({ id }) => <button data-chapter={id}>Bölümü paylaş</button> }));
 jest.mock('../../utils/htmlPageSplitter', () => ({ parseContentToPages: content => [{ content }] }));
 
-const book = { id: 'book', publicPath: '/kitap/roman-deniz', title: 'Kitap', authorId: null, genre: null, chapters: [
+const book = { id: 'book', kind: 'DIGITAL', status: 'WRITING', publicationStatus: null, publicPath: '/kitap/roman-deniz', title: 'Kitap', authorId: null, genre: null, chapters: [
   { id: 'first', title: 'İlk Bölüm', content: 'İlk bölümün metni.' },
   { id: 'second', title: 'İkinci Bölüm', content: 'İkinci bölümün metni.' },
 ] };

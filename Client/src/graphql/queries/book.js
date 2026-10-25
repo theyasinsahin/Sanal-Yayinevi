@@ -145,6 +145,9 @@ export const GET_BOOK_READER_DATA = gql`
     getBookById(id: $id) {
       publicPath
       id
+      kind
+      status
+      publicationStatus
       title
       authorId
       chapters {

@@ -103,7 +103,7 @@ export default {
 
         // Kitap ilk kez PUBLISHED durumuna geçiyorsa puan ver
         if (status === 'PUBLISHED' && book.status !== 'PUBLISHED') {
-            await ScoreService.onBookPublished(user._id);
+            await ScoreService.onBookPublished(book.authorId, book.id);
         }
 
         return updatedBook;    

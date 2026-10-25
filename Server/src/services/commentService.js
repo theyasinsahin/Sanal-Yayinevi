@@ -36,7 +36,7 @@ export const createComment = async (data) => {
   const newComment = new Comment({ ...data });
   const savedComment = await newComment.save();
 
-  await ScoreService.onCommentCreated(data.userId);
+  await ScoreService.onCommentCreated(data.userId, savedComment._id);
   const book = await Book.findById(data.bookId);
   if (book) await notifyUser(book.authorId, 'bookComment', { type: 'COMMENT_RECEIVED', title: 'Kitabına yorum yapıldı', message: book.title + ' kitabına yeni bir yorum geldi.', icon: '💬', meta: { bookId: book._id } }, data.userId);
 

@@ -1,8 +1,9 @@
+import { useLiveScoreQuery } from '../../../hooks/useLiveScoreQuery';
 // src/components/Notification/NotificationBell/index.jsx
 import React, { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
-import { useQuery, useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import { NotificationsOutlined, Notifications } from '@mui/icons-material';
 import { GET_NOTIFICATIONS, GET_UNREAD_NOTIFICATION_COUNT } from '../../../graphql/queries/score';
 import { MARK_NOTIFICATIONS_READ } from '../../../graphql/mutations/score';
@@ -26,12 +27,11 @@ const NotificationBell = ({ label, className = '' }) => {
   const [dropdownStyle, setDropdownStyle] = useState(null);
   const btnRef = useRef(null);
 
-  const { data: countData, refetch: refetchCount } = useQuery(GET_UNREAD_NOTIFICATION_COUNT, {
+  const { data: countData, refetch: refetchCount } = useLiveScoreQuery(GET_UNREAD_NOTIFICATION_COUNT, {
     skip: !user,
-    pollInterval: 30000, // 30 saniyede bir kontrol
   });
 
-  const { data: notifData, refetch: refetchNotifs } = useQuery(GET_NOTIFICATIONS, {
+  const { data: notifData, refetch: refetchNotifs } = useLiveScoreQuery(GET_NOTIFICATIONS, {
     skip: !open || !user,
     fetchPolicy: 'cache-and-network',
     pollInterval: open ? 15000 : 0,

@@ -1,4 +1,5 @@
 import PublicContentRoute from './components/Route/PublicContentRoute';
+import ScoreUpdates from './components/Score/ScoreUpdates';
 import React from 'react';
 import { AuthorsPage, AboutPage, ContactPage, LegalPage, NewsletterPage } from './pages/Community';
 import PrintedBooksPage from './pages/PrintedBooks';
@@ -94,8 +95,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 });
 
 // WebSocket link — sadece subscription operasyonları buradan geçer
-const wsLink = new GraphQLWsLink(
-  createClient({
+const wsClient = createClient({
     url: WS_URL,
     connectionParams: () => ({
       authorization: localStorage.getItem("token")
@@ -104,8 +104,9 @@ const wsLink = new GraphQLWsLink(
     }),
     shouldRetry: () => !!localStorage.getItem("token"),
     retryAttempts: 5,
-  })
-);
+  });
+const wsLink = new GraphQLWsLink(wsClient);
+const reconnectSubscriptions = () => wsClient.terminate();
 
 // Subscription → wsLink, diğerleri → mevcut HTTP zinciri
 const splitLink = split(
@@ -154,6 +155,7 @@ const ProtectedRoute = ({ children }) => {
 const RootLayout = () => (
   <>
     <ScrollToTop />
+    <ScoreUpdates reconnect={reconnectSubscriptions} />
     <Outlet />
     {/* Mobilde "Ana ekrana ekle" banner'ı — tüm sayfalarda tek yerden */}
     <InstallPrompt />

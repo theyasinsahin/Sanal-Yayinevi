@@ -89,13 +89,6 @@ const handleRemoveBookmark = async () => {
   refetchBookmark();
 };
 
-  // Hook'u kullan:
-  useReadingTracker({
-    isActive: true,
-    onIdleWarning: () => setShowIdleWarning(true),
-    onIdleResume: () => setShowIdleWarning(false),
-  });
-
   useEffect(() => {
     if (bookId && !viewCounted.current) {
       incrementBookViews({ 
@@ -114,6 +107,14 @@ const handleRemoveBookmark = async () => {
 
   const book = bookData?.getBookById;
   const chapters = useMemo(() => book?.chapters || [], [book]);
+
+  const readingStatus = useReadingTracker({
+    isActive: Boolean(user?.id && book && book.status !== 'DRAFT' &&
+      (book.kind !== 'PRINTED' || book.publicationStatus === 'APPROVED') && chapters[currentChapterIndex]?.content?.replace(/<[^>]*>/g, '').trim()),
+    userId: user?.id, bookId: book?.id, chapterId: chapters[currentChapterIndex]?.id,
+    onIdleWarning: () => setShowIdleWarning(true),
+    onIdleResume: () => setShowIdleWarning(false),
+  });
 
   const { data: userData } = useQuery(GET_USER_BY_ID, {
     variables: { id: book?.authorId },
@@ -391,9 +392,12 @@ const handleRemoveBookmark = async () => {
         </div>
       </div>
 
+      {(readingStatus === 'error' || readingStatus === 'paused') && <p className="ui-notice" role="status">
+        {readingStatus === 'paused' ? 'Okuma puanı takibi diğer açık okuyucuya geçti. Burada devam etmek için sayfayı yenileyebilirsiniz.' : 'Okuma puanı kaydedilemiyor. Bağlantınız geldiğinde tekrar denenecek; doğrulanamayan süre puanlandırılmaz.'}
+      </p>}
       {showIdleWarning && (
         <div className="idle-warning-banner">
-          <span>⏸️ Hareketsiz görünüyorsun — puan kazanma duraklatıldı.</span>
+          <span>⏸️ Hareketsiz görünüyorsun. İki dakika boyunca etkileşim olmazsa okuma puanı takibi duraklar.</span>
           <button onClick={() => setShowIdleWarning(false)}>Devam Et</button>
         </div>
       )}

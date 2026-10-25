@@ -149,7 +149,7 @@ export const addSessionEntry = async (userId, sessionId, content, accessCode = n
     content: content.trim(),
   });
   await entry.save();
-  await ScoreService.onSessionEntryAdded(userId);
+  await ScoreService.onSessionEntryAdded(userId, entry._id);
 
   // participantCount: bu kullanıcı daha önce hiç yazmadıysa artır
   const previousEntry = await SessionEntry.findOne({
