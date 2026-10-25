@@ -121,7 +121,7 @@ export default {
 
     chapters: async (parent, args, { Chapter }) => {
          try {
-            return await Chapter.find({ bookId: parent.id, isDeleted: false }).sort({ createdAt: 1 });
+            return await Chapter.find({ bookId: parent.id, isDeleted: false, authorId: { $nin: await inactiveUserIds() } }).sort({ createdAt: 1, _id: 1 });
          } catch (e) { return [] }
     },
 

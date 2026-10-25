@@ -7,6 +7,7 @@ import Quote from '../models/quote.js';
 import User from '../models/user.js';
 import UserPreference from '../models/userPreference.js';
 import ReadingProgress from '../models/readingProgress.js';
+import { readerChapters } from './readingProgressService.js';
 
 // --- AĞIRLIKLAR ---
 const W = {
@@ -175,6 +176,8 @@ export const getRecommendations = async (userId, { limit = 10, offset = 0 } = {}
 
 // --- OKUMA İLERLEMESİ ---
 export const markChapterAsRead = async (userId, bookId, chapterId) => {
+  const chapters = await readerChapters(userId, bookId);
+  if (!chapters.some(chapter => String(chapter._id) === String(chapterId))) throw new Error('Bu bölüm kitapta bulunamadı.');
   const progress = await ReadingProgress.findOneAndUpdate(
     { userId, bookId },
     {
@@ -184,19 +187,9 @@ export const markChapterAsRead = async (userId, bookId, chapterId) => {
     { upsert: true, new: true }
   );
 
-  // Kitabın tüm chapter'larını çek, hepsini bitirdi mi kontrol et
-  const { default: Book } = await import('../models/book.js');
-  const book = await Book.findById(bookId).select('chapters').lean();
-  if (book?.chapters?.length > 0) {
-    const total     = book.chapters.length;
-    const completed = progress.completedChapters.length;
-    if (completed >= total) {
-      progress.isCompleted = true;
-      await progress.save();
-    }
-  }
-
-  return progress;
+  return ReadingProgress.findByIdAndUpdate(progress._id, [{ $set: {
+    isCompleted: chapters.length > 0 ? { $setIsSubset: [chapters.map(chapter => chapter._id), { $ifNull: ['$completedChapters', []] }] } : false,
+  } }], { new: true }).exec();
 };
 
 export const getReadingProgress = async (userId, bookId) => {

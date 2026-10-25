@@ -5,6 +5,7 @@
 }
 
 .paragraph-block {
+  scroll-margin-top: calc(var(--navbar-height, 64px) + 24px);
   position: relative;
   margin-bottom: 0;
   border-left: 2px solid transparent;

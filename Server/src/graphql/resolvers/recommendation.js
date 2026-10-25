@@ -1,5 +1,6 @@
 // src/graphql/resolvers/recommendation.js
 import * as RecommendationService from '../../services/recommendationService.js';
+import * as ReadingProgressService from '../../services/readingProgressService.js';
 
 export default {
   Query: {
@@ -10,7 +11,7 @@ export default {
 
     getReadingProgress: async (_, { bookId }, { user }) => {
       if (!user) throw new Error('Giriş yapmalısınız.');
-      return RecommendationService.getReadingProgress(user._id, bookId);
+      return ReadingProgressService.getReadingProgress(user._id, bookId);
     },
 
     getUserReadingHistory: async (_, __, { user }) => {
@@ -34,6 +35,10 @@ export default {
   },
 
   Mutation: {
+    saveReadingProgress: async (_, args, { user }) => {
+      if (!user) throw new Error('Giriş yapmalısınız.');
+      return ReadingProgressService.saveReadingProgress(user._id, args);
+    },
     markChapterAsRead: async (_, { bookId, chapterId }, { user }) => {
       if (!user) throw new Error('Giriş yapmalısınız.');
       const progress = await RecommendationService.markChapterAsRead(user._id, bookId, chapterId);
@@ -70,9 +75,10 @@ export default {
   },
 
   ReadingProgress: {
+    id: parent => String(parent._id || parent.id),
     bookId: async (parent, _, { Book }) => {
       if (parent.bookId && typeof parent.bookId === 'object' && parent.bookId.title) {
-        return parent.bookId;
+        return { ...parent.bookId, id: String(parent.bookId._id || parent.bookId.id) };
       }
       return Book.findById(parent.bookId);
     },
