@@ -42,6 +42,7 @@ const User = new mongoose.Schema({
   role:           { type: String, enum: ['USER', 'ADMIN'], default: 'USER' },
   isVerified:     { type: Boolean, default: false },
   isActive:       { type: Boolean, default: true },
+  authVersion:    { type: Number, default: 0 },
 
   // ── Soft-delete ──────────────────────────────────────────────────
   isDeleted:  { type: Boolean, default: false },

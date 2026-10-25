@@ -4,7 +4,7 @@ import * as QuoteService from '../../services/quoteService.js';
 export default {
   Query: {
     getQuotesByBook: (_, { bookId }) => QuoteService.getQuotesByBook(bookId),
-    getQuotesByUser: (_, { userId }) => QuoteService.getQuotesByUser(userId),
+    getQuotesByUser: (_, { userId }, { user }) => QuoteService.getQuotesByUser(userId, user),
     getQuotesFeed: (_, { limit, offset, sortBy }) => QuoteService.getQuotesFeed(limit, offset, sortBy),
     searchQuotes: (_, { query, limit, offset }) => QuoteService.searchQuotes(query, limit, offset),
     checkQuoteExists: (_, { text, bookId }) => QuoteService.checkQuoteExists(text, bookId),

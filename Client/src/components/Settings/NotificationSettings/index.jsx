@@ -1,7 +1,7 @@
 // src/components/Settings/NotificationSettings.jsx
 import React, { useState } from 'react';
 import { useMutation } from '@apollo/client';
-import { Save, LocalOffer } from '@mui/icons-material';
+import { Save } from '@mui/icons-material';
 import { Button } from '../../UI/Button';
 import { UPDATE_NOTIFICATION_SETTINGS_MUTATION } from '../../../graphql/mutations/user';
 
@@ -22,31 +22,10 @@ const NOTIFICATION_GROUPS = [
       { key: 'bookComment',  label: 'Kitaba Yorum',      sub: 'Kitabınıza birisi yorum yaptığında.' },
       { key: 'bookLike',     label: 'Kitaba Beğeni',     sub: 'Kitabınız beğenildiğinde.' },
       { key: 'quoteLike',    label: 'Alıntıya Beğeni',   sub: 'Bir alıntınız beğenildiğinde.' },
-      { key: 'sessionReply', label: 'Oturum Yanıtı',    sub: 'Bir oturumda yazdığınız iletiye yanıt geldiğinde.' },
+      { key: 'sessionReply', label: 'Oturumda Yeni İleti', sub: 'Katıldığınız veya oluşturduğunuz oturuma yeni bir ileti eklendiğinde.' },
     ],
   },
-  {
-    id: 'publishing',
-    label: 'Yayıncılık',
-    rows: [
-      {
-        key: 'publishingOffer',
-        label: 'Yayınevi Teklifi',
-        sub: 'Bir yayınevi kitabınıza fiyat teklifi gönderdiğinde.',
-        badge: 'ÖNEMLİ',
-      },
-      { key: 'offerUpdate', label: 'Teklif Güncellemesi', sub: 'Mevcut bir teklifin durumu değiştiğinde.' },
-    ],
-  },
-  {
-    id: 'email',
-    label: 'E-posta Bildirimleri',
-    rows: [
-      { key: 'emailDigest',   label: 'Haftalık Özet',       sub: 'Haftalık aktivite özetini e-posta ile alın.' },
-      { key: 'emailOffers',   label: 'Teklif E-postaları',  sub: 'Yayınevi teklifleri mutlaka e-posta ile iletilsin.' },
-      { key: 'emailMarketing',label: 'Duyurular',           sub: 'Platform haberleri ve güncellemeleri.' },
-    ],
-  },
+
 ];
 
 // Varsayılan her şey açık
@@ -69,7 +48,7 @@ const NotificationSettings = ({ profile, onUpdate, showToast }) => {
     onError: (err) => showToast(err.message, 'error'),
   });
 
-  const handleSave = () => save({ variables: { notificationSettings: prefs } });
+  const handleSave = () => save({ variables: { notificationSettings: Object.fromEntries(Object.keys(DEFAULT_PREFS).map(key => [key, prefs[key]])) } }).catch(() => {});
 
   return (
     <div className="settings-section">
@@ -99,6 +78,7 @@ const NotificationSettings = ({ profile, onUpdate, showToast }) => {
                 <label className="settings-toggle">
                   <input
                     type="checkbox"
+                    aria-label={row.label}
                     checked={!!prefs[row.key]}
                     onChange={() => toggle(row.key)}
                   />

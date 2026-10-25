@@ -1,13 +1,30 @@
 // src/services/messageService.js
+import User from '../models/user.js';
+import { canReceiveMessage } from '../utils/profileAccess.js';
 import Message from '../models/message.js';
 import Conversation from '../models/conversation.js';
-import { pubsub } from '../../index.js';
+import { pubsub } from '../config/pubsub.js';
 
 const NEW_MESSAGE = 'NEW_MESSAGE';
+
+async function assertMessagePermission(recipientId, senderId) {
+  const recipient = await User.findById(recipientId);
+  if (!canReceiveMessage(recipient, senderId)) throw new Error('Bu kullanıcı mesaj almayı sınırlandırmış.');
+}
+
+export async function requireConversation(conversationId, userId) {
+  const conversation = await Conversation.findById(conversationId);
+  if (!conversation || !conversation.participants.some(id => String(id) === String(userId))) {
+    throw new Error('Bu konuşmaya erişim yetkiniz yok.');
+  }
+  return conversation;
+}
 
 // --- CONVERSATION ---
 
 export const getOrCreateConversation = async (userIdA, userIdB) => {
+  if (String(userIdA) === String(userIdB)) throw new Error('Kendinize mesaj gönderemezsiniz.');
+  await assertMessagePermission(userIdB, userIdA);
   let conversation = await Conversation.findOne({
     participants: { $all: [userIdA, userIdB] },
     isGroup: false,
@@ -39,7 +56,8 @@ export const getOrCreateConversation = async (userIdA, userIdB) => {
   return conversation;
 };
 
-export const getConversationById = async (conversationId) => {
+export const getConversationById = async (conversationId, userId) => {
+  await requireConversation(conversationId, userId);
   return Conversation.findById(conversationId)
     .populate('participants', 'username fullName profilePicture')
     .populate({
@@ -67,6 +85,9 @@ export const sendMessage = async (senderId, { conversationId, content, type = 'T
     throw new Error('Bu konuşmaya erişim yetkiniz yok.');
   }
 
+  for (const recipientId of conversation.participants) {
+    if (String(recipientId) !== String(senderId)) await assertMessagePermission(recipientId, senderId);
+  }
   const message = new Message({
     conversationId,
     senderId,
@@ -112,7 +133,8 @@ export const sendMessage = async (senderId, { conversationId, content, type = 'T
   return populated;
 };
 
-export const getConversationMessages = async (conversationId, limit = 20, offset = 0) => {
+export const getConversationMessages = async (conversationId, limit = 20, offset = 0, userId) => {
+  await requireConversation(conversationId, userId);
   return Message.find({ conversationId, isDeleted: { $ne: true } })
   .populate('senderId', 'username fullName profilePicture')
   .populate({
@@ -132,8 +154,7 @@ export const getConversationMessages = async (conversationId, limit = 20, offset
 };
 
 export const markMessagesAsRead = async (conversationId, userId) => {
-  const conversation = await Conversation.findById(conversationId);
-  if (!conversation) throw new Error('Konuşma bulunamadı.');
+  const conversation = await requireConversation(conversationId, userId);
   conversation.unreadCounts.set(userId.toString(), 0);
   await conversation.save();
   return conversation;

@@ -9,7 +9,7 @@ import { ApolloServer } from '@apollo/server';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/use/ws';
-import { PubSub } from 'graphql-subscriptions';
+import { pubsub } from './src/config/pubsub.js';
 import jwt from 'jsonwebtoken';
 
 // Bizim Oluşturduğumuz Modüller
@@ -25,7 +25,7 @@ const PORT = process.env.PORT || 5000;
 
 // 2. PubSub instance — tüm uygulama bu tek instance'ı kullanır
 // Dosya seviyesinde export ediyoruz ki servis ve resolver'lar import edebilsin
-export const pubsub = new PubSub();
+export { pubsub };
 
 // 3. Sunucuyu Başlatma Fonksiyonu
 const startServer = async () => {
@@ -101,7 +101,8 @@ const startServer = async () => {
             const token = ctx.connectionParams?.authorization?.replace('Bearer ', '');
             if (token) {
               const decoded = jwt.verify(token, process.env.JWT_SECRET);
-              const user = await models.User.findById(decoded.userId);
+              const user = await models.User.findOne({ _id: decoded.userId, isDeleted: false, isActive: { $ne: false } });
+              if (!user || (decoded.version ?? 0) !== (user.authVersion ?? 0)) throw new Error('Oturumunuz geçersiz.');
               return { ...models, user, currentUserId: user?._id ?? null };
             }
           } catch {

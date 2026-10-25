@@ -35,7 +35,7 @@ export const authorPipeline = (page, pageSize) => [
   { $group: { _id: '$authorId', bookCount: { $sum: 1 }, pageCount: { $sum: { $ifNull: ['$pageCount', 0] } } } },
   { $lookup: { from: User.collection.name, localField: '_id', foreignField: '_id', as: 'author' } },
   { $unwind: '$author' },
-  { $match: { 'author.isDeleted': false, 'author.isActive': { $ne: false }, 'author.privacySettings.isProfilePublic': { $ne: false }, 'author.authorSettings.publishingVisible': { $ne: false } } },
+  { $match: { 'author.isDeleted': false, 'author.isActive': { $ne: false }, 'author.privacySettings.isProfilePublic': { $ne: false } } },
   { $sort: { 'author.username': 1, _id: 1 } },
   { $facet: { total: [{ $count: 'count' }], authors: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }, { $project: { _id: 0, id: '$_id', bookCount: 1, pageCount: 1, username: '$author.username', fullName: '$author.fullName', bio: '$author.bio', profilePicture: '$author.profilePicture' } }] } },
 ];

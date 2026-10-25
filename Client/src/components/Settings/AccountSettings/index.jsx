@@ -1,5 +1,7 @@
 // src/components/Settings/AccountSettings.jsx
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { validatePassword } from '../../../utils/PasswordValidation';
 import { useMutation } from '@apollo/client';
 import { Save } from '@mui/icons-material';
 import { Input }   from '../../UI/Input';
@@ -29,8 +31,8 @@ const AccountSettings = ({ profile, onUpdate, showToast }) => {
 
   // ── Mutations ──
   const [changeEmail, { loading: emailLoading }] = useMutation(CHANGE_EMAIL_MUTATION, {
-    onCompleted: () => {
-      showToast('E-posta güncellendi. Doğrulama maili gönderildi.', 'success');
+    onCompleted: (data) => {
+      showToast(data.changeEmail.message, 'success');
       setEmailForm({ newEmail: '', currentPassword: '' });
       setEmailDirty(false);
       onUpdate();
@@ -53,18 +55,19 @@ const AccountSettings = ({ profile, onUpdate, showToast }) => {
       showToast('Tüm alanları doldurun.', 'error'); return;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(emailForm.newEmail)) {
+    if (!emailRegex.test(emailForm.newEmail.trim())) {
       showToast('Geçerli bir e-posta girin.', 'error'); return;
     }
-    await changeEmail({ variables: emailForm });
+    await changeEmail({ variables: { ...emailForm, newEmail: emailForm.newEmail.trim().toLowerCase() } }).catch(() => {});
   };
 
   const handlePasswordSave = async () => {
     if (!passForm.currentPassword || !passForm.newPassword) {
       showToast('Tüm alanları doldurun.', 'error'); return;
     }
-    if (passForm.newPassword.length < 8) {
-      showToast('Yeni şifre en az 8 karakter olmalı.', 'error'); return;
+    const validation = validatePassword(passForm.newPassword);
+    if (!validation.isValid) {
+      showToast(validation.results.find(rule => !rule.passed).label, 'error'); return;
     }
     if (passForm.newPassword !== passForm.confirmPassword) {
       showToast('Yeni şifreler eşleşmiyor.', 'error'); return;
@@ -72,15 +75,15 @@ const AccountSettings = ({ profile, onUpdate, showToast }) => {
     await changePassword({ variables: {
       currentPassword: passForm.currentPassword,
       newPassword:     passForm.newPassword,
-    }});
+    }}).catch(() => {});
   };
 
   const passwordStrength = (pw) => {
     if (!pw) return null;
-    const score = [/.{8,}/, /[A-Z]/, /[0-9]/, /[^A-Za-z0-9]/].filter(r => r.test(pw)).length;
-    if (score <= 1) return { label: 'Zayıf',    color: '#dc2626' };
-    if (score === 2) return { label: 'Orta',     color: '#f59e0b' };
-    if (score === 3) return { label: 'İyi',      color: '#3b82f6' };
+    const score = validatePassword(pw).results.filter(rule => rule.passed).length;
+    if (score <= 2) return { label: 'Zayıf',    color: '#dc2626' };
+    if (score === 3) return { label: 'Orta',     color: '#f59e0b' };
+    if (score === 4) return { label: 'İyi',      color: '#3b82f6' };
     return             { label: 'Güçlü',   color: '#16a34a' };
   };
   const strength = passwordStrength(passForm.newPassword);
@@ -91,6 +94,9 @@ const AccountSettings = ({ profile, onUpdate, showToast }) => {
         <h2 className="settings-section-title">Hesap</h2>
         <p className="settings-section-desc">
           E-posta ve şifre bilgilerinizi buradan güncelleyebilirsiniz.
+        </p>
+        <p className="settings-field-hint">
+          Google ile kaydolduysanız ve henüz şifreniz yoksa <Link to="/sifremi-unuttum">şifre sıfırlama bağlantısıyla şifre oluşturabilirsiniz</Link>.
         </p>
       </div>
 
@@ -109,7 +115,7 @@ const AccountSettings = ({ profile, onUpdate, showToast }) => {
           <label className="settings-field-label">Yeni E-posta</label>
           <Input
             placeholder="yeni@eposta.com"
-            value={emailForm.newEmail}
+            aria-label="Yeni E-posta" name="emailForm-newEmail" value={emailForm.newEmail}
             onChange={e => { setEmailForm(p => ({ ...p, newEmail: e.target.value })); setEmailDirty(true); }}
             type="email"
           />
@@ -119,7 +125,7 @@ const AccountSettings = ({ profile, onUpdate, showToast }) => {
           <label className="settings-field-label">Mevcut Şifre (doğrulama)</label>
           <Input
             placeholder="••••••••"
-            value={emailForm.currentPassword}
+            aria-label="E-posta için mevcut şifre" name="emailForm-currentPassword" value={emailForm.currentPassword}
             onChange={e => { setEmailForm(p => ({ ...p, currentPassword: e.target.value })); setEmailDirty(true); }}
             type="password"
           />
@@ -135,7 +141,7 @@ const AccountSettings = ({ profile, onUpdate, showToast }) => {
             >
               E-postayı Güncelle
             </Button>
-            <span className="settings-save-hint">Değişikliği onaylayan bir mail gönderilecek.</span>
+            <span className="settings-save-hint">Yeni adresinize bilgilendirme e-postası gönderilir.</span>
           </div>
         )}
       </div>
@@ -148,7 +154,7 @@ const AccountSettings = ({ profile, onUpdate, showToast }) => {
           <label className="settings-field-label">Mevcut Şifre</label>
           <Input
             placeholder="••••••••"
-            value={passForm.currentPassword}
+            aria-label="Mevcut Şifre" name="passForm-currentPassword" value={passForm.currentPassword}
             onChange={e => { setPassForm(p => ({ ...p, currentPassword: e.target.value })); setPassDirty(true); }}
             type={showPasswords ? 'text' : 'password'}
           />
@@ -158,7 +164,7 @@ const AccountSettings = ({ profile, onUpdate, showToast }) => {
           <label className="settings-field-label">Yeni Şifre</label>
           <Input
             placeholder="••••••••"
-            value={passForm.newPassword}
+            aria-label="Yeni Şifre" name="passForm-newPassword" value={passForm.newPassword}
             onChange={e => { setPassForm(p => ({ ...p, newPassword: e.target.value })); setPassDirty(true); }}
             type={showPasswords ? 'text' : 'password'}
           />
@@ -173,7 +179,7 @@ const AccountSettings = ({ profile, onUpdate, showToast }) => {
           <label className="settings-field-label">Yeni Şifre (Tekrar)</label>
           <Input
             placeholder="••••••••"
-            value={passForm.confirmPassword}
+            aria-label="Yeni Şifre (Tekrar)" name="passForm-confirmPassword" value={passForm.confirmPassword}
             onChange={e => { setPassForm(p => ({ ...p, confirmPassword: e.target.value })); setPassDirty(true); }}
             type={showPasswords ? 'text' : 'password'}
           />

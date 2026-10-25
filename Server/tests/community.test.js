@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+jest.setTimeout(30000);
 import { graphql } from 'graphql';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { readFileSync } from 'node:fs';

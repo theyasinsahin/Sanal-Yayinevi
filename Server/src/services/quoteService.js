@@ -1,4 +1,8 @@
 // src/services/quoteService.js
+import { notifyUser } from './notificationService.js';
+import User from '../models/user.js';
+import { canViewProfile } from '../utils/profileAccess.js';
+import { inactiveUserIds } from '../utils/activeUsers.js';
 import Quote from '../models/quote.js';
 import QuoteComment from '../models/quoteComment.js';
 import Book from '../models/book.js';
@@ -96,15 +100,16 @@ export const repostQuote = async (userId, originalQuoteId, repostComment, isSpoi
   return await populateQuote(Quote.findById(repost._id));
 };
 
-export const getQuotesByUser = async (userId) => {
+export const getQuotesByUser = async (userId, viewer) => {
+  if (!canViewProfile(await User.findById(userId), viewer)) return [];
   return await populateQuote(
-    Quote.find({ userId }).sort({ createdAt: -1 })
+    Quote.find({ userId, isDeleted: false }).sort({ createdAt: -1 })
   );
 };
 
 export const getQuotesByBook = async (bookId) => {
   return await populateQuote(
-    Quote.find({ bookId, isRepost: false }).sort({ createdAt: -1 })
+    Quote.find({ bookId, isRepost: false, isDeleted: { $ne: true }, userId: { $nin: await inactiveUserIds() } }).sort({ createdAt: -1 })
   );
 };
 
@@ -115,7 +120,7 @@ export const getQuotesFeed = async (limit = 20, offset = 0, sortBy = 'popular') 
     : { createdAt: -1 };
 
   const results = await Quote.aggregate([
-    { $match: { isRepost: false } },
+    { $match: { isRepost: false, isDeleted: { $ne: true }, userId: { $nin: await inactiveUserIds() } } },
     { $addFields: { likesCount: { $size: { $ifNull: ['$likedBy', []] } } } },
     { $sort: sortOption },
     { $skip: offset },
@@ -173,6 +178,7 @@ export const searchQuotes = async (query, limit = 20, offset = 0) => {
   const bookIds = matchingBooks.map(b => b._id);
 
   const results = await Quote.find({
+    isDeleted: { $ne: true }, userId: { $nin: await inactiveUserIds() },
     $or: [
       { text: { $regex: query, $options: 'i' } },
       { bookId: { $in: bookIds } },
@@ -215,6 +221,10 @@ export const toggleQuoteLike = async (id, userId) => {
   const alreadyLiked = quote.likedBy.includes(userId);
   alreadyLiked ? quote.likedBy.pull(userId) : quote.likedBy.push(userId);
   await quote.save();
+  if (!alreadyLiked) await notifyUser(quote.userId, 'quoteLike', {
+    type: 'QUOTE_LIKED', title: 'Alıntın beğenildi', message: 'Paylaştığın alıntı yeni bir beğeni aldı.',
+    icon: '❤️', meta: { quoteId: quote._id },
+  }, userId);
   return await populateQuote(Quote.findById(id));
 };
 
@@ -227,7 +237,7 @@ export const addQuoteComment = async (userId, quoteId, content) => {
 };
 
 export const getQuoteComments = async (quoteId) => {
-  return await QuoteComment.find({ quoteId })
+  return await QuoteComment.find({ quoteId, isDeleted: { $ne: true }, userId: { $nin: await inactiveUserIds() } })
     .populate('userId', 'username fullName profilePicture')
     .sort({ createdAt: -1 });
 };

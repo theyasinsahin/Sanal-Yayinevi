@@ -149,6 +149,9 @@
    ========================================= */
 
 .settings-group {
+  min-width: 0;
+  padding: 0;
+  border: 0;
   margin-bottom: 2.5rem;
 }
 

@@ -1,3 +1,5 @@
+import { inactiveUserIds } from '../../utils/activeUsers.js';
+import { canViewProfile, sameUser } from '../../utils/profileAccess.js';
 import * as BookService from '../../services/bookService.js';
 import * as UserService from '../../services/userService.js';
 import * as ScoreService from '../../services/scoreService.js';
@@ -6,7 +8,12 @@ export default {
   Query: {
     getBookById: async (_, { id }) => BookService.findBookById(id),
 
-    getBooksByAuthorId: async (_, { authorId }, {req, user}) => BookService.findBooksByAuthorId(authorId),
+    getBooksByAuthorId: async (_, { authorId }, { user }) => {
+      const profile = await UserService.findUserById(authorId);
+      if (!canViewProfile(profile, user)) return [];
+      const books = await BookService.findBooksByAuthorId(authorId);
+      return sameUser(profile, user) || user?.role === 'ADMIN' ? books : books.filter(book => book.status !== 'DRAFT');
+    },
 
     getBooksByGenre: async (_, { genre }) => BookService.findBooksByGenre(genre),
 
@@ -103,7 +110,7 @@ export default {
     comments: async (parent, args, { Comment }) => {
         // Hata önlemek için try-catch
         try {
-            return await Comment.find({ bookId: parent.id, isDeleted: false }).sort({ date: -1 });
+            return await Comment.find({ bookId: parent.id, isDeleted: false, userId: { $nin: await inactiveUserIds() } }).sort({ date: -1 });
         } catch (e) { return [] }
     },
 
@@ -121,7 +128,7 @@ export default {
 
     commentCount: async (parent, args, { Comment }) => {
         try {
-            return await Comment.countDocuments({ bookId: parent.id, isDeleted: false });
+            return await Comment.countDocuments({ bookId: parent.id, isDeleted: false, userId: { $nin: await inactiveUserIds() } });
         } catch (e) { return 0 }
     },
     

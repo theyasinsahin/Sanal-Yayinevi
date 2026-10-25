@@ -9,6 +9,7 @@ const bookResolversModule = await import('../../src/graphql/resolvers/book.js');
 const bookResolvers = bookResolversModule.default; // { Query, Mutation, Book }
 
 import { connect, clearDatabase, closeDatabase } from '../db.js';
+import Genre from '../../src/models/genre.js';
 import Book from '../../src/models/book.js';
 import User from '../../src/models/user.js';
 import Comment from '../../src/models/comment.js';
@@ -32,7 +33,7 @@ describe('Book Resolvers', () => {
             role: 'USER'
         });
 
-        context = {
+        context = { user: mockUser,
             Book, User, Comment, Chapter,
             req: { headers: { authorization: 'Bearer token' } }
         };
@@ -45,13 +46,13 @@ describe('Book Resolvers', () => {
     // --- QUERIES ---
     describe('QUERIES', () => {
         it('getAllBooks should return books', async () => {
-            await Book.create({ title: 'B1', authorId: mockUser._id });
+            await Book.create({ title: 'B1', authorId: mockUser._id, status: 'WRITING' });
             const res = await bookResolvers.Query.getAllBooks(null, {}, context);
             expect(res).toHaveLength(1);
         });
 
         it('searchBooks should find by title', async () => {
-            await Book.create({ title: 'Harry Potter', authorId: mockUser._id });
+            await Book.create({ title: 'Harry Potter', authorId: mockUser._id, status: 'WRITING' });
             const res = await bookResolvers.Query.searchBooks(null, { query: 'Harry' }, context);
             expect(res).toHaveLength(1);
             expect(res[0].title).toBe('Harry Potter');
@@ -61,7 +62,8 @@ describe('Book Resolvers', () => {
     // --- MUTATIONS ---
     describe('MUTATIONS', () => {
         it('createBook should create book', async () => {
-            const args = { title: 'New Book', genre: 'Sci-Fi', description: 'Desc', imageUrl: 'img.jpg' };
+            const genre = await Genre.create({ name: 'Bilim Kurgu', slug: 'bilim-kurgu' });
+            const args = { title: 'New Book', genreId: genre._id, description: 'Desc', imageUrl: 'img.jpg' };
             const res = await bookResolvers.Mutation.createBook(null, args, context);
             
             expect(res.title).toBe('New Book');
@@ -80,7 +82,7 @@ describe('Book Resolvers', () => {
     // --- FIELD RESOLVERS (KRİTİK: Index.js'den buraya taşınanlar) ---
     describe('FIELD RESOLVERS', () => {
         it('should resolve comments for a book', async () => {
-            const book = await Book.create({ title: 'Commented Book', authorId: mockUser._id });
+            const book = await Book.create({ title: 'Commented Book', authorId: mockUser._id, status: 'WRITING' });
             // Yorum oluştur (Book modelindeki array'e eklemeye gerek yok, resolver DB'den çeker)
             await Comment.create({ bookId: book._id, userId: mockUser._id, content: 'Nice' });
             await Comment.create({ bookId: book._id, userId: mockUser._id, content: 'Bad' });
@@ -91,7 +93,7 @@ describe('Book Resolvers', () => {
         });
 
         it('should resolve commentCount', async () => {
-            const book = await Book.create({ title: 'Count Book', authorId: mockUser._id });
+            const book = await Book.create({ title: 'Count Book', authorId: mockUser._id, status: 'WRITING' });
             await Comment.create({ bookId: book._id, userId: mockUser._id, content: '1' });
             
             const res = await bookResolvers.Book.commentCount(book, {}, { Comment });
@@ -99,8 +101,8 @@ describe('Book Resolvers', () => {
         });
 
         it('should resolve chapters', async () => {
-            const book = await Book.create({ title: 'Chapter Book', authorId: mockUser._id });
-            await Chapter.create({ bookId: book._id, title: 'Ch1', authorId: mockUser._id });
+            const book = await Book.create({ title: 'Chapter Book', authorId: mockUser._id, status: 'WRITING' });
+            await Chapter.create({ bookId: book._id, title: 'Ch1', authorId: mockUser._id, status: 'WRITING' });
 
             const res = await bookResolvers.Book.chapters(book, {}, { Chapter });
             expect(res).toHaveLength(1);

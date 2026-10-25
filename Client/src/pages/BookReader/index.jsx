@@ -208,7 +208,7 @@ const handleRemoveBookmark = async () => {
         type: 'title_page',
         bookTitle: book.title,
         author: authorName,
-        genre: book.genre?.name || 'Fiction',
+        genre: book.genre?.name || 'Kurgu',
       });
       chapters.forEach((chapter) => {
         const chapterPages = parseContentToPages(chapter.content, chapter.title);

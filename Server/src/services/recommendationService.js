@@ -1,4 +1,6 @@
 // src/services/recommendationService.js
+import { inactiveUserIds } from '../utils/activeUsers.js';
+import Genre from '../models/genre.js';
 import Book from '../models/book.js';
 import Comment from '../models/comment.js';
 import Quote from '../models/quote.js';
@@ -99,9 +101,10 @@ export const getRecommendations = async (userId, { limit = 10, offset = 0 } = {}
   const candidates = await Book.find({
     status: { $in: ['WRITING', 'COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'] },
     _id: { $nin: [userId, ...excludedIds] },  // yazarın kendi kitapları da çıkabilir isteğe göre
-    authorId: { $ne: userId },                // kullanıcının kendi kitaplarını önerme
+    isDeleted: false,
+    authorId: { $ne: userId, $nin: await inactiveUserIds() },                // kullanıcının kendi kitaplarını önerme
   })
-  .select('_id title authorId genreId imageUrl stats likedBy createdAt status description publishDate')
+  .select('_id title authorId genreId imageUrl stats likedBy createdAt status description publishDate');
 
   // 8. Her adaya skor hesapla
   const scored = candidates.map((book) => {
@@ -208,6 +211,10 @@ export const getUserReadingHistory = async (userId) => {
 
 // --- ONBOARDING ---
 export const saveUserPreference = async (userId, genreIds) => {
+  const unique = [...new Set(genreIds.map(String))];
+  const genres = await Genre.find({ _id: { $in: unique }, isActive: true });
+  if (genres.length !== unique.length) throw new Error('Geçersiz kitap türü.');
+  await User.findByIdAndUpdate(userId, { 'authorSettings.preferredGenres': genres.map(genre => genre.name) });
   return await UserPreference.findOneAndUpdate(
     { userId },
     {

@@ -29,7 +29,7 @@ const AdminUsers = () => {
     <AdminLayout title="Kullanıcı Yönetimi">
       {loading ? <p>Yükleniyor...</p> : (
         <AdminTable 
-          columns={['Profil Fotoğrafı', 'Kullanıcı Adı', 'E-posta', 'Rol', 'İşlemler']}
+          columns={['Profil Fotoğrafı', 'Kullanıcı Adı', 'E-posta', 'Rol', 'Telif Notu', 'İşlemler']}
           data={users}
           renderRow={(user) => (
             <tr key={user.id}>
@@ -47,6 +47,7 @@ const AdminUsers = () => {
                   {user.role === 'ADMIN' ? 'Yönetici' : 'Kullanıcı'}
                 </Badge>
               </td>
+              <td>{user.authorSettings?.copyrightNote || '—'}</td>
               <td>
                 <div style={{display:'flex', gap: 10}}>
                   <Button size="small" variant="danger" onClick={() => handleDeleteUser(user.id)}>

@@ -1,6 +1,6 @@
 import * as MessageService from '../../services/messageService.js';
 import { withFilter } from 'graphql-subscriptions';
-import { pubsub } from '../../../index.js';
+import { pubsub } from '../../config/pubsub.js';
 
 const NEW_MESSAGE = 'NEW_MESSAGE';
 
@@ -67,14 +67,14 @@ export default {
 
     getConversation: async (_, { conversationId }, { user }) => {
       if (!user) throw new Error('Giriş yapmalısınız.');
-      const conv = await MessageService.getConversationById(conversationId);
+      const conv = await MessageService.getConversationById(conversationId, user._id);
       if (!conv) return null;
       return serializeConversation(conv, user._id);
     },
 
     getMessages: async (_, { conversationId, limit = 20, offset = 0 }, { user }) => {
       if (!user) throw new Error('Giriş yapmalısınız.');
-      const messages = await MessageService.getConversationMessages(conversationId, limit, offset);
+      const messages = await MessageService.getConversationMessages(conversationId, limit, offset, user._id);
       return messages.map(serializeMessage);
     },
 
@@ -120,9 +120,17 @@ export default {
   Subscription: {
     onNewMessage: {
       subscribe: withFilter(
-        () => pubsub.asyncIterator(NEW_MESSAGE),
-        (payload, variables) => {
-          return payload.conversationId === variables.conversationId;
+        async (_, { conversationId }, { user }) => {
+          if (!user) throw new Error('Giriş yapmalısınız.');
+          await MessageService.requireConversation(conversationId, user._id);
+          return pubsub.asyncIterableIterator(NEW_MESSAGE);
+        },
+        async (payload, variables, { user, User }) => {
+          if (payload.conversationId !== variables.conversationId || !user) return false;
+          const active = await User.findOne({ _id: user._id, isActive: { $ne: false }, isDeleted: false });
+          if (!active || (active.authVersion ?? 0) !== (user.authVersion ?? 0)) return false;
+          try { await MessageService.requireConversation(variables.conversationId, user._id); return true; }
+          catch { return false; }
         }
       ),
       resolve: (payload) => payload.onNewMessage,

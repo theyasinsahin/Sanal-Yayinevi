@@ -28,6 +28,7 @@ const userResolversModule = await import('../../src/graphql/resolvers/user.js');
 const userResolvers = userResolversModule.default; 
 
 import { connect, clearDatabase, closeDatabase } from '../db.js';
+import Verification from '../../src/models/verification.js';
 import User from '../../src/models/user.js';
 import Book from '../../src/models/book.js';
 import Comment from '../../src/models/comment.js';
@@ -56,7 +57,7 @@ describe('User Resolvers (Queries & Mutations)', () => {
             followers: []
         });
 
-        context = {
+        context = { user: mockUser,
             User, Book, Comment, Chapter, Transaction,
             req: { headers: { authorization: 'Bearer fake_token' } }
         };
@@ -89,8 +90,9 @@ describe('User Resolvers (Queries & Mutations)', () => {
     describe('MUTATIONS', () => {
         it('register should create a new user', async () => {
             const args = {
-                username: 'newuser', fullName: 'New User', email: 'new@test.com', password: '123'
+                username: 'newuser', fullName: 'New User', email: 'new@test.com', password: 'ValidPass1!', code: '123456'
             };
+            await Verification.create({ email: args.email, code: args.code });
             const res = await userResolvers.Mutation.register(null, args, context);
             expect(res.code).toBe(200);
             
@@ -137,7 +139,7 @@ describe('User Resolvers (Queries & Mutations)', () => {
         });
 
         it('should resolve savedBooks', async () => {
-             const book = await Book.create({ title: 'Saved Book', authorId: mockUser._id });
+             const book = await Book.create({ title: 'Saved Book', authorId: mockUser._id, status: 'WRITING' });
              mockUser.savedBooks.push(book._id);
              
              // Field resolver testi
