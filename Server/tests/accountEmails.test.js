@@ -33,7 +33,7 @@ test('password reset sends the saved token with HTML and text', async () => {
   expect(user.save).toHaveBeenCalledTimes(1);
 });
 test('address change sends the branded account notification to the new address', async () => {
-  findOne.mockResolvedValueOnce({ save: jest.fn(), password: 'hash' }).mockResolvedValueOnce(null);
+  findOne.mockResolvedValueOnce({ save: jest.fn(), password: 'hash', email: 'old@example.test' }).mockResolvedValueOnce(null);
   await changeEmail('user-id', { newEmail: 'new@example.test', currentPassword: 'test-only' });
   expect(sendMail.mock.calls[0][0]).toMatchObject({ to: 'new@example.test', subject: 'Betik · E-posta adresin güncellendi' });
   expect(sendMail.mock.calls[0][0].html).toContain('Yeni adresinle yolculuğa devam.');

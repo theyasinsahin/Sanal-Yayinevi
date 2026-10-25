@@ -8,6 +8,8 @@ const ParagraphCommentSchema = new mongoose.Schema({
   paragraphIndex: { type: Number, required: true },
   content:        { type: String, required: true },
   likedBy:        [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: [] }],
+  isDeleted: { type: Boolean, default: false },
+  deletedAt: { type: Date, default: null },
 }, { timestamps: true });
 
 ParagraphCommentSchema.index({ chapterId: 1, paragraphIndex: 1 });

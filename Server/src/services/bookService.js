@@ -1,3 +1,5 @@
+import { notifyUser } from './notificationService.js';
+import { inactiveUserIds } from '../utils/activeUsers.js';
 import Book from '../models/book.js';
 import User from '../models/user.js';
 import Genre from '../models/genre.js';
@@ -13,28 +15,30 @@ import * as CommentService from './commentService.js';
 
 export const findBookById = async (id, { includeDeleted = false } = {}) => {
   const query = { _id: id };
-  if (!includeDeleted) query.isDeleted = false;
+  if (!includeDeleted) { query.isDeleted = false; query.authorId = { $nin: await inactiveUserIds() }; }
   return await Book.findOne(query);
 };
 
 export const findAllBooks = async () => {
   return await Book.find({
     isDeleted: false,
+    authorId: { $nin: await inactiveUserIds() },
     status: { $in: ['WRITING', 'COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'] }
   }).sort({ createdAt: -1 });
 };
 
 // authorId'ye göre kitapları getir
 export const findBooksByAuthorId = async (authorId) => {
+  if ((await inactiveUserIds()).some(id => String(id) === String(authorId))) return [];
   return await Book.find({ authorId, isDeleted: false }).sort({ createdAt: -1 });
 };
 
 export const findBooksByGenre = async (genre) => {
-  return await Book.find({ genre, isDeleted: false });
+  return await Book.find({ genre, isDeleted: false, authorId: { $nin: await inactiveUserIds() }, status: { $ne: 'DRAFT' } });
 };
 
 export const findBookByTitle = async (title) => {
-  return await Book.findOne({ title, isDeleted: false });
+  return await Book.findOne({ title, isDeleted: false, authorId: { $nin: await inactiveUserIds() }, status: { $ne: 'DRAFT' } });
 };
 
 export const searchBooksInDb = async (query) => {
@@ -47,6 +51,8 @@ export const searchBooksInDb = async (query) => {
 
   return await Book.find({
     isDeleted: false,
+    authorId: { $nin: await inactiveUserIds() },
+    status: { $ne: 'DRAFT' },
     $or: [
       { title: { $regex: query, $options: 'i' } },
       { description: { $regex: query, $options: 'i' } },
@@ -88,6 +94,7 @@ export const toggleLike = async (bookId, userId) => {
   } else {
     book.likedBy.push(userId);
     book.stats.likes += 1;
+    await notifyUser(book.authorId, 'bookLike', { type: 'BOOK_LIKED', title: 'Kitabın beğenildi', message: 'Kitabın yeni bir beğeni aldı: ' + book.title, icon: '❤️', meta: { bookId } }, userId);
   }
   return await book.save();
 };
@@ -102,7 +109,7 @@ export const incrementViews = async (bookId) => {
 
 export const findBooksByIds = async (bookIds) => {
   if (!bookIds || bookIds.length === 0) return [];
-  return await Book.find({ _id: { $in: bookIds }, isDeleted: false });
+  return await Book.find({ _id: { $in: bookIds }, isDeleted: false, authorId: { $nin: await inactiveUserIds() }, status: { $ne: 'DRAFT' } });
 };
 
 export const findDraftsByAuthorId = async (authorId) => {

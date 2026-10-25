@@ -72,6 +72,18 @@ const UserProfile = () => {
   const userQuotes = quotesData?.getQuotesByUser || [];
 
   const profile = data?.getUserById;
+  const canView = isMe || profile?.canViewProfile !== false;
+  const canViewLibrary = isMe || profile?.canViewLibrary === true;
+  const canViewFollowList = isMe || profile?.canViewFollowList !== false;
+  useEffect(() => {
+    if (!profile) return;
+    let meta = document.querySelector('meta[name="robots"]');
+    const existed = Boolean(meta);
+    const previous = meta?.getAttribute('content');
+    if (!meta) { meta = document.createElement('meta'); meta.name = 'robots'; document.head.appendChild(meta); }
+    meta.content = profile.isSearchIndexable ? 'index,follow' : 'noindex,nofollow';
+    return () => { if (!existed) meta.remove(); else meta.setAttribute('content', previous || ''); };
+  }, [profile]);
 
   const { data: scoreData } = useQuery(GET_USER_SCORE, {
     variables: { userId: targetId },
@@ -154,6 +166,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
 
     try {
       await toggleFollow({ variables: { followId: targetId } });
+      await refetch();
     } catch (err) {
       setOptimisticFollowing(currentlyFollowing);
       setOptimisticFollowerCount(currentCount);
@@ -217,6 +230,11 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
   // YENİ: Modal Yardımcı Fonksiyonları
   const openModal = (type) => setFollowModal({ show: true, type });
   const closeModal = () => setFollowModal({ show: false, type: 'followers' });
+  useEffect(() => {
+    setActiveTab('published'); setIsEditing(false);
+    setOptimisticFollowing(null); setOptimisticFollowerCount(null);
+    setFollowModal({ show: false, type: 'followers' });
+  }, [targetId]);
 
   if (loading) return <MainLayout><div className="loading-state"><div className="loading-spinner"></div></div></MainLayout>;
 
@@ -302,7 +320,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
                   )}
 
                   <div className="contact-info">
-                    <div className="contact-item"><Email fontSize="small" /><span>{profile.email}</span></div>
+                    {isMe && <div className="contact-item"><Email fontSize="small" /><span>{profile.email}</span></div>}
                   </div>
 
                   <div className="profile-stats-row">
@@ -321,15 +339,15 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
                     <div className="stat-divider"></div>
                     
                     {/* YENİ: Tıklanabilir Followers */}
-                    <div className="stat-item-profile clickable" onClick={() => openModal('followers')}>
-                      <span className="stat-value">{formatNumber(followerCount)}</span>
+                    <div className="stat-item-profile clickable" onClick={() => canViewFollowList && openModal('followers')}>
+                      <span className="stat-value">{canViewFollowList ? formatNumber(followerCount) : 'Gizli'}</span>
                       <span className="stat-label">Takipçiler</span>
                     </div>
                     <div className="stat-divider"></div>
 
                     {/* YENİ: Tıklanabilir Following */}
-                    <div className="stat-item-profile clickable" onClick={() => openModal('following')}>
-                      <span className="stat-value">{formatNumber(profile.following?.length || 0)}</span>
+                    <div className="stat-item-profile clickable" onClick={() => canViewFollowList && openModal('following')}>
+                      <span className="stat-value">{canViewFollowList ? formatNumber(profile.following?.length || 0) : 'Gizli'}</span>
                       <span className="stat-label">Takip Edilenler</span>
                     </div>
                     <div className="stat-divider"></div>
@@ -380,6 +398,8 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
 
                   <Button
                     variant="outline"
+                    disabled={!profile.canMessage}
+                    title={!profile.canMessage ? 'Bu kullanıcı mesaj almayı sınırlandırmış.' : undefined}
                     onClick={handleMessageClick}
                     isLoading={convLoading}
                     icon={<Chat fontSize="small" />}
@@ -404,7 +424,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
               <Book /><span>Yayınlananlar</span>
             </button>
 
-            {isMe && (
+            {canViewLibrary && (
               <button className={`tab-btn ${activeTab === 'saved' ? 'active' : ''}`} onClick={() => setActiveTab('saved')}>
                 <Bookmark /><span>Kitaplık</span>
               </button>
@@ -450,16 +470,17 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
           </div>
 
           <div className="books-section">
-            {activeTab === 'published' && (
+            {!canView && <p role="status">Bu profil yalnızca takipçilere açık. İçerikleri görmek için kullanıcıyı takip edin.</p>}
+            {canView && activeTab === 'published' && (
               <BookCarousel books={publishedBooks} loading={loading} />
             )}
-            {isMe && activeTab === 'saved' && (
+            {canViewLibrary && activeTab === 'saved' && (
               <BookCarousel books={profile.savedBooks} loading={loading} />
             )}
             {isMe && activeTab === 'drafts' && (
               <BookCarousel books={draftBooks} loading={loading} />
             )}
-            {activeTab === 'quotes' && (
+            {canView && activeTab === 'quotes' && (
               <div className="quotes-tab-grid">
                 {userQuotes.length === 0 ? (
                   <Typography variant="body" color="muted">Henüz alıntı yok.</Typography>
@@ -474,6 +495,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
 
             {isMe && activeTab === 'settings' && (
               <UserSettings
+                key={profile.id}
                 profile={profile}
                 onUpdate={() => refetch()}
                 showToast={showToast}

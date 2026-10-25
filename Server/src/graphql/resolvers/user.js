@@ -1,16 +1,24 @@
 import * as UserService from '../../services/userService.js';
 import * as BookService from '../../services/bookService.js';
 import * as TransactionService from '../../services/transactionService.js';
-import { authenticateUser } from '../../utils/auth.js';
+import { canViewProfile, canViewLibrary, canViewFollowList, sameUser, canReceiveMessage } from '../../utils/profileAccess.js';
+import { weeklyWords } from '../../services/writingService.js';
+
+async function profileFor(parent, context) {
+  context.profileAccessCache ??= new Map();
+  const id = String(parent._id ?? parent.id);
+  if (!context.profileAccessCache.has(id)) context.profileAccessCache.set(id, UserService.findUserById(id));
+  return context.profileAccessCache.get(id);
+}
 
 export default {
   // ANA SORGULAR
   Query: {
-    getUserById: async (_, { id }, context) => UserService.findUserById(id),
+    getUserById: async (_, { id }) => UserService.findUserById(id),
     
     getUserByUsername: async (_, { username }) => UserService.findUserByUsername(username),
     
-    getUserByEmail: async (_, { email }) => UserService.findUserByEmail(email),
+    getUserByEmail: async (_, { email }, { user }) => user && (user.email === email || user.role === 'ADMIN') ? UserService.findUserByEmail(email) : null,
     
     getAllUsers: async () => UserService.getAllUsers(),
 
@@ -20,14 +28,24 @@ export default {
     },
     
     // Bu sorgulara gerek kalmayabilir (User tipi içinde çözüyoruz) ama kalsın
-    getFollowingByUserId: async (_, { id }) => {
-       const user = await UserService.getUserWithFollowing(id);
-       return user.following;
+    getFollowingByUserId: async (_, { id }, { user }) => {
+      const profile = await UserService.findUserById(id);
+      return canViewFollowList(profile, user) ? UserService.findUsersByIds(profile.following) : [];
     },
     
-    getFollowersByUserId: async (_, { id }) => {
-       const user = await UserService.getUserWithFollowers(id);
-       return user.followers;
+    getFollowersByUserId: async (_, { id }, { user }) => {
+      const profile = await UserService.findUserById(id);
+      return canViewFollowList(profile, user) ? UserService.findUsersByIds(profile.followers) : [];
+    },
+    getSavedBooksByUserId: async (_, { id }, { user }) => {
+      const profile = await UserService.findUserById(id);
+      return canViewLibrary(profile, user) ? UserService.getSavedBooksByUserId(id) : [];
+    },
+    getUsersBooksByUserId: async (_, { id }, { user }) => {
+      const profile = await UserService.findUserById(id);
+      if (!canViewProfile(profile, user)) return [];
+      const books = await BookService.findBooksByAuthorId(id);
+      return sameUser(profile, user) || user?.role === 'ADMIN' ? books : books.filter(book => book.status !== 'DRAFT');
     }
   },
 
@@ -137,41 +155,61 @@ export default {
   // ALAN ÇÖZÜCÜLER (Field Resolvers)
   // Bir User çekildiğinde, onun içindeki ilişkisel veriler istendiğinde burası çalışır.
   User: {
+  canViewProfile: async (profile, _, context) => canViewProfile(await profileFor(profile, context), context.user),
+  canViewLibrary: async (profile, _, context) => canViewLibrary(await profileFor(profile, context), context.user),
+  canViewFollowList: async (profile, _, context) => canViewFollowList(await profileFor(profile, context), context.user),
+  canMessage: async (profile, _, context) => Boolean(context.user && canReceiveMessage(await profileFor(profile, context), context.user._id)),
+  isSearchIndexable: async (profile, _, context) => {
+    const full = await profileFor(profile, context);
+    return Boolean(full && full.privacySettings?.isProfilePublic !== false && full.privacySettings?.showInSearchEngines !== false);
+  },
+  weeklyWritingWords: (profile, _, { user }) => sameUser(profile, user) ? weeklyWords(profile._id) : null,
+  email: (profile, _, { user }) => sameUser(profile, user) || user?.role === 'ADMIN' ? profile.email : '',
+  bio: async (profile, _, context) => {
+    const full = await profileFor(profile, context);
+    return canViewProfile(full, context.user) ? full.bio || '' : '';
+  },
   // isOwner kontrolü: parent._id ile query yapan kullanıcı aynı mı?
   // Context'ten currentUserId gelmeli — yoksa basit authorId sorgusu yap
   usersBooks: async (parent, _, context) => {
-    return await BookService.findBooksByAuthorId(parent._id);
+    if (!canViewProfile(await profileFor(parent, context), context.user)) return [];
+    const books = await BookService.findBooksByAuthorId(parent._id);
+    return sameUser(parent, context.user) || context.user?.role === 'ADMIN' ? books : books.filter(book => book.status !== 'DRAFT');
   },
 
-  savedBooks: async (parent) => {
+  savedBooks: async (parent, _, context) => {
+    if (!canViewLibrary(await profileFor(parent, context), context.user)) return [];
     return await BookService.findBooksByIds(parent.savedBooks);
   },
 
-  followers: async (parent) => {
+  followers: async (parent, _, context) => {
+    if (!canViewFollowList(await profileFor(parent, context), context.user)) return [];
     return await UserService.findUsersByIds(parent.followers);
   },
 
-  following: async (parent) => {
+  following: async (parent, _, context) => {
+    if (!canViewFollowList(await profileFor(parent, context), context.user)) return [];
     return await UserService.findUsersByIds(parent.following);
   },
 
-  donations: async (parent) => {
+  donations: async (parent, _, { user }) => {
+    if (!sameUser(parent, user) && user?.role !== 'ADMIN') return [];
     return await TransactionService.findTransactionsByUserId(parent._id);
   },
 
   // Ayar alanları — başka kullanıcının profilinde null dön
     privacySettings: (parent, _, { user }) => {
-      if (!user || user._id.toString() !== parent._id.toString()) return null;
+      if (!sameUser(parent, user) && user?.role !== 'ADMIN') return null;
       return parent.privacySettings;
     },
  
     notificationSettings: (parent, _, { user }) => {
-      if (!user || user._id.toString() !== parent._id.toString()) return null;
+      if (!sameUser(parent, user) && user?.role !== 'ADMIN') return null;
       return parent.notificationSettings;
     },
  
     authorSettings: (parent, _, { user }) => {
-      if (!user || user._id.toString() !== parent._id.toString()) return null;
+      if (!sameUser(parent, user) && user?.role !== 'ADMIN') return null;
       return parent.authorSettings;
     },
 },

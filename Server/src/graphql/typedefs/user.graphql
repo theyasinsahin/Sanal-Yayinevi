@@ -74,6 +74,12 @@ input AuthorSettingsInput {
 # ─── User tipi (yeni alanlar eklendi) ────────────────────────────
 
 type User {
+  canViewProfile: Boolean!
+  canViewLibrary: Boolean!
+  canViewFollowList: Boolean!
+  canMessage: Boolean!
+  isSearchIndexable: Boolean!
+  weeklyWritingWords: Int
   id: ID!
   username: String!
   fullName: String!

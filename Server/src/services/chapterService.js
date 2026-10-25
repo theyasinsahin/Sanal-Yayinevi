@@ -1,3 +1,5 @@
+import { recordWriting } from './writingService.js';
+import { inactiveUserIds } from '../utils/activeUsers.js';
 import Chapter from '../models/chapter.js';
 import Book from '../models/book.js'; // Sayfa sayısı güncellemek için lazım
 import * as ScoreService from './scoreService.js';
@@ -6,13 +8,13 @@ import * as ScoreService from './scoreService.js';
 // Varsayılan olarak silinmiş (isDeleted: true) bölümler hariç tutulur.
 export const findChapterById = async (id, { includeDeleted = false } = {}) => {
   const query = { _id: id };
-  if (!includeDeleted) query.isDeleted = false;
+  if (!includeDeleted) { query.isDeleted = false; query.authorId = { $nin: await inactiveUserIds() }; }
   return await Chapter.findOne(query);
 };
 
 export const findChaptersByBookId = async (bookId) => {
   // Bölüm numarasına veya oluşturulma tarihine göre sıralamak mantıklıdır
-  return await Chapter.find({ bookId, isDeleted: false }).sort({ createdAt: 1 });
+  return await Chapter.find({ bookId, isDeleted: false, authorId: { $nin: await inactiveUserIds() } }).sort({ createdAt: 1 });
 };
 
 export const findChaptersByAuthorId = async (authorId) => {
@@ -20,12 +22,12 @@ export const findChaptersByAuthorId = async (authorId) => {
 };
 
 export const findAllChapters = async () => {
-  return await Chapter.find({ isDeleted: false });
+  return await Chapter.find({ isDeleted: false, authorId: { $nin: await inactiveUserIds() } });
 };
 
 // Helper: Kitabın toplam sayfa sayısını güncelle (silinmemiş bölümler üzerinden)
 const updateBookTotalPageCount = async (bookId) => {
-  const chapters = await Chapter.find({ bookId, isDeleted: false });
+  const chapters = await Chapter.find({ bookId, isDeleted: false, authorId: { $nin: await inactiveUserIds() } });
   const totalPages = chapters.reduce((sum, ch) => sum + (ch.pageCount || 0), 0);
   await Book.findByIdAndUpdate(bookId, { pageCount: totalPages });
 };
@@ -33,6 +35,7 @@ const updateBookTotalPageCount = async (bookId) => {
 // CREATE
 export const createChapter = async (data) => {
   const newChapter = await Chapter.create(data);
+  await recordWriting(data.authorId, newChapter._id, '', data.content);
 
   // Kitaba bölüm ID'sini ekle
   await Book.findByIdAndUpdate(data.bookId, { $push: { chapters: newChapter._id } });
@@ -47,12 +50,14 @@ export const createChapter = async (data) => {
 
 // UPDATE
 export const updateChapter = async (chapterId, data) => {
+  const previous = await Chapter.findOne({ _id: chapterId, isDeleted: false });
   const updatedChapter = await Chapter.findOneAndUpdate(
     { _id: chapterId, isDeleted: false },
     data,
     { new: true }
   );
   if (updatedChapter) {
+    await recordWriting(updatedChapter.authorId, chapterId, previous?.content, updatedChapter.content);
     await updateBookTotalPageCount(updatedChapter.bookId);
   }
   return updatedChapter;

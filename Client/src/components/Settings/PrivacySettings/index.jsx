@@ -7,7 +7,7 @@ import { UPDATE_PRIVACY_SETTINGS_MUTATION } from '../../../graphql/mutations/use
 
 const MESSAGE_OPTIONS = [
   { value: 'everyone',   label: 'Herkes',          sub: 'Tüm kullanıcılar size mesaj gönderebilir.' },
-  { value: 'followers',  label: 'Sadece Takipçiler', sub: 'Yalnızca takip ettiğiniz kişiler.' },
+  { value: 'followers',  label: 'Sadece Takipçiler', sub: 'Yalnızca sizi takip eden kişiler mesaj gönderebilir.' },
   { value: 'none',       label: 'Kimse',            sub: 'Mesaj kutunuzu tamamen kapatır.' },
 ];
 
@@ -30,7 +30,7 @@ const PrivacySettings = ({ profile, onUpdate, showToast }) => {
     onError:     (err) => showToast(err.message, 'error'),
   });
 
-  const handleSave = () => savePrivacy({ variables: { privacySettings: form } });
+  const handleSave = () => savePrivacy({ variables: { privacySettings: form } }).catch(() => {});
 
   return (
     <div className="settings-section">
@@ -54,7 +54,7 @@ const PrivacySettings = ({ profile, onUpdate, showToast }) => {
           </div>
           <div className="settings-row-control">
             <label className="settings-toggle">
-              <input type="checkbox" checked={form.isProfilePublic} onChange={e => set('isProfilePublic', e.target.checked)} />
+              <input type="checkbox" aria-label="Herkese Açık Profil" checked={form.isProfilePublic} onChange={e => set('isProfilePublic', e.target.checked)} />
               <span className="toggle-track" />
             </label>
           </div>
@@ -69,7 +69,7 @@ const PrivacySettings = ({ profile, onUpdate, showToast }) => {
           </div>
           <div className="settings-row-control">
             <label className="settings-toggle">
-              <input type="checkbox" checked={form.showInSearchEngines} onChange={e => set('showInSearchEngines', e.target.checked)} />
+              <input type="checkbox" aria-label="Arama Motorlarında Görün" checked={form.showInSearchEngines} onChange={e => set('showInSearchEngines', e.target.checked)} />
               <span className="toggle-track" />
             </label>
           </div>
@@ -89,7 +89,7 @@ const PrivacySettings = ({ profile, onUpdate, showToast }) => {
           </div>
           <div className="settings-row-control">
             <label className="settings-toggle">
-              <input type="checkbox" checked={form.isLibraryPublic} onChange={e => set('isLibraryPublic', e.target.checked)} />
+              <input type="checkbox" aria-label="Kitaplığı Göster" checked={form.isLibraryPublic} onChange={e => set('isLibraryPublic', e.target.checked)} />
               <span className="toggle-track" />
             </label>
           </div>
@@ -104,7 +104,7 @@ const PrivacySettings = ({ profile, onUpdate, showToast }) => {
           </div>
           <div className="settings-row-control">
             <label className="settings-toggle">
-              <input type="checkbox" checked={form.isFollowListPublic} onChange={e => set('isFollowListPublic', e.target.checked)} />
+              <input type="checkbox" aria-label="Takip Listesini Göster" checked={form.isFollowListPublic} onChange={e => set('isFollowListPublic', e.target.checked)} />
               <span className="toggle-track" />
             </label>
           </div>

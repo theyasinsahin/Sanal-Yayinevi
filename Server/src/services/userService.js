@@ -4,9 +4,16 @@ import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
+import { notifyUser } from './notificationService.js';
+import Genre from '../models/genre.js';
+import { saveUserPreference } from './recommendationService.js';
 import Book from '../models/book.js';
 import User from '../models/user.js';
 import Quote from '../models/quote.js';
+import Comment from '../models/comment.js';
+import ParagraphComment from '../models/paragraphComment.js';
+import QuoteComment from '../models/quoteComment.js';
+import Message from '../models/message.js';
 
 import Verification from '../models/verification.js'; // Yeni bir model gerekecek
 import transporter from '../config/smtp.js';
@@ -21,30 +28,38 @@ import '../config/environment.js';
 
 import { OAuth2Client } from 'google-auth-library';
 
+const emailPattern = email => new RegExp(`^${email.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+
 // ── Hesap: E-posta Değiştirme ─────────────────────────────────────
 export const changeEmail = async (userId, { newEmail, currentPassword }) => {
   const user = await User.findOne({ _id: userId, isDeleted: false });
   if (!user) throw new Error('Kullanıcı bulunamadı.');
+
+  newEmail = newEmail.trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail) || newEmail.length > 254) throw new Error('Geçerli bir e-posta girin.');
+  if (user.email.toLowerCase() === newEmail) throw new Error('Yeni e-posta mevcut adresinizden farklı olmalı.');
 
   // Mevcut şifre doğrulaması
   const valid = await bcrypt.compare(currentPassword, user.password);
   if (!valid) throw new Error('Mevcut şifre hatalı.');
 
   // Yeni e-posta başka biri tarafından kullanılıyor mu?
-  const taken = await User.findOne({ email: newEmail, _id: { $ne: userId } });
+  const taken = await User.findOne({ email: emailPattern(newEmail), _id: { $ne: userId } });
   if (taken) throw new Error('Bu e-posta adresi zaten kullanılıyor.');
 
   user.email = newEmail;
   await user.save();
 
-  // İsteğe bağlı: doğrulama maili gönder
-  await transporter.sendMail({
-    from: { name: 'Betik', address: process.env.EMAIL_USER },
-    to: newEmail,
-    ...emailChangedEmail(),
-  });
-
-  return { code: 200, message: 'E-posta güncellendi.' };
+  // The account change already succeeded; SMTP failure must not report it as a failed mutation.
+  try {
+    const delivery = await transporter.sendMail({
+      from: { name: 'Betik', address: process.env.EMAIL_USER }, to: newEmail, ...emailChangedEmail(),
+    });
+    if (!delivery.accepted?.length) throw new Error('E-posta kabul edilmedi.');
+    return { code: 200, message: 'E-posta güncellendi. Bilgilendirme e-postası gönderildi.' };
+  } catch {
+    return { code: 200, message: 'E-posta güncellendi; bilgilendirme e-postası gönderilemedi.' };
+  }
 };
 
 export const forgotPassword = async (email) => {
@@ -81,9 +96,12 @@ export const changePassword = async (userId, { currentPassword, newPassword }) =
   const valid = await bcrypt.compare(currentPassword, user.password);
   if (!valid) throw new Error('Mevcut şifre hatalı.');
 
-  if (newPassword.length < 8) throw new Error('Yeni şifre en az 8 karakter olmalı.');
+  const passwordError = validatePassword(newPassword);
+  if (passwordError) throw new Error(passwordError);
 
   user.password = await bcrypt.hash(newPassword, 12);
+  user.resetPasswordToken = null;
+  user.resetPasswordExpires = null;
   await user.save();
 
   return { code: 200, message: 'Şifre başarıyla değiştirildi.' };
@@ -94,7 +112,8 @@ export const updatePrivacySettings = async (userId, input) => {
   const user = await User.findOne({ _id: userId, isDeleted: false });
   if (!user) throw new Error('Kullanıcı bulunamadı.');
 
-  Object.assign(user.privacySettings, input);
+  user.privacySettings ??= {};
+  Object.assign(user.privacySettings, Object.fromEntries(Object.entries(input).filter(([, value]) => value !== null)));
   user.markModified('privacySettings');
   return user.save();
 };
@@ -104,7 +123,8 @@ export const updateNotificationSettings = async (userId, input) => {
   const user = await User.findOne({ _id: userId, isDeleted: false });
   if (!user) throw new Error('Kullanıcı bulunamadı.');
 
-  Object.assign(user.notificationSettings, input);
+  user.notificationSettings ??= {};
+  Object.assign(user.notificationSettings, Object.fromEntries(Object.entries(input).filter(([, value]) => value !== null)));
   user.markModified('notificationSettings');
   return user.save();
 };
@@ -118,7 +138,19 @@ export const updateAuthorSettings = async (userId, input) => {
     throw new Error('Telif notu en fazla 300 karakter olabilir.');
   }
 
-  Object.assign(user.authorSettings, input);
+  if (input.weeklyWordGoal != null && (!Number.isSafeInteger(input.weeklyWordGoal) || input.weeklyWordGoal < 0)) {
+    throw new Error('Kelime hedefi sıfır veya pozitif bir tam sayı olmalı.');
+  }
+  if (input.preferredGenres) {
+    const genres = await Genre.find({ name: { $in: input.preferredGenres }, isActive: true });
+    if (genres.length !== new Set(input.preferredGenres).size) throw new Error('Geçersiz kitap türü.');
+    await saveUserPreference(userId, genres.map(genre => genre._id));
+  }
+  user.authorSettings ??= {};
+  const { copyrightNote, weeklyWordGoal, preferredGenres } = input;
+  if (copyrightNote != null) user.authorSettings.copyrightNote = copyrightNote;
+  if ('weeklyWordGoal' in input) user.authorSettings.weeklyWordGoal = weeklyWordGoal;
+  if (preferredGenres != null) user.authorSettings.preferredGenres = preferredGenres;
   user.markModified('authorSettings');
   return user.save();
 };
@@ -131,6 +163,7 @@ export const deactivateAccount = async (userId) => {
   if (!user) throw new Error('Kullanıcı bulunamadı.');
 
   user.isActive = false;
+  user.authVersion = (user.authVersion ?? 0) + 1;
   await user.save();
 
   return { code: 200, message: 'Hesabınız devre dışı bırakıldı.' };
@@ -178,6 +211,13 @@ export const deleteAccountCompletely = async (userId) => {
   // 3) Kullanıcının açtığı oturumları ve oturum girdilerini soft-delete et
   await SessionService.softDeleteSessionsByUserId(objectId);
   await SessionService.softDeleteSessionEntriesByUserId(objectId);
+
+  await Promise.all([
+    Comment.updateMany({ userId: objectId }, { isDeleted: true, deletedAt: now }),
+    ParagraphComment.updateMany({ userId: objectId }, { isDeleted: true, deletedAt: now }),
+    QuoteComment.updateMany({ userId: objectId }, { isDeleted: true, deletedAt: now }),
+    Message.updateMany({ senderId: objectId }, { isDeleted: true, deletedAt: now }),
+  ]);
 
   // 4) Diğer kullanıcılardan bu kişiyi takipçi/takip listesinden çıkar
   await User.updateMany(
@@ -263,8 +303,10 @@ export const authenticateWithGoogleCredential = async (idToken) => {
     await user.save();
   }
 
+  if (!user.isActive) { user.isActive = true; await user.save(); }
+
   // 5. Kendi JWT token'ını üret
-  const authToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+  const authToken = jwt.sign({ userId: user._id, version: user.authVersion ?? 0 }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
   return { token: authToken, user };
 };
@@ -276,7 +318,7 @@ export const googleAuth = async (token) => {
 
 export const findUserById = async (id, { includeDeleted = false } = {}) => {
   const query = { _id: id };
-  if (!includeDeleted) query.isDeleted = false;
+  if (!includeDeleted) { query.isDeleted = false; query.isActive = { $ne: false }; }
   return await User.findOne(query);
 };
 
@@ -285,11 +327,11 @@ export const findUserByEmail = async (email) => {
 };
 
 export const findUserByUsername = async (username) => {
-  return await User.findOne({ username, isDeleted: false });
+  return await User.findOne({ username, isDeleted: false, isActive: { $ne: false } });
 };
 
 export const getAllUsers = async () => {
-  return await User.find({ isDeleted: false });
+  return await User.find({ isDeleted: false, isActive: { $ne: false } });
 };
 
 // Takipçi/Takip edilen işlemleri için helper
@@ -346,7 +388,7 @@ export const registerUser = async ({ username, fullName, email, password, code }
 
 // LOGIN
 export const loginUser = async (email, password) => {
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: emailPattern(email) });
   if (!user) throw new Error("Kullanıcı bulunamadı");
 
   // Silinmiş hesapla giriş engellenmeli
@@ -362,14 +404,14 @@ export const loginUser = async (email, password) => {
     await user.save();
   }
 
-  const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+  const token = jwt.sign({ userId: user._id, version: user.authVersion ?? 0 }, process.env.JWT_SECRET, { expiresIn: '1d' });
   return { token, user };
 };
 
 // TOGGLE FOLLOW
 export const toggleFollow = async (currentUserId, targetUserId) => {
   const user = await User.findOne({ _id: currentUserId, isDeleted: false });
-  const targetUser = await User.findOne({ _id: targetUserId, isDeleted: false });
+  const targetUser = await User.findOne({ _id: targetUserId, isDeleted: false, isActive: { $ne: false } });
   if (!user || !targetUser) throw new Error('Kullanıcı bulunamadı.');
 
   if (user.following.includes(targetUserId)) {
@@ -383,6 +425,7 @@ export const toggleFollow = async (currentUserId, targetUserId) => {
     targetUser.followers.push(currentUserId);
     await user.save();
     await targetUser.save();
+    await notifyUser(targetUserId, 'newFollower', { type: 'NEW_FOLLOWER', title: 'Yeni takipçin var', message: user.username + ' seni takip etmeye başladı.', icon: '👤', meta: { userId: currentUserId } }, currentUserId);
     return { code: 200, message: "Takip edildi" };
   }
 };
@@ -418,5 +461,5 @@ export const getUsersBooksByUserId = async (userId) => {
 
 export const findUsersByIds = async (userIds) => {
   if (!userIds || userIds.length === 0) return [];
-  return await User.find({ _id: { $in: userIds }, isDeleted: false });
+  return await User.find({ _id: { $in: userIds }, isDeleted: false, isActive: { $ne: false } });
 };

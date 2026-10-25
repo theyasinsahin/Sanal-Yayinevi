@@ -24,7 +24,7 @@ describe('Comment Resolvers', () => {
         mockUser = await User.create({ username: 'commUser', fullName: 'Co', email: 'co@t.com', password: '123' });
         mockBook = await Book.create({ title: 'Book', authorId: mockUser._id });
         
-        context = { Comment, Book, User, req: { headers: { authorization: 'Bearer token' } } };
+        context = { user: mockUser, Comment, Book, User, req: { headers: { authorization: 'Bearer token' } } };
         authenticateUser.mockResolvedValue(mockUser);
     });
 

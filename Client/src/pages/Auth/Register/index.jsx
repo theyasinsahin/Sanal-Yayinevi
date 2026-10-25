@@ -26,10 +26,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import '../AuthPages.css';
 import { MainLayout } from '../../../components/Layout/MainLayout';
 
-// Google'ın redirect ux_mode'unda credential'ı POST edeceği backend endpoint'i.
-// Bu domain, Google Cloud Console'daki OAuth Client ID'nin
-// "Authorized JavaScript origins" listesinde olmalı.
-const GOOGLE_LOGIN_URI = 'https://sanal-yayinevi.onrender.com/auth/google/callback';
+import { GOOGLE_LOGIN_URI } from '../../../config/api';
 
 const RegisterPage = () => {
   const navigate = useNavigate();

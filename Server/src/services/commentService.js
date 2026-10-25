@@ -1,3 +1,5 @@
+import { notifyUser } from './notificationService.js';
+import { inactiveUserIds } from '../utils/activeUsers.js';
 import Comment from '../models/comment.js';
 import Book from '../models/book.js';
 import * as ScoreService from './scoreService.js';
@@ -11,7 +13,7 @@ export const findCommentById = async (id, { includeDeleted = false } = {}) => {
 };
 
 export const findCommentsByBookId = async (bookId) => {
-  return await Comment.find({ bookId, isDeleted: false }).sort({ date: -1 });
+  return await Comment.find({ bookId, isDeleted: false, userId: { $nin: await inactiveUserIds() } }).sort({ date: -1 });
 };
 
 export const findCommentsByUserId = async (userId) => {
@@ -19,12 +21,12 @@ export const findCommentsByUserId = async (userId) => {
 };
 
 export const findAllComments = async () => {
-  return await Comment.find({ isDeleted: false }).sort({ date: -1 });
+  return await Comment.find({ isDeleted: false, userId: { $nin: await inactiveUserIds() } }).sort({ date: -1 });
 };
 
 // Bir yoruma gelen yanıtları bulmak için (Nested Comments)
 export const findRepliesByParentId = async (parentCommentId) => {
-  return await Comment.find({ _id: { $in: parentCommentId.replies }, isDeleted: false });
+  return await Comment.find({ _id: { $in: parentCommentId.replies }, isDeleted: false, userId: { $nin: await inactiveUserIds() } });
 };
 
 // --- YAZMA İŞLEMLERİ ---
@@ -33,6 +35,8 @@ export const createComment = async (data) => {
   const savedComment = await newComment.save();
 
   await ScoreService.onCommentCreated(data.userId);
+  const book = await Book.findById(data.bookId);
+  if (book) await notifyUser(book.authorId, 'bookComment', { type: 'COMMENT_RECEIVED', title: 'Kitabına yorum yapıldı', message: book.title + ' kitabına yeni bir yorum geldi.', icon: '💬', meta: { bookId: book._id } }, data.userId);
 
   return await savedComment;
 };

@@ -10,15 +10,11 @@ import {
   FormatQuote,
   EmojiEvents,
   Forum,
-  LightMode,
-  DarkMode,
-  SettingsBrightness,
 } from '@mui/icons-material';
 import { FiMessageCircle } from 'react-icons/fi';
 
 // --- CONTEXT & HOOKS ---
 import { useAuth } from '../../../context/AuthContext';
-import { useTheme } from '../../../context/ThemeContext';
 import { useUnreadMessageCount } from '../../../hooks/useMessages';
 
 // --- UI KIT IMPORTS ---
@@ -28,27 +24,13 @@ import NotificationBell from '../../Notification/NotificationBell';
 
 import './MobileMenu.css';
 
-const THEME_ICONS = {
-  light: <LightMode fontSize="small" />,
-  dark: <DarkMode fontSize="small" />,
-  system: <SettingsBrightness fontSize="small" />,
-};
-
-const THEME_LABELS = {
-  light: 'Açık Tema',
-  dark: 'Koyu Tema',
-  system: 'Sistem Teması',
-};
-
 const MobileMenu = ({ isOpen, onClose }) => {
   const { user, logout } = useAuth();
-  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
 
   // Okunmamış mesaj sayısı — desktop navbar'daki ile aynı hook, sadece giriş yapılmışsa dolu gelir
   const unreadCount = useUnreadMessageCount();
 
-  const nextTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light';
 
   // Çıkış yapma fonksiyonu
   const handleLogout = () => {
@@ -130,16 +112,7 @@ const MobileMenu = ({ isOpen, onClose }) => {
 
               <div className="divider"></div>
 
-              <button
-                type="button"
-                className="mobile-nav-item mobile-nav-item--button"
-                onClick={() => setTheme(nextTheme)}
-              > {/*
-              {THEME_ICONS[theme]}
-                <Typography variant="body" weight="medium">{THEME_LABELS[theme]}</Typography>
-              */}
-                
-              </button>
+
 
               <div className="mobile-action-area">
                 <Button
@@ -167,17 +140,7 @@ const MobileMenu = ({ isOpen, onClose }) => {
 
               <div className="divider"></div>
 
-              <button
-                type="button"
-                className="mobile-nav-item mobile-nav-item--button"
-                onClick={() => setTheme(nextTheme)}
-              >
-                {/* 
-                {THEME_ICONS[theme]}
-                <Typography variant="body" weight="medium">{THEME_LABELS[theme]}</Typography>
-                */}
-                
-              </button>
+
             </>
           )}
 

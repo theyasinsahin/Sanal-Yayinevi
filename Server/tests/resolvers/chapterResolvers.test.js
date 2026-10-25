@@ -24,7 +24,7 @@ describe('Chapter Resolvers', () => {
         mockUser = await User.create({ username: 'chapUser', fullName: 'C', email: 'c@t.com', password: '123' });
         mockBook = await Book.create({ title: 'Test Book', authorId: mockUser._id, pageCount: 0 });
         
-        context = { Chapter, Book, User, req: { headers: { authorization: 'Bearer token' } } };
+        context = { user: mockUser, Chapter, Book, User, req: { headers: { authorization: 'Bearer token' } } };
         authenticateUser.mockResolvedValue(mockUser);
     });
 
@@ -58,7 +58,8 @@ describe('Chapter Resolvers', () => {
             await chapterResolvers.Mutation.deleteChapter(null, { id: chapter._id }, context);
 
             const check = await Chapter.findById(chapter._id);
-            expect(check).toBeNull();
+            expect(check.isDeleted).toBe(true);
+            expect((await Book.findById(mockBook._id)).chapters).not.toContainEqual(chapter._id);
         });
     });
 });

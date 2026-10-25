@@ -20,6 +20,7 @@ const ShareModal = ({ isOpen, onClose, type, attachedBookId, attachedBook, attac
   const [selectedConvId, setSelectedConvId] = useState(null);
   const [message, setMessage]           = useState('');
   const [sent, setSent]                 = useState(false);
+  const [sendError, setSendError] = useState('');
 
   const { conversations, loading: convsLoading } = useGetConversations();
   const { getOrCreateConversation, loading: convCreating } = useGetOrCreateConversation();
@@ -38,7 +39,8 @@ const ShareModal = ({ isOpen, onClose, type, attachedBookId, attachedBook, attac
   });
 
   const handleSend = async () => {
-    if (!selectedConvId) return;
+    if (!selectedConvId || sending) return;
+    setSendError('');
     try {
       await sendMessage({
         conversationId: selectedConvId,
@@ -55,7 +57,7 @@ const ShareModal = ({ isOpen, onClose, type, attachedBookId, attachedBook, attac
         onClose();
       }, 1200);
     } catch (err) {
-      console.error('Paylaşım başarısız:', err);
+      setSendError(err.message || 'Paylaşım gönderilemedi.');
     }
   };
 
@@ -174,6 +176,7 @@ const ShareModal = ({ isOpen, onClose, type, attachedBookId, attachedBook, attac
           </div>
         )}
 
+        {sendError && <p role="alert">{sendError}</p>}
         {/* Gönder */}
         <div className="share-modal-footer">
           <Button variant="outline" onClick={onClose}>
