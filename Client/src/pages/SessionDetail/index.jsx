@@ -1,3 +1,4 @@
+import { profilePath } from '../../utils/publicPaths';
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -238,8 +239,9 @@ const EntryComposer = ({ onSend, sending, disabled }) => {
   );
 };
 
-const SessionDetail = () => {
-  const { sessionId } = useParams();
+const SessionDetail = ({ resolvedId } = {}) => {
+  const params = useParams();
+  const sessionId = resolvedId || params.sessionId;
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
   const { showToast } = useToast();
@@ -433,10 +435,7 @@ const { session, loading: sessionLoading, error: sessionError } = useGetSession(
             )}
 
             <div className="session-detail-hero-footer">
-              {/* DÜZELTME: /users/ (çoğul) route App.js'te tanımlı değil,
-                  gerçek route /user/:userId (tekil) — eskisi tıklanınca
-                  404 sayfasına düşerdi. */}
-              <Link className="session-detail-author" to={`/user/${session.createdBy?.id}`}>
+              <Link className="session-detail-author" to={profilePath(session.createdBy)}>
                 <div className="session-detail-avatar">
                   {session.createdBy?.profilePicture ? (
                     <img src={session.createdBy.profilePicture} alt="" />

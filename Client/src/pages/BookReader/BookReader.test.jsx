@@ -14,14 +14,14 @@ jest.mock('../../components/Quote/QuotePopup', () => ({ __esModule: true, defaul
 jest.mock('../../components/Sharing/SocialShareButton', () => ({ __esModule: true, default: ({ id }) => <button data-chapter={id}>Bölümü paylaş</button> }));
 jest.mock('../../utils/htmlPageSplitter', () => ({ parseContentToPages: content => [{ content }] }));
 
-const book = { id: 'book', title: 'Kitap', authorId: null, genre: null, chapters: [
+const book = { id: 'book', publicPath: '/kitap/roman-deniz', title: 'Kitap', authorId: null, genre: null, chapters: [
   { id: 'first', title: 'İlk Bölüm', content: 'İlk bölümün metni.' },
   { id: 'second', title: 'İkinci Bölüm', content: 'İkinci bölümün metni.' },
 ] };
 const show = path => render(<MockedProvider mocks={[
   { request: { query: GET_BOOK_READER_DATA, variables: { id: 'book' } }, result: { data: { getBookById: book } } },
   { request: { query: INCREMENT_BOOK_VIEW_MUTATION, variables: { id: 'book' } }, result: { data: { incrementBookViews: { id: 'book', stats: { views: 1 } } } } },
-]} addTypename={false}><MemoryRouter initialEntries={[path]}><Routes><Route path="/book-reader/:bookId" element={<BookReader />} /></Routes></MemoryRouter></MockedProvider>);
+]} addTypename={false}><MemoryRouter initialEntries={[path]}><Routes><Route path="/book-reader/:bookId" element={<BookReader />} /><Route path="/kitap/:slug/bolum/:chapterSlug" element={<BookReader resolvedId="book" resolvedChapterId="second" />} /></Routes></MemoryRouter></MockedProvider>);
 beforeEach(() => { window.scrollTo = jest.fn(); localStorage.clear(); });
 
 test('a shared chapter takes precedence over saved reading progress and remains navigable', async () => {
@@ -45,4 +45,13 @@ test('ordinary reading links continue from saved progress', async () => {
   show('/book-reader/book');
   expect(await screen.findByRole('heading', { name: 'İkinci Bölüm' })).toBeInTheDocument();
   await waitFor(() => expect(JSON.parse(localStorage.getItem('book-progress-book')).lastChapter).toBe(1));
+});
+
+test('a readable chapter address uses database IDs for chapter selection and saved progress', async () => {
+  localStorage.setItem('book-progress-book', JSON.stringify({ lastChapter: 0, completed: [] }));
+  show('/kitap/roman-deniz/bolum/ikinci-bolum');
+  expect(await screen.findByRole('heading', { name: 'İkinci Bölüm' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Bölümü paylaş' })).toHaveAttribute('data-chapter', 'second');
+  await waitFor(() => expect(JSON.parse(localStorage.getItem('book-progress-book')).lastChapter).toBe(1));
+  expect(localStorage.getItem('book-progress-roman-deniz')).toBeNull();
 });

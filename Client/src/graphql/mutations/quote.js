@@ -28,7 +28,7 @@ export const REPOST_QUOTE_MUTATION = gql`
       originalQuote {
         id text
         user { id username profilePicture }
-        book { id title imageUrl }
+        book { publicPath id title imageUrl }
         isSpoiler
       }
     }

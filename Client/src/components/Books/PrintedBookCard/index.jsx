@@ -1,3 +1,4 @@
+import { bookPath } from '../../../utils/publicPaths';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Badge } from '../../UI/Badge';
@@ -5,7 +6,7 @@ import './PrintedBookCard.css';
 
 export default function PrintedBookCard({ book }) {
   const [failedUrl, setFailedUrl] = useState(null);
-  return <Link to={`/book-detail/${book.id}`} className="printed-book-card">
+  return <Link to={bookPath(book)} className="printed-book-card">
     <div className="printed-book-cover">
       {book.imageUrl && failedUrl !== book.imageUrl ? <img src={book.imageUrl} alt={`${book.title} kapağı`} loading="lazy" onError={() => setFailedUrl(book.imageUrl)} /> : <span>{book.title}</span>}
     </div>

@@ -1,3 +1,4 @@
+import { profilePath } from '../../utils/publicPaths';
 import { useGetOrCreateConversation } from '../../hooks/useMessages';
 
 import React, { useState, useEffect } from 'react';
@@ -38,7 +39,7 @@ import SocialShareButton from '../../components/Sharing/SocialShareButton';
 
 import './UserProfile.css';
 
-const UserProfile = () => {
+const UserProfile = ({ resolvedId } = {}) => {
 
   const { userId } = useParams();
   const { user: authUser, logout } = useAuth();
@@ -56,7 +57,7 @@ const UserProfile = () => {
   const [followModal, setFollowModal] = useState({ show: false, type: 'followers' });
 
   // Determine target user
-  const targetId = userId || authUser?.id;
+  const targetId = resolvedId || userId || authUser?.id;
   const isMe = authUser && targetId === authUser.id;
 
   // Queries
@@ -111,9 +112,10 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
 
   // Mutations
   const [updateUser, { loading: updating }] = useMutation(UPDATE_USER_MUTATION, {
-    onCompleted: () => {
+    onCompleted: updated => {
       setIsEditing(false);
       showToast('Profil başarıyla güncellendi.', 'success');
+      if (resolvedId && updated?.updateProfile) navigate(profilePath(updated.updateProfile), { replace: true });
       refetch();
     },
     onError: (err) => showToast(err.message, 'error')
@@ -500,7 +502,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
                       className="follow-user-item" 
                       onClick={() => {
                         closeModal();
-                        navigate(`/user/${uid}`);
+                        navigate(profilePath(typeof user === 'object' ? user : { id: uid }));
                       }}
                     >
                       <div className="follow-user-avatar">

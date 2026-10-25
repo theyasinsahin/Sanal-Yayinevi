@@ -11,7 +11,9 @@ export function publicWebOrigin(serverOrigin, browserOrigin = window.location.or
 
 export function shareLinks(item, webOrigin = publicWebOrigin(item.webOrigin), apiUrl = API_URL) {
   const directUrl = new URL(item.path, webOrigin).href;
-  const previewUrl = new URL(`/share/${item.type.toLowerCase()}/${encodeURIComponent(item.id)}`, apiUrl);
+  const readablePath = /^\/(kitap|yazar|oturum)\//.test(item.path);
+  const shareKey = readablePath ? decodeURIComponent(item.path.split('/').pop()) : item.id;
+  const previewUrl = new URL(`/share/${item.type.toLowerCase()}/${encodeURIComponent(shareKey)}`, apiUrl);
   previewUrl.searchParams.set('webOrigin', webOrigin);
   const url = previewUrl.href;
   const caption = [item.title, item.description].filter(Boolean).join('\n\n');

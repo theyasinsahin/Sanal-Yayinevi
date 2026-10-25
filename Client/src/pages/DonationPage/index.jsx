@@ -1,3 +1,4 @@
+import { bookPath } from '../../utils/publicPaths';
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useMutation, useQuery } from '@apollo/client';
@@ -105,7 +106,7 @@ const DonationPage = () => {
       <div className="donation-page">
         <Container maxWidth="5xl">
           
-          <Link to={`/book-detail/${bookId}`} className="back-link">
+          <Link to={bookPath(book || { id: bookId })} className="back-link">
              <ArrowBack fontSize="small"/> Kitaba Dön
           </Link>
 

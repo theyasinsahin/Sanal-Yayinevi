@@ -10,6 +10,7 @@ export const IS_FOLLOWING_BOOK = gql`
 export const GET_FOLLOWED_BOOKS = gql`
   query GetFollowedBooks {
     getFollowedBooks {
+      publicPath
       id
       title
       imageUrl

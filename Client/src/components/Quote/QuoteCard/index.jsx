@@ -1,3 +1,4 @@
+import { bookPath, profilePath } from '../../../utils/publicPaths';
 // src/components/Quote/QuoteCard/index.jsx
 import React, { useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
@@ -172,7 +173,7 @@ const QuoteCard = ({ quote }) => {
       {quote.isRepost && (
         <div className="quote-card-repost-header">
           <Repeat fontSize="small" />
-          <Link to={`/user/${displayUser?.id}`} className="quote-card-repost-user">
+          <Link to={profilePath(displayUser)} className="quote-card-repost-user">
             @{displayUser?.username}
           </Link>
           <span>yeniden paylaştı</span>
@@ -212,7 +213,7 @@ const QuoteCard = ({ quote }) => {
       {quote.isRepost && quote.originalQuote?.user && (
         <div className="quote-card-original-user">
           <span>Orijinal alıntı:</span>
-          <Link to={`/user/${quote.originalQuote.user.id}`}>
+          <Link to={profilePath(quote.originalQuote.user)}>
             @{quote.originalQuote.user.username}
           </Link>
         </div>
@@ -220,7 +221,7 @@ const QuoteCard = ({ quote }) => {
 
       {/* Kaynak */}
       {displayQuote.book && (
-        <Link to={`/book-detail/${displayQuote.book.id}`} className="quote-card-source">
+        <Link to={bookPath(displayQuote.book)} className="quote-card-source">
           {displayQuote.book.imageUrl && (
             <img src={displayQuote.book.imageUrl} alt={displayQuote.book.title} className="quote-card-book-cover" />
           )}
@@ -236,7 +237,7 @@ const QuoteCard = ({ quote }) => {
 
       {/* Footer */}
       <div className="quote-card-footer">
-        <Link to={`/user/${displayUser?.id}`} className="quote-card-user">
+        <Link to={profilePath(displayUser)} className="quote-card-user">
           {displayUser?.profilePicture ? (
             <img src={displayUser.profilePicture} alt={displayUser.username} className="quote-card-avatar" />
           ) : (
@@ -355,7 +356,7 @@ const QuoteCard = ({ quote }) => {
                   ) : (
                     <div className="quote-card-comment-avatar-placeholder"><Person fontSize="inherit" /></div>
                   )}
-                  <Link to={`/user/${comment.user?.id}`} className="quote-card-comment-username">
+                  <Link to={profilePath(comment.user)} className="quote-card-comment-username">
                     @{comment.user?.username}
                   </Link>
                   <span className="quote-card-comment-time">{timeAgo(comment.createdAt)}</span>

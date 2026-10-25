@@ -1,3 +1,4 @@
+import { profilePath } from '../../../utils/publicPaths';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
@@ -88,7 +89,7 @@ const BackersSection = ({ bookId, backerCount }) => {
                     className="backers-modal-item"
                     onClick={() => {
                       setShowModal(false);
-                      navigate(`/user/${backer.id}`); // Kullanıcı profiline yönlendirme
+                      navigate(profilePath(backer)); // Kullanıcı profiline yönlendirme
                     }}
                   >
                     <div className="backers-modal-avatar">

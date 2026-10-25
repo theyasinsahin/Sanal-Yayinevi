@@ -12,6 +12,20 @@ test('links contain the exact chapter and messaging shares include a clickable U
   expect(new URL(links.x).searchParams.get('url')).toBe(links.url);
 });
 
+test('new book, chapter, profile and session shares use readable preview addresses', () => {
+  for (const [type, path, key] of [
+    ['BOOK', '/kitap/roman-deniz', 'roman-deniz'],
+    ['CHAPTER', '/kitap/roman-deniz/bolum/ilk-bolum', 'ilk-bolum'],
+    ['PROFILE', '/yazar/deniz', 'deniz'],
+    ['SESSION', '/oturum/kitap-sohbeti', 'kitap-sohbeti'],
+  ]) {
+    const links = shareLinks({ ...item, type, path }, item.webOrigin, 'https://api.betik.example');
+    expect(links.directUrl).toBe(`https://betik.example${path}`);
+    expect(new URL(links.url).pathname).toBe(`/share/${type.toLowerCase()}/${key}`);
+    expect(new URL(links.whatsapp).searchParams.get('text')).toContain(links.url);
+  }
+});
+
 test('development stays local and native app origins use the configured public site', () => {
   expect(publicWebOrigin('https://betik.example', 'http://localhost:3000', 'https://native.example')).toBe('http://localhost:3000');
   expect(publicWebOrigin('https://betik.example', 'https://custom.example', undefined)).toBe('https://custom.example');

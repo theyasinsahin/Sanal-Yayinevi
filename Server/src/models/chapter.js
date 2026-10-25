@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 const ChapterSchema = new mongoose.Schema({
+  urlSlug: { type: String, unique: true, sparse: true },
   bookId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Book',

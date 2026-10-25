@@ -36,9 +36,9 @@ afterEach(clearDatabase);
 
 test('book/chapter links are stable and chapter previews exclude the manuscript', async () => {
   const sharedBook = await getSocialShare('BOOK', book.id);
-  expect(sharedBook.path).toBe(`/book-detail/${book.id}`);
+  expect(sharedBook.path).toBe('/kitap/paylasilabilir-kitap-writer');
   const sharedChapter = await getSocialShare('CHAPTER', chapter.id);
-  expect(sharedChapter.path).toBe(`/book-reader/${book.id}?chapter=${chapter.id}`);
+  expect(sharedChapter.path).toBe('/kitap/paylasilabilir-kitap-writer/bolum/yeni-bolum');
   expect(sharedChapter.title).toContain(chapter.title);
   expect(JSON.stringify(sharedChapter)).not.toContain(chapter.content);
   expect(sharedChapter.imagePath).toBe('/social-share/chapter.jpg');
@@ -88,14 +88,14 @@ test('private profile links do not export names or biographies', async () => {
   expect(publicProfile.title).toContain(user.fullName);
   await User.updateOne({ _id: user._id }, { 'privacySettings.isProfilePublic': false, bio: 'Gizli bilgiler' });
   const privateProfile = await getSocialShare('PROFILE', user.id);
-  expect(privateProfile.path).toBe(`/user/${user.id}`);
+  expect(privateProfile.path).toBe('/yazar/writer');
   expect(JSON.stringify(privateProfile)).not.toContain(user.fullName);
   expect(JSON.stringify(privateProfile)).not.toContain('Gizli bilgiler');
 });
 
 test('only active open sessions can be shared', async () => {
   const session = await Session.create({ title: 'Birlikte okuyalım', createdBy: user._id, type: 'OPEN' });
-  expect((await getSocialShare('SESSION', session.id)).path).toBe(`/sessions/${session.id}`);
+  expect((await getSocialShare('SESSION', session.id)).path).toBe('/oturum/birlikte-okuyalim');
   await Session.updateOne({ _id: session._id }, { type: 'FOLLOWERS_ONLY' });
   await expect(getSocialShare('SESSION', session.id)).rejects.toThrow();
   await Session.updateOne({ _id: session._id }, { type: 'PRIVATE' });
@@ -108,9 +108,9 @@ test('WhatsApp preview HTML is server rendered, escaped and points at the correc
   const html = await response.text();
   expect(response.status).toBe(200);
   expect(html).toContain('property="og:title"');
-  expect(html).toContain(`property="og:url" content="${baseUrl}/share/book/${book.id}?webOrigin=https%3A%2F%2Fbetik.example"`);
+  expect(html).toContain(`property="og:url" content="${baseUrl}/share/book/title-script-alert-1-script-writer?webOrigin=https%3A%2F%2Fbetik.example"`);
   expect(html).toContain('https://betik.example/social-share/link-preview.jpg');
-  expect(html).toContain(`https://betik.example/book-detail/${book.id}`);
+  expect(html).toContain('https://betik.example/kitap/title-script-alert-1-script-writer');
   expect(html).not.toContain('</title><script>alert(1)</script>');
   expect(response.headers.get('content-security-policy')).toContain("script-src 'nonce-");
   expect(response.headers.get('cache-control')).toBe('no-store');
@@ -120,7 +120,7 @@ test('preview routes recheck privacy and never redirect to arbitrary origins', a
   expect((await fetch(`${baseUrl}/share/book/${book.id}?webOrigin=https://evil.example`)).status).toBe(404);
   expect(() => shareWebOrigin('https://evil.example')).toThrow();
   const local = await fetch(`${baseUrl}/share/book/${book.id}?webOrigin=http://localhost:3000`);
-  expect(await local.text()).toContain(`http://localhost:3000/book-detail/${book.id}`);
+  expect(await local.text()).toContain('http://localhost:3000/kitap/paylasilabilir-kitap-writer');
   await Book.updateOne({ _id: book._id }, { status: 'DRAFT' });
   const unavailable = await fetch(`${baseUrl}/share/book/${book.id}`);
   expect(unavailable.status).toBe(404);
@@ -130,5 +130,18 @@ test('preview routes recheck privacy and never redirect to arbitrary origins', a
 test('Apollo can observe sharing resolver promises repeatedly without reexecuting database queries', async () => {
   const response = await api.executeOperation({ query: 'query($id:ID!){getSocialShare(type:BOOK,id:$id){title path webOrigin imagePath}}', variables: { id: book.id } }, { contextValue: {} });
   expect(response.body.singleResult.errors).toBeUndefined();
-  expect(response.body.singleResult.data.getSocialShare.path).toBe(`/book-detail/${book.id}`);
+  expect(response.body.singleResult.data.getSocialShare.path).toBe('/kitap/paylasilabilir-kitap-writer');
+});
+
+test('readable preview URLs resolve books, chapters, profiles and sessions while old ID links stay valid', async () => {
+  const session = await Session.create({ title: 'Kitap Sohbeti', createdBy: user.id, type: 'OPEN' });
+  for (const [type, id] of [['BOOK', book.id], ['CHAPTER', chapter.id], ['PROFILE', user.id], ['SESSION', session.id]]) {
+    const item = await getSocialShare(type, id);
+    expect(await getSocialShare(type, item.shareKey)).toMatchObject({ id, path: item.path });
+    const response = await fetch(`${baseUrl}/share/${type.toLowerCase()}/${encodeURIComponent(item.shareKey)}`);
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain(`https://betik.example${item.path}`);
+  }
+  await User.updateOne({ _id: user.id }, { username: '0123456789abcdef01234567' });
+  expect((await getSocialShare('PROFILE', '0123456789abcdef01234567')).id).toBe(user.id);
 });

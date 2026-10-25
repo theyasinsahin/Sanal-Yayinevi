@@ -1,3 +1,4 @@
+import { profilePath, readerPath } from '../../utils/publicPaths';
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client';
@@ -40,8 +41,9 @@ import BookShareButton from '../../components/Books/BookShareButton';
 
 import './BookDetail.css';
 
-const BookDetailPage = () => {
-  const { id } = useParams();
+const BookDetailPage = ({ resolvedId } = {}) => {
+  const params = useParams();
+  const id = resolvedId || params.id;
   const navigate = useNavigate();
   const currentUserId = localStorage.getItem('userId');
   const [commentText, setCommentText] = useState("");
@@ -331,7 +333,7 @@ const BookDetailPage = () => {
                 </Typography>
                 <div className="author-link-wrapper">
                   <Typography variant="body" color="muted">Yazar:</Typography>
-                  <Link to={`/user/${book.authorId}`} className="author-link">
+                  <Link to={profilePath(book.author || { id: book.authorId })} className="author-link">
                     {displayAuthorName}
                   </Link>
                 </div>
@@ -340,7 +342,7 @@ const BookDetailPage = () => {
 
               <div className="action-toolbar">
                 <div className="primary-actions">
-                  <Link to={`/book-reader/${book.id}`} className="no-underline">
+                  <Link to={readerPath(book)} className="no-underline">
                     <Button variant="primary" size="large" icon={<MenuBook />}>
                       Kitabı Oku
                     </Button>

@@ -12,7 +12,7 @@ router.get('/:type/:id', async (req, res) => {
     const origin = shareWebOrigin(req.query.webOrigin);
     const destination = new URL(item.path, origin).href;
     const protocol = req.get('x-forwarded-proto')?.split(',')[0].trim() === 'https' ? 'https' : req.protocol;
-    const preview = new URL(`/share/${item.type.toLowerCase()}/${item.id}`, `${protocol}://${req.get('host')}`);
+    const preview = new URL(`/share/${item.type.toLowerCase()}/${encodeURIComponent(item.shareKey)}`, `${protocol}://${req.get('host')}`);
     preview.searchParams.set('webOrigin', origin);
     const image = new URL('/social-share/link-preview.jpg', origin).href;
     const nonce = randomBytes(16).toString('base64');

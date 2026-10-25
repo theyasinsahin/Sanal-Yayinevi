@@ -2,6 +2,7 @@
 import mongoose from 'mongoose';
 
 const SessionSchema = new mongoose.Schema({
+  urlSlug: { type: String, unique: true, sparse: true },
   title: {
     type: String,
     required: true,

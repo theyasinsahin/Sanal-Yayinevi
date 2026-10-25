@@ -24,7 +24,7 @@ test('authors load with real totals, profile links and pagination', async () => 
   ]);
   expect(screen.getByRole('status')).toHaveTextContent('yükleniyor');
   expect(await screen.findByRole('heading', { name: 'Topluluğumuzdaki 25 Yazar' })).toBeInTheDocument();
-  expect(screen.getByRole('link', { name: /writer/ })).toHaveAttribute('href', '/user/abc');
+  expect(screen.getByRole('link', { name: /writer/ })).toHaveAttribute('href', '/yazar/writer');
   expect(screen.getByText('317 sayfa')).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Sonraki' }));
   expect(await screen.findByText('Sayfa 2 / 3')).toBeInTheDocument();
