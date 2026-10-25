@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
-import { notifyUser } from './notificationService.js';
+import * as FollowService from './followService.js';
 import Genre from '../models/genre.js';
 import { saveUserPreference } from './recommendationService.js';
 import Book from '../models/book.js';
@@ -408,26 +408,12 @@ export const loginUser = async (email, password) => {
   return { token, user };
 };
 
-// TOGGLE FOLLOW
+// Compatibility for older clients: toggling now requests approval, never auto-follows.
 export const toggleFollow = async (currentUserId, targetUserId) => {
-  const user = await User.findOne({ _id: currentUserId, isDeleted: false });
-  const targetUser = await User.findOne({ _id: targetUserId, isDeleted: false, isActive: { $ne: false } });
-  if (!user || !targetUser) throw new Error('Kullanıcı bulunamadı.');
-
-  if (user.following.includes(targetUserId)) {
-    user.following.pull(targetUserId);
-    targetUser.followers.pull(currentUserId);
-    await user.save();
-    await targetUser.save();
-    return { code: 200, message: "Takip bırakıldı" };
-  } else {
-    user.following.push(targetUserId);
-    targetUser.followers.push(currentUserId);
-    await user.save();
-    await targetUser.save();
-    await notifyUser(targetUserId, 'newFollower', { type: 'NEW_FOLLOWER', title: 'Yeni takipçin var', message: user.username + ' seni takip etmeye başladı.', icon: '👤', meta: { userId: currentUserId } }, currentUserId);
-    return { code: 200, message: "Takip edildi" };
-  }
+  const status = await FollowService.getFollowStatus(currentUserId, targetUserId);
+  if (status === 'FOLLOWING') return FollowService.unfollowUser(currentUserId, targetUserId);
+  if (status === 'PENDING') return FollowService.cancelFollowRequest(currentUserId, targetUserId);
+  return FollowService.requestFollow(currentUserId, targetUserId);
 };
 
 // TOGGLE SAVE BOOK

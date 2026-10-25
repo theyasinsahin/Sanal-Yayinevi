@@ -45,7 +45,7 @@ export const CostCalculatorModal = ({ book, pageCount, onClose, onConfirm }) => 
             <div className="modal-content">
                 <Typography variant="h5" weight="bold" className="mb-4">Baskı Maliyeti Oluşturucu</Typography>
                 
-                <div className="info-box mb-4">
+                <div className="ui-notice mb-4">
                     <p>Mevcut Sayfa Sayısı: <strong>{pageCount}</strong></p>
                     <p className="text-sm text-gray-500">Hesaplama 100 adet ilk baskı üzerinden yapılmaktadır.</p>
                 </div>

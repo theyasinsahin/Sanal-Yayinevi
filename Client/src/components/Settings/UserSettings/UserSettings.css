@@ -259,6 +259,9 @@
   line-height: 1.4;
 }
 
+.settings-account-notice { margin-top: 1rem; }
+.settings-field-error { color: var(--color-danger-text); }
+
 /* =========================================
    TOGGLE SWITCH
    ========================================= */

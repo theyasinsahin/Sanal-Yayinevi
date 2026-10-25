@@ -14,7 +14,7 @@ import '../AuthPages.css';
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
-  const [forgotPassword, { loading }] = useMutation(FORGOT_PASSWORD_MUTATION);
+  const [forgotPassword, { loading, error }] = useMutation(FORGOT_PASSWORD_MUTATION);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,12 +40,18 @@ const ForgotPasswordPage = () => {
               </Typography>
             </div>
 
+            {error && !sent && (
+              <div className="ui-notice ui-notice--error" role="alert">
+                Bağlantı gönderilemedi. Lütfen biraz sonra tekrar deneyin.
+              </div>
+            )}
+
             {sent ? (
-              <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                <Typography variant="body">
+              <div className="auth-result">
+                <Typography variant="body" className="ui-notice ui-notice--success" role="status">
                   E-postanızı kontrol edin. Bağlantı <b>1 saat</b> geçerlidir.
                 </Typography>
-                <Link to="/login" style={{ display: 'block', marginTop: '16px', color: '#2563EB' }}>
+                <Link to="/login" className="ui-text-link">
                   Giriş sayfasına dön
                 </Link>
               </div>
@@ -65,7 +71,7 @@ const ForgotPasswordPage = () => {
                   Sıfırlama Bağlantısı Gönder
                 </Button>
                 <div className="auth-footer">
-                  <Link to="/login" style={{ color: '#2563EB' }}>Giriş sayfasına dön</Link>
+                  <Link to="/login" className="ui-text-link">Giriş sayfasına dön</Link>
                 </div>
               </form>
             )}

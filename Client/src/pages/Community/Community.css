@@ -17,7 +17,6 @@
 .community-document { max-width: 820px; }
 .community-document section { margin: 1.5rem 0; scroll-margin-top: 100px; }
 .community-document nav { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; }
-.community-draft { border-left: 3px solid var(--color-warning-text); padding: 1rem; background: var(--bg-elevated); }
 .community-contact { display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; }
 .community-form { display: grid; gap: 1.25rem; }
 .community-form label { display: grid; gap: .4rem; }

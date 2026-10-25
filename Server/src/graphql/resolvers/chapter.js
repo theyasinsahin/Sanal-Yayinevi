@@ -65,7 +65,7 @@ export default {
 
             return ChapterService.updateChapter(chapterId, {
                 ...(title && { title }),
-                ...(content && { content }),
+                ...(typeof content === 'string' && { content }),
                 ...(pageCount !== undefined && { pageCount })
             });
         },

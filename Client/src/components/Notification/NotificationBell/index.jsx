@@ -6,6 +6,7 @@ import { NotificationsOutlined, Notifications } from '@mui/icons-material';
 import { GET_NOTIFICATIONS, GET_UNREAD_NOTIFICATION_COUNT } from '../../../graphql/queries/score';
 import { MARK_NOTIFICATIONS_READ } from '../../../graphql/mutations/score';
 import { useAuth } from '../../../context/AuthContext';
+import FollowRequests from '../../Follow/FollowRequests';
 import './NotificationBell.css';
 
 // Panel document.body'ye portallanıp "position: fixed" ile, JS'in
@@ -31,6 +32,8 @@ const NotificationBell = ({ label, className = '' }) => {
 
   const { data: notifData, refetch: refetchNotifs } = useQuery(GET_NOTIFICATIONS, {
     skip: !open || !user,
+    fetchPolicy: 'cache-and-network',
+    pollInterval: open ? 15000 : 0,
   });
 
   const [markRead] = useMutation(MARK_NOTIFICATIONS_READ);
@@ -75,9 +78,8 @@ const NotificationBell = ({ label, className = '' }) => {
     }
     setOpen(next);
     if (next && unreadCount > 0) {
-      await markRead();
-      refetchCount();
-      refetchNotifs();
+      try { await markRead(); await Promise.all([refetchCount(), refetchNotifs()]); }
+      catch { /* Keep the inbox usable if marking informational notifications fails. */ }
     }
   };
 
@@ -101,6 +103,8 @@ const NotificationBell = ({ label, className = '' }) => {
         type="button"
         className={`notif-bell-btn${label ? ' notif-bell-btn--row' : ''}`}
         onClick={handleOpen}
+        aria-label={label || 'Bildirimler'}
+        aria-expanded={open}
       >
         <span className="notif-bell-icon">
           {unreadCount > 0
@@ -123,9 +127,10 @@ const NotificationBell = ({ label, className = '' }) => {
             <div className="notif-dropdown-header">
               <span>Bildirimler</span>
             </div>
-
+            <div className="notif-inbox-scroll">
+            <FollowRequests />
             {notifications.length === 0 ? (
-              <div className="notif-empty">Bildirim yok</div>
+              <div className="notif-empty">Diğer bildirim yok.</div>
             ) : (
               <div className="notif-list">
                 {notifications.map(notif => (
@@ -140,6 +145,7 @@ const NotificationBell = ({ label, className = '' }) => {
                 ))}
               </div>
             )}
+            </div>
           </div>
         </>,
         document.body

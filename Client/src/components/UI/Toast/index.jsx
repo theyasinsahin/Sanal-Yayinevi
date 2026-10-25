@@ -33,9 +33,9 @@ export const Toast = ({
     <div className={`ui-toast toast-${type}`}>
       <div className="toast-content">
         {icons[type]}
-        <span>{message}</span>
+        <span className="toast-message">{message}</span>
       </div>
-      <button onClick={onClose} className="toast-close-btn">
+      <button type="button" onClick={onClose} className="toast-close-btn" aria-label="Bildirimi kapat">
         <Close fontSize="small" />
       </button>
     </div>
