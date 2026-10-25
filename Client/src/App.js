@@ -1,5 +1,6 @@
 import React from 'react';
-import { AuthorsPage, PublishedBooksPage, AboutPage, ContactPage, LegalPage, NewsletterPage } from './pages/Community';
+import { AuthorsPage, AboutPage, ContactPage, LegalPage, NewsletterPage } from './pages/Community';
+import PrintedBooksPage from './pages/PrintedBooks';
 import {
   ApolloClient,
   InMemoryCache,
@@ -47,6 +48,7 @@ import NotFoundPage from './pages/NotFoundPage';
 import AdminDashboard from './pages/Admin/Dashboard';
 import AdminUsers from './pages/Admin/Users';
 import AdminBooks from './pages/Admin/Books';
+import AdminPrintedBooks from './pages/Admin/PrintedBooks';
 import AdminRoute from './components/Route/AdminRoute';
 import AdminTransactions from './pages/Admin/Transactions';
 
@@ -164,13 +166,13 @@ const router = createBrowserRouter([
       { path: "/", element: <LandingPage /> },
       { path: "/feed", element: <FeedPage /> },
       { path: "/authors", element: <AuthorsPage /> },
-      { path: "/published-books", element: <PublishedBooksPage /> },
+      { path: "/printed-books", element: <PrintedBooksPage /> },
       { path: "/about", element: <AboutPage /> },
       { path: "/contact", element: <ContactPage /> },
       { path: "/terms", element: <LegalPage kind="terms" /> },
       { path: "/privacy", element: <LegalPage kind="privacy" /> },
       { path: "/newsletter", element: <NewsletterPage /> },
-      { path: "/book-detail/:id", element: <Layout><BookDetailPage /></Layout> },
+      { path: "/book-detail/:id", element: <BookDetailPage /> },
       { path: "/book-reader/:bookId", element: <Layout><BookReader /></Layout> },
 
       { path: "/create-book",
@@ -219,6 +221,7 @@ const router = createBrowserRouter([
       { path: "/admin/books",
         element: <AdminRoute><AdminBooks /></AdminRoute>
       },
+      { path: '/admin/printed-books', element: <AdminRoute><AdminPrintedBooks /></AdminRoute> },
       { path: "/admin/transactions",
         element: <AdminRoute><AdminTransactions /></AdminRoute>
       },

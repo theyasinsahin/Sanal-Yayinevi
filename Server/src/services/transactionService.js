@@ -3,6 +3,7 @@ import iyzipay from '../config/iyzico.js';
 import Transaction from '../models/transaction.js';
 
 export const createPaymentForm = async (user, book, amount, ip) => {
+    if (book.kind === 'PRINTED') throw new Error('Basılı katalog kitapları için Betik üzerinden fon toplanmaz.');
     // 1. Transaction'ı PENDING olarak oluştur
     const newTransaction = new Transaction({
         userId: user._id,

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Person from '@mui/icons-material/Person';
-import MenuBook from '@mui/icons-material/MenuBook';
 import AutoStories from '@mui/icons-material/AutoStories';
 import EditNote from '@mui/icons-material/EditNote';
 import Forum from '@mui/icons-material/Forum';
@@ -47,14 +46,7 @@ export function AuthorsPage() {
     <nav className="community-pagination" aria-label="Yazar sayfaları"><Button disabled={page <= 1} onClick={() => setParams({ page: String(page - 1) })}>Önceki</Button><span>Sayfa {page} / {authors.totalPages}</span><Button disabled={page >= authors.totalPages} onClick={() => setParams({ page: String(page + 1) })}>Sonraki</Button></nav></>}
   </Page>;
 }
-export function PublishedBooksPage() {
-  return <Page title="Basılan Eserler" description="Ekranda başlayan hikâyelerin, bir gün kitaplığınızda yer bulmasını istiyoruz."><PrintedBooks books={[]} /></Page>;
-}
-// Only feed this component records independently verified as physically printed.
-export function PrintedBooks({ books }) {
-  if (books.length) return <div className="community-grid">{books.map(book => <Link className="community-card" key={book.id} to={`/book-detail/${book.id}`}><h2>{book.title}</h2><p>Fiziksel basımı tamamlandı</p></Link>)}</div>;
-  return <div className="community-empty"><MenuBook aria-hidden="true" /><h2>İlk basılı hikâyemize doğru</h2><p>Betik’te henüz fiziksel basımı tamamlanmış bir eser bulunmuyor. Dijital olarak yayımlanan kitaplar bu listeden ayrı tutulur.</p><p>Hedefimiz, yazarların okurlarıyla kurduğu bağı büyütmek ve okur desteğiyle eserlerin basılı kitaba dönüşmesine alan açmak. Siz de bugün bir hikâyeyi keşfederek bu yolculuğa katılabilirsiniz.</p><Discover /></div>;
-}
+export { default as PublishedBooksPage } from '../PrintedBooks';
 export function AboutPage() {
   return <Page title="Her hikâye bir okurla büyür" description="Betik, yazma cesaretini okuma merakıyla buluşturan sosyal bir yazarlık ve yayıncılık platformudur.">
     <div className="community-grid">{[

@@ -3,6 +3,7 @@ import { inactiveUserIds } from '../utils/activeUsers.js';
 import Comment from '../models/comment.js';
 import Book from '../models/book.js';
 import * as ScoreService from './scoreService.js';
+import { visiblePrintedFilter } from '../utils/printedBooks.js';
 
 // --- OKUMA İŞLEMLERİ ---
 // Varsayılan olarak silinmiş (isDeleted: true) yorumlar hariç tutulur.
@@ -31,6 +32,7 @@ export const findRepliesByParentId = async (parentCommentId) => {
 
 // --- YAZMA İŞLEMLERİ ---
 export const createComment = async (data) => {
+  if (!await Book.exists({ ...visiblePrintedFilter, _id: data.bookId, isDeleted: false })) throw new Error('Kitap bulunamadı veya henüz yayımlanmadı.');
   const newComment = new Comment({ ...data });
   const savedComment = await newComment.save();
 
@@ -65,8 +67,10 @@ export const toggleLike = async (commentId, userId) => {
 
 // REPLY OLUŞTURMA
 export const createReply = async (user, bookId, content, parentCommentId) => {
+  if (!await Book.exists({ ...visiblePrintedFilter, _id: bookId, isDeleted: false })) throw new Error('Kitap bulunamadı veya henüz yayımlanmadı.');
   const targetComment = await Comment.findOne({ _id: parentCommentId, isDeleted: false }).populate('userId');
   if (!targetComment) throw new Error("Hedef yorum bulunamadı.");
+  if (String(targetComment.bookId) !== String(bookId)) throw new Error('Yorum bu kitaba ait değil.');
 
   // Eğer hedef zaten bir yanıtsa, onun ana yorumunu (root) bul
   let rootCommentId = parentCommentId;

@@ -64,6 +64,7 @@ export const GET_NOTIFICATIONS = gql`
     getNotifications {
       id
       type
+      meta
       title
       message
       icon

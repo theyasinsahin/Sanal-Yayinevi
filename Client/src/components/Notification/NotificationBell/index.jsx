@@ -1,6 +1,7 @@
 // src/components/Notification/NotificationBell/index.jsx
 import React, { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client';
 import { NotificationsOutlined, Notifications } from '@mui/icons-material';
 import { GET_NOTIFICATIONS, GET_UNREAD_NOTIFICATION_COUNT } from '../../../graphql/queries/score';
@@ -13,7 +14,7 @@ import './NotificationBell.css';
 // ölçtüğü gerçek ekran koordinatlarıyla konumlanıyor (bkz. handleOpen).
 // Böylece bileşen navbar'da mı yoksa MobileMenu çekmecesinin içinde mi
 // render edildiğinden tamamen bağımsız çalışıyor.
-const MOBILE_BREAKPOINT = 768; // NavigationBar'ın hamburger'a geçtiği nokta ile aynı
+const MOBILE_BREAKPOINT = 1200; // NavigationBar'ın hamburger'a geçtiği nokta ile aynı
 
 // "label" verildiğinde (mobil menüdeki gibi) ikon + yazı TEK bir
 // <button> içinde render edilir; böylece satırın tamamı tıklanabilir
@@ -140,6 +141,7 @@ const NotificationBell = ({ label, className = '' }) => {
                       <p className="notif-title">{notif.title}</p>
                       <p className="notif-message">{notif.message}</p>
                       <span className="notif-time">{timeAgo(notif.createdAt)}</span>
+                      {notif.type === 'BOOK_REVIEW' && <Link className="ui-text-link" to={user?.role === 'ADMIN' ? '/admin/printed-books' : notif.meta?.bookId ? `/book-detail/${notif.meta.bookId}` : '/printed-books'} onClick={() => setOpen(false)}>Başvuruyu görüntüle</Link>}
                     </div>
                   </div>
                 ))}

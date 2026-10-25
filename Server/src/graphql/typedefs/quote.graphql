@@ -21,7 +21,8 @@ type Quote {
   note: String
   user: User
   book: Book
-  chapterId: ID!
+  chapterId: ID
+  pageNumber: Int
   chapterTitle: String
   chapterIndex: Int
   location: QuoteLocation
@@ -59,7 +60,8 @@ extend type Mutation {
     text: String!
     note: String
     bookId: ID!
-    chapterId: ID!
+    chapterId: ID
+    pageNumber: Int
     chapterTitle: String
     chapterIndex: Int
     location: QuoteLocationInput

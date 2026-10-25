@@ -7,7 +7,8 @@ const QuoteSchema = new mongoose.Schema({
   note: { type: String, default: '' },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   bookId: { type: mongoose.Schema.Types.ObjectId, ref: 'Book', required: true },
-  chapterId: { type: mongoose.Schema.Types.ObjectId, ref: 'Chapter', required: true },
+  chapterId: { type: mongoose.Schema.Types.ObjectId, ref: 'Chapter' },
+  pageNumber: { type: Number, min: 1 },
   chapterTitle: { type: String, default: '' },
   chapterIndex: { type: Number, default: 0 },
   location: {

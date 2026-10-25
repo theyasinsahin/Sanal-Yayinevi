@@ -60,8 +60,8 @@ type BookStats {
 type Book {
   id: ID!
   title: String!
-  authorId: ID!
-  author: User!
+  authorId: ID
+  author: User
   imageUrl: String!
   pageCount: Int!
   genreId: ID

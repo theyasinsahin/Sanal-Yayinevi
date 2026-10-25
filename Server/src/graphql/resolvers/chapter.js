@@ -2,6 +2,7 @@ import * as ChapterService from '../../services/chapterService.js';
 import * as UserService from '../../services/userService.js';
 import * as BookService from '../../services/bookService.js';
 import * as BookFollowService from '../../services/bookFollowService.js';
+import { assertContentAccess } from '../../utils/printedBooks.js';
 
 
 export default {
@@ -32,7 +33,8 @@ export default {
   const book = await BookService.findBookById(bookId);
   if (!book) throw new Error("Kitap bulunamadı.");
   
-  if (book.authorId.toString() !== user._id.toString() && user.role !== 'ADMIN') {
+  assertContentAccess(book, user);
+  if (String(book.authorId) !== user._id.toString() && user.role !== 'ADMIN') {
     throw new Error("Yetkiniz yok.");
   }
 
@@ -59,6 +61,7 @@ export default {
             
             // Bölümün sahibini (kitap üzerinden) kontrol et
             const book = await BookService.findBookById(chapter.bookId);
+            assertContentAccess(book, user);
             if (book.authorId.toString() !== user._id.toString() && user.role !== 'ADMIN') {
                 throw new Error("Yetkiniz yok.");
             }
@@ -77,6 +80,7 @@ export default {
             if (!chapter) throw new Error("Bölüm bulunamadı.");
 
             // Yetki kontrolü (Bölüm yazarı = Kullanıcı mı?)
+            assertContentAccess(await BookService.findBookById(chapter.bookId), user);
             if (chapter.authorId.toString() !== user._id.toString() && user.role !== 'ADMIN') {
                 throw new Error("Yetkiniz yok.");
             }

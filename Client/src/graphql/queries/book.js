@@ -1,4 +1,5 @@
 import { gql } from '@apollo/client';
+import { PRINTED_BOOK_FIELDS } from '../printedBooks';
 
 export const GET_BOOKS = gql`
   query GetAllBooks{
@@ -66,8 +67,10 @@ export const GET_BOOKS = gql`
 `;
 
 export const GET_BOOK_BY_ID = gql`
+  ${PRINTED_BOOK_FIELDS}
   query GetBookById($id: ID!) {
     getBookById(id: $id) {
+      ...PrintedBookFields
       id
       title
       description
@@ -78,7 +81,7 @@ export const GET_BOOK_BY_ID = gql`
           iconUrl
           hexColor
           isActive
-        }      
+        }
       pageCount
       publishDate
       authorId
@@ -123,6 +126,7 @@ export const GET_BOOK_BY_ID = gql`
         title
         content
         createdAt
+        pageCount
       }
       tags
       backerCount
@@ -166,4 +170,4 @@ export const GET_BOOK_BACKERS = gql`
     }
   }
 `;
- 
+

@@ -1,6 +1,19 @@
 import mongoose from 'mongoose';
 
 const BookSchema = new mongoose.Schema({
+  kind: { type: String, enum: ['DIGITAL', 'PRINTED'], default: 'DIGITAL' },
+  isbn: { type: String },
+  printedAuthor: { type: String, default: '' },
+  publisher: { type: String, default: '' },
+  publicationYear: Number,
+  publicationStatus: { type: String, enum: ['PENDING', 'APPROVED', 'REJECTED'] },
+  submittedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  publicationEvidenceUrl: { type: String, default: '' },
+  purchaseUrl: { type: String, default: '' },
+  reviewNote: { type: String, default: '' },
+  reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  reviewedAt: Date,
+  claimVersion: { type: Number, default: 0 },
   title: { type: String, required: true },
   authorId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -57,5 +70,7 @@ const BookSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 BookSchema.index({ isDeleted: 1 });
+BookSchema.index({ isbn: 1 }, { unique: true, partialFilterExpression: { isbn: { $type: 'string' } } });
+BookSchema.index({ kind: 1, publicationStatus: 1, createdAt: -1 });
 
 export default mongoose.model('Book', BookSchema);
