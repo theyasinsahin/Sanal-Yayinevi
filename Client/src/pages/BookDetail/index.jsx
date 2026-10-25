@@ -36,6 +36,7 @@ import BookFollowButton from '../../components/Books/BookFollowButton';
 // --- COMPONENTS ---
 import CommentList from '../../components/Comments/CommentList';
 import BackersSection from '../../components/Books/BackersSection';
+import PrintedBookDetail from '../../components/Books/PrintedBookDetail';
 
 import './BookDetail.css';
 
@@ -54,8 +55,9 @@ const BookDetailPage = () => {
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   // --- QUERIES ---
-  const { data: bookData, loading: bookLoading, error: bookError } = useQuery(GET_BOOK_BY_ID, {
-    variables: { id }
+  const { data: bookData, loading: bookLoading, error: bookError, refetch: refreshBook } = useQuery(GET_BOOK_BY_ID, {
+    variables: { id },
+    fetchPolicy: 'cache-and-network',
   });
 
   const { 
@@ -234,7 +236,8 @@ const BookDetailPage = () => {
     </MainLayout>
   );  
   
-  if (!book) return null;
+  if (!book) return <MainLayout><Container maxWidth="5xl"><section className="printed-panel"><Typography variant="h2">Kitap bulunamadı</Typography><p>Bu kayıt henüz yayımlanmamış veya erişime kapalı olabilir.</p><Link className="ui-text-link" to="/published-books">Basılı kitaplara dön</Link></section></Container></MainLayout>;
+  if (book.kind === 'PRINTED') return <><PrintedBookDetail book={book} comments={rawComments} commentsLoading={commentsLoading} currentUserId={currentUserId} commentText={commentText} onCommentChange={event => setCommentText(event.target.value)} onCommentSubmit={handleCommentSubmit} commentSending={commentSending} refresh={refreshBook} /><Toast isVisible={toast.show} message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} /></>;
 
   // --- VARIABLES ---
   const author = book.author;

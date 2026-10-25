@@ -228,6 +228,7 @@ const BookDashboard = () => {
   if (bookLoading) return <div className="p-8 text-center">Yükleniyor...</div>;
   if (bookError) return <div className="p-8 text-center text-red-600">Hata: {bookError.message}</div>;
   if (!book) return <div className="p-8 text-center">Kitap yükleniyor…</div>;
+  if (book.kind === 'PRINTED' && !book.canEditContent) return <div className="ui-notice" role="status">Bu kitaba içerik eklemek için yazar hak talebinizin onaylanması gerekir. <Link className="ui-text-link" to={`/book-detail/${bookId}`}>Kitaba dön</Link></div>;
 
   return (
     <div className="dashboard-container" ref={dashboardRef}>
@@ -323,7 +324,7 @@ const BookDashboard = () => {
           </div>
         </div>
 
-        <div className="status-management-panel p-4 border-t mt-4">
+        {book.kind !== 'PRINTED' && <div className="status-management-panel p-4 border-t mt-4">
              <Typography variant="h6" className="mb-2">Yayın Durumu</Typography>
              
              <div className="mb-4">
@@ -374,7 +375,7 @@ const BookDashboard = () => {
                     </Button>
                 )}
              </div>
-          </div>
+          </div>}
       </aside>
 
       {/* --- EDITOR AREA --- */}

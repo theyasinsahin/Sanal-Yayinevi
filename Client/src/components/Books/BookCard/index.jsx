@@ -22,6 +22,7 @@ import ReasonBadge from '../../Recommendation/ReasonBadge';
 import ShareModal from '../../Messaging/ShareModal';
 
 import './BookCard.css';
+import PrintedBookCard from '../PrintedBookCard';
 
 const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
   const navigate = useNavigate();
@@ -45,6 +46,7 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
 
   const book = bookProp || bookData?.getBookById;
   if (!book) return null;
+  if (book.kind === 'PRINTED') return <PrintedBookCard book={book} />;
 
   const {
     title,

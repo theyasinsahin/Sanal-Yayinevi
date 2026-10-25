@@ -7,20 +7,28 @@ import Quote from '../models/quote.js';
 import * as ScoreService from './scoreService.js';
 import * as ChapterService from './chapterService.js';
 import * as CommentService from './commentService.js';
+import { isPrintedBook, visiblePrintedFilter, digitalBookFilter } from '../utils/printedBooks.js';
 
 // ── Okuma İşlemleri ──────────────────────────────────────────────
 // Varsayılan olarak tüm okuma fonksiyonları silinmiş (isDeleted: true)
 // kitapları hariç tutar. Admin panelinde silinenleri de görmek gerekirse
 // includeDeleted: true geçilebilir.
 
-export const findBookById = async (id, { includeDeleted = false } = {}) => {
+export const findBookById = async (id, { includeDeleted = false, viewer } = {}) => {
   const query = { _id: id };
-  if (!includeDeleted) { query.isDeleted = false; query.authorId = { $nin: await inactiveUserIds() }; }
-  return await Book.findOne(query);
+  if (!includeDeleted) query.isDeleted = false;
+  // Printed editions remain catalog records even without a Betik author account.
+  const book = await Book.findOne(query);
+  if (!book || includeDeleted) return book;
+  if (isPrintedBook(book)) {
+    return book.publicationStatus === 'APPROVED' || viewer?.role === 'ADMIN' || (viewer && String(book.submittedBy) === String(viewer._id || viewer.id)) ? book : null;
+  }
+  return (await inactiveUserIds()).some(userId => String(userId) === String(book.authorId)) ? null : book;
 };
 
 export const findAllBooks = async () => {
   return await Book.find({
+    ...digitalBookFilter,
     isDeleted: false,
     authorId: { $nin: await inactiveUserIds() },
     status: { $in: ['WRITING', 'COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'] }
@@ -34,11 +42,11 @@ export const findBooksByAuthorId = async (authorId) => {
 };
 
 export const findBooksByGenre = async (genre) => {
-  return await Book.find({ genre, isDeleted: false, authorId: { $nin: await inactiveUserIds() }, status: { $ne: 'DRAFT' } });
+  return await Book.find({ ...digitalBookFilter, genre, isDeleted: false, authorId: { $nin: await inactiveUserIds() }, status: { $ne: 'DRAFT' } });
 };
 
 export const findBookByTitle = async (title) => {
-  return await Book.findOne({ title, isDeleted: false, authorId: { $nin: await inactiveUserIds() }, status: { $ne: 'DRAFT' } });
+  return await Book.findOne({ ...visiblePrintedFilter, title, isDeleted: false, authorId: { $nin: await inactiveUserIds() }, status: { $ne: 'DRAFT' } });
 };
 
 export const searchBooksInDb = async (query) => {
@@ -50,6 +58,7 @@ export const searchBooksInDb = async (query) => {
   const matchingUserIds = matchingUsers.map(u => u._id);
 
   return await Book.find({
+    ...digitalBookFilter,
     isDeleted: false,
     authorId: { $nin: await inactiveUserIds() },
     status: { $ne: 'DRAFT' },
@@ -85,7 +94,7 @@ export const createBook = async (bookData, userId) => {
 };
 
 export const toggleLike = async (bookId, userId) => {
-  const book = await Book.findOne({ _id: bookId, isDeleted: false });
+  const book = await Book.findOne({ ...visiblePrintedFilter, _id: bookId, isDeleted: false });
   if (!book) throw new Error('Kitap bulunamadı.');
 
   if (book.likedBy.includes(userId)) {
@@ -101,7 +110,7 @@ export const toggleLike = async (bookId, userId) => {
 
 export const incrementViews = async (bookId) => {
   return await Book.findOneAndUpdate(
-    { _id: bookId, isDeleted: false },
+    { ...visiblePrintedFilter, _id: bookId, isDeleted: false },
     { $inc: { 'stats.views': 1 } },
     { new: true }
   );
@@ -109,7 +118,7 @@ export const incrementViews = async (bookId) => {
 
 export const findBooksByIds = async (bookIds) => {
   if (!bookIds || bookIds.length === 0) return [];
-  return await Book.find({ _id: { $in: bookIds }, isDeleted: false, authorId: { $nin: await inactiveUserIds() }, status: { $ne: 'DRAFT' } });
+  return await Book.find({ ...visiblePrintedFilter, _id: { $in: bookIds }, isDeleted: false, authorId: { $nin: await inactiveUserIds() }, status: { $ne: 'DRAFT' } });
 };
 
 export const findDraftsByAuthorId = async (authorId) => {

@@ -3,11 +3,11 @@ import { gql } from '@apollo/client';
 
 const QUOTE_FIELDS = gql`
   fragment QuoteFields on Quote {
-    id text note chapterTitle chapterIndex likedBy isRepost repostComment repostedBy createdAt isSpoiler
+    id text note chapterTitle chapterIndex pageNumber likedBy isRepost repostComment repostedBy createdAt isSpoiler
     user { id username fullName profilePicture }
     book { id title imageUrl }
     originalQuote {
-      id text note chapterTitle
+      id text note chapterTitle pageNumber
       user { id username fullName profilePicture }
       book { id title imageUrl }
     }

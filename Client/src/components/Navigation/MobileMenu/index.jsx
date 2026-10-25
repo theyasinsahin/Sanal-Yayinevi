@@ -10,6 +10,7 @@ import {
   FormatQuote,
   EmojiEvents,
   Forum,
+  MenuBook,
 } from '@mui/icons-material';
 import { FiMessageCircle } from 'react-icons/fi';
 
@@ -61,6 +62,10 @@ const MobileMenu = ({ isOpen, onClose }) => {
           <Link to="/quotes" className="mobile-nav-item" onClick={onClose}>
             <FormatQuote className="mobile-icon" />
             <Typography variant="body" weight="medium">Alıntılar</Typography>
+          </Link>
+          <Link to="/published-books" className="mobile-nav-item" onClick={onClose}>
+            <MenuBook className="mobile-icon" />
+            <Typography variant="body" weight="medium">Basılı Kitaplar</Typography>
           </Link>
 
           <Link to="/leaderboard" className="mobile-nav-item" onClick={onClose}>

@@ -6,7 +6,7 @@ import { Typography } from '../UI/Typography';
 import { Toast } from '../UI/Toast'; // Global toast kullanabiliriz
 import './AdminLayout.css';
 
-const AdminLayout = ({ children, title }) => {
+const AdminLayout = ({ children, title, className = '' }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
@@ -16,7 +16,7 @@ const AdminLayout = ({ children, title }) => {
   };
 
   return (
-    <div className="admin-wrapper">
+    <div className={`admin-wrapper ${className}`}>
       {/* SIDEBAR */}
       <aside className="admin-sidebar">
         <div className="admin-logo">
@@ -35,6 +35,9 @@ const AdminLayout = ({ children, title }) => {
           </NavLink>
           <NavLink to="/admin/transactions" className={({ isActive }) => `admin-link ${isActive ? 'active' : ''}`}>
             <Receipt fontSize="small" /> Finans
+          </NavLink>
+          <NavLink to="/admin/printed-books" className={({ isActive }) => `admin-link ${isActive ? 'active' : ''}`}>
+            <LibraryBooks fontSize="small" /> Basılı Kitaplar ve Hak Talepleri
           </NavLink>
         </nav>
 

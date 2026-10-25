@@ -29,7 +29,7 @@ export const findAllChapters = async () => {
 const updateBookTotalPageCount = async (bookId) => {
   const chapters = await Chapter.find({ bookId, isDeleted: false, authorId: { $nin: await inactiveUserIds() } });
   const totalPages = chapters.reduce((sum, ch) => sum + (ch.pageCount || 0), 0);
-  await Book.findByIdAndUpdate(bookId, { pageCount: totalPages });
+  await Book.findOneAndUpdate({ _id: bookId, kind: { $ne: 'PRINTED' } }, { pageCount: totalPages });
 };
 
 // CREATE

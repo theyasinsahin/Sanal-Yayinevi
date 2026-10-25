@@ -3,10 +3,11 @@ import { canViewProfile, sameUser } from '../../utils/profileAccess.js';
 import * as BookService from '../../services/bookService.js';
 import * as UserService from '../../services/userService.js';
 import * as ScoreService from '../../services/scoreService.js';
+import { isPrintedBook } from '../../utils/printedBooks.js';
 
 export default {
   Query: {
-    getBookById: async (_, { id }) => BookService.findBookById(id),
+    getBookById: async (_, { id }, { user }) => BookService.findBookById(id, { viewer: user }),
 
     getBooksByAuthorId: async (_, { authorId }, { user }) => {
       const profile = await UserService.findUserById(authorId);
@@ -44,6 +45,7 @@ export default {
 
         const book = await BookService.findBookById(bookId);
         if (!book) throw new Error("Kitap bulunamadı"); // Kitap kontrolü eklendi
+        if (isPrintedBook(book)) throw new Error('Basılı kitap künyesi genel kitap düzenleme işlemiyle değiştirilemez.');
 
         if (book.authorId.toString() !== user._id.toString() && user.role !== 'ADMIN') {
              throw new Error("Yetkiniz yok.");
@@ -59,7 +61,9 @@ export default {
         const book = await BookService.findBookById(id);
         if (!book) throw new Error("Kitap bulunamadı");
 
-         if (book.authorId.toString() !== user._id.toString() && user.role !== 'ADMIN') {
+        if (isPrintedBook(book) && user.role !== 'ADMIN') throw new Error('Basılı katalog kayıtlarını yalnızca yönetici kaldırabilir.');
+
+         if (String(book.authorId) !== user._id.toString() && user.role !== 'ADMIN') {
              throw new Error("Yetkiniz yok.");
         }
         
@@ -85,6 +89,7 @@ export default {
 
         const book = await BookService.findBookById(bookId);
         if (!book) throw new Error("Kitap bulunamadı");
+        if (isPrintedBook(book)) throw new Error('Basılı kitaplar fonlama ve taslak akışına alınamaz.');
 
         if (book.authorId.toString() !== user._id.toString() && user.role !== 'ADMIN') {
              throw new Error("Yetkiniz yok.");

@@ -227,6 +227,7 @@ const QuoteCard = ({ quote }) => {
             {displayQuote.chapterTitle && (
               <span className="quote-card-chapter">{displayQuote.chapterTitle}</span>
             )}
+            {displayQuote.pageNumber && <span className="quote-card-chapter">Sayfa {displayQuote.pageNumber}</span>}
           </div>
         </Link>
       )}

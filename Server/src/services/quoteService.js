@@ -6,6 +6,8 @@ import { inactiveUserIds } from '../utils/activeUsers.js';
 import Quote from '../models/quote.js';
 import QuoteComment from '../models/quoteComment.js';
 import Book from '../models/book.js';
+import Chapter from '../models/chapter.js';
+import { isPrintedBook } from '../utils/printedBooks.js';
 import * as ScoreService from './scoreService.js';
 
 // Metni normalize et: başını/sonunu temizle, noktalama kaldır, küçük harfe çevir
@@ -21,12 +23,12 @@ const normalizeText = (text) => {
 const populateQuote = (query) => {
   return query
     .populate('userId', 'username fullName profilePicture')
-    .populate('bookId', 'title imageUrl')
+    .populate('bookId', 'title imageUrl kind authorId publicationStatus printedAuthor publisher publicationYear isbn')
     .populate({
       path: 'originalQuoteId',
       populate: [
         { path: 'userId', select: 'username fullName profilePicture' },
-        { path: 'bookId', select: 'title imageUrl' },
+        { path: 'bookId', select: 'title imageUrl kind authorId publicationStatus printedAuthor publisher publicationYear isbn' },
       ]
     });
 };
@@ -40,6 +42,19 @@ export const checkQuoteExists = async (text, bookId) => {
 };
 
 export const createQuote = async (userId, data) => {
+  const book = await Book.findOne({ _id: data.bookId, isDeleted: false });
+  if (!book) throw new Error('Kitap bulunamadı.');
+  const chapterExists = data.chapterId && await Chapter.exists({ _id: data.chapterId, bookId: book._id, isDeleted: false });
+  if (isPrintedBook(book)) {
+    if (book.publicationStatus !== 'APPROVED') throw new Error('Kitap henüz kataloğa alınmadı.');
+    if (!data.text || data.text.trim().length < 10 || data.text.length > 1000) throw new Error('Alıntı 10–1000 karakter olmalıdır.');
+    if (data.note && data.note.length > 1000) throw new Error('Alıntı notu en fazla 1000 karakter olabilir.');
+    if (data.chapterId && !chapterExists) throw new Error('Bu kitaba ait bir bölüm seçin.');
+    if ((!data.chapterId || data.pageNumber != null) && (!Number.isInteger(data.pageNumber) || data.pageNumber < 1 || data.pageNumber > book.pageCount)) throw new Error('Kitaptaki geçerli bir sayfa numarasını girin.');
+    if (!data.chapterId) data = { ...data, chapterTitle: '', chapterIndex: undefined, location: undefined };
+  } else {
+    if (!chapterExists) throw new Error('Bu kitaba ait bir bölüm seçin.');
+  }
   const normalized = normalizeText(data.text);
   
   // Çakışma kontrolü
@@ -79,6 +94,7 @@ export const repostQuote = async (userId, originalQuoteId, repostComment, isSpoi
     userId,
     bookId: original.bookId,
     chapterId: original.chapterId,
+    pageNumber: original.pageNumber,
     chapterTitle: original.chapterTitle,
     chapterIndex: original.chapterIndex,
     location: original.location,

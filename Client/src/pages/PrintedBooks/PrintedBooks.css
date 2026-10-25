@@ -1,0 +1,21 @@
+.printed-page { padding: calc(var(--navbar-height) + 2.5rem) 0 4rem; min-height: 70vh; }
+.printed-heading { max-width: 760px; margin-bottom: 2.5rem; }
+.printed-heading h1 { margin: .75rem 0 1.25rem; font-size: clamp(2rem, 5vw, 3.25rem); line-height: 1.3; }
+.printed-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-top: 1.25rem; }
+.printed-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
+.printed-panel { padding: 2rem; background: var(--bg-surface); border: var(--border-medium); border-radius: var(--radius-md); box-shadow: var(--shadow-paper); margin: 1.5rem 0; min-width: 0; }
+.printed-panel h2 { margin-bottom: 1rem; font-size: 1.5rem; }
+.printed-panel h3 { margin-bottom: .75rem; }
+.printed-panel .ui-notice, .printed-page > .ui-notice { margin-bottom: 1.5rem; }
+.printed-panel summary { cursor: pointer; font-weight: 600; }
+.printed-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1.25rem; }
+.printed-isbn-row, .printed-search { display: flex; gap: 1rem; align-items: flex-end; }
+.printed-isbn-row .input-wrapper, .printed-search .input-wrapper { flex: 1; min-width: 0; }
+.printed-isbn-row > .btn, .printed-search > .btn { margin-bottom: 1.5rem; flex-shrink: 0; }
+.printed-count { font-family: var(--font-sans); color: var(--text-muted); margin-bottom: 1rem; }
+.printed-submissions { list-style: none; margin-top: 1rem; }
+.printed-submissions li { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; padding: .75rem 0; border-bottom: var(--border-light); }
+.printed-submissions li p { flex-basis: 100%; color: var(--text-muted); }
+.printed-empty { text-align: center; }
+@media (max-width: 800px) { .printed-grid { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .printed-panel { padding: 1.25rem; } .printed-form-grid { grid-template-columns: 1fr; } .printed-isbn-row, .printed-search { flex-direction: column; align-items: stretch; gap: 0; } .printed-actions > .btn { white-space: normal; } }

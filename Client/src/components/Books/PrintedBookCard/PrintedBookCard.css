@@ -1,0 +1,12 @@
+.printed-book-card { display: flex; gap: 1.5rem; padding: 1.5rem; background: var(--bg-surface); color: var(--text-main); border: var(--border-medium); border-radius: var(--radius-md); box-shadow: var(--shadow-paper); text-decoration: none; min-width: 0; transition: box-shadow var(--transition-base); }
+.printed-book-card:hover { box-shadow: var(--shadow-lg); }
+.printed-book-card:focus-visible { outline: 2px solid var(--text-main); outline-offset: 4px; }
+.printed-book-cover { width: 108px; aspect-ratio: 2 / 3; align-self: flex-start; flex-shrink: 0; background: var(--aged-paper); border-radius: 3px 6px 6px 3px; box-shadow: var(--shadow-paper); border-left: 5px solid var(--sepia-dark); display: grid; place-items: center; overflow: hidden; }
+.printed-book-cover img { width: 100%; height: 100%; object-fit: cover; }
+.printed-book-cover span { padding: .75rem; text-align: center; font-size: .8rem; overflow-wrap: anywhere; }
+.printed-book-card-body { min-width: 0; }
+.printed-book-card-body h2 { font-size: 1.2rem; margin: .75rem 0 .4rem; line-height: 1.5; overflow-wrap: anywhere; }
+.printed-book-card-body p { font-family: var(--font-sans); font-size: .8rem; color: var(--text-muted); margin-bottom: .5rem; overflow-wrap: anywhere; }
+.printed-book-card-body .printed-book-author { color: var(--text-main); font-weight: 600; }
+.printed-book-card-body .ui-text-link { display: inline-block; margin-top: .5rem; font-size: .8rem; }
+@media (max-width: 400px) { .printed-book-card { gap: 1rem; padding: 1rem; } .printed-book-cover { width: 76px; } }

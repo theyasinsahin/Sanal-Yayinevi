@@ -99,6 +99,7 @@ export const getRecommendations = async (userId, { limit = 10, offset = 0 } = {}
   const thirtyDaysAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
 
   const candidates = await Book.find({
+    kind: { $ne: 'PRINTED' },
     status: { $in: ['WRITING', 'COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'] },
     _id: { $nin: [userId, ...excludedIds] },  // yazarın kendi kitapları da çıkabilir isteğe göre
     isDeleted: false,
