@@ -1,8 +1,7 @@
 import PublicContentRoute from './components/Route/PublicContentRoute';
 import ScoreUpdates from './components/Score/ScoreUpdates';
-import React from 'react';
-import { AuthorsPage, AboutPage, ContactPage, LegalPage, NewsletterPage } from './pages/Community';
-import PrintedBooksPage from './pages/PrintedBooks';
+import React, { lazy } from 'react';
+import PageBoundary from './components/Route/PageBoundary';
 import {
   ApolloClient,
   InMemoryCache,
@@ -26,42 +25,48 @@ import ScrollToTop from './components/ScrollToTop';
 import InstallPrompt from './components/InstallPrompt';
 
 import LandingPage from "./pages/Landing";
-import FeedPage from "./pages/Feed";
-import BookDetailPage from "./pages/BookDetail";
-import BookReader from "./pages/BookReader";
-import CreateBookPage from "./pages/CreateBookPage";
-import BookDashboard from "./pages/BookDashboard";
-import UserProfilePage from "./pages/UserProfilePage";
-import LoginPage from "./pages/Auth/Login";
-import RegisterPage from "./pages/Auth/Register";
-import GoogleCallback from "./pages/Auth/GoogleCallback";
-import DonationPage from "./pages/DonationPage";
-import PaymentSuccess from "./pages/PaymentResult/PaymentSuccess";
-import PaymentFailure from "./pages/PaymentResult/PaymentFailure";
-import ForgotPasswordPage from './pages/Auth/ForgotPassword';
-import ResetPasswordPage from './pages/Auth/ResetPassword';
-import QuotesPage from './pages/QuotesPage';
-import QuoteDetail from './pages/QuoteDetail';
-import LeaderboardPage from './pages/LeaderboardPage';
-import MessagesPage from './pages/MessagesPage';
-import SessionsPage  from './pages/SessionsPage';
-import SessionDetail from './pages/SessionDetail';
-import NotFoundPage from './pages/NotFoundPage';
 
-import AdminDashboard from './pages/Admin/Dashboard';
-import AdminUsers from './pages/Admin/Users';
-import AdminBooks from './pages/Admin/Books';
-import AdminPrintedBooks from './pages/Admin/PrintedBooks';
 import AdminRoute from './components/Route/AdminRoute';
-import AdminTransactions from './pages/Admin/Transactions';
 
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { ME_QUERY } from './graphql/queries/user';
 
 import { ReadingPreferencesProvider } from './context/ReadingPreferencesContext';
 
 
 import { API_URL, WS_URL } from './config/api';
+
+const AuthorsPage = lazy(() => import('./pages/Community').then(module => ({ default: module.AuthorsPage })));
+const AboutPage = lazy(() => import('./pages/Community').then(module => ({ default: module.AboutPage })));
+const ContactPage = lazy(() => import('./pages/Community').then(module => ({ default: module.ContactPage })));
+const LegalPage = lazy(() => import('./pages/Community').then(module => ({ default: module.LegalPage })));
+const NewsletterPage = lazy(() => import('./pages/Community').then(module => ({ default: module.NewsletterPage })));
+const PrintedBooksPage = lazy(() => import('./pages/PrintedBooks'));
+const FeedPage = lazy(() => import('./pages/Feed'));
+const BookDetailPage = lazy(() => import('./pages/BookDetail'));
+const BookReader = lazy(() => import('./pages/BookReader'));
+const CreateBookPage = lazy(() => import('./pages/CreateBookPage'));
+const BookDashboard = lazy(() => import('./pages/BookDashboard'));
+const UserProfilePage = lazy(() => import('./pages/UserProfilePage'));
+const LoginPage = lazy(() => import('./pages/Auth/Login'));
+const RegisterPage = lazy(() => import('./pages/Auth/Register'));
+const GoogleCallback = lazy(() => import('./pages/Auth/GoogleCallback'));
+const DonationPage = lazy(() => import('./pages/DonationPage'));
+const PaymentSuccess = lazy(() => import('./pages/PaymentResult/PaymentSuccess'));
+const PaymentFailure = lazy(() => import('./pages/PaymentResult/PaymentFailure'));
+const ForgotPasswordPage = lazy(() => import('./pages/Auth/ForgotPassword'));
+const ResetPasswordPage = lazy(() => import('./pages/Auth/ResetPassword'));
+const QuotesPage = lazy(() => import('./pages/QuotesPage'));
+const QuoteDetail = lazy(() => import('./pages/QuoteDetail'));
+const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
+const MessagesPage = lazy(() => import('./pages/MessagesPage'));
+const SessionsPage = lazy(() => import('./pages/SessionsPage'));
+const SessionDetail = lazy(() => import('./pages/SessionDetail'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const AdminDashboard = lazy(() => import('./pages/Admin/Dashboard'));
+const AdminUsers = lazy(() => import('./pages/Admin/Users'));
+const AdminBooks = lazy(() => import('./pages/Admin/Books'));
+const AdminPrintedBooks = lazy(() => import('./pages/Admin/PrintedBooks'));
+const AdminTransactions = lazy(() => import('./pages/Admin/Transactions'));
 
 // --- APOLLO SETUP ---
 
@@ -156,7 +161,7 @@ const RootLayout = () => (
   <>
     <ScrollToTop />
     <ScoreUpdates reconnect={reconnectSubscriptions} />
-    <Outlet />
+    <PageBoundary><Outlet /></PageBoundary>
     {/* Mobilde "Ana ekrana ekle" banner'ı — tüm sayfalarda tek yerden */}
     <InstallPrompt />
   </>

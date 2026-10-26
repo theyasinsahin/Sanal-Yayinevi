@@ -5,9 +5,9 @@ import { MockedProvider } from '@apollo/client/testing';
 import { useQuery, useMutation } from '@apollo/client';
 import { useAuth } from '../../context/AuthContext';
 import BookDetail from './index';
-import { GET_BOOK_BY_ID } from '../../graphql/queries/book';
+import { GET_BOOK_DETAIL } from '../../graphql/queries/book';
 import { GET_COMMENTS_BY_BOOK_ID } from '../../graphql/queries/comment';
-import { GET_USER_BY_ID } from '../../graphql/queries/user';
+import { GET_BOOK_VIEWER } from '../../graphql/queries/user';
 import { GET_QUOTES_BY_BOOK } from '../../graphql/queries/quote';
 import { GET_SOCIAL_SHARE } from '../../graphql/socialShare';
 
@@ -29,10 +29,10 @@ beforeEach(() => {
   window.scrollTo = jest.fn();
   useAuth.mockReturnValue({ user: null });
   useQuery.mockImplementation((document, options) => {
-    if (document === GET_BOOK_BY_ID) return { data: { getBookById: book }, loading: false, refetch: jest.fn() };
+    if (document === GET_BOOK_DETAIL) return { data: { getBookById: book }, loading: false, refetch: jest.fn() };
     if (document === GET_COMMENTS_BY_BOOK_ID) return { data: { getCommentsByBookId: [] }, refetch: jest.fn() };
     if (document === GET_QUOTES_BY_BOOK) return { data: { getQuotesByBook: [] }, refetch: jest.fn() };
-    if (document === GET_USER_BY_ID) return { data: { getUserById: { id: 'reader', role: 'USER', savedBooks: [] } } };
+    if (document === GET_BOOK_VIEWER) return { data: { getUserById: { id: 'reader', role: 'USER', savedBooks: [] } } };
     return jest.requireActual('@apollo/client').useQuery(document, options);
   });
   useMutation.mockReturnValue([jest.fn().mockResolvedValue({ data: {} }), { loading: false }]);
@@ -50,7 +50,7 @@ const show = (path = '/book-detail/book-1') => render(<MockedProvider addTypenam
 test('a readable book address queries comments and content with the resolved ID', () => {
   show('/kitap/roman-author');
   expect(screen.getByRole('button', { name: 'Kitabı paylaş' })).toBeInTheDocument();
-  expect(useQuery).toHaveBeenCalledWith(GET_BOOK_BY_ID, expect.objectContaining({ variables: { id: 'book-1' } }));
+  expect(useQuery).toHaveBeenCalledWith(GET_BOOK_DETAIL, expect.objectContaining({ variables: { id: 'book-1' } }));
   expect(useQuery).toHaveBeenCalledWith(GET_COMMENTS_BY_BOOK_ID, expect.objectContaining({ variables: { bookId: 'book-1' } }));
   expect(screen.getByRole('link', { name: 'Yazar' })).toHaveAttribute('href', '/yazar/author');
 });

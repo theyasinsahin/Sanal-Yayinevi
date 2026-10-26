@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useSubscription, useLazyQuery } from '@apollo/client';
+import { useAuth } from '../context/AuthContext';
 import {
   GET_CONVERSATIONS,
   GET_MESSAGES,
@@ -208,7 +209,10 @@ export const useDeleteMessage = (conversationId) => {
 
 // --- Okunmamış mesaj sayısı (navbar badge için) ---
 export const useUnreadMessageCount = () => {
+  const { user } = useAuth();
   const { data } = useQuery(GET_UNREAD_MESSAGE_COUNT, {
+    skip: !user,
+    skipPollAttempt: () => document.visibilityState === 'hidden',
     fetchPolicy: 'cache-and-network',
     pollInterval: 30000, // subscription dışında da 30sn'de bir yenile
   });

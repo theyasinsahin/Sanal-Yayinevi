@@ -3,7 +3,8 @@ import { useQuery } from '@apollo/client';
 import { SCORE_UPDATED_EVENT } from '../utils/scoreUpdates';
 
 export function useLiveScoreQuery(query, options = {}) {
-  const result = useQuery(query, { fetchPolicy: 'cache-and-network', pollInterval: 15000, ...options });
+  const result = useQuery(query, { fetchPolicy: 'cache-and-network', pollInterval: 15000,
+    skipPollAttempt: () => document.visibilityState === 'hidden', ...options });
   const { refetch } = result;
   useEffect(() => {
     if (options.skip) return undefined;

@@ -63,6 +63,9 @@
   margin-bottom: 40px;
 }
 
+.session-detail-cover { display: block; width: 100%; aspect-ratio: 16 / 7; object-fit: cover; border-radius: var(--sd-radius); margin-bottom: 1rem; background: var(--sd-border); }
+.session-detail-cover-actions { display: flex; justify-content: flex-end; margin-bottom: 1.5rem; }
+
 .session-detail-hero-meta {
   display: flex;
   flex-wrap: wrap;

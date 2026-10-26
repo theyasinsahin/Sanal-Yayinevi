@@ -10,7 +10,7 @@ export async function readerChapters(userId, bookId) {
   const user = await User.findOne({ _id: userId, isDeleted: false, isActive: { $ne: false } }).exec();
   const book = user && await findBookById(bookId, { viewer: user });
   if (!book || (book.status === 'DRAFT' && String(book.authorId) !== String(userId) && user.role !== 'ADMIN')) throw new Error('Kitap bulunamadı veya bu kitaba erişiminiz yok.');
-  return Chapter.find({ bookId, isDeleted: false, authorId: { $nin: await inactiveUserIds() } }).sort({ createdAt: 1, _id: 1 }).exec();
+  return Chapter.find({ bookId, isDeleted: false, authorId: { $nin: await inactiveUserIds() } }).select('-content').sort({ createdAt: 1, _id: 1 }).exec();
 }
 
 export async function getReadingProgress(userId, bookId) {

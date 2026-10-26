@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MockedProvider } from '@apollo/client/testing';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import BookReader from './index';
-import { GET_BOOK_READER_DATA } from '../../graphql/queries/book';
+import { GET_BOOK_READER_DATA, GET_READING_CHAPTER, GET_BOOK_READER_FULL } from '../../graphql/queries/book';
 import { INCREMENT_BOOK_VIEW_MUTATION } from '../../graphql/mutations/book';
 import { useAuth } from '../../context/AuthContext';
 import { GET_BOOKMARK } from '../../graphql/queries/bookmark';
@@ -18,12 +18,17 @@ jest.mock('../../components/Quote/QuotePopup', () => ({ __esModule: true, defaul
 jest.mock('../../components/Sharing/SocialShareButton', () => ({ __esModule: true, default: ({ id }) => <button data-chapter={id}>Bölümü paylaş</button> }));
 jest.mock('../../utils/htmlPageSplitter', () => ({ parseContentToPages: content => [{ content }] }));
 
-const book = { id: 'book', kind: 'DIGITAL', status: 'WRITING', publicationStatus: null, publicPath: '/kitap/roman-deniz', title: 'Kitap', authorId: null, genre: null, chapters: [
+const book = { id: 'book', kind: 'DIGITAL', status: 'WRITING', publicationStatus: null, publicPath: '/kitap/roman-deniz', title: 'Kitap', authorId: null, author: null, genre: null, chapters: [
   { id: 'first', title: 'İlk Bölüm', content: 'İlk bölümün metni.' },
   { id: 'second', title: 'İkinci Bölüm', content: 'İkinci bölümün metni.' },
 ] };
 const show = (path, options = {}) => render(<MockedProvider mocks={[
-  { request: { query: GET_BOOK_READER_DATA, variables: { id: 'book' } }, result: { data: { getBookById: options.book || book } } },
+  { request: { query: GET_BOOK_READER_DATA, variables: { id: 'book' } }, result: { data: { getBookById: { ...(options.book || book), chapters: (options.book || book).chapters.map(({ content, ...chapter }) => chapter) } } } },
+  ...(options.book || book).chapters.map(chapter => ({
+    request: { query: GET_READING_CHAPTER, variables: { bookId: 'book', chapterId: chapter.id } },
+    maxUsageCount: 10, result: options.chapterResult || { data: { getReadingChapter: chapter } },
+  })),
+  { request: { query: GET_BOOK_READER_FULL, variables: { id: 'book' } }, result: { data: { getBookById: options.book || book } } },
   { request: { query: INCREMENT_BOOK_VIEW_MUTATION, variables: { id: 'book' } }, result: { data: { incrementBookViews: { id: 'book', stats: { views: 1 } } } } },
   { request: { query: GET_BOOKMARK, variables: { bookId: 'book' } }, delay: options.delay || 0, result: { data: { getBookmark: options.bookmark || null } } },
   { request: { query: GET_READING_PROGRESS, variables: { bookId: 'book' } }, delay: options.delay || 0, result: { data: { getReadingProgress: options.progress || null } } },
@@ -86,7 +91,7 @@ test('a delayed bookmark wins over local progress and restores its paragraph wit
   show('/book-reader/book', { delay: 100, bookmark: { id: 'bookmark', chapterId: 'second', chapterIndex: 0, paragraphIndex: 3, chapterTitle: 'İkinci Bölüm', updatedAt: '2026-01-02T00:00:00Z' } });
   expect(JSON.parse(localStorage.getItem(progressStorageKey('book', 'reader')))).toEqual(original);
   await screen.findByRole('heading', { name: 'İkinci Bölüm' });
-  expect(screen.getByRole('article')).toHaveAttribute('data-restore-paragraph', '3');
+  expect(await screen.findByRole('article')).toHaveAttribute('data-restore-paragraph', '3');
   expect(screen.getByText('İlk Bölüm', { selector: '.chapter-title' }).closest('.chapter-item')).toHaveClass('completed');
 });
 
@@ -122,10 +127,20 @@ test('book mode opens at the resumed chapter and page navigation updates the sav
   show('/book-reader/book', { book: expanded });
   await screen.findByRole('heading', { name: 'İkinci Bölüm' });
   fireEvent.click(screen.getByRole('button', { name: 'Kitap görünümü' }));
-  expect(screen.getByText('İkinci bölümün metni.')).toBeInTheDocument();
+  expect(await screen.findByText('İkinci bölümün metni.')).toBeInTheDocument();
   expect(screen.queryByText('İlk bölümün metni.')).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Sonraki' }));
   await waitFor(() => expect(JSON.parse(localStorage.getItem(progressStorageKey('book'))).lastChapterId).toBe('fourth'));
   fireEvent.click(screen.getByRole('button', { name: 'Kitap görünümü' }));
   expect(await screen.findByRole('heading', { name: 'Dördüncü Bölüm' })).toBeInTheDocument();
+});
+
+
+test('chapter mode downloads only the selected chapter after restoring the saved position', async () => {
+  localStorage.setItem(progressStorageKey('book'), JSON.stringify({ lastChapterId: 'second', completedChapterIds: [] }));
+  const result = jest.fn(() => ({ data: { getReadingChapter: book.chapters[1] } }));
+  show('/book-reader/book', { chapterResult: result });
+  expect(await screen.findByRole('article')).toHaveTextContent(book.chapters[1].content);
+  expect(result).toHaveBeenCalledTimes(1);
+  expect(screen.queryByText(book.chapters[0].content)).not.toBeInTheDocument();
 });

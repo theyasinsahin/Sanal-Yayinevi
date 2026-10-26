@@ -1,5 +1,11 @@
 import { gql } from '@apollo/client';
 
+export const GET_BOOK_VIEWER = gql`
+  query GetBookViewer($id: ID!) {
+    getUserById(id: $id) { id role savedBooks { id } }
+  }
+`;
+
 export const GET_USER_BY_ID = gql`
     query GetUserById($id:ID!){
         getUserById(id: $id){

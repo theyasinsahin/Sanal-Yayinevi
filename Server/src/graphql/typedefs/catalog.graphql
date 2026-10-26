@@ -1,0 +1,6 @@
+enum BookSort { NEWEST OLDEST UPDATED POPULAR }
+type BookFeedPage { books: [Book!]!, endCursor: String, hasNextPage: Boolean! }
+extend type Query {
+  getBookFeed(limit: Int, after: String, sort: BookSort, genre: String, search: String): BookFeedPage!
+  getReadingChapter(bookId: ID!, chapterId: ID!): Chapter
+}

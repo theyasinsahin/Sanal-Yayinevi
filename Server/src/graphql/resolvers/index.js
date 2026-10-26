@@ -1,4 +1,5 @@
 import publicUrlResolvers from './publicUrl.js';
+import catalogResolvers from './catalog.js';
 import followRequestResolvers from './followRequest.js';
 import socialShareResolvers from './socialShare.js';
 import printedBookResolvers from './printedBook.js';
@@ -23,6 +24,7 @@ import bookFollowResolvers from "./bookFollow.js";
 // Tüm resolver modüllerini bir dizi içine koyup gönderiyoruz.
 // schema.js içindeki mergeResolvers bunları otomatik birleştirecek.
 export default [
+    catalogResolvers,
     publicUrlResolvers,
     socialShareResolvers,
     printedBookResolvers,

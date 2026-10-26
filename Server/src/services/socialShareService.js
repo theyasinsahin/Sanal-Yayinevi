@@ -7,6 +7,7 @@ import User from '../models/user.js';
 import Session from '../models/session.js';
 import { canViewProfile } from '../utils/profileAccess.js';
 import { bookPath, chapterPath, profilePath, sessionPath } from './publicUrlService.js';
+import { sessionCover } from '../utils/sessionCover.js';
 
 export const SHARE_TYPES = ['BOOK', 'CHAPTER', 'QUOTE', 'PROFILE', 'SESSION'];
 const publicStatuses = ['WRITING', 'COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'];
@@ -65,7 +66,7 @@ export async function getSocialShare(type, id) {
     else if (!mongoose.isObjectIdOrHexString(id)) throw unavailable();
   }
   if (!mongoose.isObjectIdOrHexString(id)) throw unavailable();
-  let title, description, path;
+  let title, description, path, imagePath;
   if (type === 'BOOK') {
     const book = await publicBook(id);
     title = book.title;
@@ -97,7 +98,8 @@ export async function getSocialShare(type, id) {
     title = session.title;
     description = plainSummary(session.description) || 'Betik’teki bu oturuma katıl ve düşüncelerini paylaş.';
     path = await sessionPath(session);
+    imagePath = sessionCover(session);
   }
   const shareKey = decodeURIComponent(path.split('/').pop());
-  return { type, id: String(id), shareKey, title: plainSummary(title, 180), description, path, imagePath: `/social-share/${type.toLowerCase()}.jpg`, webOrigin: shareWebOrigin() };
+  return { type, id: String(id), shareKey, title: plainSummary(title, 180), description, path, imagePath: imagePath || `/social-share/${type.toLowerCase()}.jpg`, webOrigin: shareWebOrigin() };
 }

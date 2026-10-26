@@ -1,6 +1,7 @@
 import * as CommentService from '../../services/commentService.js';
 import * as UserService from '../../services/userService.js';
 import { authenticateUser } from '../../utils/auth.js';
+import { getLoaders } from '../loaders.js';
 
 export default {
   Query: {
@@ -66,10 +67,11 @@ export default {
   // FIELD RESOLVERS (İlişkileri Çözme)
   Comment: {
     // comment.userId (User Objesi) istendiğinde çalışır
-    userId: async (parent) => {
+    userId: async (parent, _, context) => {
       // parent.userId veritabanındaki ID'dir.
       // Bunu kullanarak User objesini bulup dönüyoruz.
-      return UserService.findUserById(parent.userId);
+      const id = parent.userId?._id || parent.userId;
+      return id ? getLoaders(context).users.load(id) : null;
     },
 
     // comment.replies istendiğinde çalışır

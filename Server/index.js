@@ -21,6 +21,8 @@ import formatError from './src/utils/formatError.js';
 import paymentRoutes from './src/routes/paymentRoutes.js';
 import googleAuthRoutes from './src/routes/googleAuthRoutes.js';
 import socialShareRoutes from './src/routes/socialShareRoutes.js';
+import { compressResponses, operationTiming } from './src/config/httpPerformance.js';
+import { createLoaders } from './src/graphql/loaders.js';
 
 const PORT = process.env.PORT || 5000;
 
@@ -32,6 +34,7 @@ export { pubsub };
 const startServer = async () => {
   try {
     const app = express();
+    app.use(compressResponses());
 
     await connectDB();
 
@@ -57,6 +60,8 @@ const startServer = async () => {
     app.use(cors({
       origin: allowedOrigins,
       credentials: true,
+      maxAge: 600,
+      exposedHeaders: ['Server-Timing'],
     }));
 
     app.use('/api/payment', paymentRoutes);
@@ -123,6 +128,7 @@ const startServer = async () => {
       cache: 'bounded',
       introspection: true,
       plugins: [
+        operationTiming,
         ApolloServerPluginDrainHttpServer({ httpServer }),
         // Apollo kapanırken WebSocket sunucusunu da temiz kapat
         {
@@ -153,7 +159,7 @@ const startServer = async () => {
             user = await authenticateUser(req, models.User);
           }
 
-          return { ...models, user, req, currentUserId: user?._id ?? null, pubsub };
+          return { ...models, user, req, currentUserId: user?._id ?? null, pubsub, loaders: createLoaders() };
         },
       })
     );

@@ -143,12 +143,12 @@ export const useNewSessionEntrySubscription = (sessionId) => {
 export const useCreateSession = () => {
   const [createSessionMutation, { loading }] = useMutation(CREATE_SESSION, {
     refetchQueries: [{ query: GET_SESSIONS, variables: { limit: 20, offset: 0 } }],
-    onError: (err) => console.error('Oturum oluşturulamadı:', err),
   });
 
   const createSession = async (input) => {
     const { data } = await createSessionMutation({ variables: { input } });
-    return data?.createSession ?? null;
+    if (!data?.createSession) throw new Error('Oturum oluşturulamadı. Lütfen tekrar deneyin.');
+    return data.createSession;
   };
 
   return { createSession, loading };

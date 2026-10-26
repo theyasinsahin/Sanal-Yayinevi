@@ -2,6 +2,7 @@
 import * as SessionService from '../../services/sessionService.js';
 import { withFilter } from 'graphql-subscriptions';
 import { pubsub } from '../../config/pubsub.js';
+import { sessionCover } from '../../utils/sessionCover.js';
 
 const NEW_SESSION_ENTRY = 'NEW_SESSION_ENTRY';
 
@@ -77,6 +78,10 @@ export default {
   },
 
   Mutation: {
+    updateSessionCover: async (_, { sessionId, coverImageUrl }, { user }) => {
+      if (!user) throw new Error('Giriş yapmalısınız.');
+      return serializeSession(await SessionService.updateSessionCover(user, sessionId, coverImageUrl));
+    },
     // --- Aşağıdaki tüm Mutation'lar giriş gerektirmeye devam ediyor ---
     createSession: async (_, { input }, { user }) => {
       if (!user) throw new Error('Giriş yapmalısınız.');
@@ -126,14 +131,15 @@ export default {
 
   // Field resolver — Session.createdBy populate edilmemişse DB'den çek
   Session: {
+    coverImageUrl: sessionCover,
     id: (parent) => parent._id?.toString() ?? parent.id,
 
-    createdBy: (parent, _, { User }) => {
+    createdBy: async (parent, _, { User }) => {
       const creator = parent.createdBy;
       if (!creator) return null;
       if (typeof creator === 'object' && creator.username) return creator;
       const id = creator._id ?? creator;
-      return User.findById(id);
+      return User.findById(id).exec();
     },
 
     createdAt: (parent) =>
@@ -151,7 +157,7 @@ export default {
   SessionEntry: {
     id: (parent) => parent._id?.toString() ?? parent.id,
 
-    user: (parent, _, { User }) => {
+    user: async (parent, _, { User }) => {
       // serializeEntry'den gelen user objesi
       if (parent.user && typeof parent.user === 'object' && parent.user.username) {
         return parent.user;
@@ -160,7 +166,7 @@ export default {
       const uid = parent.userId ?? parent.user;
       if (!uid) return null;
       const id = uid._id ?? uid;
-      return User.findById(id);
+      return User.findById(id).exec();
     },
 
     likeCount: (parent) => parent.likedBy?.length ?? 0,

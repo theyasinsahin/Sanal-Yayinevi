@@ -10,8 +10,7 @@ import {
   ChevronRight
 } from '@mui/icons-material';
 
-import { GET_BOOK_READER_DATA } from '../../graphql/queries/book';
-import { GET_USER_BY_ID } from '../../graphql/queries/user';
+import { GET_BOOK_READER_DATA, GET_READING_CHAPTER, GET_BOOK_READER_FULL } from '../../graphql/queries/book';
 import { INCREMENT_BOOK_VIEW_MUTATION } from '../../graphql/mutations/book';
 import { GET_BOOKMARK } from '../../graphql/queries/bookmark';
 import { SET_BOOKMARK, REMOVE_BOOKMARK } from '../../graphql/mutations/bookmark';
@@ -44,11 +43,11 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
   const [bookmarkActionError, setBookmarkActionError] = useState('');
 
   const [readingMode, setReadingMode] = useState('chapter');
-  const [pages, setPages] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [isFlipping, setIsFlipping] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const flipTimer = useRef(null);
+  const positionBookPages = useRef(false);
   useEffect(() => () => clearTimeout(flipTimer.current), []);
 
   const [incrementBookViews] = useMutation(INCREMENT_BOOK_VIEW_MUTATION);
@@ -95,7 +94,7 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
     }
   }, [bookId, incrementBookViews]);
 
-  const { data: bookData, loading: bookLoading } = useQuery(GET_BOOK_READER_DATA, {
+  const { data: bookData, loading: bookLoading, error: bookError, refetch: refetchBook } = useQuery(GET_BOOK_READER_DATA, {
     variables: { id: bookId },
     skip: !bookId,
     fetchPolicy: 'cache-and-network',
@@ -111,23 +110,29 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
   } = useReaderProgress({ bookId, userId: user?.id, chapters, bookLoading,
     bookmark, bookmarkLoading, bookmarkError, refetchBookmark, requestedChapterId });
   const chapterBookmark = bookmark?.chapterId === chapters[currentChapterIndex]?.id ? bookmark : null;
+  const chapterId = chapters[currentChapterIndex]?.id;
+  const { data: chapterData, loading: chapterLoading, error: chapterError, refetch: refetchChapter } = useQuery(GET_READING_CHAPTER, {
+    variables: { bookId, chapterId }, skip: !progressReady || !chapterId || readingMode !== 'chapter',
+    fetchPolicy: 'cache-and-network', nextFetchPolicy: 'cache-first',
+  });
+  const { data: fullData, loading: fullLoading, error: fullError, refetch: refetchFull } = useQuery(GET_BOOK_READER_FULL, {
+    variables: { id: bookId }, skip: !progressReady || readingMode !== 'book', fetchPolicy: 'no-cache',
+  });
+  const fullChapters = fullData?.getBookById?.chapters;
+  const loadedChapter = readingMode === 'book' ? fullChapters?.find(chapter => chapter.id === chapterId) : chapterData?.getReadingChapter;
+  const chapterReady = Boolean(chapterId && loadedChapter?.id === chapterId);
+  // Apollo may retain the previous variables' result while a new chapter loads.
+  const currentChapter = { ...chapters[currentChapterIndex], content: loadedChapter?.id === chapterId ? loadedChapter?.content : undefined };
 
   const readingStatus = useReadingTracker({
     isActive: Boolean(progressReady && user?.id && book && book.status !== 'DRAFT' &&
-      (book.kind !== 'PRINTED' || book.publicationStatus === 'APPROVED') && chapters[currentChapterIndex]?.content?.replace(/<[^>]*>/g, '').trim()),
+      (book.kind !== 'PRINTED' || book.publicationStatus === 'APPROVED') && currentChapter.content?.replace(/<[^>]*>/g, '').trim()),
     userId: user?.id, bookId: book?.id, chapterId: chapters[currentChapterIndex]?.id,
     onIdleWarning: () => setShowIdleWarning(true),
     onIdleResume: () => setShowIdleWarning(false),
   });
 
-  const { data: userData } = useQuery(GET_USER_BY_ID, {
-    variables: { id: book?.authorId },
-    skip: !book?.authorId,
-  });
-
-  const authorName = userData?.getUserById?.fullName || 
-                     userData?.getUserById?.username || 
-                     'Bilinmeyen Yazar';
+  const authorName = book?.author?.fullName || book?.author?.username || 'Bilinmeyen Yazar';
 
   // KOPYALAMAYA KARŞI KORUMA (DRM)
   useEffect(() => {
@@ -187,23 +192,18 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
     }
   }, [readingMode, currentChapterIndex]); // currentChapterIndex değişince de sıfırla
 
-  // Generate pages for book mode
+  const pages = useMemo(() => {
+    if (readingMode !== 'book' || !book || !fullChapters?.length) return [];
+    return [{ type: 'title_page', bookTitle: book.title, author: authorName, genre: book.genre?.name || 'Kurgu' },
+      ...fullChapters.flatMap(chapter => parseContentToPages(chapter.content, chapter.title)
+        .map(page => ({ ...page, chapterId: chapter.id })))];
+  }, [book, fullChapters, authorName, readingMode]);
   useEffect(() => {
-    if (book && chapters.length > 0) {
-      let allPages = [];
-      allPages.push({
-        type: 'title_page',
-        bookTitle: book.title,
-        author: authorName,
-        genre: book.genre?.name || 'Kurgu',
-      });
-      chapters.forEach((chapter) => {
-        const chapterPages = parseContentToPages(chapter.content, chapter.title);
-        allPages = [...allPages, ...chapterPages.map(page => ({ ...page, chapterId: chapter.id }))];
-      });
-      setPages(allPages);
+    if (positionBookPages.current && pages.length) {
+      setCurrentPage(Math.max(0, pages.findIndex(page => page.chapterId === chapterId)));
+      positionBookPages.current = false;
     }
-  }, [book, chapters, authorName]);
+  }, [pages, chapterId]);
 
   const toggleChapterCompletion = (index) => {
     setCompletedChapters(prev =>
@@ -292,9 +292,12 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
     ? (completedChapters.length / chapters.length) * 100 
     : 0;
 
-  const currentChapter = chapters[currentChapterIndex];
   const isFirstChapter = currentChapterIndex === 0;
   const isLastChapter = currentChapterIndex === chapters.length - 1;
+
+  if (bookError || (!bookLoading && !book)) return <div className="reader-loading" role="alert">
+    <p>Kitap yüklenemedi.</p><button className="ui-text-link" onClick={() => refetchBook()}>Tekrar dene</button>
+  </div>;
 
   if (bookLoading || !book || !progressReady) {
     return (
@@ -399,8 +402,7 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
               setIsFlipping(false);
               clearParagraphRestore();
               if (readingMode === 'chapter') {
-                const index = pages.findIndex(page => page.chapterId === chapters[currentChapterIndex]?.id);
-                setCurrentPage(Math.max(0, index));
+                positionBookPages.current = true;
                 setReadingMode('book');
               } else setReadingMode('chapter');
             }}
@@ -412,7 +414,7 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
 
         {/* CHAPTER READING MODE — Tek bölüm göster */}
         {missingSharedChapter && <p className="ui-notice" role="status">Paylaşılan bölüm bulunamadı. Kitabın diğer bölümlerini okuyabilirsiniz.</p>}
-        {readingMode === 'chapter' && currentChapter && (
+        {readingMode === 'chapter' && chapterId && (
           <div className="chapter-reading-mode">
 
             {user && (
@@ -434,7 +436,8 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
             </div>
 
             {/* Bölüm İçeriği */}
-            <ParagraphRenderer
+            {chapterLoading && !chapterReady ? <p role="status">Bölüm yükleniyor...</p> : chapterError || !chapterReady ?
+              <p className="ui-notice" role="alert">Bölüm yüklenemedi. <button className="ui-text-link" onClick={() => refetchChapter()}>Tekrar dene</button></p> : <ParagraphRenderer
               key={currentChapter.id}
               restoreParagraphIndex={restoreParagraphIndex}
               content={currentChapter.content}
@@ -443,7 +446,7 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
               bookmark={chapterBookmark}
               onSetBookmark={user ? handleSetBookmark : null}
               onRemoveBookmark={user ? handleRemoveBookmark : null}
-            />
+            />}
 
             {/* Bölüm Navigasyonu */}
             <div className="chapter-navigation">
@@ -487,7 +490,9 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
         )}
 
         {/* BOOK MODE */}
-        {readingMode === 'book' && pages.length > 0 && (
+        {readingMode === 'book' && fullLoading && <p role="status">Kitap görünümü hazırlanıyor...</p>}
+        {readingMode === 'book' && fullError && <p className="ui-notice" role="alert">Kitap yüklenemedi. <button className="ui-text-link" onClick={() => refetchFull()}>Tekrar dene</button></p>}
+        {readingMode === 'book' && !fullLoading && !fullError && pages.length > 0 && (
           <>
             <div className="reader-book-mode">
               <div className={`book-container ${isFlipping ? 'flipping' : ''}`}>

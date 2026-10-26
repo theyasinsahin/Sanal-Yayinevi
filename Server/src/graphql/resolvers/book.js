@@ -4,6 +4,7 @@ import * as BookService from '../../services/bookService.js';
 import * as UserService from '../../services/userService.js';
 import * as ScoreService from '../../services/scoreService.js';
 import { isPrintedBook } from '../../utils/printedBooks.js';
+import { getLoaders, selectedFields } from '../loaders.js';
 
 export default {
   Query: {
@@ -119,32 +120,34 @@ export default {
         } catch (e) { return [] }
     },
 
-    chapters: async (parent, args, { Chapter }) => {
+    chapters: async (parent, args, context, info) => {
          try {
-            return await Chapter.find({ bookId: parent.id, isDeleted: false, authorId: { $nin: await inactiveUserIds() } }).sort({ createdAt: 1, _id: 1 });
+            const query = context.Chapter.find({ bookId: parent.id, isDeleted: false, authorId: { $nin: await getLoaders(context).inactiveIds() } }).sort({ createdAt: 1, _id: 1 });
+            if (info && !selectedFields(info).has('content')) query.select('-content');
+            return await query.exec();
          } catch (e) { return [] }
     },
 
-    genre: async (parent, args, { Genre }) => {
+    genre: async (parent, args, context) => {
         try {
-            return await Genre.findById(parent.genreId);
+            return parent.genreId ? await getLoaders(context).genres.load(parent.genreId) : null;
         } catch (e) { return null }
     },
 
-    commentCount: async (parent, args, { Comment }) => {
+    commentCount: async (parent, args, context) => {
         try {
-            return await Comment.countDocuments({ bookId: parent.id, isDeleted: false, userId: { $nin: await inactiveUserIds() } });
+            return await getLoaders(context).commentCounts.load(parent.id);
         } catch (e) { return 0 }
     },
     
     // --- KRİTİK DÜZELTME BURADA ---
-    author: async (parent, args, { User }) => {
+    author: async (parent, args, context) => {
         // 1. authorId var mı?
         if (!parent.authorId) return null;
 
         try {
             // 2. Kullanıcıyı bul (silinmiş kullanıcıyı yazar olarak göstermeyelim)
-            const author = await User.findOne({ _id: parent.authorId, isDeleted: false });
+            const author = await getLoaders(context).users.load(parent.authorId);
             return author; // Bulamazsa null döner, Schema'daki '!' kalktığı için sorun olmaz.
         } catch (error) {
             // 3. ID formatı bozuksa veya DB hatası varsa null dön, patlatma.

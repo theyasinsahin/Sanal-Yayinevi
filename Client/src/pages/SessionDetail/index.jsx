@@ -19,6 +19,8 @@ import {
 } from '../../hooks/useSessions';
 import './SessionDetail.css';
 import SocialShareButton from '../../components/Sharing/SocialShareButton';
+import SessionCover from '../../components/Sessions/SessionCover';
+import SessionCoverEditor from '../../components/Sessions/SessionCoverEditor';
 
 import { useLazyQuery } from '@apollo/client';
 import { VERIFY_SESSION_ACCESS_CODE } from '../../graphql/queries/session'; // query'i ekleyeceksin
@@ -249,6 +251,7 @@ const SessionDetail = ({ resolvedId } = {}) => {
 
   const [accessCode, setAccessCode] = useState(null);
   const [accessError, setAccessError] = useState('');
+  const [editingCover, setEditingCover] = useState(false);
 
   // Bir oturum her açıldığında (ilk girişte veya başka bir oturuma
   // geçildiğinde) sayfayı en üste al. sessionId'ye bağladık çünkü
@@ -403,6 +406,11 @@ const { session, loading: sessionLoading, error: sessionError } = useGetSession(
           </button>
 
           {/* BAŞLIK BLOĞU */}
+          <SessionCover key={session.id} src={session.coverImageUrl} title={session.title} className="session-detail-cover" eager />
+          {(isCreator || currentUser?.role === 'ADMIN') && <div className="session-detail-cover-actions">
+            <Button variant="outline" size="small" onClick={() => setEditingCover(previous => !previous)}>Kapak fotoğrafını düzenle</Button>
+          </div>}
+          {editingCover && (isCreator || currentUser?.role === 'ADMIN') && <SessionCoverEditor key={session.id} session={session} onClose={() => setEditingCover(false)} />}
           <div className="session-detail-hero">
             <div className="session-detail-hero-meta">
               <Badge variant={SESSION_TYPE_VARIANT[session.type]}>

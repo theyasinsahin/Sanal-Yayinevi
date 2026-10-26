@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
-import { GET_BOOKS } from '../../../graphql/queries/book';
+import { GET_BOOK_FEED } from '../../../graphql/queries/book';
 
 // --- UI KIT IMPORTS ---
 import { Typography } from '../../UI/Typography';
@@ -20,7 +20,7 @@ import './FeaturedBooks.css';
 const FEATURED_BOOK_COUNT = 4;
 
 const FeaturedBooks = () => {
-  const { loading, error, data } = useQuery(GET_BOOKS);
+  const { loading, error, data } = useQuery(GET_BOOK_FEED, { variables: { limit: FEATURED_BOOK_COUNT } });
 
   // Loading durumu için UI Kit kullanımı
   // Loading durumu — skeleton kartlar göster
@@ -75,7 +75,7 @@ if (loading) return (
   </section>
 );
 
-  const featuredBooks = data ? data.getAllBooks.slice(0, FEATURED_BOOK_COUNT) : [];
+  const featuredBooks = data?.getBookFeed?.books || [];
 
   return (
     <section className="featured-books-section">

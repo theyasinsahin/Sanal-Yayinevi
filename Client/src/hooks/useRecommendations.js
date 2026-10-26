@@ -68,13 +68,13 @@ export const MARK_CHAPTER_AS_READ = gql`
 // Aksi halde "Giriş yapmalısınız." hatası dönüyor ve bu hata formatError.js
 // üzerinden UNAUTHENTICATED koduna çevrilip App.js'teki errorLink'i
 // tetikleyerek "Oturum süresi doldu" davranışını yanlışlıkla başlatıyordu.
-export const useRecommendations = (limit = 10, offset = 0) => {
+export const useRecommendations = (limit = 10, offset = 0, enabled = true) => {
   const { user } = useAuth();
 
   const { data, loading, error, fetchMore } = useQuery(GET_RECOMMENDATIONS, {
     variables: { limit, offset },
     fetchPolicy: 'cache-and-network',
-    skip: !user,
+    skip: !user || !enabled,
   });
 
   const loadMore = () => {

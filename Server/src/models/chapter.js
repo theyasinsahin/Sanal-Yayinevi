@@ -23,5 +23,6 @@ const ChapterSchema = new mongoose.Schema({
 
 ChapterSchema.index({ isDeleted: 1 });
 ChapterSchema.index({ bookId: 1, isDeleted: 1 });
+ChapterSchema.index({ bookId: 1, isDeleted: 1, createdAt: 1, _id: 1 });
 
 export default mongoose.model('Chapter', ChapterSchema);

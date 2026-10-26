@@ -8,6 +8,7 @@ const SESSION_FIELDS = gql`
     id
     title
     description
+    coverImageUrl
     type
     isActive
     tags
@@ -78,6 +79,13 @@ export const CREATE_SESSION = gql`
       publicPath
       ...SessionFields
     }
+  }
+`;
+
+export const UPDATE_SESSION_COVER = gql`
+  ${SESSION_FIELDS}
+  mutation UpdateSessionCover($sessionId: ID!, $coverImageUrl: String) {
+    updateSessionCover(sessionId: $sessionId, coverImageUrl: $coverImageUrl) { ...SessionFields }
   }
 `;
 
