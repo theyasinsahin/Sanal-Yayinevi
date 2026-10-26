@@ -1,0 +1,95 @@
+{
+  "label": "optimized",
+  "fixture": {
+    "books": 48,
+    "chaptersPerBook": 12,
+    "commentsPerBook": 5,
+    "contentBytesPerChapter": 13007
+  },
+  "operations": {
+    "catalog": {
+      "ms": 52.4,
+      "jsonBytes": 15677,
+      "gzipBytes": 1130,
+      "databaseCalls": 6,
+      "calls": {
+        "users.distinct": 2,
+        "books.find": 1,
+        "users.find": 1,
+        "genres.find": 1,
+        "comments.aggregate": 1
+      }
+    },
+    "detail": {
+      "ms": 25,
+      "jsonBytes": 2147,
+      "gzipBytes": 612,
+      "databaseCalls": 7,
+      "calls": {
+        "books.findOne": 1,
+        "users.distinct": 2,
+        "users.find": 1,
+        "genres.find": 1,
+        "comments.aggregate": 1,
+        "chapters.find": 1
+      }
+    },
+    "reader": {
+      "ms": 19.9,
+      "jsonBytes": 1058,
+      "gzipBytes": 358,
+      "databaseCalls": 6,
+      "calls": {
+        "books.findOne": 1,
+        "users.distinct": 2,
+        "users.find": 1,
+        "genres.find": 1,
+        "chapters.find": 1
+      }
+    },
+    "landing": {
+      "ms": 29.4,
+      "jsonBytes": 2757,
+      "gzipBytes": 634,
+      "databaseCalls": 6,
+      "calls": {
+        "users.distinct": 2,
+        "books.find": 1,
+        "users.find": 1,
+        "genres.find": 1,
+        "comments.aggregate": 1
+      }
+    },
+    "catalogAllCards": {
+      "ms": 36.8,
+      "jsonBytes": 31152,
+      "gzipBytes": 1642,
+      "databaseCalls": 6,
+      "calls": {
+        "users.distinct": 2,
+        "books.find": 1,
+        "users.find": 1,
+        "genres.find": 1,
+        "comments.aggregate": 1
+      }
+    },
+    "readingChapter": {
+      "ms": 11.8,
+      "jsonBytes": 13095,
+      "gzipBytes": 161,
+      "databaseCalls": 4,
+      "calls": {
+        "books.findOne": 1,
+        "users.distinct": 2,
+        "chapters.findOne": 1
+      }
+    }
+  },
+  "bundle": {
+    "entrypoints": [
+      "static/js/main.35f5c1bc.js"
+    ],
+    "javascriptBytes": 605482,
+    "gzipBytes": 186359
+  }
+}

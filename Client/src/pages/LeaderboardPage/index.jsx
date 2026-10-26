@@ -1,7 +1,10 @@
+import { useLiveScoreQuery } from '../../hooks/useLiveScoreQuery';
 import { profilePath } from '../../utils/publicPaths';
 // src/pages/LeaderboardPage/index.jsx
 import React, { useState } from 'react';
-import { useQuery } from '@apollo/client';
+import { useSubscription } from '@apollo/client';
+import { LEADERBOARD_UPDATED } from '../../components/Score/ScoreUpdates';
+import { notifyScoreChanged } from '../../utils/scoreUpdates';
 import { EmojiEvents, Person } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { GET_LEADERBOARD, GET_USER_RANK } from '../../graphql/queries/score';
@@ -52,14 +55,15 @@ const SafeAvatar = ({ src, alt, className, placeholderClassName, placeholderSize
 
 const LeaderboardPage = () => {
   const { user } = useAuth();
+  useSubscription(LEADERBOARD_UPDATED, { onData: notifyScoreChanged });
   const [period, setPeriod] = useState('total');
 
-  const { data, loading } = useQuery(GET_LEADERBOARD, {
+  const { data, loading } = useLiveScoreQuery(GET_LEADERBOARD, {
     variables: { period },
     fetchPolicy: 'network-only',
   });
 
-  const { data: rankData } = useQuery(GET_USER_RANK, {
+  const { data: rankData } = useLiveScoreQuery(GET_USER_RANK, {
     variables: { userId: user?.id, period },
     skip: !user,
   });

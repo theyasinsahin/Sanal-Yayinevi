@@ -10,6 +10,7 @@ type Session {
   id: ID!
   title: String!
   description: String
+  coverImageUrl: String!
   type: SessionType!
   createdBy: User!
   isActive: Boolean!
@@ -32,12 +33,14 @@ type SessionEntry {
 input CreateSessionInput {
   title: String!
   description: String
+  coverImageUrl: String
   type: SessionType!
   accessCode: String
   tags: [String]
 }
 
 extend type Mutation {
+  updateSessionCover(sessionId: ID!, coverImageUrl: String): Session!
   createSession(input: CreateSessionInput!): Session!
   addSessionEntry(
     sessionId: ID!

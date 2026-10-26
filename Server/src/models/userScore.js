@@ -9,6 +9,7 @@ const UserScoreSchema = new mongoose.Schema({
     unique: true 
   },
   totalPoints: { type: Number, default: 0 },
+  readingRemainderSeconds: { type: Number, default: 0 },
   
   // Aksiyon sayaçları (badge kontrolü için)
   stats: {
@@ -18,6 +19,7 @@ const UserScoreSchema = new mongoose.Schema({
     booksPublished:  { type: Number, default: 0 },
     chaptersAdded:   { type: Number, default: 0 },
     minutesRead:     { type: Number, default: 0 },
+    sessionEntriesCreated: { type: Number, default: 0 },
   },
 
 }, { timestamps: true });

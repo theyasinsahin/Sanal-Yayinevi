@@ -40,7 +40,7 @@ export const createChapter = async (data) => {
   // Kitaba bölüm ID'sini ekle
   await Book.findByIdAndUpdate(data.bookId, { $push: { chapters: newChapter._id } });
 
-  await ScoreService.onChapterAdded(data.authorId);
+  await ScoreService.onChapterAdded(data.authorId, newChapter._id);
 
   // Sayfa sayısını güncelle
   await updateBookTotalPageCount(data.bookId);

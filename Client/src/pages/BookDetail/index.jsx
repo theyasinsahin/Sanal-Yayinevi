@@ -16,8 +16,8 @@ import {
 } from '@mui/icons-material';
 
 // --- GRAPHQL ---
-import { GET_BOOK_BY_ID } from '../../graphql/queries/book';
-import { GET_USER_BY_ID, ME_QUERY } from '../../graphql/queries/user';
+import { GET_BOOK_DETAIL } from '../../graphql/queries/book';
+import { GET_BOOK_VIEWER, ME_QUERY } from '../../graphql/queries/user';
 import { LIKE_BOOK_MUTATION, DELETE_BOOK_MUTATION } from '../../graphql/mutations/book';
 import { TOGGLE_SAVED_BOOK_MUTATION } from '../../graphql/mutations/user';
 import { CREATE_COMMENT_MUTATION } from '../../graphql/mutations/comment';
@@ -57,7 +57,7 @@ const BookDetailPage = ({ resolvedId } = {}) => {
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   // --- QUERIES ---
-  const { data: bookData, loading: bookLoading, error: bookError, refetch: refreshBook } = useQuery(GET_BOOK_BY_ID, {
+  const { data: bookData, loading: bookLoading, error: bookError, refetch: refreshBook } = useQuery(GET_BOOK_DETAIL, {
     variables: { id },
     fetchPolicy: 'cache-and-network',
   });
@@ -74,7 +74,7 @@ const BookDetailPage = ({ resolvedId } = {}) => {
   const book = bookData ? bookData.getBookById : null;
   const rawComments = commentsData ? commentsData.getCommentsByBookId : [];
 
-  const { data: currentUserData } = useQuery(GET_USER_BY_ID, {
+  const { data: currentUserData } = useQuery(GET_BOOK_VIEWER, {
     variables: { id: currentUserId },
     skip: !currentUserId, 
   });
@@ -135,7 +135,7 @@ const BookDetailPage = ({ resolvedId } = {}) => {
     try {
       await toggleSavedBook({
         variables: { bookId: book.id },
-        refetchQueries: [{ query: GET_USER_BY_ID, variables: { id: currentUserId } }]
+        refetchQueries: [{ query: GET_BOOK_VIEWER, variables: { id: currentUserId } }]
       });
     } catch (err) { 
       setOptimisticSaved(currentlySaved);

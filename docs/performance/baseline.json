@@ -1,0 +1,59 @@
+{
+  "label": "baseline",
+  "fixture": {
+    "books": 48,
+    "chaptersPerBook": 12,
+    "commentsPerBook": 5,
+    "contentBytesPerChapter": 13007
+  },
+  "operations": {
+    "catalog": {
+      "ms": 4503,
+      "jsonBytes": 146675,
+      "gzipBytes": 3242,
+      "databaseCalls": 530,
+      "calls": {
+        "users.distinct": 97,
+        "books.find": 1,
+        "users.findOne": 288,
+        "genres.findOne": 48,
+        "comments.find": 48,
+        "comments.countDocuments": 48
+      }
+    },
+    "detail": {
+      "ms": 129.7,
+      "jsonBytes": 160733,
+      "gzipBytes": 1247,
+      "databaseCalls": 15,
+      "calls": {
+        "books.findOne": 1,
+        "users.distinct": 4,
+        "genres.findOne": 1,
+        "users.findOne": 6,
+        "comments.countDocuments": 1,
+        "comments.find": 1,
+        "chapters.find": 1
+      }
+    },
+    "reader": {
+      "ms": 92.8,
+      "jsonBytes": 157212,
+      "gzipBytes": 764,
+      "databaseCalls": 5,
+      "calls": {
+        "books.findOne": 1,
+        "users.distinct": 2,
+        "genres.findOne": 1,
+        "chapters.find": 1
+      }
+    }
+  },
+  "bundle": {
+    "entrypoints": [
+      "static/js/main.ebfec7da.js"
+    ],
+    "javascriptBytes": 1130197,
+    "gzipBytes": 312482
+  }
+}

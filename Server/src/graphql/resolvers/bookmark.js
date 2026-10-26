@@ -2,6 +2,7 @@
 import * as BookmarkService from '../../services/bookmarkService.js';
 
 export default {
+  Bookmark: { updatedAt: parent => parent.updatedAt?.toISOString() || null },
   Query: {
     getBookmark: async (_, { bookId }, { user }) => {
       if (!user) return null;

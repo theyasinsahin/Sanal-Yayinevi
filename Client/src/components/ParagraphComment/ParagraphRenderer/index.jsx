@@ -1,5 +1,5 @@
 // src/components/ParagraphComment/ParagraphRenderer/index.jsx
-import React, { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { useQuery } from '@apollo/client';
 import { ChatBubbleOutline, Bookmark, BookmarkBorder } from '@mui/icons-material';
 import { GET_PARAGRAPH_COMMENT_COUNTS } from '../../../graphql/queries/paragraphComment';
@@ -10,12 +10,14 @@ const ParagraphRenderer = ({
   content, 
   bookId, 
   chapterId,
+  restoreParagraphIndex,
   bookmark,        // { paragraphIndex } — mevcut ayraç
   onSetBookmark,   // (paragraphIndex) => void
   onRemoveBookmark // () => void
 }) => {
   const [openPanelIndex, setOpenPanelIndex] = useState(null);
   const blockRefs = useRef({});
+  const restored = useRef('');
 
   const { data: countsData, refetch: refetchCounts } = useQuery(
     GET_PARAGRAPH_COMMENT_COUNTS,
@@ -75,9 +77,19 @@ const ParagraphRenderer = ({
     }
   }, [openPanelIndex]);
 
-  const bookmarkRef = useCallback((el, index) => {
-  blockRefs.current[index] = el;
-}, []);
+  useEffect(() => {
+    if (!Number.isInteger(restoreParagraphIndex) || restoreParagraphIndex < 0) return undefined;
+    const key = `${chapterId}:${restoreParagraphIndex}`;
+    if (restored.current === key) return undefined;
+    const paragraphs = segments.filter(segment => segment.type === 'paragraph');
+    if (!paragraphs.length) return undefined;
+    const index = Math.min(restoreParagraphIndex, paragraphs.length - 1);
+    const frame = requestAnimationFrame(() => {
+      const element = blockRefs.current[index];
+      if (element) { element.scrollIntoView({ block: 'start', behavior: 'auto' }); restored.current = key; }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [chapterId, restoreParagraphIndex, segments]);
 
   return (
     <div className="paragraph-renderer">

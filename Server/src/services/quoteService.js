@@ -72,7 +72,7 @@ export const createQuote = async (userId, data) => {
   });
   const saved = await quote.save();
 
-  await ScoreService.onQuoteCreated(userId);
+  await ScoreService.onQuoteCreated(userId, saved._id);
 
   return await populateQuote(Quote.findById(saved._id));
 };
@@ -106,7 +106,7 @@ export const repostQuote = async (userId, originalQuoteId, repostComment, isSpoi
   
   await repost.save();
 
-  await ScoreService.onRepostCreated(userId);
+  await ScoreService.onRepostCreated(userId, originalQuoteId);
 
   // Orijinal alıntıya repostlayanı ekle
   await Quote.findByIdAndUpdate(originalQuoteId, {

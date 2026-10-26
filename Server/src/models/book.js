@@ -73,5 +73,9 @@ const BookSchema = new mongoose.Schema({
 BookSchema.index({ isDeleted: 1 });
 BookSchema.index({ isbn: 1 }, { unique: true, partialFilterExpression: { isbn: { $type: 'string' } } });
 BookSchema.index({ kind: 1, publicationStatus: 1, createdAt: -1 });
+BookSchema.index({ isDeleted: 1, publishDate: -1, _id: -1 });
+BookSchema.index({ isDeleted: 1, updatedAt: -1, _id: -1 });
+BookSchema.index({ isDeleted: 1, 'stats.likes': -1, _id: -1 });
+BookSchema.index({ isDeleted: 1, genreId: 1, publishDate: -1, _id: -1 });
 
 export default mongoose.model('Book', BookSchema);

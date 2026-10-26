@@ -10,10 +10,11 @@
     "mail:verify": "node src/scripts/verifyMail.js",
     "mail:preview": "node src/scripts/previewEmails.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:performance": "npm run test -- --runInBand tests/performance.test.js",
+    "perf:benchmark": "node src/scripts/performanceBenchmark.js optimized",
     "seed:badges": "node src/scripts/seedBadges.js",
     "seed:books": "node src/scripts/seedBook.js",
     "migrate:points": "node src/scripts/migratePoints.js"
-
   },
   "devDependencies": {
     "@babel/preset-env": "^7.22.9",
@@ -32,7 +33,9 @@
     "apollo-server-cache-memcached": "^3.3.1",
     "bcryptjs": "^3.0.2",
     "body-parser": "^1.20.3",
+    "compression": "^1.8.2",
     "cors": "^2.8.5",
+    "dataloader": "^2.2.3",
     "dotenv": "^16.6.1",
     "express": "^4.21.0",
     "express-validator": "^7.2.0",

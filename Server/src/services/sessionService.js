@@ -8,6 +8,7 @@ import User from '../models/user.js';
 import { pubsub } from '../config/pubsub.js';
 
 import * as ScoreService from './scoreService.js';
+import { normalizeSessionCover } from '../utils/sessionCover.js';
 
 const NEW_SESSION_ENTRY = 'NEW_SESSION_ENTRY';
 const ENTRIES_PER_PAGE = 30;
@@ -64,6 +65,7 @@ export const createSession = async (userId, input) => {
   const sessionData = {
     title,
     description: description ?? '',
+    coverImageUrl: normalizeSessionCover(input.coverImageUrl),
     type,
     createdBy: userId,
     tags: tags ?? [],
@@ -87,6 +89,14 @@ export const getSessions = async (limit = 20, offset = 0) => {
     .skip(offset)
     .limit(limit);
 };
+
+export async function updateSessionCover(user, sessionId, coverImageUrl) {
+  const session = await Session.findOne({ _id: sessionId, isDeleted: false }).exec();
+  if (!session) throw new Error('Oturum bulunamadı.');
+  if (String(session.createdBy) !== String(user._id) && user.role !== 'ADMIN') throw new Error('Yalnızca kendi oturumunuzun kapağını değiştirebilirsiniz.');
+  return Session.findOneAndUpdate({ _id: sessionId, isDeleted: false }, { $set: { coverImageUrl: normalizeSessionCover(coverImageUrl) } }, { new: true, runValidators: true })
+    .populate('createdBy', 'username fullName profilePicture').exec();
+}
 
 export const getSessionById = async (sessionId, userId) => {
   const session = await Session.findOne({ _id: sessionId, isDeleted: false, createdBy: { $nin: await inactiveUserIds() } })
@@ -149,7 +159,7 @@ export const addSessionEntry = async (userId, sessionId, content, accessCode = n
     content: content.trim(),
   });
   await entry.save();
-  await ScoreService.onSessionEntryAdded(userId);
+  await ScoreService.onSessionEntryAdded(userId, entry._id);
 
   // participantCount: bu kullanıcı daha önce hiç yazmadıysa artır
   const previousEntry = await SessionEntry.findOne({

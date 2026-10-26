@@ -12,6 +12,7 @@ const ReadingProgressSchema = new mongoose.Schema({
     ref: 'Book',
     required: true,
   },
+  lastChapterId: { type: mongoose.Schema.Types.ObjectId, ref: 'Chapter', default: null },
   completedChapters: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Chapter',

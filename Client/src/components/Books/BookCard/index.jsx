@@ -1,5 +1,5 @@
 import { bookPath } from '../../../utils/publicPaths';
-import React, { useState } from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import { 
@@ -12,7 +12,7 @@ import {
   Share,
 } from '@mui/icons-material';
 
-import { GET_BOOK_BY_ID } from '../../../graphql/queries/book';
+import { GET_BOOK_CARD } from '../../../graphql/queries/book';
 import { getOptimizedImage } from '../../../utils/ImageUtils';
 import { useAuth } from '../../../context/AuthContext';
 
@@ -20,11 +20,13 @@ import { Typography } from '../../UI/Typography';
 import { Badge } from '../../UI/Badge';
 import { ProgressBar } from '../../UI/ProgressBar';
 import ReasonBadge from '../../Recommendation/ReasonBadge';
-import ShareModal from '../../Messaging/ShareModal';
-import SocialShareDialog from '../../Sharing/SocialShareDialog';
+import PrintedBookCard from '../PrintedBookCard';
 
 import './BookCard.css';
-import PrintedBookCard from '../PrintedBookCard';
+
+// Share dialogs are downloaded only after the visitor opens them.
+const ShareModal = lazy(() => import('../../Messaging/ShareModal'));
+const SocialShareDialog = lazy(() => import('../../Sharing/SocialShareDialog'));
 
 const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
   const navigate = useNavigate();
@@ -32,7 +34,7 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
   const [shareOpen, setShareOpen] = useState(false);
   const [messageOpen, setMessageOpen] = useState(false);
 
-  const { data: bookData, loading: bookLoading, error: bookError } = useQuery(GET_BOOK_BY_ID, {
+  const { data: bookData, loading: bookLoading, error: bookError } = useQuery(GET_BOOK_CARD, {
     variables: { id: bookId },
     skip: !!bookProp || !bookId,
   });
@@ -68,7 +70,7 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
   const displayAuthor    = author?.fullName || author?.username || 'Anonim';
   const finalCoverImage  = imageUrl
     ? getOptimizedImage(imageUrl, 300, 450)
-    : 'https://via.placeholder.com/300x450?text=Kapak+Yok';
+    : '/images/book-placeholder.svg';
   const estimatedReadTime = pageCount ? Math.ceil(pageCount / 3) : 0;
   const isTrending        = stats?.views > 1000;
 
@@ -96,7 +98,8 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
             alt={title}
             className="cover-image"
             loading="lazy"
-            onError={(e) => { e.target.src = 'https://via.placeholder.com/300x450?text=Gorsel+Yuklenemedi'; }}
+            width={300} height={450} decoding="async"
+            onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/book-placeholder.svg'; }}
           />
 
           <div className="meta-overlay">
@@ -193,10 +196,10 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
       </div>
 
       {/* ShareModal */}
-      {shareOpen && (
+      {shareOpen && (<Suspense fallback={null}>
         <SocialShareDialog target={{ type: 'BOOK', id }} onClose={() => setShareOpen(false)} onSendInBetik={user ? () => setMessageOpen(true) : undefined} />
-      )}
-      {messageOpen && (
+      </Suspense>)}
+      {messageOpen && (<Suspense fallback={null}>
         <ShareModal
           isOpen={messageOpen}
           onClose={() => setMessageOpen(false)}
@@ -205,7 +208,7 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
           attachedBook={book}
           currentUserId={user?.id}
         />
-      )}
+      </Suspense>)}
     </>
   );
 };
