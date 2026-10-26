@@ -1,3 +1,4 @@
+import { genreName } from '../../utils/genreDisplay';
 import { bookPath } from '../../utils/publicPaths';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -120,7 +121,7 @@ const CreateBookPage = () => {
 
   // Dinamik Select Opsiyonlarını Hazırla
   const genreOptions = genreData?.getAllGenres?.map(cat => ({
-    label: cat.name,
+    label: genreName(cat.name),
     value: cat.id
   })) || [];
 

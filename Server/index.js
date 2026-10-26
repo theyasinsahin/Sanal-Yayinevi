@@ -38,7 +38,7 @@ const startServer = async () => {
 
     await connectDB();
 
-    app.use(express.json());
+    app.use(express.json({ limit: '2mb' }));
     app.use(express.urlencoded({ extended: true }));
 
     // CORS: web (localhost:3000), prod frontend (CLIENT_URL) ve mobil

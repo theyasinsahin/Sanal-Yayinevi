@@ -24,7 +24,7 @@ afterAll(async () => { server.closeAllConnections(); await new Promise(resolve =
 afterEach(clearDatabase);
 beforeEach(async () => {
   [owner, other, admin] = await User.create([
-    { username: 'organizer', fullName: 'Organizatör', email: 'owner@example.test', password: 'test', isPremium: true },
+    { username: 'organizer', fullName: 'Organizatör', email: 'owner@example.test', password: 'test', sessionCreationAccess: { status: 'APPROVED' } },
     { username: 'other', fullName: 'Katılımcı', email: 'other@example.test', password: 'test' },
     { username: 'admin', fullName: 'Admin', email: 'admin@example.test', password: 'test', role: 'ADMIN' },
   ]);
@@ -47,11 +47,11 @@ test('legacy sessions receive the default cover through the actual client list/d
   expect(detail.errors).toBeUndefined(); expect(detail.data.getSession.coverImageUrl).toBe(DEFAULT_SESSION_COVER);
 });
 
-test('premium organizers can create sessions with an uploaded cover and keep the existing membership gate', async () => {
+test('approved organizers can create sessions with an uploaded cover and unauthorized members cannot', async () => {
   const created = await run(document('CREATE_SESSION'), { input: { title: 'Kitap Fuarı', description: 'Etkinlik hakkındaki düşünceler.', type: 'OPEN', coverImageUrl: cover } }, owner);
   expect(created.errors).toBeUndefined(); expect(created.data.createSession.coverImageUrl).toBe(cover);
   expect((await Session.findById(created.data.createSession.id)).coverImageUrl).toBe(cover);
-  await expect(sessions.createSession(other.id, { title: 'Yetkisiz', type: 'OPEN', coverImageUrl: cover })).rejects.toThrow('ücretli');
+  await expect(sessions.createSession(other.id, { title: 'Yetkisiz', type: 'OPEN', coverImageUrl: cover })).rejects.toThrow('yönetici onaylı');
 });
 
 test('owners can update/reset existing covers and the actual client mutation returns the new image', async () => {

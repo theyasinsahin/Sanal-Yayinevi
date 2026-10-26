@@ -25,6 +25,7 @@ const SessionEntrySchema = new mongoose.Schema({
   },
 
   // ── Soft-delete ──────────────────────────────────────────────────
+  adminArchiveId: { type: mongoose.Schema.Types.ObjectId, ref: 'AdminAudit' },
   isDeleted: { type: Boolean, default: false },
   deletedAt: { type: Date, default: null },
 }, { timestamps: true });

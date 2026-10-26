@@ -81,3 +81,12 @@
   padding: 2rem;
   flex-grow: 1;
 }
+.admin-content { min-width: 0; }
+@media (max-width: 850px) {
+  .admin-wrapper { flex-direction: column; }
+  .admin-sidebar { width: 100%; }
+  .admin-nav { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); padding: .7rem; }
+  .admin-bottom-actions { display: flex; }
+  .admin-header { min-height: 64px; height: auto; padding: 1rem; }
+  .admin-page-body { padding: 1rem; }
+}

@@ -23,7 +23,7 @@ export const GOOGLE_AUTH = gql`
   mutation GoogleAuth($token: String!) {
     googleAuth(token: $token) {
       token
-      user { id username fullName email role isPremium }
+      user { id username fullName email role }
     }
   }
 `;
@@ -50,7 +50,7 @@ export const LOGIN = gql`
   mutation Login($email: String!, $password: String!) {
     login(email: $email, password: $password) {
       token
-      user { id username fullName email role isPremium }
+      user { id username fullName email role }
     }
   }
 `;

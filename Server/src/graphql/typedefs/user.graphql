@@ -91,7 +91,7 @@ type User {
   isActive: Boolean!
   createdAt: DateTime!
   updatedAt: DateTime!
-  isPremium: Boolean!
+  isPremium: Boolean! @deprecated(reason: "Oturum oluşturma için yönetici onaylı izin kullanılır.")
 
   donations: [Transaction]
 

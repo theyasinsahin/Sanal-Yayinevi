@@ -5,6 +5,7 @@ const QuoteCommentSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   content: { type: String, required: true },
   likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: [] }],
+  adminArchiveId: { type: mongoose.Schema.Types.ObjectId, ref: 'AdminAudit' },
   isDeleted: { type: Boolean, default: false },
   deletedAt: { type: Date, default: null },
 }, { timestamps: true });

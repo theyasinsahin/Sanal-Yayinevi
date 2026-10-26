@@ -8,11 +8,11 @@ export const GET_ALL_GENRES = gql`
       isActive
       slug
       description
-      iconUrl
+
       hexColor
       isActive
       createdAt
-      updatedAt    
+      updatedAt
     }
   }
 `;

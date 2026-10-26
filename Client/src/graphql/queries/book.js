@@ -6,7 +6,7 @@ export const BOOK_CARD_FIELDS = gql`
     id publicPath title description imageUrl pageCount publishDate status
     kind printedAuthor publisher publicationYear isbn
     author { id username fullName profilePicture }
-    genre { id name slug iconUrl hexColor isActive }
+    genre { id name slug  hexColor isActive }
     stats { views likes }
     commentCount currentFunding fundingTarget backerCount
   }
@@ -80,7 +80,7 @@ export const GET_BOOKS = gql`
         genre{
           name
           slug
-          iconUrl
+
           hexColor
           isActive
         },
@@ -118,7 +118,7 @@ export const GET_BOOK_BY_ID = gql`
       genre{
           name
           slug
-          iconUrl
+
           hexColor
           isActive
         }
@@ -196,7 +196,7 @@ export const GET_BOOK_READER_DATA = gql`
         genre{
           name
           slug
-          iconUrl
+
           hexColor
           isActive
         }

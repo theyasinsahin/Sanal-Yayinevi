@@ -1,0 +1,33 @@
+enum SessionAccessStatus {
+  NONE
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+type SessionCreationAccess {
+  user: User!
+  status: SessionAccessStatus!
+  reason: String!
+  requestedAt: String
+  reviewedAt: String
+  reviewNote: String!
+  revision: Int!
+}
+
+type SessionAccessRequestPage {
+  items: [SessionCreationAccess!]!
+  total: Int!
+  page: Int!
+  totalPages: Int!
+}
+
+extend type Query {
+  mySessionCreationAccess: SessionCreationAccess!
+  sessionAccessRequests(status: SessionAccessStatus = PENDING, page: Int = 1): SessionAccessRequestPage!
+}
+
+extend type Mutation {
+  requestSessionCreationAccess(reason: String!): SessionCreationAccess!
+  reviewSessionCreationAccess(userId: ID!, revision: Int!, approve: Boolean!, note: String): SessionCreationAccess!
+}

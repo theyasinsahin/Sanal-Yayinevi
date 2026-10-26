@@ -47,10 +47,9 @@ const populateEntry = (query) => {
 // (query zaten sonuç döndürmediği için ekstra kontrol gerekmiyor).
 
 export const createSession = async (userId, input) => {
-  // Yazar kontrolü
-  const user = await User.findById(userId).select('isPremium isVerified');
-  if (!user?.isPremium) {
-    throw new Error('Oturum açmak için doğrulanmış ücretli bir üye olmanız gerekir.');
+  const user = await User.findOne({ _id: userId, isDeleted: false, isActive: { $ne: false } }).select('sessionCreationAccess');
+  if (user?.sessionCreationAccess?.status !== 'APPROVED') {
+    throw new Error('Oturum açmak için yönetici onaylı oturum oluşturma izni gerekir.');
   }
 
   const { title, description, type, accessCode, tags } = input;

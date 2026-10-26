@@ -21,7 +21,7 @@ const mine = () => ({ request: { query: GET_MY_PRINTED_SUBMISSIONS }, result: { 
 const quotes = () => ({ request: { query: GET_QUOTES_BY_BOOK, variables: { bookId: book.id } }, result: { data: { getQuotesByBook: [] } } });
 const show = (element, mocks = []) => render(<MockedProvider mocks={mocks} addTypename={false}><MemoryRouter>{element}</MemoryRouter></MockedProvider>);
 const detail = overrides => <PrintedBookDetail book={{ ...book, ...overrides }} comments={[]} currentUserId="reader" commentText="" onCommentChange={jest.fn()} onCommentSubmit={jest.fn()} refresh={jest.fn()} />;
-beforeEach(() => { useAuth.mockReturnValue({ user: { id: 'reader' } }); });
+beforeEach(() => { useAuth.mockReturnValue({ user: { id: 'reader' }, ensureSession: () => ({ id: 'reader' }) }); });
 
 test('approved print editions have a separate catalog card and do not show funding controls', async () => {
   useAuth.mockReturnValue({ user: null });
@@ -40,6 +40,33 @@ test('ISBN lookup fills metadata but preserves manual submission when the provid
   fireEvent.click(screen.getByRole('button', { name: 'ISBN ile bul' }));
   expect(await screen.findByText(/elle girerek başvurabilirsiniz/)).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Betik onayına gönder' })).toBeEnabled();
+});
+
+test('losing the session closes the submission form and it stays closed after another login', async () => {
+  const mocks = [catalog([]), mine(), mine()];
+  const element = () => <MockedProvider mocks={mocks} addTypename={false}><MemoryRouter><PrintedBooks /></MemoryRouter></MockedProvider>;
+  const view = render(element());
+  fireEvent.click(screen.getByRole('button', { name: 'Basılı kitap ekle' }));
+  expect(screen.getByRole('heading', { name: 'Basılı kitap başvurusu' })).toBeInTheDocument();
+  useAuth.mockReturnValue({ user: null });
+  view.rerender(element());
+  expect(screen.queryByRole('heading', { name: 'Basılı kitap başvurusu' })).not.toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'Kitap eklemek için giriş yapın' })).toBeInTheDocument();
+  useAuth.mockReturnValue({ user: { id: 'other' }, ensureSession: () => ({ id: 'other' }) });
+  view.rerender(element());
+  expect(screen.queryByRole('heading', { name: 'Basılı kitap başvurusu' })).not.toBeInTheDocument();
+  await screen.findByText('Raflarımız ilk eserlerini bekliyor');
+});
+
+test('submission does not reach the server when credentials disappear just before sending', async () => {
+  const ensureSession = jest.fn().mockReturnValue(null);
+  useAuth.mockReturnValue({ user: { id: 'reader' }, ensureSession });
+  show(<PrintedBooks />, [catalog([]), mine()]);
+  fireEvent.click(screen.getByRole('button', { name: 'Basılı kitap ekle' }));
+  fireEvent.submit(screen.getByRole('button', { name: 'Betik onayına gönder' }).closest('form'));
+  expect(ensureSession).toHaveBeenCalledTimes(1);
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  await screen.findByText('Raflarımız ilk eserlerini bekliyor');
 });
 
 test('manual submissions are sent for review and do not appear as approved books immediately', async () => {

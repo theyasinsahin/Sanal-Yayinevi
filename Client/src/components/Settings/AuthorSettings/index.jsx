@@ -1,3 +1,4 @@
+import { genreName } from '../../../utils/genreDisplay';
 import React, { useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
 import { Button } from '../../UI/Button';
@@ -64,7 +65,7 @@ export default function AuthorSettings({ profile, onUpdate, showToast }) {
           <label key={genre.id} className="settings-radio-option">
             <input type="checkbox" checked={form.preferredGenres.includes(genre.name)}
               onChange={event => set('preferredGenres', event.target.checked ? [...form.preferredGenres, genre.name] : form.preferredGenres.filter(name => name !== genre.name))} />
-            {genre.name}
+            {genreName(genre.name)}
           </label>)}
       </div>
     </fieldset>

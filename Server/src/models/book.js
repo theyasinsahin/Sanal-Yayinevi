@@ -66,6 +66,7 @@ const BookSchema = new mongoose.Schema({
   // NOT: Bu yüzden aşağıda daha önce burada bulunan
   // 'findOneAndDelete' / 'deleteOne' pre-hook'ları ve cleanupOnDelete
   // fonksiyonu kaldırıldı — gerçek silme artık hiçbir yoldan tetiklenmemeli.
+  adminArchiveId: { type: mongoose.Schema.Types.ObjectId, ref: 'AdminAudit' },
   isDeleted: { type: Boolean, default: false },
   deletedAt: { type: Date, default: null },
 }, { timestamps: true });

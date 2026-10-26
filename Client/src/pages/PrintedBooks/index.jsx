@@ -24,6 +24,7 @@ export default function PrintedBooksPage() {
   const [term, setTerm] = useState(search);
   const [adding, setAdding] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  useEffect(() => { setAdding(false); setSubmitted(false); }, [user?.id]);
   useEffect(() => setTerm(search), [search]);
   const { data, loading, error, refetch } = useQuery(GET_PRINTED_BOOKS, { variables: { page, search }, fetchPolicy: 'cache-and-network' });
   const { data: mine, error: mineError, refetch: refreshMine } = useQuery(GET_MY_PRINTED_SUBMISSIONS, { skip: !user, fetchPolicy: 'network-only' });
@@ -35,7 +36,7 @@ export default function PrintedBooksPage() {
     {submitted && <p className="ui-notice ui-notice--success" role="status">Başvurunuz Betik'e iletildi. Onaydan sonra kitabınız burada listelenecek.</p>}
     {adding && user && <PrintedBookSubmissionForm onClose={() => setAdding(false)} onSubmitted={() => { setAdding(false); setSubmitted(true); refreshMine().catch(() => {}); }} />}
     {user && mine?.getMyPrintedSubmissions?.length > 0 && <details className="printed-panel"><summary>Başvurularım ({mine.getMyPrintedSubmissions.length})</summary><ul className="printed-submissions">{mine.getMyPrintedSubmissions.map(book => <li key={book.id}><Link to={bookPath(book)} className="ui-text-link">{book.title}</Link><Badge variant={book.publicationStatus === 'APPROVED' ? 'success' : book.publicationStatus === 'REJECTED' ? 'danger' : 'warning'}>{reviewLabels[book.publicationStatus]}</Badge>{book.reviewNote && <p>{book.reviewNote}</p>}</li>)}</ul></details>}
-    {mineError && <p className="ui-notice ui-notice--error" role="alert">Başvurularınız yüklenemedi. {mineError.message}</p>}
+    {user && mineError && <p className="ui-notice ui-notice--error" role="alert">Başvurularınız yüklenemedi. {mineError.message}</p>}
     <form className="printed-search" onSubmit={event => { event.preventDefault(); setParams({ search: term.trim(), page: '1' }); }}><Input label="Kitap, yazar, yayınevi veya ISBN ara" name="printed-search" value={term} onChange={event => setTerm(event.target.value)} maxLength={150} /><Button type="submit" variant="outline">Ara</Button></form>
     {loading && <p role="status">Basılı kitaplar yükleniyor…</p>}
     {error && <div className="ui-notice ui-notice--error" role="alert"><p>{error.message}</p><Button onClick={() => refetch()}>Tekrar dene</Button></div>}

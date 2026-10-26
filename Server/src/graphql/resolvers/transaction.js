@@ -1,6 +1,8 @@
 import * as TransactionService from '../../services/transactionService.js';
 import * as BookService from '../../services/bookService.js';
 import { authenticateUser } from '../../utils/auth.js';
+import Transaction from '../../models/transaction.js';
+import { requireAdmin } from '../../utils/adminAccess.js';
 
 export default {
     Query: {
@@ -17,9 +19,7 @@ export default {
         },
 
         getAllTransactions: async (_, __, context) => {
-            if (!context.user || context.user.role !== 'ADMIN') {
-                throw new Error("Yetkisiz işlem.");
-            }
+            await requireAdmin(context);
             
             return await Transaction.find({})
                 .populate('userId')   // Gönderen (User)

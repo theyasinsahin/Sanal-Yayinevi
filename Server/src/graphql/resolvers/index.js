@@ -1,4 +1,5 @@
 import publicUrlResolvers from './publicUrl.js';
+import adminResolvers from './admin.js';
 import catalogResolvers from './catalog.js';
 import followRequestResolvers from './followRequest.js';
 import socialShareResolvers from './socialShare.js';
@@ -15,6 +16,7 @@ import scoreResolvers from "./score.js";
 import recommendationResolvers from "./recommendation.js";
 import messageResolvers from "./message.js";
 import sessionResolvers from "./session.js";
+import sessionAccessResolvers from './sessionAccess.js';
 import commonResolvers from "./common.js";
 import paragraphCommentResolvers from "./paragraphComment.js";
 import bookmarkResolvers from "./bookmark.js";
@@ -24,6 +26,7 @@ import bookFollowResolvers from "./bookFollow.js";
 // Tüm resolver modüllerini bir dizi içine koyup gönderiyoruz.
 // schema.js içindeki mergeResolvers bunları otomatik birleştirecek.
 export default [
+    adminResolvers,
     catalogResolvers,
     publicUrlResolvers,
     socialShareResolvers,
@@ -41,6 +44,7 @@ export default [
     recommendationResolvers,
     messageResolvers,
     sessionResolvers,
+    sessionAccessResolvers,
     commonResolvers,
     paragraphCommentResolvers,
     bookmarkResolvers,

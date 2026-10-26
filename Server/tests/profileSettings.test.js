@@ -105,7 +105,7 @@ test.each(['bookLike', 'bookComment', 'quoteLike'])('%s suppresses real event no
 });
 
 test('session mentions and replies respect their separate preferences', async () => {
-  const owner = await createUser('owner', { isPremium: true, notificationSettings: { mentionInSession: false, sessionReply: false } });
+  const owner = await createUser('owner', { sessionCreationAccess: { status: 'APPROVED' }, notificationSettings: { mentionInSession: false, sessionReply: false } });
   const actor = await createUser('actor');
   const session = await sessions.createSession(owner._id, { title: 'Oturum', type: 'OPEN' });
   await sessions.addSessionEntry(actor._id, session._id, '@owner merhaba');
@@ -206,7 +206,7 @@ test('message subscriptions deliver real events and reject non-participants', as
 });
 
 test('session subscriptions use the installed PubSub API and deliver new entries', async () => {
-  const owner = await createUser('owner', { isPremium: true });
+  const owner = await createUser('owner', { sessionCreationAccess: { status: 'APPROVED' } });
   const actor = await createUser('actor');
   const session = await sessions.createSession(owner._id, { title: 'Canlı oturum', type: 'OPEN' });
   const stream = await subscribe({ schema,
