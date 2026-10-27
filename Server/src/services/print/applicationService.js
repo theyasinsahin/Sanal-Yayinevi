@@ -2,7 +2,7 @@ import Book from '../../models/book.js';
 import Chapter from '../../models/chapter.js';
 import User from '../../models/user.js';
 import { BookPrintVersion, PrintApplication, PrintTariff, PrintAsset, FundingCampaign, PrintInterest, PrintAudit } from '../../models/printFunding.js';
-import { actor, owner, fail, id, int, text, hash, transact, audit, notice, page } from './common.js';
+import { actor, owner, fail, id, int, text, hash, transact, audit, notice, page, initializePrintTariffManagement } from './common.js';
 
 export const digitalState = book => book.digitalStatus || (book.status === 'DRAFT' ? 'DRAFT' : 'PUBLISHED');
 export const writingState = book => book.writingStatus || (['COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'].includes(book.status) ? 'COMPLETED' : 'WRITING');
@@ -48,11 +48,17 @@ export async function createTariff(context, input) {
   };
   if (config.policy.donationMaxMinor < config.policy.donationMinMinor || !Array.isArray(policy.quickAmountsMinor) || policy.quickAmountsMinor.length > 10) throw fail('Destek sınırları veya hızlı tutarlar geçersiz.');
   config.policy.quickAmountsMinor = [...new Set(policy.quickAmountsMinor.map(amount => int(amount, 'Hızlı destek', config.policy.donationMinMinor, config.policy.donationMaxMinor)))];
-  return transact(async session => {
-    await actor(context, session, true);
-    const [tariff] = await PrintTariff.create([config], { session });
-    await audit(session, user._id, tariff._id, 'TARIFF_CREATED', '', tariff.version, 'SANDBOX örnek fiyat tarifesi'); return tariff;
-  });
+  await initializePrintTariffManagement();
+  try {
+    return await transact(async session => {
+      await actor(context, session, true);
+      const [tariff] = await PrintTariff.create([config], { session });
+      await audit(session, user._id, tariff._id, 'TARIFF_CREATED', '', tariff.version, 'SANDBOX örnek fiyat tarifesi'); return tariff;
+    });
+  } catch (error) {
+    if (error.code === 11000) throw fail('Bu tarife sürümü zaten var. Yeni tarife için farklı bir sürüm adı girin.', 'CONFLICT');
+    throw error;
+  }
 }
 function specification(input) {
   const result = { dimension: input.dimension, paperType: input.paperType, coverType: input.coverType, color: input.color, printRun: int(input.printRun, 'Baskı adedi', 1, 100000), coverAssetId: String(id(input.coverAssetId)), coverDpi: int(input.coverDpi, 'Kapak DPI', 300, 2400), bleedMm: int(input.bleedMm, 'Taşma payı (mm)', 3, 20), notes: text(input.notes || '-', 'Ek tercihler', 1, 2000) };

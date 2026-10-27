@@ -341,3 +341,76 @@ test('real migration CLI dry-run on an empty test database creates neither colle
   expect(JSON.parse(stdout)).toMatchObject({ mode: 'DRY_RUN', digitalBooks: 0, legacyPendingPayments: 0 });
   expect(await mongoose.connection.getClient().db(databaseName).listCollections().toArray()).toEqual([]);
 });
+
+async function withProductionTariffSettings(flag, operation) {
+  const names = ['NODE_ENV', 'PRINT_SYSTEM_ENABLED', 'PRINT_PAYMENTS_MODE', 'PRINT_SANDBOX_WEBHOOK_SECRET', 'PRINT_ADDRESS_ENCRYPTION_KEY'];
+  const previous = Object.fromEntries(names.map(name => [name, process.env[name]]));
+  try {
+    process.env.NODE_ENV = 'production';
+    for (const name of names.slice(1)) delete process.env[name];
+    if (flag !== undefined) process.env.PRINT_SYSTEM_ENABLED = flag;
+    await operation();
+  } finally {
+    for (const name of names) {
+      if (previous[name] === undefined) delete process.env[name];
+      else process.env[name] = previous[name];
+    }
+  }
+}
+
+test.each([undefined, 'false'])('production admins can prepare tariffs with PRINT_SYSTEM_ENABLED=%s while funding stays disabled', async flag => {
+  await withProductionTariffSettings(flag, async () => {
+    const initialize = jest.spyOn(models.PrintTariff, 'createIndexes');
+    const result = await run(clientDocument('CREATE_PRINT_TARIFF'), { input: { ...tariffInput, version: 'production-preparation-v1' } }, admin);
+    expect(result.errors).toBeUndefined();
+    const created = result.data.createPrintTariff;
+    expect(created).toMatchObject({ version: 'production-preparation-v1', environment: 'SANDBOX' });
+    expect(initialize).toHaveBeenCalledTimes(1);
+    expect(await models.PrintAudit.countDocuments({ entityId: created.id, action: 'TARIFF_CREATED', actorId: admin._id })).toBe(1);
+    expect((await run('{ printPaymentMode }')).data.printPaymentMode).toBe('DISABLED');
+    expect(() => getPaymentProvider()).toThrow('Ödemeler kapalı');
+    for (const [name, variables] of [
+      ['SET_PRINT_INTEREST', { bookId: book.id, interested: true }],
+      ['START_PRINT_CHECKOUT', { input: { campaignId: book.id, idempotencyKey: randomUUID(), donationMinor: 5000 } }],
+      ['OPEN_FUNDING_CAMPAIGN', { input: { applicationId: book.id, revision: 1 } }],
+      ['RUN_PRINT_MAINTENANCE', {}],
+    ]) expect((await run(clientDocument(name), variables, admin)).errors[0].extensions.code).toBe('PRINT_SYSTEM_DISABLED');
+    expect(await models.FundingCampaign.countDocuments()).toBe(0); expect(await models.FundingPayment.countDocuments()).toBe(0);
+    expect(await models.FundingLedger.countDocuments()).toBe(0); expect(await models.SandboxCharge.countDocuments()).toBe(0);
+  });
+});
+
+test('production tariff access still checks the current admin role and input bounds', async () => {
+  await withProductionTariffSettings(undefined, async () => {
+    for (const viewer of [null, reader]) {
+      const result = await run(clientDocument('CREATE_PRINT_TARIFF'), { input: { ...tariffInput, version: 'forbidden-version' } }, viewer);
+      expect(result.errors[0].extensions.code).toBe('FORBIDDEN');
+    }
+    const invalid = await run(clientDocument('CREATE_PRINT_TARIFF'), { input: { ...tariffInput, version: 'invalid-price', pageRates: { ...tariffInput.pageRates, enzo: -1 } } }, admin);
+    expect(invalid.errors[0].extensions.code).toBe('BAD_USER_INPUT');
+    await User.updateOne({ _id: admin._id }, { role: 'USER' });
+    const stale = await run(clientDocument('CREATE_PRINT_TARIFF'), { input: { ...tariffInput, version: 'stale-admin' } }, admin);
+    expect(stale.errors[0].extensions.code).toBe('FORBIDDEN');
+    expect(await models.PrintTariff.countDocuments()).toBe(1);
+  });
+});
+
+test('a duplicate tariff version returns an actionable conflict and cannot duplicate its audit', async () => {
+  await withProductionTariffSettings(undefined, async () => {
+    const result = await run(clientDocument('CREATE_PRINT_TARIFF'), { input: tariffInput }, admin);
+    expect(result.errors[0].extensions.code).toBe('CONFLICT');
+    expect(result.errors[0].message).toContain('farklı bir sürüm adı');
+    expect(await models.PrintTariff.countDocuments({ version: tariffInput.version })).toBe(1);
+    expect(await models.PrintAudit.countDocuments({ entityId: tariff._id, action: 'TARIFF_CREATED' })).toBe(1);
+  });
+});
+
+test('tariff creation explains missing transaction support without saving an unaudited record', async () => {
+  await withProductionTariffSettings(undefined, async () => {
+    jest.spyOn(mongoose.connection.db, 'admin').mockReturnValue({ command: async () => ({ ok: 1 }) });
+    const result = await run(clientDocument('CREATE_PRINT_TARIFF'), { input: { ...tariffInput, version: 'standalone-rejected' } }, admin);
+    expect(result.errors[0].extensions.code).toBe('PRINT_STORAGE_UNAVAILABLE');
+    expect(result.errors[0].message).toContain('replica set');
+    expect(await models.PrintTariff.countDocuments({ version: 'standalone-rejected' })).toBe(0);
+  });
+});

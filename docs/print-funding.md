@@ -158,7 +158,7 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 
 | Değişken | Davranış |
 | --- | --- |
-| PRINT_SYSTEM_ENABLED | `true` değilse yeni GraphQL yazmaları/PDF yükleme kapalı; startup index/worker başlatmaz |
+| PRINT_SYSTEM_ENABLED | `true` değilse başvuru/kampanya/ödeme yazmaları ve PDF yükleme kapalı; startup index/worker başlatmaz. Güncel ADMIN tarafından tarife oluşturulması bu anahtardan bağımsızdır. |
 | PRINT_PAYMENTS_MODE | Varsayılan kapalı; yalnız `SANDBOX` desteklenir |
 | NODE_ENV | Ödeme için açıkça `development` veya `test` gerekir; production'da sandbox dahi kapalı |
 | PRINT_SANDBOX_WEBHOOK_SECRET | En az 32 karakter; yalnız mock HMAC protokolüne ait, gerçek sağlayıcı anahtarı değildir |
@@ -177,6 +177,12 @@ node src/scripts/migratePrintFunding.js --apply --indexes
 ```
 
 6. `npm.cmd --prefix Server start`, `npm.cmd --prefix Client start`. Admin kullanıcı mevcut rol sistemiyle yetkili olmalı; bu görev otomatik yönetici hesabı oluşturmaz. `/admin/print-funding` → Fiyat tarifeleri ekranında açıkça örnek test değerleriyle yeni tarife girin. Sonra metinli bir dijital kitapta tamamla → başvuru → yönetici teknik/teklif onayı → kampanya → test desteği/ön sipariş akışını çalıştırın.
+
+### Canlı sitede yalnız tarife hazırlama
+
+Yönetici olarak `/admin/print-funding` → **Fiyat tarifeleri** ekranından yeni, benzersiz bir sürüm adıyla tarife kaydedebilirsiniz. Bunun için `PRINT_SYSTEM_ENABLED`, sandbox sırrı veya ödeme anahtarı eklemek gerekmez; `NODE_ENV=production` korunur. Kayıt anında yalnız tarife ve denetim geçmişi indexleri hazırlanır; tarife ile audit birlikte transaction içinde yazılır. MongoDB replica set/mongos desteği gereklidir. Aynı sürüm adı tekrar kullanılamaz; mevcut tarife değişmeden yeni sürüm oluşturulur.
+
+Bu yönetim işlemi başvuru/kampanya/ödeme özelliklerini etkinleştirmez. Mevcut tarifeler SANDBOX etiketini taşımaya devam eder; gerçek ödeme veya canlı fiyatlandırma adaptörü eklenmiş sayılmaz.
 
 ## Testler ve doğrulama sınırları
 
