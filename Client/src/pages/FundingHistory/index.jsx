@@ -6,6 +6,7 @@ import { MY_FUNDING_HISTORY } from '../../graphql/printFunding';
 import { Feedback, Pager } from '../../components/PrintFunding/shared';
 import PaymentCard from '../../components/PrintFunding/PaymentCard';
 
+
 export default function FundingHistoryPage() {
   const [page, setPage] = useState(1);
   const { data, loading, error, refetch } = useQuery(MY_FUNDING_HISTORY, { variables: { page }, fetchPolicy: 'network-only', pollInterval: 15000, skipPollAttempt: () => document.visibilityState === 'hidden' });

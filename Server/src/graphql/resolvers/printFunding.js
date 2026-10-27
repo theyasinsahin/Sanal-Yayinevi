@@ -78,6 +78,8 @@ const resolvers = {
   } },
 };
 for (const [name, resolve] of Object.entries(resolvers.Mutation)) {
+  // Preparing an admin tariff must not require enabling applications or payments.
+  if (name === 'createPrintTariff') continue;
   resolvers.Mutation[name] = (...args) => { assertPrintSystem(); return resolve(...args); };
 }
 export default resolvers;

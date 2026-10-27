@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import { createHash } from 'node:crypto';
 import { GraphQLError } from 'graphql';
 import User from '../../models/user.js';
-import { PrintAudit, PrintOutbox, printModels } from '../../models/printFunding.js';
+import { PrintAudit, PrintOutbox, PrintTariff, printModels } from '../../models/printFunding.js';
 
 export const fail = (message, code = 'BAD_USER_INPUT') => new GraphQLError(message, { extensions: { code } });
 export function id(value) { if (!mongoose.isObjectIdOrHexString(value)) throw fail('Geçerli bir kayıt kimliği gerekli.'); return value; }
@@ -23,10 +23,19 @@ export async function notice(session, key, userId, title, message, campaignId = 
 }
 export const transact = fn => mongoose.connection.transaction(fn, { readConcern: { level: 'snapshot' }, writeConcern: { w: 'majority' }, readPreference: 'primary', maxCommitTimeMS: 15000 });
 export function assertPrintSystem() { if (process.env.PRINT_SYSTEM_ENABLED !== 'true') throw fail('Basım sistemi kapalı. Test ortamında PRINT_SYSTEM_ENABLED=true ile etkinleştirin.', 'PRINT_SYSTEM_DISABLED'); }
+async function requireTransactions() {
+  const hello = await mongoose.connection.db.admin().command({ hello: 1 });
+  if (!hello.setName && hello.msg !== 'isdbgrid') throw fail('Tarife ve işlem geçmişini birlikte kaydetmek için MongoDB replica set veya mongos gerekli.', 'PRINT_STORAGE_UNAVAILABLE');
+}
+export async function initializePrintTariffManagement() {
+  // The global print feature may be disabled at startup. Prepare only admin tariff
+  // indexes here, before the transaction; no worker, payment or campaign is enabled.
+  await requireTransactions();
+  await Promise.all([PrintTariff.createIndexes(), PrintAudit.createIndexes()]);
+}
 export async function initializePrintFunding() {
   // No index drops or legacy-data writes. Fail closed on standalone MongoDB.
-  const hello = await mongoose.connection.db.admin().command({ hello: 1 });
-  if (!hello.setName && hello.msg !== 'isdbgrid') throw new Error('Basım sistemi MongoDB replica set veya mongos gerektirir.');
+  await requireTransactions();
   await Promise.all(printModels.map(model => model.createIndexes()));
 }
 export function page(value = 1) { return int(value, 'Sayfa', 1, 10000); }
