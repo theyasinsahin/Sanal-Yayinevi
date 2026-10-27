@@ -2,7 +2,7 @@ import Book from '../../models/book.js';
 import Chapter from '../../models/chapter.js';
 import User from '../../models/user.js';
 import { BookPrintVersion, PrintApplication, PrintTariff, PrintAsset, FundingCampaign, PrintInterest, PrintAudit } from '../../models/printFunding.js';
-import { actor, owner, fail, id, int, text, hash, transact, audit, notice, page, initializePrintTariffManagement } from './common.js';
+import { actor, owner, fail, id, int, text, hash, transact, audit, notice, page, initializePrintTariffManagement, initializePrintApplicationManagement } from './common.js';
 
 export const digitalState = book => book.digitalStatus || (book.status === 'DRAFT' ? 'DRAFT' : 'PUBLISHED');
 export const writingState = book => book.writingStatus || (['COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'].includes(book.status) ? 'COMPLETED' : 'WRITING');
@@ -87,6 +87,8 @@ function estimate(version, tariff) {
   return { environment: 'SANDBOX', label: 'ÖRNEK — matbaa teklifi değildir', tariffVersion: tariff.version, estimatedPages: version.estimatedPages, components: costs, totalMinor: sum(Object.values(costs)) };
 }
 export async function saveApplication(context, input) {
+  await actor(context);
+  await initializePrintApplicationManagement();
   try { return await transact(async session => {
     const user = await actor(context, session);
     const book = await Book.findOne({ _id: id(input.bookId), isDeleted: false, kind: { $ne: 'PRINTED' } }).session(session);
@@ -109,6 +111,8 @@ export async function saveApplication(context, input) {
   }); } catch (error) { if (error.code === 11000) throw fail('Kitap için açık başvuru zaten var.', 'CONFLICT'); throw error; }
 }
 export async function submitApplication(context, { applicationId, revision }) {
+  await actor(context);
+  await initializePrintApplicationManagement();
   return transact(async session => {
     const user = await actor(context, session), application = await PrintApplication.findById(id(applicationId)).session(session);
     if (!application) throw fail('Başvuru bulunamadı.'); owner(application, user);
@@ -122,6 +126,8 @@ export async function submitApplication(context, { applicationId, revision }) {
   });
 }
 export async function reviewApplication(context, input) {
+  await actor(context, null, true);
+  await initializePrintApplicationManagement();
   return transact(async session => {
     const user = await actor(context, session, true), application = await PrintApplication.findById(id(input.applicationId)).session(session);
     if (!application || application.state !== 'SUBMITTED' || application.revision !== input.revision) throw fail('Başvuru incelemede değil veya değişmiş.', 'CONFLICT');
@@ -152,6 +158,8 @@ export async function reviewApplication(context, input) {
   });
 }
 export async function cancelApplication(context, { applicationId, revision, reason }) {
+  await actor(context);
+  await initializePrintApplicationManagement();
   return transact(async session => {
     const user = await actor(context, session), application = await PrintApplication.findById(id(applicationId)).session(session);
     if (!application) throw fail('Başvuru bulunamadı.'); owner(application, user);
@@ -179,6 +187,7 @@ export async function setInterest(context, { bookId, interested }) {
   const user = await actor(context), book = await Book.findOne({ _id: id(bookId), isDeleted: false, kind: { $ne: 'PRINTED' } }).exec();
   if (!book || digitalState(book) !== 'PUBLISHED') throw fail('Yayımlanmış dijital kitap gerekli.');
   if (!await User.exists({ _id: book.authorId, isDeleted: false, isActive: { $ne: false } })) throw fail('Yazar hesabı erişilebilir değil.');
+  await PrintInterest.createIndexes();
   if (interested) { try { await PrintInterest.updateOne({ bookId, userId: user._id }, { $setOnInsert: { bookId, userId: user._id } }, { upsert: true }); } catch (error) { if (error.code !== 11000) throw error; } }
   else await PrintInterest.deleteOne({ bookId, userId: user._id });
   return true;
