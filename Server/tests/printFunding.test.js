@@ -370,7 +370,6 @@ test.each([undefined, 'false'])('production admins can prepare tariffs with PRIN
     expect((await run('{ printPaymentMode }')).data.printPaymentMode).toBe('DISABLED');
     expect(() => getPaymentProvider()).toThrow('Ödemeler kapalı');
     for (const [name, variables] of [
-      ['SET_PRINT_INTEREST', { bookId: book.id, interested: true }],
       ['START_PRINT_CHECKOUT', { input: { campaignId: book.id, idempotencyKey: randomUUID(), donationMinor: 5000 } }],
       ['OPEN_FUNDING_CAMPAIGN', { input: { applicationId: book.id, revision: 1 } }],
       ['RUN_PRINT_MAINTENANCE', {}],
@@ -412,5 +411,62 @@ test('tariff creation explains missing transaction support without saving an una
     expect(result.errors[0].extensions.code).toBe('PRINT_STORAGE_UNAVAILABLE');
     expect(result.errors[0].message).toContain('replica set');
     expect(await models.PrintTariff.countDocuments({ version: 'standalone-rejected' })).toBe(0);
+  });
+});
+
+test.each([undefined, 'false'])('production PDF upload and the full application/review flow work without enabling funding (%s)', async flag => {
+  await withProductionTariffSettings(flag, async () => {
+    const app = express(); app.use('/api/print', printRoutes);
+    const server = await new Promise(resolve => { const listener = app.listen(0, '127.0.0.1', () => resolve(listener)); });
+    const base = `http://127.0.0.1:${server.address().port}`;
+    process.env.JWT_SECRET = 'application-http-tests-only-key';
+    const headers = viewer => ({ Authorization: `Bearer ${jwt.sign({ userId: viewer.id }, process.env.JWT_SECRET)}`, 'Content-Type': 'application/pdf', 'X-Filename': 'cover.pdf' });
+    try {
+      const denied = await fetch(`${base}/api/print/assets`, { method: 'POST', headers: { 'Content-Type': 'application/pdf' }, body: pdf('private cover') });
+      expect(denied.status).toBe(401);
+      const uploads = await Promise.all(Array.from({ length: 2 }, () => fetch(`${base}/api/print/assets`, { method: 'POST', headers: headers(user), body: pdf('private cover') })));
+      expect(uploads.map(response => response.status)).toEqual([201, 201]);
+      const uploaded = await Promise.all(uploads.map(response => response.json()));
+      expect(uploaded[0].id).toBe(uploaded[1].id); expect(uploaded[0].sha256).toHaveLength(64);
+      expect(await models.PrintAsset.countDocuments({ ownerId: user._id, sha256: uploaded[0].sha256 })).toBe(1);
+      const privateFile = await fetch(`${base}/api/print/assets/${uploaded[0].id}`, { headers: headers(reader) });
+      expect(privateFile.status).toBe(403);
+      const input = applicationInput(); input.specification.coverAssetId = uploaded[0].id;
+      const unauthorized = await run(clientDocument('SAVE_PRINT_APPLICATION'), { input }, reader);
+      expect(unauthorized.errors[0].extensions.code).toBe('FORBIDDEN');
+      await Book.updateOne({ _id: book._id }, { status: 'WRITING' });
+      const unfinished = await run(clientDocument('SAVE_PRINT_APPLICATION'), { input }, user);
+      expect(unfinished.errors[0].message).toContain('tamamlanmış');
+      await Book.updateOne({ _id: book._id }, { status: 'COMPLETED' });
+      let result = await run(clientDocument('SAVE_PRINT_APPLICATION'), { input }, user);
+      expect(result.errors).toBeUndefined();
+      let application = result.data.savePrintApplication;
+      const firstVersion = application.version;
+      result = await run(clientDocument('SUBMIT_PRINT_APPLICATION'), { applicationId: application.id, revision: application.revision }, user);
+      expect(result.errors).toBeUndefined(); application = result.data.submitPrintApplication; expect(application.state).toBe('SUBMITTED');
+      const reviewInput = { applicationId: application.id, revision: application.revision, decision: 'REVISION_REQUESTED', reason: 'Kapak teknik ayrıntıları gözden geçirilmeli.' };
+      const forbiddenReview = await run(clientDocument('REVIEW_PRINT_APPLICATION'), { input: reviewInput }, reader);
+      expect(forbiddenReview.errors[0].extensions.code).toBe('FORBIDDEN');
+      result = await run(clientDocument('REVIEW_PRINT_APPLICATION'), { input: reviewInput }, admin);
+      expect(result.errors).toBeUndefined(); application = result.data.reviewPrintApplication; expect(application.state).toBe('REVISION_REQUESTED');
+      result = await run(clientDocument('SAVE_PRINT_APPLICATION'), { input: { ...input, revision: application.revision } }, user);
+      expect(result.errors).toBeUndefined(); application = result.data.savePrintApplication;
+      expect(application.version.id).not.toBe(firstVersion.id);
+      expect((await models.BookPrintVersion.findById(firstVersion.id)).contentHash).toBe(firstVersion.contentHash);
+      result = await run(clientDocument('SUBMIT_PRINT_APPLICATION'), { applicationId: application.id, revision: application.revision }, user);
+      expect(result.errors).toBeUndefined(); application = result.data.submitPrintApplication;
+      result = await run(clientDocument('REVIEW_PRINT_APPLICATION'), { input: { applicationId: application.id, revision: application.revision, decision: 'APPROVED', reason: 'Dosyalar inceleme için uygun.', quote: quote() } }, admin);
+      expect(result.errors).toBeUndefined(); application = result.data.reviewPrintApplication; expect(application.state).toBe('APPROVED');
+      const blockedCampaign = await run(clientDocument('OPEN_FUNDING_CAMPAIGN'), { input: { applicationId: application.id, revision: application.revision } }, admin);
+      expect(blockedCampaign.errors[0].extensions.code).toBe('PRINT_SYSTEM_DISABLED');
+      result = await run(clientDocument('CANCEL_PRINT_APPLICATION'), { applicationId: application.id, revision: application.revision, reason: 'Yazar başvuruyu geri çekti.' }, user);
+      expect(result.errors).toBeUndefined(); expect(result.data.cancelPrintApplication.state).toBe('CANCELLED');
+      expect((await run(clientDocument('SET_PRINT_INTEREST'), { bookId: book.id, interested: true }, reader)).errors).toBeUndefined();
+      expect((await run('{ printPaymentMode }')).data.printPaymentMode).toBe('DISABLED');
+      const maintenance = await runPrintMaintenance(); expect(maintenance.disabled).toBe(true);
+      expect(await Notification.countDocuments({ userId: user._id, type: 'PRINT_UPDATE' })).toBeGreaterThan(0);
+      expect(await models.PrintOutbox.countDocuments({ state: 'PENDING' })).toBe(0);
+      for (const model of [models.FundingCampaign, models.FundingPayment, models.PaymentReservation, models.FundingLedger, models.FundingRefund, models.SandboxCharge]) expect(await model.countDocuments()).toBe(0);
+    } finally { await new Promise(resolve => server.close(resolve)); }
   });
 });

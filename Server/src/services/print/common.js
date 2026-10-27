@@ -2,7 +2,8 @@ import mongoose from 'mongoose';
 import { createHash } from 'node:crypto';
 import { GraphQLError } from 'graphql';
 import User from '../../models/user.js';
-import { PrintAudit, PrintOutbox, PrintTariff, printModels } from '../../models/printFunding.js';
+import { PrintAudit, PrintOutbox, PrintTariff, PrintApplication, BookPrintVersion, printModels } from '../../models/printFunding.js';
+import Notification from '../../models/notification.js';
 
 export const fail = (message, code = 'BAD_USER_INPUT') => new GraphQLError(message, { extensions: { code } });
 export function id(value) { if (!mongoose.isObjectIdOrHexString(value)) throw fail('Geçerli bir kayıt kimliği gerekli.'); return value; }
@@ -25,13 +26,20 @@ export const transact = fn => mongoose.connection.transaction(fn, { readConcern:
 export function assertPrintSystem() { if (process.env.PRINT_SYSTEM_ENABLED !== 'true') throw fail('Basım sistemi kapalı. Test ortamında PRINT_SYSTEM_ENABLED=true ile etkinleştirin.', 'PRINT_SYSTEM_DISABLED'); }
 async function requireTransactions() {
   const hello = await mongoose.connection.db.admin().command({ hello: 1 });
-  if (!hello.setName && hello.msg !== 'isdbgrid') throw fail('Tarife ve işlem geçmişini birlikte kaydetmek için MongoDB replica set veya mongos gerekli.', 'PRINT_STORAGE_UNAVAILABLE');
+  if (!hello.setName && hello.msg !== 'isdbgrid') throw fail('Başvuru, tarife ve işlem geçmişini birlikte kaydetmek için MongoDB replica set veya mongos gerekli.', 'PRINT_STORAGE_UNAVAILABLE');
 }
 export async function initializePrintTariffManagement() {
   // The global print feature may be disabled at startup. Prepare only admin tariff
   // indexes here, before the transaction; no worker, payment or campaign is enabled.
   await requireTransactions();
   await Promise.all([PrintTariff.createIndexes(), PrintAudit.createIndexes()]);
+}
+export async function initializePrintApplicationManagement() {
+  // Application preparation/review is available independently of financial features.
+  // Create required unique indexes before entering a transaction, also when startup
+  // funding initialization was skipped. Never create campaigns or provider records.
+  await requireTransactions();
+  await Promise.all([PrintApplication, BookPrintVersion, PrintAudit, PrintOutbox, Notification].map(model => model.createIndexes()));
 }
 export async function initializePrintFunding() {
   // No index drops or legacy-data writes. Fail closed on standalone MongoDB.

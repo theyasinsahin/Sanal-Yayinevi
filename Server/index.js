@@ -173,7 +173,9 @@ const startServer = async () => {
     );
 
     await new Promise((resolve) => httpServer.listen({ port: PORT }, resolve));
-    if (process.env.PRINT_SYSTEM_ENABLED === 'true') startPrintWorker();
+    // Application notifications also need delivery when funding is disabled.
+    // Maintenance only touches money/provider state if sandboxEnabled() is true.
+    startPrintWorker();
     console.log(`🚀 Server hazır: http://localhost:${PORT}`);
     console.log(`🔌 WebSocket hazır: ws://localhost:${PORT}/graphql`);
 

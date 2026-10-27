@@ -158,7 +158,7 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 
 | Değişken | Davranış |
 | --- | --- |
-| PRINT_SYSTEM_ENABLED | `true` değilse başvuru/kampanya/ödeme yazmaları ve PDF yükleme kapalı; startup index/worker başlatmaz. Güncel ADMIN tarafından tarife oluşturulması bu anahtardan bağımsızdır. |
+| PRINT_SYSTEM_ENABLED | Kampanya/ödeme/üretim/sipariş yazmaları ve finansal startup indexleri için gerekir. Tarife, özel PDF yükleme, başvuru kaydetme/gönderme/iptal/inceleme ve ücretsiz basım ilgisi bu anahtardan bağımsızdır. Bildirim worker'ı ayrıca çalışır. |
 | PRINT_PAYMENTS_MODE | Varsayılan kapalı; yalnız `SANDBOX` desteklenir |
 | NODE_ENV | Ödeme için açıkça `development` veya `test` gerekir; production'da sandbox dahi kapalı |
 | PRINT_SANDBOX_WEBHOOK_SECRET | En az 32 karakter; yalnız mock HMAC protokolüne ait, gerçek sağlayıcı anahtarı değildir |
@@ -178,11 +178,15 @@ node src/scripts/migratePrintFunding.js --apply --indexes
 
 6. `npm.cmd --prefix Server start`, `npm.cmd --prefix Client start`. Admin kullanıcı mevcut rol sistemiyle yetkili olmalı; bu görev otomatik yönetici hesabı oluşturmaz. `/admin/print-funding` → Fiyat tarifeleri ekranında açıkça örnek test değerleriyle yeni tarife girin. Sonra metinli bir dijital kitapta tamamla → başvuru → yönetici teknik/teklif onayı → kampanya → test desteği/ön sipariş akışını çalıştırın.
 
-### Canlı sitede yalnız tarife hazırlama
+### Canlı sitede tarife ve basım başvurusu hazırlama
 
 Yönetici olarak `/admin/print-funding` → **Fiyat tarifeleri** ekranından yeni, benzersiz bir sürüm adıyla tarife kaydedebilirsiniz. Bunun için `PRINT_SYSTEM_ENABLED`, sandbox sırrı veya ödeme anahtarı eklemek gerekmez; `NODE_ENV=production` korunur. Kayıt anında yalnız tarife ve denetim geçmişi indexleri hazırlanır; tarife ile audit birlikte transaction içinde yazılır. MongoDB replica set/mongos desteği gereklidir. Aynı sürüm adı tekrar kullanılamaz; mevcut tarife değişmeden yeni sürüm oluşturulur.
 
-Bu yönetim işlemi başvuru/kampanya/ödeme özelliklerini etkinleştirmez. Mevcut tarifeler SANDBOX etiketini taşımaya devam eder; gerçek ödeme veya canlı fiyatlandırma adaptörü eklenmiş sayılmaz.
+Yazarın PDF yüklemesi ve başvurusu da ödeme ayarlarından bağımsızdır. Kitabı dijital yayımlayıp yazımı tamamlayın; yazı masasından **Basım İçin Başvur / Başvurumu Gör** ekranını açın. Kapak PDF'ini yükleyin, özellikler ve beyanlarla **Basım sürümünü sabitle ve başvuruyu kaydet** düğmesine basın; ardından **Başvuruyu incelemeye gönder** düğmesini kullanın. Özel PDF sınırı 10 MB, kimlik ve sahiplik kontrolleri geçerlidir. Başvuru sürüm/geçmiş/bildirim indexleri işlem öncesinde eklemeli hazırlanır; veri reseti veya zorunlu backfill yoktur.
+
+Yönetici başvuruyu inceleyebilir, revizyon isteyebilir, onaylayabilir veya reddedebilir; yazar kampanya açılmadan iptal edebilir. Başvuru onayı kampanyayı veya tahsilatı açmaz. Kampanya ve finansal işlemler mevcut feature flag ve sağlayıcı kontrollerini kullanmaya devam eder. Mevcut tarifeler ve maliyet hesapları SANDBOX etiketlidir; gerçek ödeme veya canlı fiyatlandırma adaptörü eklenmiş sayılmaz.
+
+Başvuru bildirimleri için worker sunucuyla birlikte başlar. `sandboxEnabled()` false olduğunda yalnız bildirim outbox'ını işler; ödeme, rezervasyon, kampanya uzlaştırması veya iade çağrısı yapmaz. Başvuru/karar bildirimleri bu nedenle `PRINT_SYSTEM_ENABLED` kapalıyken de teslim edilebilir.
 
 ## Testler ve doğrulama sınırları
 

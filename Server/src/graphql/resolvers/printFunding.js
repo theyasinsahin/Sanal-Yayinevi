@@ -77,9 +77,11 @@ const resolvers = {
     return order ? decryptAddress(order.shippingAddress, String(order.paymentId)) : null;
   } },
 };
+const preparationMutations = new Set(['createPrintTariff', 'savePrintApplication', 'submitPrintApplication', 'cancelPrintApplication', 'reviewPrintApplication', 'setPrintInterest']);
 for (const [name, resolve] of Object.entries(resolvers.Mutation)) {
-  // Preparing an admin tariff must not require enabling applications or payments.
-  if (name === 'createPrintTariff') continue;
+  // Private documents, application review and free interest have their own access
+  // checks; none may require enabling financial features to become usable.
+  if (preparationMutations.has(name)) continue;
   resolvers.Mutation[name] = (...args) => { assertPrintSystem(); return resolve(...args); };
 }
 export default resolvers;
