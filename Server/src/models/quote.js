@@ -25,6 +25,7 @@ const QuoteSchema = new mongoose.Schema({
   isSpoiler: { type: Boolean, default: false }, // spoiler içeren alıntılar için
 
   // ── Soft-delete ──────────────────────────────────────────────────
+  adminArchiveId: { type: mongoose.Schema.Types.ObjectId, ref: 'AdminAudit' },
   isDeleted: { type: Boolean, default: false },
   deletedAt: { type: Date, default: null },
 }, { timestamps: true });

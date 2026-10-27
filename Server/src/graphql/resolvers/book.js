@@ -2,9 +2,10 @@ import { inactiveUserIds } from '../../utils/activeUsers.js';
 import { canViewProfile, sameUser } from '../../utils/profileAccess.js';
 import * as BookService from '../../services/bookService.js';
 import * as UserService from '../../services/userService.js';
-import * as ScoreService from '../../services/scoreService.js';
 import { isPrintedBook } from '../../utils/printedBooks.js';
 import { getLoaders, selectedFields } from '../loaders.js';
+import { updateDigitalStatus } from '../../services/print/applicationService.js';
+import { onBookPublished } from '../../services/scoreAwards.js';
 
 export default {
   Query: {
@@ -85,29 +86,11 @@ export default {
         return BookService.toggleLike(bookId, user._id);
     },
 
-    updateBookStatus: async (_, { bookId, status, fundingTarget, printConfig }, { user, Book }) => {
-        if(!user) throw new Error("Giriş yapmalısınız");
-
-        const book = await BookService.findBookById(bookId);
-        if (!book) throw new Error("Kitap bulunamadı");
-        if (isPrintedBook(book)) throw new Error('Basılı kitaplar fonlama ve taslak akışına alınamaz.');
-
-        if (book.authorId.toString() !== user._id.toString() && user.role !== 'ADMIN') {
-             throw new Error("Yetkiniz yok.");
-        }
-
-        const updates = { status };
-        if (fundingTarget !== undefined) updates.fundingTarget = fundingTarget;
-        if (printConfig) updates.printConfig = printConfig;
-
-        const updatedBook = await Book.findByIdAndUpdate(bookId, updates, { new: true });
-
-        // Kitap ilk kez PUBLISHED durumuna geçiyorsa puan ver
-        if (status === 'PUBLISHED' && book.status !== 'PUBLISHED') {
-            await ScoreService.onBookPublished(book.authorId, book.id);
-        }
-
-        return updatedBook;    
+    updateBookStatus: async (_, args, context) => {
+      const book = await updateDigitalStatus(context, args);
+      // Preserve the historical PUBLISHED API alias and its idempotent publication award.
+      if (args.status === 'PUBLISHED') await onBookPublished(book.authorId, book.id);
+      return book;
     }
   },
 

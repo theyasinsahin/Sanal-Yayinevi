@@ -1,3 +1,4 @@
+import { genreName } from '../../utils/genreDisplay';
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@apollo/client';
 import { Link } from 'react-router-dom';
@@ -70,7 +71,7 @@ const FeedOnboarding = ({ onComplete }) => {
               style={isSelected ? { color, borderColor: color, backgroundColor: color + '15' } : {}}
               onClick={() => toggle(genre.id)}
             >
-              {genre.name}
+              {genreName(genre.name)}
             </button>
           );
         })}
@@ -116,7 +117,7 @@ const PreferenceBox = ({ preference, onEdit }) => {
               backgroundColor: (genre.hexColor ?? '#6B7280') + '12',
             }}
           >
-            {genre.name}
+            {genreName(genre.name)}
           </span>
         ))}
       </div>

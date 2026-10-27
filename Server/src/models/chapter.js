@@ -17,6 +17,7 @@ const ChapterSchema = new mongoose.Schema({
   pageCount: { type: Number, default: 0 },
 
   // ── Soft-delete ──────────────────────────────────────────────────
+  adminArchiveId: { type: mongoose.Schema.Types.ObjectId, ref: 'AdminAudit' },
   isDeleted: { type: Boolean, default: false },
   deletedAt: { type: Date, default: null },
 }, { timestamps: true });

@@ -7,7 +7,6 @@ const AdminRoute = ({ children }) => {
 
   if (loading) return <div>Kontrol ediliyor...</div>;
 
-  console.log("AdminRoute - Mevcut Kullanıcı:", user);
   // Kullanıcı yoksa veya Rolü ADMIN değilse Ana Sayfaya at
   if (!user || user.role !== 'ADMIN') {
     return <Navigate to="/" replace />;

@@ -1,3 +1,5 @@
+import { genreName } from '../../utils/genreDisplay';
+import { useAuth } from '../../context/AuthContext';
 import { profilePath, readerPath } from '../../utils/publicPaths';
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
@@ -35,7 +37,7 @@ import BookFollowButton from '../../components/Books/BookFollowButton';
 
 // --- COMPONENTS ---
 import CommentList from '../../components/Comments/CommentList';
-import BackersSection from '../../components/Books/BackersSection';
+import BookFundingPanel from '../../components/PrintFunding/BookFundingPanel';
 import PrintedBookDetail from '../../components/Books/PrintedBookDetail';
 import BookShareButton from '../../components/Books/BookShareButton';
 
@@ -45,7 +47,8 @@ const BookDetailPage = ({ resolvedId } = {}) => {
   const params = useParams();
   const id = resolvedId || params.id;
   const navigate = useNavigate();
-  const currentUserId = localStorage.getItem('userId');
+  const { user } = useAuth();
+  const currentUserId = user?.id;
   const [commentText, setCommentText] = useState("");
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
 
@@ -53,6 +56,13 @@ const BookDetailPage = ({ resolvedId } = {}) => {
   const [optimisticSaved, setOptimisticSaved] = useState(null);
   const [optimisticLikeCount, setOptimisticLikeCount] = useState(null);
   const [imgLoaded, setImgLoaded] = useState(false);
+
+  useEffect(() => {
+    setOptimisticLiked(null);
+    setOptimisticSaved(null);
+    setOptimisticLikeCount(null);
+    setCommentText('');
+  }, [currentUserId]);
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -239,10 +249,11 @@ const BookDetailPage = ({ resolvedId } = {}) => {
   // --- VARIABLES ---
   const author = book.author;
   const isAuthor = currentUserId && book.authorId === currentUserId;
-  const isAdmin = currentUserData?.getUserById?.role === 'ADMIN';
+  const viewer = currentUserId && currentUserData?.getUserById?.id === currentUserId ? currentUserData.getUserById : null;
+  const isAdmin = viewer?.role === 'ADMIN';
 
   const isLikedFromServer = book.likedBy && currentUserId ? book.likedBy.includes(currentUserId) : false;
-  const savedBooks = currentUserData?.getUserById?.savedBooks || [];
+  const savedBooks = viewer?.savedBooks || [];
   const isSavedFromServer = savedBooks.some(sb => (typeof sb === 'string' ? sb : sb.id) === book.id);
 
   const isLiked = optimisticLiked !== null ? optimisticLiked : isLikedFromServer;
@@ -290,7 +301,7 @@ const BookDetailPage = ({ resolvedId } = {}) => {
               <div className="meta-info-card">
                 <div className="meta-row">
                   <span className="meta-label">Kategori:</span>
-                  <Badge variant="neutral" className="capitalize">{book.genre?.name || 'Belirtilmemiş'}</Badge>
+                  <Badge variant="neutral" className="capitalize">{genreName(book.genre?.name) || 'Belirtilmemiş'}</Badge>
                 </div>
                 <div className="meta-row">
                   <span className="meta-label">Sayfa:</span>
@@ -304,24 +315,6 @@ const BookDetailPage = ({ resolvedId } = {}) => {
                   <span className="meta-label">Beğeni:</span>
                   <span className="meta-value">{likeCount}</span>
                 </div>
-                <div className="meta-row">
-                  <span className="meta-label">Desteklenme:</span>
-                  <Badge variant="primary">{book.backerCount || 0} Kez</Badge>
-                </div>
-                <div className="meta-row">
-                  <span className="meta-label">Toplanan:</span>
-                  <Badge variant="primary">{book.currentFunding || 0} TL</Badge>
-                </div>
-
-                {/* Destekçi avatarları */}
-                {(book.backerCount > 0) && (
-                  <div className="meta-row meta-row--backers">
-                    <BackersSection
-                      bookId={book.id}
-                      backerCount={book.backerCount}
-                    />
-                  </div>
-                )}
               </div>
             </aside>
 
@@ -398,6 +391,7 @@ const BookDetailPage = ({ resolvedId } = {}) => {
                   {book.description}
                 </Typography>
               </div>
+              <BookFundingPanel bookId={book.id} />
 
               <div className="comments-wrapper">
                 <Typography variant="h5" weight="bold" className="mb-4">

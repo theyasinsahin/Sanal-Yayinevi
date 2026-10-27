@@ -21,28 +21,31 @@ min-height: calc(100vh - var(--navbar-height));
   margin-bottom: 1.5rem;
 }
 
-/* --- PREMIUM CTA --- */
-.sessions-premium-cta {
+/* --- SESSION ACCESS REQUEST --- */
+.sessions-access-cta {
   display: flex;
-  align-items: center;
   gap: 10px;
   padding: 10px 14px;
   border: 0.5px solid var(--color-border-secondary);
   border-radius: var(--border-radius-lg);
   background: var(--color-background-secondary);
   flex-shrink: 0;
+  flex-direction: column;
+  align-items: stretch;
+  max-width: 420px;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
-.sessions-premium-icon {
-  font-size: 18px;
-  color: #c9a84c;
-  flex-shrink: 0;
+.sessions-access-cta h2 {
+  font-size: 1rem;
+  margin: 0;
 }
 
-.sessions-premium-text {
+.sessions-access-cta form {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 10px;
 }
 
 /* --- SEARCH --- */
@@ -425,13 +428,9 @@ min-height: calc(100vh - var(--navbar-height));
     align-items: stretch;
   }
 
-  .sessions-premium-cta {
+  .sessions-access-cta {
     width: 100%;
     flex-wrap: wrap;
-  }
-
-  .sessions-premium-cta .sessions-premium-text {
-    min-width: 0;
   }
 
   .sessions-grid,

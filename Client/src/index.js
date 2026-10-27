@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 
 import './index.css';
 import './styles/feedback.css';
+import './styles/printedReading.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';

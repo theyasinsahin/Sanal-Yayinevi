@@ -1,5 +1,5 @@
 import React from 'react';
-import { Apps } from '@mui/icons-material';
+import { genreName } from '../../../utils/genreDisplay';
 import { useFilters } from '../../../context/FiltersContext';
 
 // UI Kit
@@ -26,7 +26,6 @@ const FeedFilters = ({ genres = [] }) => {
             className={`category-pill ${filters.genre === 'Tümü' ? 'active' : ''}`}
             onClick={() => updateFilters('genre', 'Tümü')}
           >
-            <span className="category-icon"><Apps fontSize="small"/></span>
             <span className="category-text">Tümü</span>
           </button>
 
@@ -42,12 +41,8 @@ const FeedFilters = ({ genres = [] }) => {
                 updateFilters('genre', nextGenre);
               }}
             >
-              {/* Varsa iconUrl kullanılabilir, yoksa direkt text */}
-              {genre.iconUrl && (
-                <img src={genre.iconUrl} alt="" className="category-custom-icon" style={{ width: 16, height: 16, marginRight: 8 }} />
-              )}
               <span className="category-text" style={{ color: filters.genre === genre.slug ? genre.hexColor : 'inherit' }}>
-                {genre.name}
+                {genreName(genre.name)}
               </span>
             </button>
           ))}

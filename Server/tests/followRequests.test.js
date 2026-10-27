@@ -42,7 +42,7 @@ test('an approval request notifies the recipient without establishing a follow, 
 test('only the recipient can approve; pending requests grant neither private-profile nor follower-only access', async () => {
   const sender = await user('sender');
   const outsider = await user('outsider');
-  const recipient = await user('recipient', { isPremium: true, privacySettings: { isProfilePublic: false, isFollowListPublic: false, allowMessages: 'followers' } });
+  const recipient = await user('recipient', { sessionCreationAccess: { status: 'APPROVED' }, privacySettings: { isProfilePublic: false, isFollowListPublic: false, allowMessages: 'followers' } });
   const session = await sessions.createSession(recipient._id, { title: 'Takipçilere özel', type: 'FOLLOWERS_ONLY' });
   const request = await follows.requestFollow(sender._id, recipient._id);
   const query = 'query($id: ID!) { getUserById(id: $id) { followStatus canViewProfile canMessage followers { id } } }';
@@ -181,7 +181,7 @@ test('anonymous callers cannot send, cancel, answer or list follow requests', as
 
 test('a profile owner can remove a follower and revoke private-profile, messaging and session access', async () => {
   const follower = await user('follower');
-  const owner = await user('owner', { isPremium: true, privacySettings: { isProfilePublic: false, allowMessages: 'followers' } });
+  const owner = await user('owner', { sessionCreationAccess: { status: 'APPROVED' }, privacySettings: { isProfilePublic: false, allowMessages: 'followers' } });
   const { request } = await follows.requestFollow(follower._id, owner._id);
   await follows.respondToFollowRequest(owner._id, request._id, true);
   const conversation = await messages.getOrCreateConversation(follower._id, owner._id);

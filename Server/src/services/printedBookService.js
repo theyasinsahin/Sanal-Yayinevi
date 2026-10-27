@@ -4,6 +4,8 @@ import BookClaim from '../models/bookClaim.js';
 import User from '../models/user.js';
 import Notification from '../models/notification.js';
 import { normalizeIsbn } from '../utils/printedBooks.js';
+import AdminAudit from '../models/adminAudit.js';
+import { requireAdmin as requireCurrentAdmin } from '../utils/adminAccess.js';
 
 export function requireUser(user) {
   if (!user || user.isDeleted || user.isActive === false) throw new Error('Giriş yapmalısınız.');
@@ -98,10 +100,13 @@ export async function lookupPrintedBook(isbnValue, user) {
 export async function reviewPrintedBook({ bookId, approve, note }, user) {
   requireAdmin(user);
   const review = reviewNote(approve, note);
+  await AdminAudit.init();
   return mongoose.connection.transaction(async session => {
+    const actor = await requireCurrentAdmin({ user }, session);
     const book = await Book.findOneAndUpdate({ _id: bookId, kind: 'PRINTED', publicationStatus: 'PENDING', isDeleted: false }, { publicationStatus: approve ? 'APPROVED' : 'REJECTED', status: approve ? 'PUBLISHED' : 'DRAFT', reviewNote: review, reviewedBy: requireUser(user), reviewedAt: new Date() }, { new: true, session });
     if (!book) throw new Error('Bekleyen kitap başvurusu bulunamadı veya zaten incelendi.');
     await notice(book.submittedBy, approve ? 'Kitabın kataloğa eklendi' : 'Kitap başvurusu sonuçlandı', `${book.title}: ${approve ? 'Yayımlandı.' : review}`, book._id, session);
+    await AdminAudit.create([{ actorId: actor._id, resource: 'Book', recordId: book.id, action: approve ? 'APPROVE' : 'REJECT', reason: (review || 'Basılı kitap başvurusu onaylandı.').slice(0, 500), fields: ['publicationStatus', 'status', 'reviewNote', 'reviewedBy', 'reviewedAt'] }], { session });
     return book;
   });
 }
@@ -128,7 +133,9 @@ export async function requestBookClaim({ bookId, evidence, evidenceUrl }, user) 
 export async function reviewBookClaim({ claimId, approve, note }, user) {
   requireAdmin(user);
   const review = reviewNote(approve, note);
+  await AdminAudit.init();
   return mongoose.connection.transaction(async session => {
+    const actor = await requireCurrentAdmin({ user }, session);
     const claim = await BookClaim.findOne({ _id: claimId, status: 'PENDING' }).session(session);
     if (!claim) throw new Error('Bekleyen hak talebi bulunamadı veya zaten incelendi.');
     if (approve) {
@@ -137,11 +144,13 @@ export async function reviewBookClaim({ claimId, approve, note }, user) {
       const book = await Book.findOneAndUpdate({ _id: claim.bookId, kind: 'PRINTED', publicationStatus: 'APPROVED', isDeleted: false, authorId: null }, { authorId: claim.claimantId }, { new: true, session });
       if (!book) throw new Error('Kitabın yazar yetkisi zaten verilmiş veya kitap yayında değil.');
       await User.updateOne({ _id: claim.claimantId }, { $addToSet: { usersBooks: book._id } }, { session });
+      await AdminAudit.create([{ actorId: actor._id, resource: 'Book', recordId: book.id, action: 'ASSIGN_AUTHOR', reason: (review || 'Yazar hak talebi onaylandı.').slice(0, 500), fields: ['authorId'] }], { session });
       await BookClaim.updateMany({ bookId: book._id, status: 'PENDING', _id: { $ne: claim._id } }, { status: 'REJECTED', reviewNote: 'Başka bir hak talebi onaylandı.', reviewedBy: requireUser(user), reviewedAt: new Date() }, { session });
     }
     Object.assign(claim, { status: approve ? 'APPROVED' : 'REJECTED', reviewNote: review, reviewedBy: requireUser(user), reviewedAt: new Date() });
     await claim.save({ session });
     await notice(claim.claimantId, 'Yazar hak talebi sonuçlandı', approve ? 'Yazar yetkin onaylandı. Artık kitabına bölüm ekleyebilirsin.' : review, claim.bookId, session);
+    await AdminAudit.create([{ actorId: actor._id, resource: 'BookClaim', recordId: claim.id, action: approve ? 'APPROVE' : 'REJECT', reason: (review || 'Yazar hak talebi onaylandı.').slice(0, 500), fields: ['status', 'reviewNote', 'reviewedBy', 'reviewedAt'] }], { session });
     return claim;
   });
 }
@@ -150,10 +159,10 @@ export async function getMySubmissions(user) {
   return Book.find({ kind: 'PRINTED', submittedBy: requireUser(user), isDeleted: false }).sort({ createdAt: -1 }).limit(100);
 }
 export async function getBookReviews(user) {
-  requireAdmin(user);
+  await requireCurrentAdmin({ user });
   return Book.find({ kind: 'PRINTED', publicationStatus: 'PENDING', isDeleted: false }).sort({ createdAt: 1 }).limit(100);
 }
 export async function getClaimReviews(user) {
-  requireAdmin(user);
+  await requireCurrentAdmin({ user });
   return BookClaim.find({ status: 'PENDING' }).sort({ createdAt: 1 }).limit(100);
 }

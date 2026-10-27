@@ -1,3 +1,4 @@
+import { genreName } from '../../utils/genreDisplay';
 import { bookPath } from '../../utils/publicPaths';
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
@@ -194,7 +195,7 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
 
   const pages = useMemo(() => {
     if (readingMode !== 'book' || !book || !fullChapters?.length) return [];
-    return [{ type: 'title_page', bookTitle: book.title, author: authorName, genre: book.genre?.name || 'Kurgu' },
+    return [{ type: 'title_page', bookTitle: book.title, author: authorName, genre: genreName(book.genre?.name) || 'Kurgu' },
       ...fullChapters.flatMap(chapter => parseContentToPages(chapter.content, chapter.title)
         .map(page => ({ ...page, chapterId: chapter.id })))];
   }, [book, fullChapters, authorName, readingMode]);

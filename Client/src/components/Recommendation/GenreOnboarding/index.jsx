@@ -1,3 +1,4 @@
+import { genreName } from '../../../utils/genreDisplay';
 // src/components/recommendation/GenreOnboarding.jsx
 import { useState } from 'react';
 import { useQuery, gql } from '@apollo/client';
@@ -89,7 +90,7 @@ export default function GenreOnboarding({ onComplete }) {
                 transition:      'all 0.15s',
               }}
             >
-              {genre.name}
+              {genreName(genre.name)}
             </button>
           );
         })}

@@ -43,6 +43,7 @@ describe('book editor autosave integration', () => {
       { path: '/write/:bookId', element: <BookDashboard /> },
       { path: '/profile', element: <div>Profile destination</div> },
       { path: '/book-reader/:bookId', element: <div>Reader destination</div> },
+      { path: '/print/:bookId', element: <div>Print application destination</div> },
     ], { initialEntries: ['/write/book'] });
   });
   afterEach(async () => { cleanup(); await settle(); router.dispose(); jest.restoreAllMocks(); jest.useRealTimers(); });
@@ -146,10 +147,12 @@ describe('book editor autosave integration', () => {
     save.mockResolvedValue({ data: { updateChapter: { pageCount: 3 } } });
   });
 
-  test('cost calculation uses the saved chapter page totals', async () => {
+  test('print application navigation flushes the final manuscript and never opens funding', async () => {
     book.status = 'COMPLETED';
     render(<RouterProvider router={router} />);
-    edit('longer text'); fireEvent.click(screen.getByRole('button', { name: 'Baskı Maliyeti Hesapla' })); await settle();
-    expect(screen.getByTestId('cost-pages')).toHaveTextContent('5');
+    edit('longer text'); fireEvent.click(screen.getByRole('button', { name: /Basım İçin Başvur/ })); await settle();
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('Print application destination')).toBeInTheDocument();
+    expect(status).not.toHaveBeenCalled();
   });
 });

@@ -19,8 +19,7 @@ export const GET_USER_BY_ID = gql`
           privacySettings { isProfilePublic isLibraryPublic isFollowListPublic allowMessages showInSearchEngines }
           notificationSettings { newFollower mentionInSession bookComment bookLike quoteLike sessionReply }
           authorSettings { copyrightNote weeklyWordGoal preferredGenres }
-          isPremium,
-          id,    
+          id,
           username,
           fullName,
           email,
@@ -40,7 +39,7 @@ export const GET_USER_BY_ID = gql`
             genre{
               name
               slug
-              iconUrl
+
               hexColor
               isActive
             }
@@ -69,7 +68,7 @@ export const GET_USER_BY_ID = gql`
             genre{
               name
               slug
-              iconUrl
+
               hexColor
               isActive
             }
@@ -113,7 +112,6 @@ export const ME_QUERY = gql`
 export const GET_ALL_USERS = gql`
   query GetAllUsers{
     getAllUsers {
-      isPremium,
       id,
       username,
       email,

@@ -3,6 +3,7 @@ import * as BookService from '../../services/bookService.js';
 import * as TransactionService from '../../services/transactionService.js';
 import { canViewProfile, canViewLibrary, canViewFollowList, sameUser, canReceiveMessage } from '../../utils/profileAccess.js';
 import { weeklyWords } from '../../services/writingService.js';
+import { getAdminRecord, saveAdminRecord } from '../../services/adminService.js';
 
 async function profileFor(parent, context) {
   context.profileAccessCache ??= new Map();
@@ -108,9 +109,11 @@ export default {
         return await user.save();
     },
     
-    deleteUserById: async (_, { id }) => {
-         //return UserService.deleteUserCompletely(id);
-         return { code: 200, message: "Bu fonksiyon service'e taşınmalı." };
+    deleteUserById: async (_, { id }, context) => {
+         const record = await getAdminRecord(context, { resource: 'User', id });
+         if (!record) throw new Error('Kullanıcı bulunamadı.');
+         await saveAdminRecord(context, { resource: 'User', id, revision: record.revision, changes: { isActive: false }, reason: 'Kullanıcı yönetimi üzerinden hesap devre dışı bırakıldı.' });
+         return { code: 200, message: 'Hesap devre dışı bırakıldı. Kullanıcı verileri korundu.' };
     },
 
     // ── Hesap ───────────────────────────────────────────────

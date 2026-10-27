@@ -23,6 +23,9 @@ import googleAuthRoutes from './src/routes/googleAuthRoutes.js';
 import socialShareRoutes from './src/routes/socialShareRoutes.js';
 import { compressResponses, operationTiming } from './src/config/httpPerformance.js';
 import { createLoaders } from './src/graphql/loaders.js';
+import printRoutes from './src/routes/printRoutes.js';
+import { initializePrintFunding } from './src/services/print/common.js';
+import { startPrintWorker } from './src/services/print/worker.js';
 
 const PORT = process.env.PORT || 5000;
 
@@ -37,9 +40,10 @@ const startServer = async () => {
     app.use(compressResponses());
 
     await connectDB();
-
-    app.use(express.json());
-    app.use(express.urlencoded({ extended: true }));
+    if (process.env.PRINT_SYSTEM_ENABLED === 'true') {
+      await initializePrintFunding();
+      await models.Notification.createIndexes();
+    }
 
     // CORS: web (localhost:3000), prod frontend (CLIENT_URL) ve mobil
     // uygulamanın (Capacitor) kullandığı origin'lere izin ver.
@@ -64,6 +68,10 @@ const startServer = async () => {
       exposedHeaders: ['Server-Timing'],
     }));
 
+    // Verify webhook bytes and receive private PDF uploads before JSON parsing.
+    app.use('/api/print', printRoutes);
+    app.use(express.json({ limit: '2mb' }));
+    app.use(express.urlencoded({ extended: true }));
     app.use('/api/payment', paymentRoutes);
     app.use('/share', socialShareRoutes);
 
@@ -165,6 +173,7 @@ const startServer = async () => {
     );
 
     await new Promise((resolve) => httpServer.listen({ port: PORT }, resolve));
+    if (process.env.PRINT_SYSTEM_ENABLED === 'true') startPrintWorker();
     console.log(`🚀 Server hazır: http://localhost:${PORT}`);
     console.log(`🔌 WebSocket hazır: ws://localhost:${PORT}/graphql`);
 

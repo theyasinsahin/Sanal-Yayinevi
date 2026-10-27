@@ -11,6 +11,7 @@ Client/.env
 # Node.js (Server)
 Server/node_modules/
 Server/dist/
+Server/coverage/
 Server/.env
 
 todolist.txt

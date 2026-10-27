@@ -17,8 +17,8 @@ extend type Book {
 
 type BookClaim {
   id: ID!
-  book: Book!
-  claimant: User!
+  book: Book
+  claimant: User
   evidence: String!
   evidenceUrl: String!
   status: BookReviewStatus!

@@ -11,7 +11,7 @@ import { isPrintedBook } from '../utils/printedBooks.js';
 import * as ScoreService from './scoreService.js';
 
 // Metni normalize et: başını/sonunu temizle, noktalama kaldır, küçük harfe çevir
-const normalizeText = (text) => {
+export const normalizeText = (text) => {
   return text
     .trim()
     .toLowerCase()

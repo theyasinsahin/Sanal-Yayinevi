@@ -8,6 +8,7 @@ import * as ScoreService from './scoreService.js';
 import * as ChapterService from './chapterService.js';
 import * as CommentService from './commentService.js';
 import { isPrintedBook, visiblePrintedFilter, digitalBookFilter } from '../utils/printedBooks.js';
+import { FundingCampaign } from '../models/printFunding.js';
 
 // ── Okuma İşlemleri ──────────────────────────────────────────────
 // Varsayılan olarak tüm okuma fonksiyonları silinmiş (isDeleted: true)
@@ -136,9 +137,10 @@ export const softDeleteBook = async (bookId) => {
   const now = new Date();
 
   // 1. Kitabı işaretle
-  book.isDeleted = true;
-  book.deletedAt = now;
-  await book.save();
+  if (await FundingCampaign.exists({ bookId, $or: [{ activeLock: true }, { state: 'REFUNDING' }, { state: 'SUCCEEDED', productionState: { $nin: ['COMPLETED', 'CANCELLED'] } }] })) throw new Error('Aktif kampanya/üretim varken kitap kaldırılamaz. Önce kontrollü iptal sürecini yürütün.');
+  const changed = await Book.updateOne({ _id: book._id, isDeleted: false, $or: [{ printRevision: book.printRevision || 0 }, { printRevision: { $exists: false } }] }, { $set: { isDeleted: true, deletedAt: now }, $inc: { printRevision: 1 } });
+  if (!changed.modifiedCount) throw new Error('Kitap başka bir işlemde değişti; güncel durumu yeniden yükleyin.');
+  book.isDeleted = true; book.deletedAt = now;
 
   // 2. Bağlı bölümleri soft-delete et
   await ChapterService.softDeleteChaptersByBookId(bookId);

@@ -1,6 +1,6 @@
 import { sessionPath } from '../../utils/publicPaths';
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { MainLayout } from '../../components/Layout/MainLayout';
 import { Container } from '../../components/UI/Container';
@@ -14,6 +14,8 @@ import './SessionsPage.css';
 import SessionCover from '../../components/Sessions/SessionCover';
 import SessionCoverField from '../../components/Sessions/SessionCoverField';
 import SocialShareButton from '../../components/Sharing/SocialShareButton';
+import SessionAccessRequest from '../../components/Sessions/SessionAccessRequest';
+import useSessionCreationAccess from '../../hooks/useSessionCreationAccess';
 
 const SESSION_TYPE_LABEL = {
   OPEN: 'Herkese Açık',
@@ -253,13 +255,15 @@ export const SessionCard = ({ session }) => (
 );
 
 const SessionsPage = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
+  const accessState = useSessionCreationAccess();
+  const canCreate = Boolean(user && accessState.access?.status === 'APPROVED' && !accessState.error);
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState('');
 
   const { sessions, loading, error, loadMore, hasMore } = useGetSessions();
   const { createSession, loading: creating } = useCreateSession();
+  useEffect(() => { setShowModal(false); }, [user?.id, canCreate]);
 
   const filtered = sessions.filter((s) => {
     if (!search.trim()) return true;
@@ -283,29 +287,12 @@ const SessionsPage = () => {
                 Bir konuya katıl, düşüncelerini paylaş.
               </Typography>
             </div>
-            {user?.isPremium ? (
+            {canCreate ? (
               <Button variant="primary" onClick={() => setShowModal(true)}>
                 + Oturum Aç
               </Button>
             ) : (
-              <div className="sessions-premium-cta">
-                <span className="sessions-premium-icon">✦</span>
-                <div className="sessions-premium-text">
-                  <Typography variant="caption" weight="medium">
-                    Oturum açmak ister misin?
-                  </Typography>
-                  <Typography variant="caption" color="muted">
-                    Ücretli üyeler kendi oturumlarını oluşturabilir.
-                  </Typography>
-                </div>
-                <Button
-                  variant="outline"
-                  size="small"
-                  onClick={() => navigate('/premium')}
-                >
-                  Ücretli Üyeliğe Geç
-                </Button>
-              </div>
+              <SessionAccessRequest key={user?.id || 'guest'} user={user} {...accessState} />
             )}
           </div>
 
@@ -363,7 +350,7 @@ const SessionsPage = () => {
         </Container>
       </div>
 
-      {showModal && (
+      {showModal && canCreate && (
         <CreateSessionModal
           onClose={() => setShowModal(false)}
           onCreate={createSession}

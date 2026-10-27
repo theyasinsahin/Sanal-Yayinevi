@@ -4,9 +4,11 @@ import { Input } from '../../UI/Input';
 import { Textarea } from '../../UI/Textarea';
 import { Button } from '../../UI/Button';
 import { LOOKUP_PRINTED_BOOK, SUBMIT_PRINTED_BOOK } from '../../../graphql/printedBooks';
+import { useAuth } from '../../../context/AuthContext';
 
 const initial = { isbn: '', title: '', printedAuthor: '', publisher: '', publicationYear: '', pageCount: '', description: '', imageUrl: '', purchaseUrl: '', publicationEvidenceUrl: '' };
 export default function PrintedBookSubmissionForm({ onSubmitted, onClose }) {
+  const { ensureSession } = useAuth();
   const [form, setForm] = useState(initial);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -15,6 +17,7 @@ export default function PrintedBookSubmissionForm({ onSubmitted, onClose }) {
   const busy = looking || sending;
   const change = event => setForm(current => ({ ...current, [event.target.name]: event.target.value }));
   async function find() {
+    if (!ensureSession()) return;
     setError(''); setMessage('');
     try {
       const { data } = await lookup({ variables: { isbn: form.isbn } });
@@ -25,6 +28,7 @@ export default function PrintedBookSubmissionForm({ onSubmitted, onClose }) {
   }
   async function send(event) {
     event.preventDefault(); setError('');
+    if (!ensureSession()) return;
     try {
       await submit({ variables: { input: { ...form, publicationYear: Number(form.publicationYear), pageCount: Number(form.pageCount) } } });
       onSubmitted();

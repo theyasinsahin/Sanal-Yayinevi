@@ -5,16 +5,19 @@ import { MockedProvider } from '@apollo/client/testing';
 import SessionsPage, { CreateSessionModal } from './index';
 import { useAuth } from '../../context/AuthContext';
 import { useGetSessions, useCreateSession } from '../../hooks/useSessions';
+import useSessionCreationAccess from '../../hooks/useSessionCreationAccess';
 import { GET_SOCIAL_SHARE } from '../../graphql/socialShare';
 import { DEFAULT_SESSION_COVER } from '../../components/Sessions/SessionCover';
 jest.mock('../../context/AuthContext', () => ({ useAuth: jest.fn() }));
 jest.mock('../../hooks/useSessions', () => ({ useGetSessions: jest.fn(), useCreateSession: jest.fn() }));
+jest.mock('../../hooks/useSessionCreationAccess', () => jest.fn());
 jest.mock('../../components/Layout/MainLayout', () => ({ MainLayout: ({ children }) => <main>{children}</main> }));
 jest.mock('../../components/ImageUpload', () => ({ __esModule: true, default: ({ onUploadSuccess, onLoadingChange }) => <><button onClick={() => onUploadSuccess('https://res.cloudinary.com/dw1sepw7z/image/upload/cover.jpg')}>Fotoğraf seç</button><button onClick={() => onLoadingChange(true)}>Yükleme başlat</button></> }));
 const session = { id: 'session-one', publicPath: '/oturum/kitap-fuari', title: 'Kitap Fuarı', description: 'Etkinlik hakkında düşünceler.', coverImageUrl: '', type: 'OPEN', isActive: true, tags: ['fuar'], participantCount: 5, createdAt: '2026-01-01T12:00:00Z', createdBy: { id: 'organizer', username: 'organizer', fullName: 'Organizatör' } };
 const Location = () => <output data-testid="location">{useLocation().pathname}</output>;
 beforeEach(() => {
-  useAuth.mockReturnValue({ user: { id: 'organizer', isPremium: true } });
+  useAuth.mockReturnValue({ user: { id: 'organizer' } });
+  useSessionCreationAccess.mockReturnValue({ access: { status: 'APPROVED' }, loading: false, refetch: jest.fn() });
   useGetSessions.mockReturnValue({ sessions: [session], loading: false, hasMore: false });
   useCreateSession.mockReturnValue({ createSession: jest.fn(), loading: false });
   global.fetch = jest.fn().mockResolvedValue({ ok: true, blob: async () => new Blob(['photo'], { type: 'image/jpeg' }) });
@@ -33,6 +36,26 @@ test('legacy cards show a photo above the session information and preserve reada
   expect(image.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   expect(heading.closest('a')).toHaveAttribute('href', session.publicPath);
   expect(within(card).getByRole('button', { name: 'Oturumu paylaş' }).closest('a')).toBeNull();
+});
+
+test('legacy premium membership alone does not reveal session creation', () => {
+  useAuth.mockReturnValue({ user: { id: 'organizer', isPremium: true } });
+  useSessionCreationAccess.mockReturnValue({ access: { status: 'NONE' }, loading: false, refetch: jest.fn() });
+  show();
+  expect(screen.queryByRole('button', { name: '+ Oturum Aç' })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Oturum açma izni iste' })).toBeInTheDocument();
+  expect(screen.queryByText('Ücretli Üyeliğe Geç')).not.toBeInTheDocument();
+});
+
+test('losing permission closes an open creation modal', () => {
+  const view = show();
+  fireEvent.click(screen.getByRole('button', { name: '+ Oturum Aç' }));
+  expect(screen.getByRole('dialog')).toBeInTheDocument();
+  useSessionCreationAccess.mockReturnValue({ access: { status: 'PENDING' }, loading: false, refetch: jest.fn() });
+  // Rerender through the existing tree without replacing router/provider state.
+  view.rerender(<MockedProvider addTypename={false}><MemoryRouter><SessionsPage /></MemoryRouter></MockedProvider>);
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: '+ Oturum Aç' })).not.toBeInTheDocument();
 });
 
 test('card shares open the existing dialog and include a WhatsApp link without navigating away', async () => {

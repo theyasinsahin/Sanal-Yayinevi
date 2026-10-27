@@ -18,7 +18,6 @@ import { useAuth } from '../../../context/AuthContext';
 
 import { Typography } from '../../UI/Typography';
 import { Badge } from '../../UI/Badge';
-import { ProgressBar } from '../../UI/ProgressBar';
 import ReasonBadge from '../../Recommendation/ReasonBadge';
 import PrintedBookCard from '../PrintedBookCard';
 
@@ -63,8 +62,6 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
     commentCount,
     author,
     status,
-    currentFunding,
-    fundingTarget,
   } = book;
 
   const displayAuthor    = author?.fullName || author?.username || 'Anonim';
@@ -120,7 +117,7 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
           {status === 'FUNDING' && (
             <div className="status-badge funding">
               <Star style={{ fontSize: 14 }} />
-              <span>Fonlanıyor</span>
+              <span>Basım bilgileri</span>
             </div>
           )}
           {status === 'PUBLISHED' && (
@@ -157,12 +154,6 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
               <Typography variant="caption" color="muted">
                 ~{estimatedReadTime} dk okuma
               </Typography>
-            </div>
-          )}
-
-          {status === 'FUNDING' && (
-            <div className="funding-status">
-              <ProgressBar current={currentFunding || 0} target={fundingTarget || 1000} />
             </div>
           )}
 

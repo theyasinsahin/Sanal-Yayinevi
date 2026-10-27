@@ -12,8 +12,7 @@ import {
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions"; 
 import { createClient } from "graphql-ws";                         
 import { getMainDefinition } from "@apollo/client/utilities";      
-import { onError } from "@apollo/client/link/error";
-import { setContext } from "@apollo/client/link/context";
+import { createAuthLink } from './utils/authLink';
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from "react-router-dom";
 
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -51,6 +50,9 @@ const LoginPage = lazy(() => import('./pages/Auth/Login'));
 const RegisterPage = lazy(() => import('./pages/Auth/Register'));
 const GoogleCallback = lazy(() => import('./pages/Auth/GoogleCallback'));
 const DonationPage = lazy(() => import('./pages/DonationPage'));
+const PrintApplicationPage = lazy(() => import('./pages/PrintApplication'));
+const FundingHistoryPage = lazy(() => import('./pages/FundingHistory'));
+const AdminPrintFundingPage = lazy(() => import('./pages/Admin/PrintFunding'));
 const PaymentSuccess = lazy(() => import('./pages/PaymentResult/PaymentSuccess'));
 const PaymentFailure = lazy(() => import('./pages/PaymentResult/PaymentFailure'));
 const ForgotPasswordPage = lazy(() => import('./pages/Auth/ForgotPassword'));
@@ -67,36 +69,13 @@ const AdminUsers = lazy(() => import('./pages/Admin/Users'));
 const AdminBooks = lazy(() => import('./pages/Admin/Books'));
 const AdminPrintedBooks = lazy(() => import('./pages/Admin/PrintedBooks'));
 const AdminTransactions = lazy(() => import('./pages/Admin/Transactions'));
+const AdminData = lazy(() => import('./pages/Admin/Data'));
+const AdminSessionAccess = lazy(() => import('./pages/Admin/SessionAccess'));
 
 // --- APOLLO SETUP ---
 
 const httpLink = createHttpLink({
   uri: API_URL,
-});
-
-const authLink = setContext((_, { headers }) => {
-  const token = localStorage.getItem("token");
-  return {
-    headers: {
-      ...headers,
-      authorization: token ? `Bearer ${token}` : "",
-    },
-  };
-});
-
-const errorLink = onError(({ graphQLErrors, networkError }) => {
-  if (graphQLErrors) {
-    graphQLErrors.forEach(({ message, extensions }) => {
-      if (
-        message.includes("jwt expired") ||
-        (extensions && extensions.code === "UNAUTHENTICATED")
-      ) {
-        console.log("Oturum süresi doldu, çıkış yapılıyor...");
-        localStorage.removeItem("token");
-        localStorage.removeItem("userId");
-      }
-    });
-  }
 });
 
 // WebSocket link — sadece subscription operasyonları buradan geçer
@@ -123,12 +102,12 @@ const splitLink = split(
     );
   },
   wsLink,
-  errorLink.concat(authLink).concat(httpLink)
+  httpLink
 );
 
 const client = new ApolloClient({
-  link: splitLink,
-  cache: new InMemoryCache(),
+  link: createAuthLink().concat(splitLink),
+  cache: new InMemoryCache({ typePolicies: { AdminRecord: { keyFields: false } } }),
 });
 
 // --- LAYOUT ---
@@ -195,6 +174,8 @@ const router = createBrowserRouter([
       { path: "/dashboard/:bookId",
         element: <ProtectedRoute><BookDashboard /></ProtectedRoute>
       },
+      { path: '/print/:bookId', element: <ProtectedRoute><PrintApplicationPage /></ProtectedRoute> },
+      { path: '/funding-history', element: <ProtectedRoute><FundingHistoryPage /></ProtectedRoute> },
       { path: "/profile",
         element: <ProtectedRoute><UserProfilePage /></ProtectedRoute>
       },
@@ -209,8 +190,8 @@ const router = createBrowserRouter([
       { path: "/sifremi-unuttum", element: <ForgotPasswordPage /> },
       { path: "/forgot-password", element: <Navigate to="/sifremi-unuttum" replace /> },
       { path: "/reset-password/:token", element: <ResetPasswordPage /> },
-      { path: "/donate/:bookId", element: <DonationPage /> },
-      { path: "/payment/success", element: <PaymentSuccess /> },
+      { path: "/donate/:bookId", element: <ProtectedRoute><DonationPage /></ProtectedRoute> },
+      { path: "/payment/success", element: <ProtectedRoute><PaymentSuccess /></ProtectedRoute> },
       { path: "/payment/failure", element: <PaymentFailure /> },
       { path: "/quotes", element: <QuotesPage /> },
       { path: '/quotes/:quoteId', element: <QuoteDetail /> },
@@ -230,6 +211,10 @@ const router = createBrowserRouter([
       { path: "/admin",
         element: <AdminRoute><AdminDashboard /></AdminRoute>
       },
+      { path: '/admin/genres', element: <AdminRoute><AdminData resource="Genre" /></AdminRoute> },
+      { path: '/admin/data', element: <AdminRoute><AdminData /></AdminRoute> },
+      { path: '/admin/data/:resource', element: <AdminRoute><AdminData /></AdminRoute> },
+      { path: '/admin/schemas', element: <AdminRoute><AdminData schema /></AdminRoute> },
       { path: "/admin/users",
         element: <AdminRoute><AdminUsers /></AdminRoute>
       },
@@ -237,6 +222,8 @@ const router = createBrowserRouter([
         element: <AdminRoute><AdminBooks /></AdminRoute>
       },
       { path: '/admin/printed-books', element: <AdminRoute><AdminPrintedBooks /></AdminRoute> },
+      { path: '/admin/print-funding', element: <AdminRoute><AdminPrintFundingPage /></AdminRoute> },
+      { path: '/admin/session-access', element: <AdminRoute><AdminSessionAccess /></AdminRoute> },
       { path: "/admin/transactions",
         element: <AdminRoute><AdminTransactions /></AdminRoute>
       },

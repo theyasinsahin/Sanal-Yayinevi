@@ -42,6 +42,8 @@
     "build": "react-scripts build",
     "perf:bundle": "node scripts/checkBundleSize.cjs",
     "test": "react-scripts test",
+    "test:ci": "react-scripts test --watchAll=false --runInBand --watchman=false",
+    "test:coverage": "npm run test:ci -- --coverage --coverageReporters=text-summary --coverageReporters=html --coverageReporters=json-summary",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

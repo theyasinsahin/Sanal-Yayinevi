@@ -10,6 +10,9 @@ export const connect = async () => {
     await mongoose.connect(uri);
 };
 
+// Only exposes the ephemeral replica set to subprocess integration tests.
+export const getTestDatabaseUri = name => mongod.getUri(name);
+
 // Her testten sonra verileri temizle (Testler birbirini etkilemesin)
 export const clearDatabase = async () => {
     const collections = mongoose.connection.collections;
