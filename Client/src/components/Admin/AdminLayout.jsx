@@ -23,6 +23,9 @@ const AdminLayout = ({ children, title, className = '' }) => {
         </div>
         
         <nav className="admin-nav">
+          <NavLink to="/admin/print-funding" className={({ isActive }) => `admin-link ${isActive ? 'active' : ''}`}>
+            <LibraryBooks fontSize="small" /> Basım, Destek ve Ön Sipariş
+          </NavLink>
           <NavLink to="/admin" end className={({ isActive }) => `admin-link ${isActive ? 'active' : ''}`}>
             <Dashboard fontSize="small" /> Yönetim Paneli
           </NavLink>

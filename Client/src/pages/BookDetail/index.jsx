@@ -37,7 +37,7 @@ import BookFollowButton from '../../components/Books/BookFollowButton';
 
 // --- COMPONENTS ---
 import CommentList from '../../components/Comments/CommentList';
-import BackersSection from '../../components/Books/BackersSection';
+import BookFundingPanel from '../../components/PrintFunding/BookFundingPanel';
 import PrintedBookDetail from '../../components/Books/PrintedBookDetail';
 import BookShareButton from '../../components/Books/BookShareButton';
 
@@ -315,24 +315,6 @@ const BookDetailPage = ({ resolvedId } = {}) => {
                   <span className="meta-label">Beğeni:</span>
                   <span className="meta-value">{likeCount}</span>
                 </div>
-                <div className="meta-row">
-                  <span className="meta-label">Desteklenme:</span>
-                  <Badge variant="primary">{book.backerCount || 0} Kez</Badge>
-                </div>
-                <div className="meta-row">
-                  <span className="meta-label">Toplanan:</span>
-                  <Badge variant="primary">{book.currentFunding || 0} TL</Badge>
-                </div>
-
-                {/* Destekçi avatarları */}
-                {(book.backerCount > 0) && (
-                  <div className="meta-row meta-row--backers">
-                    <BackersSection
-                      bookId={book.id}
-                      backerCount={book.backerCount}
-                    />
-                  </div>
-                )}
               </div>
             </aside>
 
@@ -409,6 +391,7 @@ const BookDetailPage = ({ resolvedId } = {}) => {
                   {book.description}
                 </Typography>
               </div>
+              <BookFundingPanel bookId={book.id} />
 
               <div className="comments-wrapper">
                 <Typography variant="h5" weight="bold" className="mb-4">

@@ -15,6 +15,7 @@ import { GET_QUOTES_BY_BOOK } from '../../../graphql/queries/quote';
 import { CREATE_PRINTED_QUOTE, REQUEST_BOOK_CLAIM } from '../../../graphql/printedBooks';
 import './PrintedBookDetail.css';
 import BookShareButton from '../BookShareButton';
+import PrintedReadingEditor from '../PrintedReadingEditor';
 
 function ClaimForm({ book, refresh }) {
   const [evidence, setEvidence] = useState('');
@@ -70,6 +71,7 @@ export default function PrintedBookDetail({ book, comments, commentsLoading, cur
       </div>
     </article>
     {approved && <BookShareButton book={book} />}
+    {approved && <PrintedReadingEditor key={`${book.id}:${user?.id || 'guest'}`} bookId={book.id} />}
     {!approved && <p className="ui-notice ui-notice--warning" role="status">{book.publicationStatus === 'PENDING' ? 'Bu başvuru Betik incelemesinde. Henüz herkese açık katalogda yer almıyor.' : `Başvurunuz için düzenleme gerekiyor. ${book.reviewNote || ''} Bilgileri düzelterek basılı kitaplar sayfasından yeniden başvurabilirsiniz.`}</p>}
     <section className="printed-panel"><h2>Kitap hakkında</h2><p className="printed-description">{book.description}</p></section>
     {approved && user && !book.authorId && <ClaimForm book={book} refresh={refresh} />}

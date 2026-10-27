@@ -119,3 +119,22 @@ test('switching accounts in another tab immediately hides the previous account',
   await act(async () => resolve({ data: { me: { id: 'other' } } }));
   expect(screen.getByText('other')).toBeInTheDocument();
 });
+
+test.each([null, { id: 'unexpected-user' }])('a restored token cannot display a user that the server did not confirm: %j', async me => {
+  store(); client.query.mockResolvedValue({ data: { me } });
+  show(); await flush();
+  expect(screen.getByText('guest')).toBeInTheDocument();
+  expect(localStorage.getItem('token')).toBeNull();
+  expect(screen.queryByText('Kitap oluştur')).not.toBeInTheDocument();
+});
+
+test('a late rejection for the previous account does not remove a newly opened login', async () => {
+  store(); let reject;
+  client.query.mockImplementation(() => new Promise((resolve, fail) => { reject = fail; }));
+  show(); fireEvent.click(screen.getByRole('button', { name: 'login other' }));
+  expect(screen.getByText('other')).toBeInTheDocument();
+  await act(async () => reject(new ApolloError({ graphQLErrors: [{ message: 'Login required', extensions: { code: 'UNAUTHENTICATED' } }] })));
+  expect(screen.getByText('other')).toBeInTheDocument();
+  expect(localStorage.getItem('userId')).toBe('other');
+  expect(localStorage.getItem('token')).not.toBeNull();
+});

@@ -29,7 +29,6 @@ import { Typography } from '../../components/UI/Typography';
 import { Input } from '../../components/UI/Input';
 import { Toast } from '../../components/UI/Toast';
 import { Badge } from '../../components/UI/Badge';
-import { CostCalculatorModal } from '../../components/Books/CostCalculatorModal';
 
 import { useAuth } from '../../context/AuthContext';
 import './BookDashboard.css';
@@ -74,7 +73,6 @@ const BookDashboard = () => {
   const [book, setBook] = useState(null);
   const [newChapterTitle, setNewChapterTitle] = useState('');
   const [notification, setNotification] = useState({ isVisible: false, message: '', type: '' });
-  const [showCostModal, setShowCostModal] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const dashboardRef = useRef(null);
@@ -160,7 +158,7 @@ const BookDashboard = () => {
   
   // 1. Taslak <-> Yayında Geçişi
   const togglePublish = async () => {
-     const newStatus = book.status === 'DRAFT' ? 'WRITING' : 'DRAFT';
+     const newStatus = (book.digitalStatus || (book.status === 'DRAFT' ? 'DRAFT' : 'PUBLISHED')) === 'DRAFT' ? 'WRITING' : 'DRAFT';
      if(window.confirm(newStatus === 'WRITING' ? "Kitap herkese görünür olacak. Onaylıyor musunuz?" : "Kitap yayından kaldırılıp taslağa çekilecek.")) {
         await runAfterSaving(() => updateStatus({ variables: { bookId, status: newStatus } }));
      }
@@ -223,7 +221,6 @@ const BookDashboard = () => {
     try { await manager.flush(); showNotification('Kaydedildi!', 'success'); }
     catch { showNotification('Değişiklikler kaydedilemedi. Yeniden deneyin.', 'error'); }
   };
-  const savedPageCount = chapters.reduce((sum, chapter) => sum + (chapter.pageCount || 0), 0);
   const saveMessages = { saved: 'Kaydedildi', saving: 'Kaydediliyor…', pending: 'Otomatik kayıt bekleniyor…', error: 'Kaydedilemedi — Kaydet ile tekrar deneyin.' };
 
   // --- RENDER ---
@@ -341,7 +338,7 @@ const BookDashboard = () => {
 
              <div className="flex flex-col gap-2">
                 {/* DRAFT / WRITING DÖNGÜSÜ */}
-                {(book?.status === 'DRAFT' || book?.status === 'WRITING') && (
+                {book && (
                     <Button 
                       variant={book.status === 'DRAFT' ? 'success' : 'danger'} 
                       size="small" 
@@ -366,14 +363,14 @@ const BookDashboard = () => {
                 )}
 
                 {/* COMPLETED -> FUNDING (Hesaplama) */}
-                {book?.status === 'COMPLETED' && (
+                {(book?.writingStatus === 'COMPLETED' || ['COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'].includes(book?.status)) && (
                     <Button 
                       variant="warning" 
                       size="small" 
-                      onClick={() => runAfterSaving(() => setShowCostModal(true))}
+                      onClick={() => runAfterSaving(() => navigate(`/print/${bookId}`))}
                       className="w-full"
                     >
-                       Baskı Maliyeti Hesapla
+                       Basım İçin Başvur / Başvurumu Gör
                     </Button>
                 )}
              </div>
@@ -447,27 +444,6 @@ const BookDashboard = () => {
           </div>
         )}
       </main>
-
-      {/* MODAL: BASKI MALİYETİ HESAPLAMA */}
-       {showCostModal && (
-          <CostCalculatorModal 
-             book={{ ...book, pageCount: savedPageCount }}
-             pageCount={savedPageCount}
-             onClose={() => setShowCostModal(false)}
-             onConfirm={async (data) => runAfterSaving(async () => {
-                 await updateStatus({ 
-                     variables: { 
-                        bookId, 
-                        status: 'FUNDING',
-                        fundingTarget: data.totalCost,
-                        printConfig: data.config
-                     } 
-                 });
-                 setShowCostModal(false);
-                 alert("Kitap fonlamaya açıldı!");
-             })}
-          />
-       )}
 
       <Toast 
         isVisible={notification.isVisible}

@@ -173,6 +173,8 @@ export const GET_BOOK_BY_ID = gql`
       fundingTarget
       currentFunding
       status
+      digitalStatus
+      writingStatus
     }
   }
 `;

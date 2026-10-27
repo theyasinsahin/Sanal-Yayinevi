@@ -4,6 +4,8 @@ import catalogResolvers from './catalog.js';
 import followRequestResolvers from './followRequest.js';
 import socialShareResolvers from './socialShare.js';
 import printedBookResolvers from './printedBook.js';
+import printedReadingResolvers from './printedReading.js';
+import printFundingResolvers from './printFunding.js';
 import communityResolvers from './community.js';
 import userResolvers from "./user.js";
 import bookResolvers from "./book.js";
@@ -26,11 +28,13 @@ import bookFollowResolvers from "./bookFollow.js";
 // Tüm resolver modüllerini bir dizi içine koyup gönderiyoruz.
 // schema.js içindeki mergeResolvers bunları otomatik birleştirecek.
 export default [
+    printFundingResolvers,
     adminResolvers,
     catalogResolvers,
     publicUrlResolvers,
     socialShareResolvers,
     printedBookResolvers,
+    printedReadingResolvers,
     followRequestResolvers,
     communityResolvers,
     userResolvers,

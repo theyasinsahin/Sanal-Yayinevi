@@ -1,0 +1,26 @@
+type PrintedBookReading {
+  id: ID!
+  userId: ID!
+  book: Book!
+  rating: Int!
+  review: String!
+  readAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type PrintedReadingPage {
+  items: [PrintedBookReading!]!
+  total: Int!
+  page: Int!
+  totalPages: Int!
+  canView: Boolean!
+}
+
+extend type Query {
+  myPrintedBookReading(bookId: ID!): PrintedBookReading
+  getPrintedReadings(userId: ID!, page: Int = 1): PrintedReadingPage!
+}
+extend type Mutation {
+  savePrintedBookReading(bookId: ID!, rating: Int!, review: String = ""): PrintedBookReading!
+  removePrintedBookReading(bookId: ID!): Boolean!
+}

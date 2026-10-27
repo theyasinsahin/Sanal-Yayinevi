@@ -28,6 +28,7 @@ import { Input } from '../../components/UI/Input';
 import { Textarea } from '../../components/UI/Textarea';
 import { Toast } from '../../components/UI/Toast';
 import BookCarousel from '../../components/Books/BookCarousel';
+import PrintedReadingLibrary from '../../components/Books/PrintedReadingLibrary';
 import ImageUpload from '../../components/ImageUpload';
 
 import { FormatQuote } from '@mui/icons-material';
@@ -387,9 +388,13 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
 
             {canViewLibrary && (
               <button className={`tab-btn ${activeTab === 'saved' ? 'active' : ''}`} onClick={() => setActiveTab('saved')}>
-                <Bookmark /><span>Kitaplık</span>
+                <Bookmark /><span>Dijital Kitaplık</span>
               </button>
             )}
+
+            {canViewLibrary && <button className={`tab-btn ${activeTab === 'printed-read' ? 'active' : ''}`} onClick={() => setActiveTab('printed-read')}>
+              <Book /><span>Okuduğum Basılı Kitaplar</span>
+            </button>}
 
             {isMe && (
               <button className={`tab-btn ${activeTab === 'drafts' ? 'active' : ''}`} onClick={() => setActiveTab('drafts')}>
@@ -436,11 +441,12 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
               <BookCarousel books={publishedBooks} loading={loading} />
             )}
             {canViewLibrary && activeTab === 'saved' && (
-              <BookCarousel books={profile.savedBooks} loading={loading} />
+              <BookCarousel books={(profile.savedBooks || []).filter(book => book.kind !== 'PRINTED')} loading={loading} />
             )}
             {isMe && activeTab === 'drafts' && (
               <BookCarousel books={draftBooks} loading={loading} />
             )}
+            {canViewLibrary && activeTab === 'printed-read' && <PrintedReadingLibrary key={`${targetId}:${authUser?.id || 'guest'}`} userId={targetId} />}
             {canView && activeTab === 'quotes' && (
               <div className="quotes-tab-grid">
                 {userQuotes.length === 0 ? (

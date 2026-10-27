@@ -48,6 +48,11 @@ const BookSchema = new mongoose.Schema({
     enum: ['DRAFT', 'WRITING', 'COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'],
     default: 'DRAFT'
   },
+  // Additive fields. Missing legacy values are interpreted by applicationService.
+  digitalStatus: { type: String, enum: ['DRAFT', 'PUBLISHED'] },
+  writingStatus: { type: String, enum: ['WRITING', 'COMPLETED'] },
+  completedAt: Date,
+  printRevision: { type: Number, default: 0, min: 0 },
   printConfig: {
     paperType: { type: String, enum: ['enzo', 'ivory', 'coated'], default: 'enzo' },
     coverType: { type: String, enum: ['hardcover', 'paperback'], default: 'paperback' },

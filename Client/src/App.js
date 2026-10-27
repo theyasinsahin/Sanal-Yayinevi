@@ -50,6 +50,9 @@ const LoginPage = lazy(() => import('./pages/Auth/Login'));
 const RegisterPage = lazy(() => import('./pages/Auth/Register'));
 const GoogleCallback = lazy(() => import('./pages/Auth/GoogleCallback'));
 const DonationPage = lazy(() => import('./pages/DonationPage'));
+const PrintApplicationPage = lazy(() => import('./pages/PrintApplication'));
+const FundingHistoryPage = lazy(() => import('./pages/FundingHistory'));
+const AdminPrintFundingPage = lazy(() => import('./pages/Admin/PrintFunding'));
 const PaymentSuccess = lazy(() => import('./pages/PaymentResult/PaymentSuccess'));
 const PaymentFailure = lazy(() => import('./pages/PaymentResult/PaymentFailure'));
 const ForgotPasswordPage = lazy(() => import('./pages/Auth/ForgotPassword'));
@@ -171,6 +174,8 @@ const router = createBrowserRouter([
       { path: "/dashboard/:bookId",
         element: <ProtectedRoute><BookDashboard /></ProtectedRoute>
       },
+      { path: '/print/:bookId', element: <ProtectedRoute><PrintApplicationPage /></ProtectedRoute> },
+      { path: '/funding-history', element: <ProtectedRoute><FundingHistoryPage /></ProtectedRoute> },
       { path: "/profile",
         element: <ProtectedRoute><UserProfilePage /></ProtectedRoute>
       },
@@ -185,8 +190,8 @@ const router = createBrowserRouter([
       { path: "/sifremi-unuttum", element: <ForgotPasswordPage /> },
       { path: "/forgot-password", element: <Navigate to="/sifremi-unuttum" replace /> },
       { path: "/reset-password/:token", element: <ResetPasswordPage /> },
-      { path: "/donate/:bookId", element: <DonationPage /> },
-      { path: "/payment/success", element: <PaymentSuccess /> },
+      { path: "/donate/:bookId", element: <ProtectedRoute><DonationPage /></ProtectedRoute> },
+      { path: "/payment/success", element: <ProtectedRoute><PaymentSuccess /></ProtectedRoute> },
       { path: "/payment/failure", element: <PaymentFailure /> },
       { path: "/quotes", element: <QuotesPage /> },
       { path: '/quotes/:quoteId', element: <QuoteDetail /> },
@@ -217,6 +222,7 @@ const router = createBrowserRouter([
         element: <AdminRoute><AdminBooks /></AdminRoute>
       },
       { path: '/admin/printed-books', element: <AdminRoute><AdminPrintedBooks /></AdminRoute> },
+      { path: '/admin/print-funding', element: <AdminRoute><AdminPrintFundingPage /></AdminRoute> },
       { path: '/admin/session-access', element: <AdminRoute><AdminSessionAccess /></AdminRoute> },
       { path: "/admin/transactions",
         element: <AdminRoute><AdminTransactions /></AdminRoute>

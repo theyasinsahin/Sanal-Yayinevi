@@ -135,3 +135,44 @@ test('invalid reasons, states, paging and revisions are rejected', async () => {
   for (const args of [{ status: 'NONE' }, { page: 0 }, { page: 1.5 }]) await expect(access.getSessionAccessRequests(adminContext(), args)).rejects.toThrow();
   await expect(review(0)).rejects.toThrow('Geçerli bir başvuru');
 });
+
+test('members can only read their own request and cannot supply another user ID', async () => {
+  await request();
+  const other = await User.create({ username: 'another', fullName: 'Another Member', email: 'another@test.example', password: 'hash' });
+  const result = await run('MY_SESSION_ACCESS', {}, other);
+  expect(result.errors).toBeUndefined();
+  expect(result.data.mySessionCreationAccess).toMatchObject({ status: 'NONE', reason: '', user: { id: other.id } });
+  const forbidden = await api.executeOperation({ query: `query { mySessionCreationAccess(userId: "${user.id}") { reason } }` }, { contextValue: { user: other } });
+  expect(forbidden.body.singleResult.errors[0].extensions.code).toBe('GRAPHQL_VALIDATION_FAILED');
+  expect((await run('SESSION_ACCESS_REQUESTS', { status: 'PENDING', page: 1 }, other)).errors[0].extensions.code).toBe('FORBIDDEN');
+});
+
+test('queue pagination is stable and filters out approved, deleted and inactive accounts', async () => {
+  const requestedAt = new Date('2026-01-01T10:00:00Z');
+  const members = await User.insertMany(Array.from({ length: 24 }, (_, index) => ({
+    username: `applicant${index}`, fullName: `Applicant ${index}`, email: `applicant${index}@test.example`, password: 'hash',
+    isDeleted: index === 22, isActive: index !== 23,
+    sessionCreationAccess: { status: index === 21 ? 'APPROVED' : 'PENDING', reason, requestedAt, revision: 1 },
+  })));
+  const page1 = await run('SESSION_ACCESS_REQUESTS', { status: 'PENDING', page: 1 }, admin);
+  const page2 = await run('SESSION_ACCESS_REQUESTS', { status: 'PENDING', page: 2 }, admin);
+  const first = page1.data.sessionAccessRequests, second = page2.data.sessionAccessRequests;
+  expect(first).toMatchObject({ total: 21, totalPages: 2, page: 1 });
+  expect(first.items).toHaveLength(20); expect(second.items).toHaveLength(1);
+  const ids = [...first.items, ...second.items].map(item => item.user.id);
+  expect(new Set(ids).size).toBe(21);
+  expect(ids).toEqual(members.slice(0, 21).map(member => member.id).sort().reverse());
+  expect((await run('SESSION_ACCESS_REQUESTS', { status: 'PENDING', page: 3 }, admin)).data.sessionAccessRequests.items).toEqual([]);
+  const approved = await run('SESSION_ACCESS_REQUESTS', { status: 'APPROVED', page: 1 }, admin);
+  expect(approved.data.sessionAccessRequests.items.map(item => item.user.id)).toEqual([members[21].id]);
+});
+
+test('invalid review payloads cannot change permission or produce an audit entry', async () => {
+  await request();
+  const base = { userId: user.id, revision: 1, approve: true };
+  for (const changes of [{ userId: 'bad-id' }, { revision: 1.5 }, { approve: 'true' }, { note: null }, { note: 'x'.repeat(501) }]) {
+    await expect(access.reviewSessionAccess(adminContext(), { ...base, ...changes })).rejects.toThrow();
+  }
+  expect((await access.getMySessionAccess(context())).status).toBe('PENDING');
+  expect(await AdminAudit.countDocuments({ recordId: user.id })).toBe(0);
+});

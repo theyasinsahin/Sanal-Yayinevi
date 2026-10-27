@@ -4,6 +4,7 @@ import Comment from '../models/comment.js';
 import Quote from '../models/quote.js';
 import QuoteComment from '../models/quoteComment.js';
 import ParagraphComment from '../models/paragraphComment.js';
+import { FundingCampaign } from '../models/printFunding.js';
 
 export async function moderateVisibility(resource, record, removed, operationId, session) {
   if (!removed && resource.name !== 'Book') {
@@ -14,6 +15,7 @@ export async function moderateVisibility(resource, record, removed, operationId,
   }
   const targets = [];
   if (resource.name === 'Book') {
+    if (removed && await FundingCampaign.exists({ bookId: record._id, $or: [{ activeLock: true }, { state: 'REFUNDING' }, { state: 'SUCCEEDED', productionState: { $nin: ['COMPLETED', 'CANCELLED'] } }] }).session(session)) throw new Error('Aktif kampanya/üretim varken kitap arşivlenemez. Önce kontrollü iptal süreci gerekli.');
     const quotes = await Quote.find({ bookId: record._id }).select('_id').session(session).exec();
     targets.push([Chapter, { bookId: record._id }], [Comment, { bookId: record._id }], [ParagraphComment, { bookId: record._id }], [Quote, { bookId: record._id }], [QuoteComment, { quoteId: { $in: quotes.map(quote => quote._id) } }]);
   }

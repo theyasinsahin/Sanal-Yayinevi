@@ -32,6 +32,7 @@ const definitions = {
   Conversation: ['Konuşmalar', 'Mesajlaşma katılımcıları ve konuşma bilgileri.', []],
   Message: ['Mesajlar', 'Gönderilmiş mesajlar ve ek ilişkileri. Gönderici ve okunma geçmişi korunur.', []],
   BookClaim: ['Yazar hak talepleri', 'Hak sahipliği incelemesi; onay ve ret inceleme ekranından yapılır.', []],
+  PrintedBookReading: ['Okunan basılı kitaplar', 'Kullanıcının okuduğu basılı kitap, puan ve yorumu. Uygunsuz değerlendirmeleri yayından kaldırabilirsiniz.', ['isDeleted']],
   FollowRequest: ['Takip istekleri', 'İstek, onay ve iptal geçmişi; karşılıklı takip ilişkileriyle birlikte yönetilir.', []],
   NewsletterSubscription: ['Bülten abonelikleri', 'Aboneliği iptal edebilirsiniz. Yeniden abonelik kullanıcı onayı gerektirir.', ['status']],
   Verification: ['E-posta doğrulamaları', 'Bekleyen e-posta doğrulamalarının tarihleri. Doğrulama kodları gizlidir.', []],

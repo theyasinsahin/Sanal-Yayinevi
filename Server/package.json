@@ -10,6 +10,8 @@
     "mail:verify": "node src/scripts/verifyMail.js",
     "mail:preview": "node src/scripts/previewEmails.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:ci": "npm run test -- --runInBand",
+    "test:coverage": "npm run test:ci -- --coverage --coverageReporters=text-summary --coverageReporters=html --coverageReporters=json-summary",
     "test:performance": "npm run test -- --runInBand tests/performance.test.js",
     "perf:benchmark": "node src/scripts/performanceBenchmark.js optimized",
     "seed:badges": "node src/scripts/seedBadges.js",

@@ -14,6 +14,7 @@ jest.mock('../../components/Layout/MainLayout', () => ({ MainLayout: ({ children
 jest.mock('../../components/Admin/AdminLayout', () => ({ __esModule: true, default: ({ children }) => <main>{children}</main> }));
 jest.mock('../../components/Quote/QuoteCard', () => ({ __esModule: true, default: ({ quote }) => <blockquote>{quote.text}</blockquote> }));
 jest.mock('../../components/Comments/CommentList', () => ({ __esModule: true, default: () => <div>Comments list</div> }));
+jest.mock('../../components/Books/PrintedReadingEditor', () => () => <section>Reading editor</section>);
 
 const book = { id: 'printed', title: 'Raflardaki Kitap', printedAuthor: 'Bir Yazar', publisher: 'Yayınevi', publicationYear: 2020, isbn: '9780140328721', imageUrl: '', pageCount: 200, description: 'Basılı eser için uzun bir tanıtım metni.', kind: 'PRINTED', publicationStatus: 'APPROVED', authorId: null, author: null, canEditContent: false, purchaseUrl: 'https://example.test/buy', chapters: [], myClaim: null };
 const catalog = books => ({ request: { query: GET_PRINTED_BOOKS, variables: { page: 1, search: '' } }, result: { data: { getPrintedBooks: { books, total: books.length, page: 1, totalPages: 1 } } } });
