@@ -2,18 +2,21 @@ import mongoose from 'mongoose';
 import { createHash } from 'node:crypto';
 import { GraphQLError } from 'graphql';
 import User from '../../models/user.js';
-import { PrintAudit, PrintOutbox, PrintTariff, PrintApplication, BookPrintVersion, printModels } from '../../models/printFunding.js';
+import { PrintAudit, PrintOutbox, PrintTariff, PrintApplication, BookPrintVersion, FundingCampaign, CampaignUpdate, printModels } from '../../models/printFunding.js';
 import Notification from '../../models/notification.js';
 
 export const fail = (message, code = 'BAD_USER_INPUT') => new GraphQLError(message, { extensions: { code } });
-export function id(value) { if (!mongoose.isObjectIdOrHexString(value)) throw fail('Geçerli bir kayıt kimliği gerekli.'); return value; }
+export function id(value, field = 'id', message = 'Geçerli bir kayıt kimliği gerekli.') {
+  if (!mongoose.isObjectIdOrHexString(value)) throw new GraphQLError(message, { extensions: { code: 'BAD_USER_INPUT', field } });
+  return value;
+}
 export function int(value, label, min = 0, max = 100000000000) { if (!Number.isSafeInteger(value) || value < min || value > max) throw fail(`${label}: ${min}–${max} arası tam sayı gerekli.`); return value; }
 export function text(value, label, min = 1, max = 2000) { if (typeof value !== 'string' || value.trim().length < min || value.trim().length > max) throw fail(`${label}: ${min}–${max} karakter gerekli.`); return value.trim(); }
 const canonical = value => Array.isArray(value) ? value.map(canonical) : value && typeof value === 'object' && !(value instanceof Date) ? Object.fromEntries(Object.keys(value).sort().map(key => [key, canonical(value[key])])) : value;
 export const hash = value => createHash('sha256').update(Buffer.isBuffer(value) ? value : JSON.stringify(canonical(value))).digest('hex');
 export async function actor(context, session = null, admin = false) {
   const userId = context.user?._id || context.user?.id;
-  const user = userId && await User.findOne({ _id: id(userId), isDeleted: false, isActive: { $ne: false }, ...(admin ? { role: 'ADMIN' } : {}) }).session(session).exec();
+  const user = userId && await User.findOne({ _id: id(userId, 'userId', 'Oturum kullanıcı kimliği geçersiz. Yeniden giriş yapın.'), isDeleted: false, isActive: { $ne: false }, ...(admin ? { role: 'ADMIN' } : {}) }).session(session).exec();
   if (!user) throw fail(admin ? 'Aktif yönetici yetkisi gerekli.' : 'Giriş yapmalısınız.', admin ? 'FORBIDDEN' : 'UNAUTHENTICATED');
   return user;
 }
@@ -45,5 +48,11 @@ export async function initializePrintFunding() {
   // No index drops or legacy-data writes. Fail closed on standalone MongoDB.
   await requireTransactions();
   await Promise.all(printModels.map(model => model.createIndexes()));
+}
+export async function initializePrintCampaignManagement() {
+  await requireTransactions();
+  // Campaign locks and management history are required even with payments off.
+  // Do not initialize a provider or enable financial processing here.
+  await Promise.all([FundingCampaign, PrintApplication, CampaignUpdate, PrintAudit, PrintOutbox, Notification].map(model => model.createIndexes()));
 }
 export function page(value = 1) { return int(value, 'Sayfa', 1, 10000); }

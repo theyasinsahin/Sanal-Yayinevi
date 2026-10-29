@@ -77,10 +77,10 @@ const resolvers = {
     return order ? decryptAddress(order.shippingAddress, String(order.paymentId)) : null;
   } },
 };
-const preparationMutations = new Set(['createPrintTariff', 'savePrintApplication', 'submitPrintApplication', 'cancelPrintApplication', 'reviewPrintApplication', 'setPrintInterest']);
+const preparationMutations = new Set(['createPrintTariff', 'savePrintApplication', 'submitPrintApplication', 'cancelPrintApplication', 'reviewPrintApplication', 'setPrintInterest', 'openFundingCampaign', 'closeFundingCampaign', 'runPrintMaintenance']);
 for (const [name, resolve] of Object.entries(resolvers.Mutation)) {
-  // Private documents, application review and free interest have their own access
-  // checks; none may require enabling financial features to become usable.
+  // Management operations have their own access checks. Maintenance separately
+  // gates provider/financial work on sandboxEnabled().
   if (preparationMutations.has(name)) continue;
   resolvers.Mutation[name] = (...args) => { assertPrintSystem(); return resolve(...args); };
 }

@@ -1,11 +1,14 @@
 import Book from '../../models/book.js';
 import User from '../../models/user.js';
 import { FundingCampaign, PrintApplication, PrintTariff, BookPrintVersion, FundingPayment, PaymentReservation, FundingRefund, FundingLedger, PrintPreOrder, CampaignUpdate, PrintInterest } from '../../models/printFunding.js';
-import { actor, owner, fail, id, int, text, transact, audit, notice, page } from './common.js';
+import { actor, owner, fail, id, int, text, transact, audit, notice, page, initializePrintCampaignManagement } from './common.js';
+import { sandboxEnabled } from './paymentProvider.js';
 import { digitalState, writingState } from './applicationService.js';
 import { releaseReservation, queueRefund } from './paymentService.js';
 
 export async function openCampaign(context, { applicationId, revision, days }) {
+  await actor(context, null, true);
+  await initializePrintCampaignManagement();
   try { return await transact(async session => {
     const user = await actor(context, session, true), application = await PrintApplication.findById(id(applicationId)).session(session);
     if (!application || application.state !== 'APPROVED' || application.revision !== revision || !application.verifiedQuote) throw fail('Yalnızca güncel, onaylı başvurudan kampanya açılabilir.');
@@ -20,11 +23,13 @@ export async function openCampaign(context, { applicationId, revision, days }) {
     application.revision += 1; await application.save({ session });
     await Book.updateOne({ _id: book._id }, { $inc: { printRevision: 1 } }, { session });
     await audit(session, user._id, campaign._id, 'CAMPAIGN_OPENED', '', 'ACTIVE', 'Onaylı hedef ve fiyat sabitlendi.', { applicationId: application.id, targetMinor: campaign.targetMinor, unitPriceMinor: campaign.unitPriceMinor });
-    await notice(session, `campaign-open:${campaign.id}`, campaign.authorId, 'Destek kampanyası başladı', 'Sandbox kampanyanız destek kabul ediyor.', campaign._id);
+    await notice(session, `campaign-open:${campaign.id}`, campaign.authorId, 'Destek kampanyası oluşturuldu', sandboxEnabled() ? 'Sandbox kampanyanız test desteği kabul ediyor.' : 'Kampanyanız oluşturuldu. Ödemeler ve ön sipariş işlemleri kapalıdır.', campaign._id);
     await CampaignUpdate.create([{ campaignId: campaign._id, state: 'ACTIVE', message: 'Test kampanyası başladı. Gerçek para tahsilatı yapılmaz.', createdBy: user._id }], { session }); return campaign;
   }); } catch (error) { if (error.code === 11000) throw fail('Yazarın/kitabın aktif kampanyası veya bu başvuru/sürümün kampanyası zaten var.', 'CONFLICT'); throw error; }
 }
 export async function closeCampaign(context, { campaignId, reason }) {
+  await actor(context, null, true);
+  await initializePrintCampaignManagement();
   return transact(async session => {
     const user = await actor(context, session, true), campaign = await FundingCampaign.findById(id(campaignId)).session(session);
     if (!campaign || !['ACTIVE', 'CLOSING'].includes(campaign.state)) throw fail('Kampanya bu aşamada kapatılamaz.');
@@ -43,10 +48,18 @@ export async function expireReservation(reservationId, now = new Date()) {
     await audit(session, null, payment._id, 'RESERVATION_EXPIRED', 'HELD', 'EXPIRED'); return payment.id;
   });
 }
-export async function settleCampaign(campaignId, now = new Date()) {
+export async function settleCampaign(campaignId, now = new Date(), { unfundedOnly = false } = {}) {
   return transact(async session => {
     const campaign = await FundingCampaign.findById(campaignId).session(session);
     if (!campaign) return;
+    if (unfundedOnly) {
+      // This check shares the campaign transaction with checkout's conditional
+      // write. Any financial history requires normal sandbox reconciliation.
+      if (campaign.acceptedMinor || campaign.reservedMinor || campaign.soldQuantity || campaign.reservedQuantity || campaign.financeIssue) return;
+      for (const model of [FundingPayment, PaymentReservation, FundingLedger, FundingRefund, PrintPreOrder]) {
+        if (await model.exists({ campaignId: campaign._id }).session(session)) return;
+      }
+    }
     if (campaign.state === 'ACTIVE' && campaign.endsAt <= now) { campaign.state = 'CLOSING'; campaign.outcome = 'DEADLINE'; }
     if (campaign.state === 'CLOSING') {
       // Bounded drain: new checkout is already blocked on the same campaign document.

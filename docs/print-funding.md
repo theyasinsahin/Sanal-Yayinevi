@@ -158,7 +158,7 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 
 | Değişken | Davranış |
 | --- | --- |
-| PRINT_SYSTEM_ENABLED | Kampanya/ödeme/üretim/sipariş yazmaları ve finansal startup indexleri için gerekir. Tarife, özel PDF yükleme, başvuru kaydetme/gönderme/iptal/inceleme ve ücretsiz basım ilgisi bu anahtardan bağımsızdır. Bildirim worker'ı ayrıca çalışır. |
+| PRINT_SYSTEM_ENABLED | Ödeme/üretim/sipariş yazmaları ve finansal startup indexleri için gerekir. Tarife, PDF, başvuru, ücretsiz basım ilgisi, yönetici kampanya oluşturma/iptal ve güvenli bakım bu anahtardan bağımsızdır. Finansal bakım ayrıca sandbox sağlayıcı koşullarını gerektirir. |
 | PRINT_PAYMENTS_MODE | Varsayılan kapalı; yalnız `SANDBOX` desteklenir |
 | NODE_ENV | Ödeme için açıkça `development` veya `test` gerekir; production'da sandbox dahi kapalı |
 | PRINT_SANDBOX_WEBHOOK_SECRET | En az 32 karakter; yalnız mock HMAC protokolüne ait, gerçek sağlayıcı anahtarı değildir |
@@ -184,9 +184,11 @@ Yönetici olarak `/admin/print-funding` → **Fiyat tarifeleri** ekranından yen
 
 Yazarın PDF yüklemesi ve başvurusu da ödeme ayarlarından bağımsızdır. Kitabı dijital yayımlayıp yazımı tamamlayın; yazı masasından **Basım İçin Başvur / Başvurumu Gör** ekranını açın. Kapak PDF'ini yükleyin, özellikler ve beyanlarla **Basım sürümünü sabitle ve başvuruyu kaydet** düğmesine basın; ardından **Başvuruyu incelemeye gönder** düğmesini kullanın. Özel PDF sınırı 10 MB, kimlik ve sahiplik kontrolleri geçerlidir. Başvuru sürüm/geçmiş/bildirim indexleri işlem öncesinde eklemeli hazırlanır; veri reseti veya zorunlu backfill yoktur.
 
-Yönetici başvuruyu inceleyebilir, revizyon isteyebilir, onaylayabilir veya reddedebilir; yazar kampanya açılmadan iptal edebilir. Başvuru onayı kampanyayı veya tahsilatı açmaz. Kampanya ve finansal işlemler mevcut feature flag ve sağlayıcı kontrollerini kullanmaya devam eder. Mevcut tarifeler ve maliyet hesapları SANDBOX etiketlidir; gerçek ödeme veya canlı fiyatlandırma adaptörü eklenmiş sayılmaz.
+Yönetici başvuruyu inceleyebilir, revizyon isteyebilir, onaylayabilir veya reddedebilir; yazar kampanya açılmadan iptal edebilir. Başvuru onayı kampanyayı veya tahsilatı açmaz. Onaylı başvuruda **Onaylı sandbox kampanyasını aç** işlemi production'da da kullanılabilir; `PRINT_SYSTEM_ENABLED=true` veya ödeme sırrı gerekmez. Kampanya açılırken gerekli unique kampanya/yazar/kitap/sürüm indexleri ve yönetim geçmişi indexleri transaction öncesinde hazırlanır. Rol ve başvuru onayı transaction içinde tekrar kontrol edilir; onaylı hedef ve satış fiyatı değişmez. Aynı yazarın paralel aktif kampanyaları ve aynı başvuru/sürümün tekrar kullanımı engellenir.
 
-Başvuru bildirimleri için worker sunucuyla birlikte başlar. `sandboxEnabled()` false olduğunda yalnız bildirim outbox'ını işler; ödeme, rezervasyon, kampanya uzlaştırması veya iade çağrısı yapmaz. Başvuru/karar bildirimleri bu nedenle `PRINT_SYSTEM_ENABLED` kapalıyken de teslim edilebilir.
+Bu işlem yalnızca SANDBOX kampanya kaydını oluşturur. Production'da `printPaymentMode=DISABLED` kalır; checkout, sağlayıcı işlemleri ve canlı tahsilat açılmaz. Kitap sayfası kampanyayı ve ilerlemeyi gösterir; ödeme kapalıysa destek/ön sipariş bağlantısı yerine açık bir bilgilendirme gösterir. Yönetici kampanyayı iptal edebilir. Ödeme/üretim/sipariş yazmalarının mevcut feature flag ve sağlayıcı kontrolleri korunur. Mevcut tarifeler ve maliyet hesapları SANDBOX etiketlidir; gerçek ödeme veya canlı fiyatlandırma adaptörü eklenmiş sayılmaz.
+
+Worker sunucuyla birlikte başlar. `sandboxEnabled()` false olduğunda bildirim outbox'ını işler ve yalnızca finansal geçmişi olmayan boş kampanyaların süresini/iptalini tamamlar. Bu işlem transaction içinde sıfır kampanya sayaçlarını, finansal sorun alanını ve ödeme/rezervasyon/ledger/iade/ön sipariş geçmişinin yokluğunu doğrular; iptalde CANCELLED, süre sonunda FAILED olur ve aktif kampanya kilidi bırakılır. Finansal geçmişi bulunan kampanyalara dokunulmaz; sağlayıcı, ödeme/rezervasyon veya iade işlemi çalıştırılmaz. Bunlar normal sandbox uzlaştırması gerektirir. Yönetici **Uzlaştırma ve iade işlerini şimdi çalıştır** işlemi de aynı korumaları kullanır. Başvuru/karar bildirimleri ve boş kampanya yönetimi bu nedenle `PRINT_SYSTEM_ENABLED` kapalıyken de çalışır.
 
 ## Testler ve doğrulama sınırları
 
@@ -204,6 +206,38 @@ cd Client
 `Client/src/components/PrintFunding/*.test.jsx`: birleşik sepet, yalnız niyet verisinin gönderilmesi, çift tıklama/yanıt kaybında aynı işlem, kuruş dönüşümü, kapalı kampanya, ücretsiz ilgi, iade/kargo görünümü, yazar gönderimi ve gerekçeli yönetici ret akışı. Mevcut otomatik kayıt testinde basım ekranına geçmeden metnin flush edilmesi de doğrulanır.
 
 Son koşu sayıları ve mevcut lint uyarıları [sonuç raporunda](print-funding-report.md) tutulur. JSDOM testleri gerçek mobil/tarayıcı görsel denemesi değildir. Sandbox mock başarısı iyzico/banka, gerçek kargo, SMTP veya matbaa entegrasyonu başarısı olarak yorumlanamaz. Replica-set failover, çoklu process üretim yükü, disk arızası ve gerçek banka mutabakatı test edilmemiştir.
+
+## Yönetici panelinde başvuruyu bulma
+
+`PrintApplication.state = SUBMITTED` kayıtları `/admin/print-funding` adresindeki **Başvurular** sekmesinde incelenir. Yönetici ana sayfasındaki **basım başvurusu** sayısı yalnız bu durumdaki kayıtları sayar ve bu ekrana bağlanır. Finansal sistemin kapalı olması listeleme veya incelemeyi engellemez. Liste açıkken yeni gönderilen başvurular **Başvuruları yenile** düğmesiyle alınabilir; sorgu hataları boş liste olarak gizlenmez.
+
+`/admin/printed-books` ayrı bir süreçtir: daha önce basılmış kitapların katalog başvurularını ve yazar hak taleplerini gösterir. Buradaki liste `PrintApplication` kayıtlarını içermez; ekranda basım başvurularına bağlantı bulunur. Mevcut başvuruyu yeniden oluşturmak veya veritabanında durum değiştirmek gerekmez. Bu yönetici özeti değişikliği için backend ve frontend birlikte dağıtılmalı; ek veri migrasyonu gerekmez.
+
+### Toplam gider ve birim satış fiyatı
+
+Onayda her birim gider ayrı kontrol edilir: `birimGiderMinor >= ceil(toplamGiderMinor / sabitSürüm.printRun)`. Satış payını büyütmek düşük girilmiş birim kargo/vergi/hizmet gibi bir alanı karşılamaz. Form toplam giderlerin tüm baskıya, birim giderlerin tek kitaba ait olduğunu belirtir. Backend hatası yetersiz alanı, gereken minimum TL tutarını ve sabit sürümün baskı adedini gösterir. Frontend girdileri TL, API tutarları tam sayı kuruştur.
+
+**Yalnız sandbox için, gerçek matbaa fiyatı olmayan örnek:** sabit sürümde baskı adedi 100 iken aşağıdaki TL girdileriyle onay testi çalıştırılır. Her iki gruptaki tüm alanları doldurun; boş alan yerine `0` girin.
+
+| Toplam baskı gideri | Toplam TL | Birim satış bileşeni | TL / kitap |
+| --- | ---: | --- | ---: |
+| Matbaa üretimi | 26800 | Birim üretim | 268 |
+| Kargo | 5000 | Birim kargo | 50 |
+| Paketleme | 2000 | Birim paketleme | 20 |
+| Vergi | 7360 | Birim vergi | 73,60 |
+| Ödeme giderleri | 883,20 | Birim ödeme gideri | 8,84 |
+| Yayın hizmetleri | 3000 | Birim hizmet | 30 |
+| Diğer zorunlu giderler | 0 | Satış payı | 49,56 |
+
+Onaylı hedef 45.043,20 TL, kitap satış fiyatı 500,00 TL olur. Ödeme giderinin birim karşılığı yukarı yuvarlanır. Farklı baskı adedi için bu seti aynı şekilde kullanmayın; başvuru kartındaki sabitlenmiş baskı adedini esas alın. Kesin sayfa sayısı ve iki onay PDF'si ayrıca doğrulanmalıdır.
+
+### Yönetici kararında kimlik ve PDF doğrulaması
+
+`ApplicationReview`, `ReviewPrintApplication` GraphQL işlemine `input.applicationId = application.id` gönderir. Bu değer `PrintApplication._id` alanının 24 haneli hexadecimal metin karşılığıdır; `bookId` ve `version.id` yerine kullanılamaz. Sabit sürüm backend tarafından başvurunun `versionId` alanından bulunur. Kullanıcıdan kayıt kimliği yazması istenmez.
+
+`APPROVED` kararı için son mizanpaj ve matbaa teklif PDF'leri ayrıca yüklenmelidir. Kapak PDF'si bu iki belgenin yerine otomatik atanmaz. `/api/print/assets` yükleme yanıtındaki kimlikler sırasıyla `input.quote.layoutAssetId` ve `input.quote.quoteAssetId` olarak gönderilir. Yükleme tamamlanmadan karar gönderimi frontend tarafından engellenir. Backend dosya kimliklerini, dosya varlığını ve erişim yetkisini ayrıca doğrular; başarısız işlem başvuruyu veya onay geçmişini değiştirmez.
+
+Önceki genel **Geçerli bir kayıt kimliği gerekli.** hatası, boş PDF kimliğinden de kaynaklanabiliyordu. Yönetici kararında artık eksik belgenin adı belirtilir. GraphQL hatasının `path` değeri `reviewPrintApplication`, `extensions.field` değeri `applicationId`, `quote.layoutAssetId` veya `quote.quoteAssetId` alanını gösterir. Oturum kimliği doğrulanamıyorsa `userId` alanı belirtilir; ham kimlikler veya oturum bilgileri loglanmaz.
 
 ## Canlıya geçişte tamamlanması gerekenler
 

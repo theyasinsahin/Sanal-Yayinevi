@@ -172,7 +172,7 @@ const startServer = async () => {
       })
     );
 
-    await new Promise((resolve) => httpServer.listen({ port: PORT }, resolve));
+    await new Promise((resolve) => httpServer.listen({ port: PORT, ...(process.env.BETIK_ISOLATED_PRINT_SANDBOX === 'true' ? { host: '127.0.0.1' } : {}) }, resolve));
     // Application notifications also need delivery when funding is disabled.
     // Maintenance only touches money/provider state if sandboxEnabled() is true.
     startPrintWorker();

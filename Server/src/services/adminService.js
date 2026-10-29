@@ -11,6 +11,7 @@ import AdminControl from '../models/adminControl.js';
 import User from '../models/user.js';
 import Book from '../models/book.js';
 import Chapter from '../models/chapter.js';
+import { PrintApplication } from '../models/printFunding.js';
 import Genre from '../models/genre.js';
 import UserScore from '../models/userScore.js';
 import { moderateVisibility } from './adminVisibility.js';
@@ -259,12 +260,13 @@ export async function getAdminOverview(context) {
     total: await getResource(name).model.countDocuments().exec(),
     active: await getResource(name).model.countDocuments({ ...(getResource(name).model.schema.path('isDeleted') ? { isDeleted: { $ne: true } } : {}), ...(getResource(name).model.schema.path('isActive') ? { isActive: { $ne: false } } : {}) }).exec(),
   })));
-  const [pendingBooks, pendingClaims, pendingSessionAccess, revenue, recent] = await Promise.all([
+  const [pendingBooks, pendingPrintApplications, pendingClaims, pendingSessionAccess, revenue, recent] = await Promise.all([
     Book.countDocuments({ kind: 'PRINTED', publicationStatus: 'PENDING', isDeleted: false }).exec(),
+    PrintApplication.countDocuments({ state: 'SUBMITTED' }).exec(),
     getResource('BookClaim').model.countDocuments({ status: 'PENDING' }).exec(),
     User.countDocuments({ isDeleted: false, isActive: { $ne: false }, 'sessionCreationAccess.status': 'PENDING' }).exec(),
     getResource('Transaction').model.aggregate([{ $match: { status: 'SUCCESS' } }, { $group: { _id: '$currency', amount: { $sum: '$amount' }, count: { $sum: 1 } } }]).exec(),
     AdminAudit.find().sort({ createdAt: -1, _id: -1 }).limit(8).exec(),
   ]);
-  return { counts, pendingBooks, pendingClaims, pendingSessionAccess, revenue: revenue.map(item => ({ currency: item._id || 'TRY', amount: item.amount, count: item.count })), recent: recent.map(recordOf) };
+  return { counts, pendingBooks, pendingPrintApplications, pendingClaims, pendingSessionAccess, revenue: revenue.map(item => ({ currency: item._id || 'TRY', amount: item.amount, count: item.count })), recent: recent.map(recordOf) };
 }

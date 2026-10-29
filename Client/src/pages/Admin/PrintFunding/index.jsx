@@ -20,6 +20,9 @@ function ApplicationReview({ application: app, refresh }) {
   const [days, setDays] = useState(30), [inspected, setInspected] = useState(false);
   async function review(event) {
     event.preventDefault();
+    if (!/^[a-f\d]{24}$/i.test(app.id || '')) { action.setError('Başvuru kimliği alınamadı. Başvuru listesini yenileyin.'); return; }
+    if (decision === 'APPROVED' && !/^[a-f\d]{24}$/i.test(layoutAssetId)) { action.setError('Onay için son mizanpaj PDF dosyasını yükleyin ve yüklemenin tamamlanmasını bekleyin.'); return; }
+    if (decision === 'APPROVED' && !/^[a-f\d]{24}$/i.test(quoteAssetId)) { action.setError('Onay için matbaa teklif PDF dosyasını yükleyin ve yüklemenin tamamlanmasını bekleyin.'); return; }
     try { await action.run(api.REVIEW_PRINT_APPLICATION, { input: { applicationId: app.id, revision: app.revision, decision, reason, ...(decision === 'APPROVED' ? { quote: { source, confirmedPages: Number(pages), layoutAssetId, quoteAssetId, preflightConfirmed, components: amounts(components), sale: amounts(sale) } } : {}) } }); }
     catch (error) { action.setError(error.message); }
   }
@@ -31,12 +34,13 @@ function ApplicationReview({ application: app, refresh }) {
       <label>Karar<select value={decision} onChange={e => setDecision(e.target.value)}><option value="REVISION_REQUESTED">Revizyon iste</option><option value="REJECTED">Reddet</option><option value="APPROVED">Onayla</option></select></label>
       <label>İnceleme gerekçesi<textarea required minLength="5" maxLength="2000" value={reason} onChange={e => setReason(e.target.value)} /></label>
       {decision === 'APPROVED' && <>
-        <p className="print-sandbox">Bu onay yalnızca sandbox kampanyası açar. Gerçek matbaa fiyatı varmış gibi işlem yapmayın.</p>
+        <p className="print-sandbox">Bu onay sandbox kampanyası oluşturmanıza izin verir; kampanyayı veya ödemeleri kendiliğinden açmaz. Gerçek matbaa fiyatı varmış gibi işlem yapmayın.</p>
         <label>Matbaa / yayınevi teklif referansı<input required minLength="5" maxLength="300" value={source} onChange={e => setSource(e.target.value)} /></label>
         <label>Mizanpajdan doğrulanmış kesin sayfa<input type="number" min="1" max="20000" required value={pages} onChange={e => setPages(e.target.value)} /></label>
         <FileUpload label="Onaylanacak son mizanpaj PDF" value={layoutAssetId} onChange={setLayout} disabled={action.busy} />
         <FileUpload label="Matbaa teklif PDF" value={quoteAssetId} onChange={setQuote} disabled={action.busy} />
         <AmountFields title="Doğrulanmış toplam baskı maliyetleri" fields={costFields} values={components} setValues={setComponents} />
+        <p>Baskı adedi: <strong>{app.version.specification.printRun}</strong>. Yukarıdaki giderler tüm baskı içindir. Aşağıdaki her birim gider en az ilgili toplam giderin baskı adedine bölümü kadar olmalı; küsurat yukarı doğru kuruşa yuvarlanır. Satış payı ayrı eklenir ve eksik birim giderin yerine geçmez.</p>
         <AmountFields title="Onaylanacak kitap satış fiyatının bileşenleri" fields={saleFields} values={sale} setValues={setSale} />
         <p>Tahmini maliyet: {money(app.estimate.totalMinor)} · Doğrulanmış hedef: <strong>{money(target)}</strong> · Kitap satış fiyatı: <strong>{money(price)}</strong></p>
         <label className="print-check"><input type="checkbox" required checked={preflightConfirmed} onChange={e => setPreflight(e.target.checked)} />Son metni, mizanpaj sayfalarını, boyut/taşma payı/kapak çözünürlüğünü ve hak/izin beyanlarını inceledim. Teknik özellikleri bu dosyalar için doğruluyorum.</label>
@@ -44,6 +48,7 @@ function ApplicationReview({ application: app, refresh }) {
       <Button type="submit" disabled={action.busy}>Kararı kaydet</Button>
     </fieldset></form>}
     {app.state === 'APPROVED' && <form className="print-form" onSubmit={async e => { e.preventDefault(); await action.run(api.OPEN_FUNDING_CAMPAIGN, { input: { applicationId: app.id, revision: app.revision, days: Number(days) } }); }}>
+      <p>Kampanyayı oluşturmak ödeme sistemini etkinleştirmez. Canlı tahsilat kapalıdır; test ödemeleri yalnızca ayrıca yapılandırılmış geliştirme/test ortamında kullanılabilir.</p>
       <label>Kampanya süresi (gün)<input type="number" min="1" max="90" value={days} onChange={e => setDays(e.target.value)} /></label>
       <label className="print-check"><input type="checkbox" required checked={inspected} onChange={e => setInspected(e.target.checked)} />Onaylı sürüm, hedef ve satış fiyatıyla test kampanyası açılmasını onaylıyorum. Aynı başvuru yeniden kampanya oluşturmaz.</label>
       <Button type="submit" disabled={action.busy || !inspected}>Onaylı sandbox kampanyasını aç</Button>
@@ -52,8 +57,8 @@ function ApplicationReview({ application: app, refresh }) {
 }
 function ApplicationsTab() {
   const [page, setPage] = useState(1);
-  const { data, loading, error, refetch } = useQuery(api.ADMIN_PRINT_APPLICATIONS, { variables: { page }, fetchPolicy: 'network-only' });
-  return <>{loading && <p role="status">Başvurular yükleniyor…</p>}<Feedback error={error} />{data?.adminPrintApplications.map(item => <ApplicationReview key={`${item.id}:${item.revision}`} application={item} refresh={refetch} />)}{data?.adminPrintApplications.length === 0 && <p>Başvuru yok.</p>}<Pager page={page} setPage={setPage} count={data?.adminPrintApplications.length || 0} /></>;
+  const { data, loading, error, refetch } = useQuery(api.ADMIN_PRINT_APPLICATIONS, { variables: { page }, fetchPolicy: 'network-only', notifyOnNetworkStatusChange: true });
+  return <><Button variant="outline" disabled={loading} onClick={() => refetch().catch(() => {})}>Başvuruları yenile</Button>{loading && <p role="status">Başvurular yükleniyor…</p>}<Feedback error={error} />{data?.adminPrintApplications.map(item => <ApplicationReview key={`${item.id}:${item.revision}`} application={item} refresh={refetch} />)}{data?.adminPrintApplications.length === 0 && !loading && <p>Bu sayfada başvuru yok.</p>}<Pager page={page} setPage={setPage} count={data?.adminPrintApplications.length || 0} /></>;
 }
 const nextProduction = { PREPARATION: 'PRINTER_APPROVED', PRINTER_APPROVED: 'STARTED', STARTED: 'PRINTING', PRINTING: 'PRINTED', PRINTED: 'PACKAGING', PACKAGING: 'SHIPPING', SHIPPING: 'DELIVERED', DELIVERED: 'COMPLETED' };
 function CampaignManager({ campaign, refresh }) {

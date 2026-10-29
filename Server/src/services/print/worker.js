@@ -31,7 +31,12 @@ export async function drainPrintOutbox() {
   }
 }
 export async function runPrintMaintenance() {
-  if (!sandboxEnabled()) { await drainPrintOutbox(); return { disabled: true }; }
+  if (!sandboxEnabled()) {
+    const now = new Date();
+    const empty = await FundingCampaign.find({ environment: 'SANDBOX', acceptedMinor: 0, reservedMinor: 0, soldQuantity: 0, reservedQuantity: 0, financeIssue: '', $or: [{ state: 'ACTIVE', endsAt: { $lte: now } }, { state: 'CLOSING' }] }).sort({ updatedAt: 1 }).limit(50).select('_id').lean().exec();
+    for (const campaign of empty) await settleCampaign(campaign._id, now, { unfundedOnly: true });
+    await drainPrintOutbox(); return { disabled: true };
+  }
   const errors = [];
   const safe = async (phase, fn) => { try { return await fn(); } catch { errors.push(phase); return null; } };
   const now = new Date();

@@ -25,7 +25,7 @@ export const SAVE_ADMIN_RECORD = gql`
 export const GET_ADMIN_OVERVIEW = gql`
   query GetAdminOverview {
     getAdminOverview {
-      counts { resource label total active } pendingBooks pendingClaims pendingSessionAccess revenue { currency amount count }
+      counts { resource label total active } pendingBooks pendingPrintApplications pendingClaims pendingSessionAccess revenue { currency amount count }
       recent { id title revision values }
     }
   }

@@ -127,9 +127,10 @@ export async function submitApplication(context, { applicationId, revision }) {
 }
 export async function reviewApplication(context, input) {
   await actor(context, null, true);
+  const applicationId = id(input.applicationId, 'applicationId', 'Başvuru kimliği geçersiz. Başvuru listesini yenileyin.');
   await initializePrintApplicationManagement();
   return transact(async session => {
-    const user = await actor(context, session, true), application = await PrintApplication.findById(id(input.applicationId)).session(session);
+    const user = await actor(context, session, true), application = await PrintApplication.findById(applicationId).session(session);
     if (!application || application.state !== 'SUBMITTED' || application.revision !== input.revision) throw fail('Başvuru incelemede değil veya değişmiş.', 'CONFLICT');
     if (String(application.authorId) === String(user._id)) throw fail('Kendi başvurunuzu onaylayamazsınız.', 'FORBIDDEN');
     const decision = input.decision;
@@ -138,13 +139,17 @@ export async function reviewApplication(context, input) {
     if (decision === 'APPROVED') {
       const quote = input.quote, version = await BookPrintVersion.findById(application.versionId).session(session);
       if (!quote || quote.preflightConfirmed !== true) throw fail('Mizanpaj ve dosya teknik kontrolü onaylanmalı.');
-      const layoutAsset = await PrintAsset.findById(id(quote.layoutAssetId)).session(session);
-      const quoteAsset = await PrintAsset.findById(id(quote.quoteAssetId)).session(session);
+      const layoutAsset = await PrintAsset.findById(id(quote.layoutAssetId, 'quote.layoutAssetId', 'Onay için son mizanpaj PDF dosyasını yükleyin ve yüklemenin tamamlanmasını bekleyin.')).session(session);
+      const quoteAsset = await PrintAsset.findById(id(quote.quoteAssetId, 'quote.quoteAssetId', 'Onay için matbaa teklif PDF dosyasını yükleyin ve yüklemenin tamamlanmasını bekleyin.')).session(session);
       if (!layoutAsset || !quoteAsset || [layoutAsset, quoteAsset].some(asset => ![String(user._id), String(application.authorId)].includes(String(asset.ownerId)))) throw fail('Yetkili mizanpaj ve matbaa teklif PDF dosyaları gerekli.');
       const components = Object.fromEntries(['printingMinor', 'shippingMinor', 'packagingMinor', 'taxMinor', 'providerFeeMinor', 'serviceMinor', 'otherMinor'].map(key => [key, int(quote.components?.[key], key)]));
       const sale = Object.fromEntries(['unitProductionMinor', 'unitShippingMinor', 'unitPackagingMinor', 'unitTaxMinor', 'unitFeeMinor', 'unitServiceMinor', 'unitMarginMinor'].map(key => [key, int(quote.sale?.[key], key)]));
-      for (const [unit, total] of [['unitProductionMinor', 'printingMinor'], ['unitShippingMinor', 'shippingMinor'], ['unitPackagingMinor', 'packagingMinor'], ['unitTaxMinor', 'taxMinor'], ['unitFeeMinor', 'providerFeeMinor'], ['unitServiceMinor', 'serviceMinor']]) {
-        if (sale[unit] < Math.ceil(components[total] / version.specification.printRun)) throw fail('Satış fiyatı doğrulanmış birim üretim ve operasyon maliyetlerini karşılamalı.');
+      for (const [unit, total, label] of [['unitProductionMinor', 'printingMinor', 'Birim üretim'], ['unitShippingMinor', 'shippingMinor', 'Birim kargo'], ['unitPackagingMinor', 'packagingMinor', 'Birim paketleme'], ['unitTaxMinor', 'taxMinor', 'Birim vergi'], ['unitFeeMinor', 'providerFeeMinor', 'Birim ödeme gideri'], ['unitServiceMinor', 'serviceMinor', 'Birim hizmet']]) {
+        const minimumMinor = Math.ceil(components[total] / version.specification.printRun);
+        if (sale[unit] < minimumMinor) {
+          const minimum = (minimumMinor / 100).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          throw fail(`${label} en az ${minimum} TL olmalı (${version.specification.printRun} adet baskı için). Toplam satış fiyatını veya satış payını artırmak bu alanın yerine geçmez.`);
+        }
       }
       const target = sum(Object.values(components)), price = sum(Object.values(sale));
       int(target, 'Hedef', 1); int(price, 'Birim fiyat', 1);
@@ -173,7 +178,7 @@ export async function applications(context, { admin = false, page: p = 1 } = {})
   return PrintApplication.find(admin ? {} : { authorId: user._id }).sort({ createdAt: -1, _id: -1 }).skip((page(p) - 1) * 20).limit(20).exec();
 }
 export async function privateApplication(context, applicationId) {
-  const user = await actor(context), application = await PrintApplication.findById(id(applicationId)).exec();
+  const user = await actor(context), application = await PrintApplication.findById(id(applicationId, 'applicationId', 'Başvuru kimliği geçersiz. Başvuru listesini yenileyin.')).exec();
   if (!application) throw fail('Başvuru bulunamadı.');
   if (user.role !== 'ADMIN') owner(application, user);
   return application;

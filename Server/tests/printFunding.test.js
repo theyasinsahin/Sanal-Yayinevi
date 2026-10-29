@@ -94,6 +94,73 @@ test('revision keeps immutable versions and rejection cannot collect funds', asy
   app = await applications.reviewApplication(context(admin), { applicationId: app.id, revision: app.revision, decision: 'REJECTED', reason: 'Teknik dosya uygun değil.' });
   await expect(campaigns.openCampaign(context(admin), { applicationId: app.id, revision: app.revision })).rejects.toThrow('onaylı');
 });
+
+test('review identifies invalid application and approval PDF ids without changing the application', async () => {
+  const app = await submitted();
+  const input = { applicationId: app.id, revision: app.revision, decision: 'APPROVED', reason: 'Teknik dosyalar incelendi.', quote: quote() };
+  expect(app.id).not.toBe(String(app.bookId)); expect(app.id).not.toBe(String(app.versionId));
+  const baselineAudits = await models.PrintAudit.countDocuments();
+  for (const [changes, field, message] of [
+    [{ applicationId: 'undefined' }, 'applicationId', 'Başvuru kimliği'],
+    [{ quote: { ...quote(), layoutAssetId: '' } }, 'quote.layoutAssetId', 'mizanpaj PDF'],
+    [{ quote: { ...quote(), quoteAssetId: '' } }, 'quote.quoteAssetId', 'matbaa teklif PDF'],
+    [{ quote: { ...quote(), layoutAssetId: { $oid: cover.id } } }, 'quote.layoutAssetId', 'mizanpaj PDF'],
+  ]) {
+    const result = await run(clientDocument('REVIEW_PRINT_APPLICATION'), { input: { ...input, ...changes } }, admin);
+    expect(result.errors[0].path).toEqual(['reviewPrintApplication']);
+    expect(result.errors[0].extensions).toMatchObject({ code: 'BAD_USER_INPUT', field });
+    expect(result.errors[0].message).toContain(message);
+    expect((await models.PrintApplication.findById(app._id)).state).toBe('SUBMITTED');
+  }
+  expect(await models.PrintAudit.countDocuments()).toBe(baselineAudits);
+  // A well-formed ID from another entity must not be treated as an application.
+  for (const applicationId of [String(app.bookId), String(app.versionId)]) {
+    const result = await run(clientDocument('REVIEW_PRINT_APPLICATION'), { input: { ...input, applicationId } }, admin);
+    expect(result.errors[0].extensions.code).toBe('CONFLICT');
+  }
+  const result = await run(clientDocument('REVIEW_PRINT_APPLICATION'), { input }, admin);
+  expect(result.errors).toBeUndefined();
+  expect(result.data.reviewPrintApplication).toMatchObject({ id: app.id, bookId: String(app.bookId), state: 'APPROVED', version: { id: String(app.versionId) } });
+});
+test('a high margin cannot hide an underpriced cost component; exact rounded unit costs can be approved', async () => {
+  const app = await submitted();
+  const verified = quote(); verified.components.printingMinor = 50001;
+  const minimums = [
+    ['unitProductionMinor', 'printingMinor', 'Birim üretim'], ['unitShippingMinor', 'shippingMinor', 'Birim kargo'],
+    ['unitPackagingMinor', 'packagingMinor', 'Birim paketleme'], ['unitTaxMinor', 'taxMinor', 'Birim vergi'],
+    ['unitFeeMinor', 'providerFeeMinor', 'Birim ödeme gideri'], ['unitServiceMinor', 'serviceMinor', 'Birim hizmet'],
+  ];
+  for (const [unit, total] of minimums) verified.sale[unit] = Math.ceil(verified.components[total] / 10);
+  verified.sale.unitMarginMinor = 100000000;
+  const input = { applicationId: app.id, revision: app.revision, decision: 'APPROVED', reason: 'Birim maliyetler test edildi.', quote: verified };
+  for (const [unit, , label] of minimums) {
+    const badQuote = { ...verified, sale: { ...verified.sale, [unit]: verified.sale[unit] - 1 } };
+    const result = await run(clientDocument('REVIEW_PRINT_APPLICATION'), { input: { ...input, quote: badQuote } }, admin);
+    expect(result.errors[0].extensions.code).toBe('BAD_USER_INPUT');
+    expect(result.errors[0].message).toContain(`${label} en az`);
+    expect(result.errors[0].message).toContain('(10 adet baskı için)');
+    expect((await models.PrintApplication.findById(app.id)).state).toBe('SUBMITTED');
+  }
+  const result = await run(clientDocument('REVIEW_PRINT_APPLICATION'), { input }, admin);
+  expect(result.errors).toBeUndefined();
+  expect(result.data.reviewPrintApplication.state).toBe('APPROVED');
+  expect(result.data.reviewPrintApplication.verifiedQuote.sale.unitProductionMinor).toBe(5001);
+  expect(result.data.reviewPrintApplication.approvedUnitPriceMinor).toBe(100010001);
+});
+
+test('the documented 100-copy sandbox example approves a 500 TL unit price and a separate 45043.20 TL target', async () => {
+  const input = applicationInput(); input.specification.printRun = 100;
+  let app = await applications.saveApplication(context(user), input);
+  app = await applications.submitApplication(context(user), { applicationId: app.id, revision: app.revision });
+  const verified = { ...quote(), confirmedPages: 24,
+    components: { printingMinor: 2680000, shippingMinor: 500000, packagingMinor: 200000, taxMinor: 736000, providerFeeMinor: 88320, serviceMinor: 300000, otherMinor: 0 },
+    sale: { unitProductionMinor: 26800, unitShippingMinor: 5000, unitPackagingMinor: 2000, unitTaxMinor: 7360, unitFeeMinor: 884, unitServiceMinor: 3000, unitMarginMinor: 4956 },
+  };
+  const result = await run(clientDocument('REVIEW_PRINT_APPLICATION'), { input: { applicationId: app.id, revision: app.revision, decision: 'APPROVED', reason: 'Örnek tutarlar sandbox için doğrulandı.', quote: verified } }, admin);
+  expect(result.errors).toBeUndefined();
+  expect(result.data.reviewPrintApplication).toMatchObject({ state: 'APPROVED', approvedTargetMinor: 4504320, approvedUnitPriceMinor: 50000 });
+});
+
 test('concurrent approval has one decision; campaign unique locks prevent duplicate version/book/author campaigns', async () => {
   let app = await submitted();
   const results = await Promise.allSettled(['APPROVED', 'REJECTED'].map(decision => applications.reviewApplication(context(admin), { applicationId: app.id, revision: app.revision, decision, reason: 'Yönetici incelemesi tamamlandı.', quote: quote() })));
@@ -371,9 +438,8 @@ test.each([undefined, 'false'])('production admins can prepare tariffs with PRIN
     expect(() => getPaymentProvider()).toThrow('Ödemeler kapalı');
     for (const [name, variables] of [
       ['START_PRINT_CHECKOUT', { input: { campaignId: book.id, idempotencyKey: randomUUID(), donationMinor: 5000 } }],
-      ['OPEN_FUNDING_CAMPAIGN', { input: { applicationId: book.id, revision: 1 } }],
-      ['RUN_PRINT_MAINTENANCE', {}],
     ]) expect((await run(clientDocument(name), variables, admin)).errors[0].extensions.code).toBe('PRINT_SYSTEM_DISABLED');
+    expect((await run(clientDocument('RUN_PRINT_MAINTENANCE'), {}, admin)).data.runPrintMaintenance.disabled).toBe(true);
     expect(await models.FundingCampaign.countDocuments()).toBe(0); expect(await models.FundingPayment.countDocuments()).toBe(0);
     expect(await models.FundingLedger.countDocuments()).toBe(0); expect(await models.SandboxCharge.countDocuments()).toBe(0);
   });
@@ -411,6 +477,30 @@ test('tariff creation explains missing transaction support without saving an una
     expect(result.errors[0].extensions.code).toBe('PRINT_STORAGE_UNAVAILABLE');
     expect(result.errors[0].message).toContain('replica set');
     expect(await models.PrintTariff.countDocuments({ version: 'standalone-rejected' })).toBe(0);
+  });
+});
+
+test.each([undefined, 'false'])('submitted print applications appear in the production admin list and their own dashboard queue (%s)', async flag => {
+  const application = await submitted();
+  // A request can have been prepared days before it was submitted, as in the
+  // reported record. Neither creation date nor disabled payments may hide it.
+  await models.PrintApplication.collection.updateOne({ _id: application._id }, { $set: { createdAt: new Date('2026-10-27T14:56:01.860Z') } });
+  await withProductionTariffSettings(flag, async () => {
+    const overviewQuery = '{ getAdminOverview { pendingBooks pendingPrintApplications } }';
+    const overview = await run(overviewQuery, {}, admin);
+    expect(overview.errors).toBeUndefined();
+    expect(overview.data.getAdminOverview).toMatchObject({ pendingBooks: 0, pendingPrintApplications: 1 });
+    const list = await run(clientDocument('ADMIN_PRINT_APPLICATIONS'), { page: 1 }, admin);
+    expect(list.errors).toBeUndefined();
+    expect(list.data.adminPrintApplications).toEqual([expect.objectContaining({
+      id: application.id, state: 'SUBMITTED', revision: application.revision,
+      version: expect.objectContaining({ id: String(application.versionId), title: book.title }),
+    })]);
+    expect((await run(clientDocument('ADMIN_PRINT_APPLICATIONS'), { page: 1 }, reader)).errors[0].extensions.code).toBe('FORBIDDEN');
+    expect((await run(overviewQuery, {}, reader)).errors[0].extensions.code).toBe('FORBIDDEN');
+    await applications.reviewApplication(context(admin), { applicationId: application.id, revision: application.revision, decision: 'REJECTED', reason: 'Teknik dosya revize edilmeli.' });
+    expect((await run(overviewQuery, {}, admin)).data.getAdminOverview.pendingPrintApplications).toBe(0);
+    expect(await models.FundingCampaign.countDocuments()).toBe(0);
   });
 });
 
@@ -457,8 +547,6 @@ test.each([undefined, 'false'])('production PDF upload and the full application/
       expect(result.errors).toBeUndefined(); application = result.data.submitPrintApplication;
       result = await run(clientDocument('REVIEW_PRINT_APPLICATION'), { input: { applicationId: application.id, revision: application.revision, decision: 'APPROVED', reason: 'Dosyalar inceleme için uygun.', quote: quote() } }, admin);
       expect(result.errors).toBeUndefined(); application = result.data.reviewPrintApplication; expect(application.state).toBe('APPROVED');
-      const blockedCampaign = await run(clientDocument('OPEN_FUNDING_CAMPAIGN'), { input: { applicationId: application.id, revision: application.revision } }, admin);
-      expect(blockedCampaign.errors[0].extensions.code).toBe('PRINT_SYSTEM_DISABLED');
       result = await run(clientDocument('CANCEL_PRINT_APPLICATION'), { applicationId: application.id, revision: application.revision, reason: 'Yazar başvuruyu geri çekti.' }, user);
       expect(result.errors).toBeUndefined(); expect(result.data.cancelPrintApplication.state).toBe('CANCELLED');
       expect((await run(clientDocument('SET_PRINT_INTEREST'), { bookId: book.id, interested: true }, reader)).errors).toBeUndefined();
@@ -468,5 +556,59 @@ test.each([undefined, 'false'])('production PDF upload and the full application/
       expect(await models.PrintOutbox.countDocuments({ state: 'PENDING' })).toBe(0);
       for (const model of [models.FundingCampaign, models.FundingPayment, models.PaymentReservation, models.FundingLedger, models.FundingRefund, models.SandboxCharge]) expect(await model.countDocuments()).toBe(0);
     } finally { await new Promise(resolve => server.close(resolve)); }
+  });
+});
+
+test.each([undefined, 'false', 'true'])('production campaign management is available with flag=%s but all payments remain disabled', async flag => {
+  const application = await submitted();
+  await withProductionTariffSettings(flag, async () => {
+    const initialize = jest.spyOn(models.FundingCampaign, 'createIndexes');
+    const open = () => run(clientDocument('OPEN_FUNDING_CAMPAIGN'), { input: { applicationId: application.id, revision: application.revision + 1 } }, admin);
+    let result = await open(); expect(result.errors[0].message).toContain('onaylı');
+    result = await run(clientDocument('REVIEW_PRINT_APPLICATION'), { input: { applicationId: application.id, revision: application.revision, decision: 'APPROVED', reason: 'Sandbox dosyaları incelendi.', quote: quote() } }, admin);
+    expect(result.errors).toBeUndefined();
+    const forbidden = await run(clientDocument('OPEN_FUNDING_CAMPAIGN'), { input: { applicationId: application.id, revision: result.data.reviewPrintApplication.revision } }, reader);
+    expect(forbidden.errors[0].extensions.code).toBe('FORBIDDEN');
+    const races = await Promise.all([open(), open()]);
+    expect(races.filter(response => !response.errors)).toHaveLength(1);
+    const campaign = races.find(response => !response.errors).data.openFundingCampaign;
+    expect(campaign).toMatchObject({ state: 'ACTIVE', environment: 'SANDBOX', targetMinor: 100000, acceptedMinor: 0, reservedMinor: 0 });
+    expect(await models.FundingCampaign.countDocuments()).toBe(1);
+    expect(initialize).toHaveBeenCalled();
+    expect((await run('{ printPaymentMode }')).data.printPaymentMode).toBe('DISABLED');
+    const blocked = await run(clientDocument('START_PRINT_CHECKOUT'), { input: { campaignId: campaign.id, idempotencyKey: randomUUID(), donationMinor: 5000 } }, reader);
+    expect(['PRINT_SYSTEM_DISABLED', 'PAYMENTS_DISABLED']).toContain(blocked.errors[0].extensions.code);
+    expect(() => getPaymentProvider()).toThrow('Ödemeler kapalı');
+    result = await run(clientDocument('CLOSE_FUNDING_CAMPAIGN'), { campaignId: campaign.id, reason: 'Ödemesiz test kampanyası kapatıldı.' }, admin);
+    expect(result.errors).toBeUndefined();
+    await runPrintMaintenance();
+    expect((await models.FundingCampaign.findById(campaign.id))).toMatchObject({ state: 'CANCELLED', activeLock: false });
+    expect((await models.PrintApplication.findById(application.id)).open).toBe(false);
+    for (const model of [models.FundingPayment, models.PaymentReservation, models.FundingLedger, models.FundingRefund, models.PrintPreOrder, models.SandboxCharge]) expect(await model.countDocuments()).toBe(0);
+    expect(await models.PrintAudit.countDocuments({ entityId: campaign.id, action: 'CAMPAIGN_OPENED' })).toBe(1);
+  });
+});
+
+test('disabled payments allow empty campaign expiry but never reconcile campaigns with financial history', async () => {
+  let c = await campaign();
+  await models.FundingCampaign.updateOne({ _id: c._id }, { endsAt: new Date(Date.now() - 1000) });
+  await withProductionTariffSettings(undefined, async () => {
+    await runPrintMaintenance();
+    expect((await models.FundingCampaign.findById(c.id))).toMatchObject({ state: 'FAILED', activeLock: false });
+  });
+  // A different completed book from the same author can start another campaign.
+  book = await Book.create({ title: 'İkinci kitap', authorId: user._id, status: 'COMPLETED' });
+  await Chapter.create({ bookId: book._id, authorId: user._id, title: 'Metin', content: 'Tamamlanmış kitap metni.' });
+  c = await campaign();
+  const payment = await checkout(c); await payments.cancelPayment(context(reader), payment.id);
+  await models.FundingCampaign.updateOne({ _id: c._id }, { endsAt: new Date(Date.now() - 1000) });
+  const provider = getPaymentProvider(), retrieve = jest.spyOn(provider, 'retrieve'), refund = jest.spyOn(provider, 'refund');
+  await withProductionTariffSettings('true', async () => {
+    await runPrintMaintenance();
+    expect((await models.FundingCampaign.findById(c.id)).state).toBe('ACTIVE');
+    expect((await models.FundingPayment.findById(payment.id)).state).toBe('CANCELLED');
+    expect(retrieve).not.toHaveBeenCalled(); expect(refund).not.toHaveBeenCalled();
+    expect(await models.FundingLedger.countDocuments()).toBe(0);
+    expect(await models.FundingRefund.countDocuments()).toBe(0);
   });
 });
