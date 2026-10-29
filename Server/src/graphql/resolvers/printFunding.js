@@ -4,7 +4,8 @@ import { actor, id, int, fail, page, assertPrintSystem } from '../../services/pr
 import * as applications from '../../services/print/applicationService.js';
 import * as campaigns from '../../services/print/campaignService.js';
 import * as payments from '../../services/print/paymentService.js';
-import { sandboxEnabled } from '../../services/print/paymentProvider.js';
+import { printPaymentMode } from '../../services/print/paymentConfig.js';
+import IyzicoCheckout from '../../models/iyzicoCheckout.js';
 import { runPrintMaintenance } from '../../services/print/worker.js';
 import { decryptAddress } from '../../services/print/addressCrypto.js';
 
@@ -15,7 +16,7 @@ async function privateList(context, model, args, admin = false) {
 const resolvers = {
   MinorAmount: new GraphQLScalarType({ name: 'MinorAmount', serialize: value => int(value, 'Kuruş'), parseValue: value => int(value, 'Kuruş'), parseLiteral: node => { if (node.kind !== Kind.INT) throw fail('Kuruş tam sayı olmalı.'); return int(Number(node.value), 'Kuruş'); } }),
   Query: {
-    printPaymentMode: () => sandboxEnabled() ? 'SANDBOX' : 'DISABLED',
+    printPaymentMode: () => printPaymentMode(),
     printOverview: (_, { bookId }, context) => campaigns.printOverview(context, bookId),
     printTariffs: () => PrintTariff.find().sort({ createdAt: -1, _id: -1 }).limit(50).exec(),
     myPrintApplications: (_, args, context) => applications.applications(context, args),
@@ -66,6 +67,8 @@ const resolvers = {
     updates: parent => CampaignUpdate.find({ campaignId: parent._id }).sort({ createdAt: -1, _id: -1 }).limit(50).exec(),
   },
   FundingPayment: {
+    checkoutUrl: async parent => parent.provider === 'IYZICO_SANDBOX' && ['CREATED', 'PENDING'].includes(parent.state)
+      ? (await IyzicoCheckout.findOne({ merchantReference: String(parent._id || parent.id) }).select('checkoutUrl').lean())?.checkoutUrl || null : null,
     reservation: parent => PaymentReservation.findOne({ paymentId: parent._id }).exec(),
     order: parent => PrintPreOrder.findOne({ paymentId: parent._id }).exec(),
     refund: parent => FundingRefund.findOne({ paymentId: parent._id }).exec(),

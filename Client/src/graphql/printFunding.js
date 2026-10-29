@@ -21,7 +21,7 @@ export const PRINT_ORDER_FIELDS = gql`
 export const PRINT_PAYMENT_FIELDS = gql`
   ${PRINT_ORDER_FIELDS}
   fragment PrintPaymentFields on FundingPayment {
-    id campaignId bookId provider amountMinor donationMinor orderMinor quantity currency state allocated captured issue createdAt
+    id campaignId bookId provider checkoutUrl amountMinor donationMinor orderMinor quantity currency state allocated captured issue createdAt
     reservation { state expiresAt }
     order { ...PrintOrderFields }
     refund { id paymentId amountMinor reason state attempts lastError retryAt providerRefundId }

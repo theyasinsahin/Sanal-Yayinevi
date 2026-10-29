@@ -35,7 +35,7 @@ campaign.index({ bookId: 1 }, { unique: true, partialFilterExpression: { activeL
 campaign.index({ state: 1, endsAt: 1 });
 export const FundingCampaign = model('FundingCampaign', campaign);
 
-const payment = new Schema({ userId: ref('User'), campaignId: ref('FundingCampaign'), bookId: ref('Book'), idempotencyKey: { type: String, required: true, maxlength: 100 }, requestHash: { type: String, required: true }, provider: { type: String, enum: ['SANDBOX'], default: 'SANDBOX' }, providerId: String, currency: { type: String, enum: ['TRY'], default: 'TRY' }, amountMinor: integer(), donationMinor: integer(), orderMinor: integer(), quantity: integer(), state: { type: String, enum: ['CREATED', 'PENDING', 'FAILED', 'CANCELLED', 'CAPTURED', 'REFUND_PENDING', 'REFUNDED'], default: 'CREATED' }, allocated: { type: Boolean, default: false }, captured: { type: Boolean, default: false }, capturedAt: Date, reconciledAt: Date, issue: { type: String, default: '' } }, options);
+const payment = new Schema({ userId: ref('User'), campaignId: ref('FundingCampaign'), bookId: ref('Book'), idempotencyKey: { type: String, required: true, maxlength: 100 }, requestHash: { type: String, required: true }, provider: { type: String, enum: ['SANDBOX', 'IYZICO_SANDBOX'], default: 'SANDBOX' }, providerId: String, currency: { type: String, enum: ['TRY'], default: 'TRY' }, amountMinor: integer(), donationMinor: integer(), orderMinor: integer(), quantity: integer(), state: { type: String, enum: ['CREATED', 'PENDING', 'FAILED', 'CANCELLED', 'CAPTURED', 'REFUND_PENDING', 'REFUNDED'], default: 'CREATED' }, allocated: { type: Boolean, default: false }, captured: { type: Boolean, default: false }, capturedAt: Date, reconciledAt: Date, issue: { type: String, default: '' } }, options);
 payment.index({ userId: 1, idempotencyKey: 1 }, { unique: true });
 payment.index({ providerId: 1 }, { unique: true, partialFilterExpression: { providerId: { $type: 'string' } } });
 payment.index({ campaignId: 1, state: 1 }); payment.index({ state: 1, reconciledAt: 1, _id: 1 }); payment.index({ userId: 1, createdAt: -1 });
@@ -45,7 +45,7 @@ const reservation = new Schema({ paymentId: { ...ref('FundingPayment'), unique: 
 reservation.index({ state: 1, expiresAt: 1 });
 export const PaymentReservation = model('PaymentReservation', reservation);
 
-const event = new Schema({ provider: { type: String, enum: ['SANDBOX'], default: 'SANDBOX' }, eventId: { type: String, required: true, unique: true }, paymentId: ref('FundingPayment'), payloadHash: { type: String, required: true }, providerState: String }, options);
+const event = new Schema({ provider: { type: String, enum: ['SANDBOX', 'IYZICO_SANDBOX'], default: 'SANDBOX' }, eventId: { type: String, required: true, unique: true }, paymentId: ref('FundingPayment'), payloadHash: { type: String, required: true }, providerState: String }, options);
 appendOnly(event); export const FundingPaymentEvent = model('FundingPaymentEvent', event);
 
 const ledger = new Schema({ key: { type: String, unique: true, required: true }, campaignId: ref('FundingCampaign'), paymentId: ref('FundingPayment'), userId: ref('User'), kind: { type: String, enum: ['CAPTURE', 'ALLOCATION', 'REFUND', 'DEALLOCATION'], required: true }, amountMinor: integer(), environment: { type: String, enum: ['SANDBOX'], default: 'SANDBOX' } }, options);

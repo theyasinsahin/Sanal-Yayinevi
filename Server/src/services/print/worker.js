@@ -42,13 +42,19 @@ export async function runPrintMaintenance() {
   const now = new Date();
   // Expiry releases capacity first. A later provider capture is fully refunded.
   const expired = await PaymentReservation.find({ state: 'HELD', expiresAt: { $lte: now } }).sort({ expiresAt: 1 }).limit(100).select('_id').lean().exec();
-  for (const item of expired) await safe('RESERVATION', async () => { const reference = await expireReservation(item._id, now); if (reference) await getPaymentProvider().cancel(reference); });
+  for (const item of expired) await safe('RESERVATION', async () => { const reference = await expireReservation(item._id, now); if (reference) {
+    const payment = await FundingPayment.findById(reference).select('provider').lean();
+    await getPaymentProvider(payment?.provider).cancel(reference);
+  } });
   // Prioritize unresolved checkouts so historical captures cannot starve new payments.
   const pending = await FundingPayment.find({ state: { $in: ['CREATED', 'PENDING'] } }).sort({ reconciledAt: 1, _id: 1 }).limit(100).select('_id state').lean().exec();
   const late = await FundingPayment.find({ state: { $in: ['FAILED', 'CANCELLED'] }, $or: [{ reconciledAt: { $exists: false } }, { reconciledAt: { $lte: new Date(now.getTime() - 60000) } }] }).sort({ reconciledAt: 1, _id: 1 }).limit(25).select('_id state').lean().exec();
   const payments = [...pending, ...late];
   for (const payment of payments) await safe('PAYMENT', async () => {
-    if (payment.state === 'CANCELLED') await getPaymentProvider().cancel(String(payment._id));
+    if (payment.state === 'CANCELLED') {
+      const record = await FundingPayment.findById(payment._id).select('provider').lean();
+      await getPaymentProvider(record?.provider).cancel(String(payment._id));
+    }
     return reconcilePayment(String(payment._id));
   });
   const campaigns = await FundingCampaign.find({ $or: [{ state: 'ACTIVE', endsAt: { $lte: now } }, { state: { $in: ['CLOSING', 'REFUNDING'] } }] }).sort({ updatedAt: 1 }).limit(50).select('_id').lean().exec();

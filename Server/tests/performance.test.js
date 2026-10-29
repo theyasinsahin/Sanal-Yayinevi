@@ -64,6 +64,7 @@ test('the real catalog document has a constant database-call budget and never lo
   expect(large.calls.filter(call => call.collection === 'users' && call.method === 'find')).toHaveLength(1);
   expect(large.calls.filter(call => call.collection === 'comments').map(call => call.method)).toEqual(['aggregate']);
   expect(large.calls.some(call => call.collection === 'chapters')).toBe(false);
+  expect(large.calls.some(call => call.collection === 'quotes')).toBe(false);
   expect(large.data.getBookFeed.books.every(book => book.commentCount === 3 && book.author.username)).toBe(true);
 });
 
@@ -99,6 +100,87 @@ test('page size, search length and cursors cannot bypass query bounds', async ()
   }
   const first = await getBookFeed({ limit: 1 });
   await expect(getBookFeed({ after: first.endCursor, sort: 'OLDEST' })).rejects.toThrow();
+});
+
+test('catalog search matches Turkish casing in titles, author names and usernames before pagination', async () => {
+  await models.User.updateOne({ _id: authors[0]._id }, { $set: { fullName: 'Işıl Yılmaz', username: 'kitapkurdu' } });
+  await models.Book.updateOne({ _id: books[0]._id }, { $set: { title: 'İstanbul Hikâyeleri' } });
+  for (const search of ['  İSTANBUL  ', 'istanbul']) {
+    const page = await getBookFeed({ search, sort: 'POPULAR', limit: 8 });
+    expect(page.books.map(book => book.id)).toEqual([books[0].id]);
+  }
+  for (const search of ['IŞIL', 'ışıl', 'KİTAPKURDU', 'KITAPKURDU']) {
+    const page = await getBookFeed({ search, sort: 'POPULAR', limit: 8 });
+    expect(page.books).toHaveLength(8);
+    expect(page.hasNextPage).toBe(true);
+    expect(page.books.every(book => String(book.authorId) === authors[0].id)).toBe(true);
+    expect(page.books.map(book => book.stats.likes)).toEqual([46, 44, 42, 40, 38, 36, 34, 32]);
+  }
+});
+
+test.each([[8, 'POPULAR'], [24, 'NEWEST']])('quote matches join title and author matches once per book with limit %s and sort %s', async (limit, sort) => {
+  const text = 'Görünmeyen yıldızlar geceyi aydınlatır.';
+  await models.User.updateOne({ _id: authors[1]._id }, { $set: { fullName: 'Görünmeyen Yıldızlar' } });
+  await models.Book.updateOne({ _id: books[4]._id }, { $set: { title: 'Görünmeyen Yıldızlar' } });
+  await models.Quote.create([
+    { text, normalizedText: 'first', bookId: books[0]._id, userId: authors[0]._id },
+    { text, normalizedText: 'duplicate', bookId: books[0]._id, userId: authors[1]._id },
+    { text, normalizedText: 'second', bookId: books[2]._id, userId: authors[0]._id },
+    { text, normalizedText: 'author-overlap', bookId: books[3]._id, userId: authors[0]._id },
+  ]);
+  const expected = books.filter((_, index) => index % 2 === 1 || [0, 2, 4].includes(index))
+    .sort((a, b) => sort === 'POPULAR' ? b.stats.likes - a.stats.likes : b.publishDate - a.publishDate || b.id.localeCompare(a.id))
+    .map(book => book.id);
+  const ids = [];
+  let after;
+  do {
+    const { data, calls } = await run('GET_BOOK_FEED', { limit, sort, search: '  GÖRÜNMEYEN YILDIZLAR  ', after });
+    const page = data.getBookFeed;
+    ids.push(...page.books.map(book => book.id));
+    expect(page.books.length).toBeLessThanOrEqual(limit);
+    expect(page.books.every(book => book.publicPath.startsWith('/kitap/'))).toBe(true);
+    expect(calls.filter(call => call.collection === 'quotes').map(call => call.method)).toEqual(['distinct']);
+    expect(calls.length).toBeLessThanOrEqual(10);
+    after = page.hasNextPage ? page.endCursor : null;
+  } while (after);
+  expect(ids).toEqual(expected);
+  expect(new Set(ids).size).toBe(27);
+});
+
+test('quote search respects deleted quotes, inactive users, book visibility and genre filters', async () => {
+  const text = 'Alıntıya özgü benzersiz satır';
+  const otherGenre = await models.Genre.create({ name: 'Şiir', slug: 'siir' });
+  const deletedUser = await models.User.create({ username: 'removed', fullName: 'Removed Reader', email: 'removed@fixture.test', password: 'test', isDeleted: true });
+  const hiddenBooks = await models.Book.create([
+    { title: 'Draft', authorId: authors[0]._id, genreId: genre._id, status: 'DRAFT' },
+    { title: 'Removed book', authorId: authors[0]._id, genreId: genre._id, status: 'WRITING', isDeleted: true },
+    { title: 'Inactive author', authorId: authors[2]._id, genreId: genre._id, status: 'WRITING' },
+    { title: 'Printed', kind: 'PRINTED', publicationStatus: 'APPROVED', genreId: genre._id, status: 'PUBLISHED' },
+    { title: 'Another genre', authorId: authors[0]._id, genreId: otherGenre._id, status: 'WRITING' },
+    { title: 'Deleted author', authorId: deletedUser._id, genreId: genre._id, status: 'WRITING' },
+  ]);
+  const original = await models.Quote.create({ text, normalizedText: 'visible', bookId: books[0]._id, userId: authors[0]._id });
+  await models.Quote.create([
+    { text, normalizedText: 'removed', bookId: books[1]._id, userId: authors[0]._id, isDeleted: true },
+    { text, normalizedText: 'inactive', bookId: books[2]._id, userId: authors[2]._id },
+    { text, normalizedText: 'repost', bookId: books[3]._id, userId: authors[0]._id, isRepost: true, originalQuoteId: original._id },
+    { text: 'Farklı bir alıntı', note: text, normalizedText: 'note-only', bookId: books[4]._id, userId: authors[0]._id },
+    { text, normalizedText: 'deleted-user', bookId: books[5]._id, userId: deletedUser._id },
+    ...hiddenBooks.map((book, index) => ({ text, normalizedText: `hidden-${index}`, bookId: book._id, userId: authors[0]._id })),
+  ]);
+  await models.Quote.collection.insertOne({ text, normalizedText: 'legacy', bookId: books[6]._id, userId: authors[0]._id, isRepost: false });
+  const page = await getBookFeed({ search: text, genre: 'roman', sort: 'POPULAR', limit: 48 });
+  expect(page.books.map(book => book.id)).toEqual([books[6].id, books[0].id]);
+  expect(page.hasNextPage).toBe(false);
+});
+
+test('quote searches treat punctuation as literal text', async () => {
+  await models.Quote.create([
+    { text: 'Bir ifade: (.*)+[x] ve devamı', normalizedText: 'literal', bookId: books[0]._id, userId: authors[0]._id },
+    { text: 'Aramayla eşleşmemesi gereken bir alıntı', normalizedText: 'unrelated', bookId: books[1]._id, userId: authors[0]._id },
+  ]);
+  const page = await getBookFeed({ search: '(.*)+[x]' });
+  expect(page.books.map(book => book.id)).toEqual([books[0].id]);
 });
 
 test('book detail and reader metadata exclude chapter bodies at the database projection', async () => {

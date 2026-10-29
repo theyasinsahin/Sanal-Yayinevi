@@ -4,6 +4,8 @@ import { GraphQLError } from 'graphql';
 import User from '../../models/user.js';
 import { PrintAudit, PrintOutbox, PrintTariff, PrintApplication, BookPrintVersion, FundingCampaign, CampaignUpdate, printModels } from '../../models/printFunding.js';
 import Notification from '../../models/notification.js';
+import IyzicoCheckout from '../../models/iyzicoCheckout.js';
+import { printSystemEnabled } from './paymentConfig.js';
 
 export const fail = (message, code = 'BAD_USER_INPUT') => new GraphQLError(message, { extensions: { code } });
 export function id(value, field = 'id', message = 'Geçerli bir kayıt kimliği gerekli.') {
@@ -26,7 +28,7 @@ export async function notice(session, key, userId, title, message, campaignId = 
   await PrintOutbox.updateOne({ key }, { $setOnInsert: { key, userId, title, message, campaignId, broadcast } }, { upsert: true, session }).exec();
 }
 export const transact = fn => mongoose.connection.transaction(fn, { readConcern: { level: 'snapshot' }, writeConcern: { w: 'majority' }, readPreference: 'primary', maxCommitTimeMS: 15000 });
-export function assertPrintSystem() { if (process.env.PRINT_SYSTEM_ENABLED !== 'true') throw fail('Basım sistemi kapalı. Test ortamında PRINT_SYSTEM_ENABLED=true ile etkinleştirin.', 'PRINT_SYSTEM_DISABLED'); }
+export function assertPrintSystem() { if (!printSystemEnabled()) throw fail('Basım sistemi kapalı. Test ortamında PRINT_SYSTEM_ENABLED=true ile etkinleştirin.', 'PRINT_SYSTEM_DISABLED'); }
 async function requireTransactions() {
   const hello = await mongoose.connection.db.admin().command({ hello: 1 });
   if (!hello.setName && hello.msg !== 'isdbgrid') throw fail('Başvuru, tarife ve işlem geçmişini birlikte kaydetmek için MongoDB replica set veya mongos gerekli.', 'PRINT_STORAGE_UNAVAILABLE');
@@ -47,7 +49,7 @@ export async function initializePrintApplicationManagement() {
 export async function initializePrintFunding() {
   // No index drops or legacy-data writes. Fail closed on standalone MongoDB.
   await requireTransactions();
-  await Promise.all(printModels.map(model => model.createIndexes()));
+  await Promise.all([...printModels, IyzicoCheckout].map(model => model.createIndexes()));
 }
 export async function initializePrintCampaignManagement() {
   await requireTransactions();
