@@ -4,8 +4,9 @@ import { GET_BOOK_FEED } from '../graphql/queries/book';
 
 const sorts = { newest: 'NEWEST', oldest: 'OLDEST', popular: 'POPULAR', lastUpdated: 'UPDATED' };
 
-export function useBookFeed(filters, enabled = true) {
-  const [search, setSearch] = useState((filters.search || '').trim().slice(0, 100));
+export function useBookFeed(filters, enabled = true, { limit = 24 } = {}) {
+  const requestedSearch = (filters.search || '').trim().slice(0, 100);
+  const [search, setSearch] = useState(requestedSearch);
   const [moreError, setMoreError] = useState(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const pending = useRef(false);
@@ -13,7 +14,7 @@ export function useBookFeed(filters, enabled = true) {
     const timer = setTimeout(() => setSearch((filters.search || '').trim().slice(0, 100)), 250);
     return () => clearTimeout(timer);
   }, [filters.search]);
-  const variables = { limit: 24, sort: sorts[filters.sortBy] || 'NEWEST',
+  const variables = { limit, sort: sorts[filters.sortBy] || 'NEWEST',
     genre: filters.genre && filters.genre !== 'Tümü' ? filters.genre : null, search: search || null };
   const key = JSON.stringify(variables);
   const activeKey = useRef(key);
@@ -38,5 +39,5 @@ export function useBookFeed(filters, enabled = true) {
     } catch (failure) { if (requestedKey === activeKey.current) setMoreError(failure); }
     finally { pending.current = false; setLoadingMore(false); }
   };
-  return { books: page?.books || [], loading, error, refetch, loadMore, loadingMore, moreError, hasNextPage: page?.hasNextPage || false };
+  return { books: page?.books || [], loading, searchPending: requestedSearch !== search, error, refetch, loadMore, loadingMore, moreError, hasNextPage: page?.hasNextPage || false };
 }

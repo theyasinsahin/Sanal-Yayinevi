@@ -7,6 +7,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
+    "sandbox:print": "node src/scripts/startPrintSandbox.js",
+    "sandbox:print:verify": "node src/scripts/startPrintSandbox.js --verify",
     "mail:verify": "node src/scripts/verifyMail.js",
     "mail:preview": "node src/scripts/previewEmails.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",

@@ -16,7 +16,10 @@ const FeedSearch = () => {
     <div style={{ marginBottom: '2rem' }}>
       <Input
         name="search"
-        placeholder="Kitap veya yazar ara..."
+        type="search"
+        maxLength={100}
+        aria-label="Kitap, yazar veya alıntı ara"
+        placeholder="Kitap, yazar veya alıntı ara..."
         value={filters.search || ''}
         onChange={handleSearch}
         icon={<Search fontSize="small" />}

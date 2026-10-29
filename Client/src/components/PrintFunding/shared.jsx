@@ -17,7 +17,7 @@ export function checkoutKey() {
 }
 export const statusNames = {
   PREPARING: 'Başvuru hazırlanıyor', SUBMITTED: 'İncelemede', REVISION_REQUESTED: 'Revizyon istendi', APPROVED: 'Onaylandı', REJECTED: 'Reddedildi',
-  ACTIVE: 'Destek kabul ediyor', CLOSING: 'Kapanıyor / Uzlaştırılıyor', SUCCEEDED: 'Başarıyla tamamlandı', FAILED: 'Başarısız', CANCELLED: 'İptal edildi',
+  ACTIVE: 'Kampanya açık', CLOSING: 'Kapanıyor / Uzlaştırılıyor', SUCCEEDED: 'Başarıyla tamamlandı', FAILED: 'Başarısız', CANCELLED: 'İptal edildi',
   REFUNDING: 'İadeler sürüyor', REFUND_PENDING: 'İade bekleniyor', REFUNDED: 'İade edildi', PENDING: 'Bekliyor', CREATED: 'Ödeme hazırlanıyor', CAPTURED: 'Test ödemesi doğrulandı',
   NOT_STARTED: 'Üretim başlamadı', PREPARATION: 'Basım hazırlığında', PRINTER_APPROVED: 'Matbaa onayladı', STARTED: 'Üretim başladı', PRINTING: 'Baskıda', PRINTED: 'Baskı tamamlandı',
   PACKAGING: 'Paketleniyor', SHIPPING: 'Dağıtımda', SHIPPED: 'Kargoya verildi', DELIVERED: 'Teslim edildi', COMPLETED: 'Tamamlandı', ISSUE: 'Sorun / Gecikme', AWAITING_PAYMENT: 'Ödeme bekleniyor', CONFIRMED: 'Ön sipariş onaylandı', PROCESSING: 'İşleniyor', HELD: 'Rezerve', CONSUMED: 'Kullanıldı', EXPIRED: 'Süresi doldu', RELEASED: 'Serbest bırakıldı',

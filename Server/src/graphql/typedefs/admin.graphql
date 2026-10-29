@@ -22,7 +22,7 @@ type AdminRecord { id: ID!, title: String!, revision: String!, values: JSON!, re
 type AdminRecordPage { items: [AdminRecord!]!, total: Int!, page: Int!, totalPages: Int! }
 type AdminResourceCount { resource: String!, label: String!, total: Int!, active: Int! }
 type AdminRevenue { currency: String!, amount: Float!, count: Int! }
-type AdminOverview { counts: [AdminResourceCount!]!, pendingBooks: Int!, pendingClaims: Int!, pendingSessionAccess: Int!, revenue: [AdminRevenue!]!, recent: [AdminRecord!]! }
+type AdminOverview { counts: [AdminResourceCount!]!, pendingBooks: Int!, pendingPrintApplications: Int!, pendingClaims: Int!, pendingSessionAccess: Int!, revenue: [AdminRevenue!]!, recent: [AdminRecord!]! }
 extend type Query {
   getAdminResources: [AdminResource!]!
   getAdminOverview: AdminOverview!

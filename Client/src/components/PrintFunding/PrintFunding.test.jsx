@@ -50,9 +50,16 @@ test('mixed cart sends quantity and extra support, requires delivery consent and
   fireEvent.click(screen.getByRole('button', { name: 'Test ödeme rezervasyonu oluştur' }));
   expect(await screen.findByText('payment')).toBeInTheDocument(); expect(created).toHaveBeenCalledTimes(1);
 });
-test('closed or disabled campaign cannot start checkout', async () => {
-  show(<PrintCheckout />, [overviewMock({ ...overview(), printPaymentMode: 'DISABLED', printOverview: { ...overview().printOverview, campaign: { ...campaign, state: 'CLOSING' } } })]);
+test.each(['ACTIVE', 'CLOSING'])('disabled payments prevent checkout even when campaign state is %s', async state => {
+  show(<PrintCheckout />, [overviewMock({ ...overview(), printPaymentMode: 'DISABLED', printOverview: { ...overview().printOverview, campaign: { ...campaign, state } } })]);
   expect(await screen.findByText(/Ödemeler kapalı/)).toBeInTheDocument(); expect(screen.getByRole('button', { name: 'Test ödeme rezervasyonu oluştur' })).toBeDisabled();
+});
+
+test('an active campaign with disabled payments shows its progress without offering checkout', async () => {
+  show(<BookFundingPanel bookId="book" />, [overviewMock({ ...overview(), printPaymentMode: 'DISABLED' })]);
+  expect(await screen.findByText('Kampanya oluşturuldu. Ödemeler ve ön sipariş işlemleri kapalıdır.')).toBeInTheDocument();
+  expect(screen.getByRole('progressbar', { name: 'Kampanya ilerlemesi' })).toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: /Destek ve ön sipariş seçenekleri/ })).not.toBeInTheDocument();
 });
 test('a lost checkout response retains the same operation key and prevents cart changes', async () => {
   const request = { query: api.START_PRINT_CHECKOUT, variables: { input: { campaignId: 'campaign', idempotencyKey: 'test-idempotency-00000001', quantity: 0, donationMinor: 5000 } } };
