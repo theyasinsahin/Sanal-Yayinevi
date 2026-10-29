@@ -1,6 +1,20 @@
 # Betik basım, destek ve ön sipariş sistemi
 
-Bu sürüm güvenli bir **sandbox temelidir**. Canlı para kabul etmez, gerçek kitap teslimatı taahhüt etmez. Eski iyzico checkout ve callback yazma yolları kapalıdır. Gerçek sağlayıcı entegrasyonu ve hukuki model tamamlanmış değildir. Mimari kararların başlangıç analizi [uygulama planındadır](print-funding-plan.md).
+Kitap fonlama artık **iyzico sandbox Checkout Form** ile test kartı ödemelerini destekler. Destek, ön sipariş, ödeme dönüşü, kampanya hesabı, iptal ve tam iade aynı uygulama kayıtlarıyla çalışır. Canlı para kabul edilmez. Eski ödeme kayıtlarının callback yolu kapalı kalır; yeni dönüş `/api/print/iyzico/callback/:reference` adresidir.
+
+### iyzico test kartlarıyla kullanım
+
+`PRINT_PAYMENTS_MODE=IYZICO_SANDBOX`, `PRINT_SYSTEM_ENABLED=true` ve mevcut sandbox API anahtarları kullanılır. API adresi tam olarak `https://sandbox-api.iyzipay.com` olmalıdır. `NODE_ENV=production` olsa da bu sağlayıcı test ortamında kalır. Basım ayarları henüz tanımlanmamışsa mevcut geçerli iyzico sandbox yapılandırması otomatik seçilir; açık `PRINT_SYSTEM_ENABLED=false` veya `PRINT_PAYMENTS_MODE=DISABLED` tercihi korunur.
+
+Yerel geliştirmede basım ayarları ve adres şifreleme anahtarı Git'e eklenmeyen `Server/.env.print.local` dosyasında tutulabilir. Mevcut iyzico anahtarları değiştirilmez. Production bu yerel dosyayı okumaz; aynı ayarlar deployment ortam değişkenleriyle sağlanır.
+
+Ön sipariş adresleri için sabit `PRINT_ADDRESS_ENCRYPTION_KEY` gerekir. Anahtar 32 byte hex olmalı ve siparişler oluştuktan sonra değiştirilmemelidir. `API_URL` (alternatif: `SERVER_URL` veya `BACKEND_URL`) ödeme dönüşünün backend adresi, `CLIENT_URL` uygulamanın frontend adresidir. Tarayıcının bu adreslere erişebilmesi gerekir.
+
+Okur sepette **iyzico test ödemesine geç** seçeneğini kullanır, ardından iyzico'nun barındırdığı test sayfasında test kartını girer. Uygulama kart verisi toplamaz. Dönüş token'ı saklanan işlemle eşleştirilir; imza, işlem kimliği, tutar, para birimi ve onay durumu iyzico'dan sorgulanıp doğrulanmadan fon veya ön sipariş onayı yazılmaz. Tekrarlanan dönüşler tutarı tekrar artırmaz. Süresi dolan/iptal edilen rezervasyona sonradan ulaşan tahsilat tam iadeye alınır. İadede yanıt kaybolursa iyzico raporlama servisi aynı iadenin tekrar gönderilmesini önler.
+
+Ödeme formu açıkken başarısız kart/3DS denemesi sonrasında aynı formda yeniden deneme yapılabilir. Bu nedenle periyodik sorgudaki `FAILURE` ara sonucu rezervasyonu serbest bırakmaz. Kesin başarısızlık yalnız doğrulanmış ödeme dönüşünde işlenir; açık iptal ve rezervasyonun süre aşımı ayrıca korunur. Daha geç tamamlanan eski bir olumsuz sorgu, daha yeni doğrulanmış tahsilatı veya iadeyi geriye alamaz.
+
+Eski `SANDBOX` modu kart girmeden yerel simülasyon testleri içindir ve yalnız development/test ortamında çalışır. Aşağıdaki eski mimari notlarda bu yerel sağlayıcı da anlatılır; iyzico entegrasyonunun güncel kullanım ayarları bu bölümdedir. Resmi kaynaklar: [Checkout Form](https://docs.iyzico.com/en/payment-methods/checkoutform/cf-implementation/cf-initialize), [yanıt imzası](https://docs.iyzico.com/en/advanced/response-signature-validation), [raporlama](https://docs.iyzico.com/en/advanced/reporting-service).
 
 ## Mevcut projeyle bütünleşme
 
@@ -159,8 +173,8 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 | Değişken | Davranış |
 | --- | --- |
 | PRINT_SYSTEM_ENABLED | Ödeme/üretim/sipariş yazmaları ve finansal startup indexleri için gerekir. Tarife, PDF, başvuru, ücretsiz basım ilgisi, yönetici kampanya oluşturma/iptal ve güvenli bakım bu anahtardan bağımsızdır. Finansal bakım ayrıca sandbox sağlayıcı koşullarını gerektirir. |
-| PRINT_PAYMENTS_MODE | Varsayılan kapalı; yalnız `SANDBOX` desteklenir |
-| NODE_ENV | Ödeme için açıkça `development` veya `test` gerekir; production'da sandbox dahi kapalı |
+| PRINT_PAYMENTS_MODE | `IYZICO_SANDBOX`: iyzico test kartları; `SANDBOX`: yerel simülasyon; `DISABLED`: kapalı. Ayar yoksa geçerli mevcut iyzico sandbox yapılandırması seçilir. |
+| NODE_ENV | Yerel `SANDBOX` simülasyonu development/test ile sınırlıdır. `IYZICO_SANDBOX` production'da da test kartlarıyla çalışır. |
 | PRINT_SANDBOX_WEBHOOK_SECRET | En az 32 karakter; yalnız mock HMAC protokolüne ait, gerçek sağlayıcı anahtarı değildir |
 | PRINT_ADDRESS_ENCRYPTION_KEY | 32 byte / 64 hex karakter; ön sipariş adresi için zorunlu |
 | MONGO_URI | Ayrı replica-set test DB'si; mevcut yapılandırma kullanılır |
@@ -186,7 +200,7 @@ Yazarın PDF yüklemesi ve başvurusu da ödeme ayarlarından bağımsızdır. K
 
 Yönetici başvuruyu inceleyebilir, revizyon isteyebilir, onaylayabilir veya reddedebilir; yazar kampanya açılmadan iptal edebilir. Başvuru onayı kampanyayı veya tahsilatı açmaz. Onaylı başvuruda **Onaylı sandbox kampanyasını aç** işlemi production'da da kullanılabilir; `PRINT_SYSTEM_ENABLED=true` veya ödeme sırrı gerekmez. Kampanya açılırken gerekli unique kampanya/yazar/kitap/sürüm indexleri ve yönetim geçmişi indexleri transaction öncesinde hazırlanır. Rol ve başvuru onayı transaction içinde tekrar kontrol edilir; onaylı hedef ve satış fiyatı değişmez. Aynı yazarın paralel aktif kampanyaları ve aynı başvuru/sürümün tekrar kullanımı engellenir.
 
-Bu işlem yalnızca SANDBOX kampanya kaydını oluşturur. Production'da `printPaymentMode=DISABLED` kalır; checkout, sağlayıcı işlemleri ve canlı tahsilat açılmaz. Kitap sayfası kampanyayı ve ilerlemeyi gösterir; ödeme kapalıysa destek/ön sipariş bağlantısı yerine açık bir bilgilendirme gösterir. Yönetici kampanyayı iptal edebilir. Ödeme/üretim/sipariş yazmalarının mevcut feature flag ve sağlayıcı kontrolleri korunur. Mevcut tarifeler ve maliyet hesapları SANDBOX etiketlidir; gerçek ödeme veya canlı fiyatlandırma adaptörü eklenmiş sayılmaz.
+Bu işlem SANDBOX kampanya kaydını oluşturur. iyzico sandbox yapılandırılmamışsa production'da ödemeler kapalı kalır. `IYZICO_SANDBOX` etkinse kitap sayfasındaki destek/ön sipariş bağlantısı iyzico test kartı akışını açar. Yönetici kampanyayı iptal edebilir. Mevcut tarifeler ve maliyet hesapları SANDBOX etiketlidir; canlı tahsilat veya canlı fiyatlandırma adaptörü eklenmiş sayılmaz.
 
 Worker sunucuyla birlikte başlar. `sandboxEnabled()` false olduğunda bildirim outbox'ını işler ve yalnızca finansal geçmişi olmayan boş kampanyaların süresini/iptalini tamamlar. Bu işlem transaction içinde sıfır kampanya sayaçlarını, finansal sorun alanını ve ödeme/rezervasyon/ledger/iade/ön sipariş geçmişinin yokluğunu doğrular; iptalde CANCELLED, süre sonunda FAILED olur ve aktif kampanya kilidi bırakılır. Finansal geçmişi bulunan kampanyalara dokunulmaz; sağlayıcı, ödeme/rezervasyon veya iade işlemi çalıştırılmaz. Bunlar normal sandbox uzlaştırması gerektirir. Yönetici **Uzlaştırma ve iade işlerini şimdi çalıştır** işlemi de aynı korumaları kullanır. Başvuru/karar bildirimleri ve boş kampanya yönetimi bu nedenle `PRINT_SYSTEM_ENABLED` kapalıyken de çalışır.
 
@@ -243,7 +257,7 @@ Onaylı hedef 45.043,20 TL, kitap satış fiyatı 500,00 TL olur. Ödeme giderin
 
 - Yayıncılık/ön sipariş/karşılıksız destek için hukuki ve mali model, yetkilendirmeler, telif ve matbaa sözleşmeleri, fatura/vergi/iade/teslimat koşulları ve KVKK süreçleri yetkili ekipçe netleştirilmeli. Mevcut beyanlar yalnız test sürümüdür.
 - Gerçek matbaa teklifi ve doğrulanmış mizanpaj, PDF güvenlik/preflight süreci; gerçek maliyet/satış tarifesi. Gerçek üretim ve kargo bağlantısı şu anda yönetici kilometre taşı/takip kaydı düzeyindedir.
-- Mevcut iyzico SDK'sı sebebiyle ilk aday iyzico'dur; adapter henüz yazılmadı. Resmi belgelerde V3 webhook imzası, hesap aktivasyonu, checkout retrieve ve refund desteği vardır; bu bilgiler escrow garantisi değildir. Gerçek adapter sağlayıcının KENDİ imza algoritmasını, server response doğrulamasını, idempotency/arama imkânlarını, chargeback/iptal/iadeyi ve sözleşmeye uygun para akışını ayrı test etmelidir. Belge kaynakları: [iyzico webhook](https://docs.iyzico.com/en/advanced/webhook), [iyzico iade/iptal](https://docs.iyzico.com/en/getting-started/preliminaries/api-reference-beta/refund-and-cancel). İkinci sağlayıcı karşılaştırması/üye işyeri seçimi yapılmış sayılmaz; mevcut altyapı yeni sağlayıcı arayüzüyle genişletilir.
+- iyzico sandbox Checkout Form, imzalı sonuç sorgulaması ve tam iade adaptörü uygulanmıştır. Canlı tahsilat, chargeback ve sözleşmeye uygun gerçek para dağıtımı ayrıca ele alınmalıdır. Belge kaynakları: [iyzico yanıt imzası](https://docs.iyzico.com/en/advanced/response-signature-validation), [iyzico iade/iptal](https://docs.iyzico.com/ek-servisler/iptal-ve-iade). İkinci sağlayıcı karşılaştırması/üye işyeri seçimi yapılmış sayılmaz.
 - Eski PENDING/SUCCESS işlemler sağlayıcı raporlarıyla uzlaştırılmalı; otomatik kör aktarım yok. Eski callback kapatılmasının dağıtım etkisi bu planın parçasıdır.
 - Üretim DB yetkileri, append-only mali kayıt politikası, yedekleme/geri dönüş/failover, anahtar saklama/rotasyon, şifreli kişisel veri saklama ve silme takvimi.
 - API/GraphQL kaynak ve hız sınırları, dosya kota/tarama, operasyon alarmları, worker gecikme ölçümü ve gerçek çoklu instance yük/failure testleri. Bloke olan finansal uyuşmazlıkların kanıtlı düzeltme runbook'u.

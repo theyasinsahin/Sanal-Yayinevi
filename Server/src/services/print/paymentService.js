@@ -6,13 +6,14 @@ import { actor, fail, id, int, text, hash, transact, audit, notice } from './com
 import { digitalState } from './applicationService.js';
 import { getPaymentProvider, assertSandbox } from './paymentProvider.js';
 import { encryptAddress } from './addressCrypto.js';
+import { printPaymentMode } from './paymentConfig.js';
 
 function addressOf(input) {
   if (!input || input.consent !== true) throw fail('Teslimat için veri işleme onayı gerekli.');
   return { fullName: text(input.fullName, 'Alıcı', 3, 120), phone: text(input.phone, 'Telefon', 10, 20), city: text(input.city, 'İl', 2, 60), district: text(input.district, 'İlçe', 2, 60), postalCode: text(input.postalCode, 'Posta kodu', 5, 10), line: text(input.line, 'Adres', 10, 500), country: 'TR' };
 }
 async function attachProvider(payment) {
-  const provider = getPaymentProvider();
+  const provider = getPaymentProvider(payment.provider);
   const charge = await provider.initialize({ reference: payment.id, amountMinor: payment.amountMinor, currency: payment.currency });
   await FundingPayment.updateOne({ _id: payment._id, state: 'CREATED' }, { $set: { providerId: charge.id, state: 'PENDING' } });
   return FundingPayment.findById(payment._id).exec();
@@ -47,7 +48,7 @@ export async function checkout(context, input) {
     const now = new Date(), expiresAt = new Date(Math.min(now.getTime() + policy.reservationMinutes * 60000, campaign.endsAt.getTime()));
     const reserved = await FundingCampaign.findOneAndUpdate({ _id: campaign._id, state: 'ACTIVE', financeIssue: '', startsAt: { $lte: now }, endsAt: { $gt: now }, $expr: { $and: [ { $lte: [{ $add: ['$acceptedMinor', '$reservedMinor', amountMinor] }, '$targetMinor'] }, { $lte: [{ $add: ['$soldQuantity', '$reservedQuantity', quantity] }, '$printRun'] } ] } }, { $inc: { reservedMinor: amountMinor, reservedQuantity: quantity } }, { session, new: true });
     if (!reserved) throw fail('Kampanya kapalı veya kalan hedef/stok bu işlemin tam bedeli için yeterli değil. Tutarınız değiştirilmedi.', 'CAPACITY_EXCEEDED');
-    const [created] = await FundingPayment.create([{ userId: user._id, campaignId: campaign._id, bookId: campaign.bookId, idempotencyKey: key, requestHash, amountMinor, donationMinor, orderMinor, quantity }], { session });
+    const [created] = await FundingPayment.create([{ userId: user._id, campaignId: campaign._id, bookId: campaign.bookId, provider: printPaymentMode(), idempotencyKey: key, requestHash, amountMinor, donationMinor, orderMinor, quantity }], { session });
     await PaymentReservation.create([{ paymentId: created._id, campaignId: campaign._id, amountMinor, quantity, expiresAt }], { session });
     if (quantity) await PrintPreOrder.create([{ paymentId: created._id, campaignId: campaign._id, userId: user._id, quantity, unitPriceMinor: campaign.unitPriceMinor, totalMinor: orderMinor, shippingAddress: encryptAddress(address, created.id), consent: { version: 'shipping-sandbox-v1', acceptedAt: now.toISOString(), purpose: 'Sipariş teslimatı; yalnızca yetkili operasyon erişimi' } }], { session });
     await audit(session, user._id, created._id, 'CHECKOUT_RESERVED', '', 'CREATED', '', { amountMinor, campaignId: campaign.id }); return created;
@@ -75,15 +76,15 @@ export async function queueRefund(session, payment, reason) {
 const ledger = (session, payment, kind) => FundingLedger.create([{ key: `${kind}:${payment.id}`, campaignId: payment.campaignId, paymentId: payment._id, userId: payment.userId, kind, amountMinor: payment.amountMinor }], { session });
 
 async function applyProviderState(reference, charge) {
-  const eventId = `sandbox:${charge.id}:${charge.revision}`;
+  const eventId = `${charge.provider?.toLowerCase() || 'sandbox'}:${charge.id}:${charge.revision}`;
   const payloadHash = hash({ reference, amountMinor: charge.amountMinor, currency: charge.currency, state: charge.state, revision: charge.revision });
   try { return await transact(async session => {
     const payment = await FundingPayment.findById(id(reference)).session(session);
-    if (!payment || payment.provider !== 'SANDBOX') throw fail('Ödeme kaydı bulunamadı.');
+    if (!payment || !['SANDBOX', 'IYZICO_SANDBOX'].includes(payment.provider) || (charge.provider && payment.provider !== charge.provider)) throw fail('Ödeme kaydı bulunamadı.');
     if (charge.merchantReference !== payment.id || charge.amountMinor !== payment.amountMinor || charge.currency !== payment.currency || (payment.providerId && payment.providerId !== charge.id)) throw fail('Sağlayıcı işlem/tutar/para birimi uyuşmazlığı.', 'PAYMENT_MISMATCH');
     const oldEvent = await FundingPaymentEvent.findOne({ eventId }).session(session);
     if (oldEvent) { if (oldEvent.payloadHash !== payloadHash) throw fail('Olay içeriği uyuşmuyor.', 'PAYMENT_MISMATCH'); return payment; }
-    await FundingPaymentEvent.create([{ eventId, paymentId: payment._id, payloadHash, providerState: charge.state }], { session });
+    await FundingPaymentEvent.create([{ provider: payment.provider, eventId, paymentId: payment._id, payloadHash, providerState: charge.state }], { session });
     const campaign = await FundingCampaign.findById(payment.campaignId).session(session);
     const reservation = await PaymentReservation.findOne({ paymentId: payment._id }).session(session);
     if (!campaign || !reservation) throw fail('Finansal ilişkiler eksik.', 'FINANCE_INTEGRITY');
@@ -123,19 +124,21 @@ async function applyProviderState(reference, charge) {
     return FundingPayment.findById(reference).exec();
   }
 }
-export async function reconcilePayment(reference) {
-  const provider = getPaymentProvider();
+export async function reconcilePayment(reference, { checkoutCompleted = false } = {}) {
   let payment = await FundingPayment.findById(id(reference)).exec();
   if (!payment) throw fail('Ödeme bulunamadı.');
+  const provider = getPaymentProvider(payment.provider);
   if (payment.state === 'CREATED') payment = await attachProvider(payment);
-  const charge = await provider.retrieve(payment.id);
-  if (!charge && payment.state === 'CANCELLED' && !payment.providerId) {
-    // Expired before provider initialization: there is no external charge to reconcile.
-    await FundingPayment.updateOne({ _id: payment._id }, { $set: { reconciledAt: new Date() } }); return payment;
-  }
-  if (!charge) throw fail('Sağlayıcıda ödeme bulunamadı.', 'PROVIDER_UNAVAILABLE');
   let result;
-  try { result = await applyProviderState(payment.id, charge); }
+  try {
+    const charge = await provider.retrieve(payment.id, { checkoutCompleted });
+    if (!charge && payment.state === 'CANCELLED' && !payment.providerId) {
+      // Expired before provider initialization: no external charge exists.
+      await FundingPayment.updateOne({ _id: payment._id }, { $set: { reconciledAt: new Date() } }); return payment;
+    }
+    if (!charge) throw fail('Sağlayıcıda ödeme bulunamadı.', 'PROVIDER_UNAVAILABLE');
+    result = await applyProviderState(payment.id, charge);
+  }
   catch (error) {
     if (error.extensions?.code === 'PAYMENT_MISMATCH') {
       await FundingPayment.updateOne({ _id: payment._id }, { $set: { issue: 'PROVIDER_MISMATCH' } });
@@ -147,21 +150,23 @@ export async function reconcilePayment(reference) {
   return result;
 }
 export async function receiveWebhook(raw, headers) {
-  const envelope = getPaymentProvider().verifyWebhook(raw, headers);
+  const envelope = getPaymentProvider('SANDBOX').verifyWebhook(raw, headers);
   return reconcilePayment(envelope.reference);
 }
 export async function simulatePayment(context, { paymentId, outcome }) {
   const user = await actor(context), payment = await FundingPayment.findOne({ _id: id(paymentId), userId: user._id }).exec();
   if (!payment) throw fail('Ödeme bulunamadı.', 'FORBIDDEN');
   if (payment.state === 'CREATED') await attachProvider(payment);
-  const provider = getPaymentProvider(), charge = await provider.simulate(payment.id, outcome);
+  const provider = getPaymentProvider(payment.provider);
+  if (!provider.simulate) throw fail('iyzico ödemeleri yalnızca iyzico üzerinden tamamlanabilir.', 'FORBIDDEN');
+  const charge = await provider.simulate(payment.id, outcome);
   const envelope = provider.envelope(charge); return receiveWebhook(envelope.raw, envelope.headers);
 }
 export async function cancelPayment(context, paymentId) {
   const user = await actor(context), payment = await FundingPayment.findOne({ _id: id(paymentId), userId: user._id }).exec();
   if (!payment) throw fail('Ödeme bulunamadı.', 'FORBIDDEN');
   if (payment.state === 'CREATED') await attachProvider(payment);
-  await getPaymentProvider().cancel(payment.id); return reconcilePayment(payment.id);
+  await getPaymentProvider(payment.provider).cancel(payment.id); return reconcilePayment(payment.id);
 }
 export async function requestRefund(context, { paymentId, reason }) {
   return transact(async session => {
@@ -178,7 +183,8 @@ export async function processRefund(refundId) {
   const refund = await FundingRefund.findOneAndUpdate({ _id: id(refundId), $or: [ { state: { $in: ['PENDING', 'FAILED'] }, $or: [{ retryAt: { $exists: false } }, { retryAt: { $lte: now } }] }, { state: 'PROCESSING', leaseUntil: { $lte: now } } ] }, { $set: { state: 'PROCESSING', leaseUntil: new Date(now.getTime() + 60000) }, $inc: { attempts: 1 } }, { new: true }).exec();
   if (!refund) return;
   try {
-    const result = await getPaymentProvider().refund({ reference: String(refund.paymentId), refundReference: refund.id, amountMinor: refund.amountMinor });
+    const originalPayment = await FundingPayment.findById(refund.paymentId).exec();
+    const result = await getPaymentProvider(originalPayment.provider).refund({ reference: String(refund.paymentId), refundReference: refund.id, amountMinor: refund.amountMinor });
     if (result.state !== 'SUCCEEDED' || result.amountMinor !== refund.amountMinor) throw new Error('PROVIDER_REFUND_MISMATCH');
     await transact(async session => {
       const current = await FundingRefund.findById(refund._id).session(session);

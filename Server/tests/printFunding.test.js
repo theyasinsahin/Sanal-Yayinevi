@@ -415,6 +415,9 @@ async function withProductionTariffSettings(flag, operation) {
   try {
     process.env.NODE_ENV = 'production';
     for (const name of names.slice(1)) delete process.env[name];
+    // These fixtures explicitly exercise disabled payments, independently of a
+    // developer's configured iyzico sandbox credentials.
+    process.env.PRINT_PAYMENTS_MODE = 'DISABLED';
     if (flag !== undefined) process.env.PRINT_SYSTEM_ENABLED = flag;
     await operation();
   } finally {

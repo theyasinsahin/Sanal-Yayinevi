@@ -26,6 +26,7 @@ import { createLoaders } from './src/graphql/loaders.js';
 import printRoutes from './src/routes/printRoutes.js';
 import { initializePrintFunding } from './src/services/print/common.js';
 import { startPrintWorker } from './src/services/print/worker.js';
+import { printSystemEnabled } from './src/services/print/paymentConfig.js';
 
 const PORT = process.env.PORT || 5000;
 
@@ -40,7 +41,7 @@ const startServer = async () => {
     app.use(compressResponses());
 
     await connectDB();
-    if (process.env.PRINT_SYSTEM_ENABLED === 'true') {
+    if (printSystemEnabled()) {
       await initializePrintFunding();
       await models.Notification.createIndexes();
     }

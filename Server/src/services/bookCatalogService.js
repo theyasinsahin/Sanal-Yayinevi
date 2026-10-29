@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import Book from '../models/book.js';
 import Genre from '../models/genre.js';
 import User from '../models/user.js';
+import Quote from '../models/quote.js';
 import { inactiveUserIds } from '../utils/activeUsers.js';
 
 const SORTS = { NEWEST: ['publishDate', -1], OLDEST: ['publishDate', 1], UPDATED: ['updatedAt', -1], POPULAR: ['stats.likes', -1] };
@@ -12,7 +13,8 @@ const fields = 'urlSlug title description authorId genreId imageUrl pageCount pu
 export async function getBookFeed({ limit = 24, after, sort = 'NEWEST', genre, search } = {}) {
   if (!Number.isInteger(limit) || limit < 1 || limit > 48 || !SORTS[sort]) throw new Error('Geçerli bir sayfa boyutu ve sıralama seçin.');
   const [field, direction] = SORTS[sort];
-  const clauses = [{ kind: { $ne: 'PRINTED' }, isDeleted: false, status: { $in: PUBLIC_STATUSES }, authorId: { $nin: await inactiveUserIds() } }];
+  const hiddenUserIds = await inactiveUserIds();
+  const clauses = [{ kind: { $ne: 'PRINTED' }, isDeleted: false, status: { $in: PUBLIC_STATUSES }, authorId: { $nin: hiddenUserIds } }];
   if (genre) {
     const selected = await Genre.findOne({ slug: genre, isActive: true }).select('_id').lean().exec();
     if (!selected) return { books: [], endCursor: null, hasNextPage: false };
@@ -21,9 +23,12 @@ export async function getBookFeed({ limit = 24, after, sort = 'NEWEST', genre, s
   const term = String(search || '').trim();
   if (term.length > 100) throw new Error('Arama en fazla 100 karakter olabilir.');
   if (term) {
-    const expression = new RegExp(escape(term), 'i');
-    const authors = await User.find({ isDeleted: false, isActive: { $ne: false }, $or: [{ username: expression }, { fullName: expression }] }).select('_id').lean().exec();
-    clauses.push({ $or: [{ title: expression }, { authorId: { $in: authors.map(author => author._id) } }] });
+    const expression = new RegExp(escape(term).replace(/[iİıI]/g, '[iİıI]'), 'i');
+    const [authors, quotedBookIds] = await Promise.all([
+      User.find({ isDeleted: false, isActive: { $ne: false }, $or: [{ username: expression }, { fullName: expression }] }).select('_id').lean().exec(),
+      Quote.distinct('bookId', { text: expression, isRepost: false, isDeleted: { $ne: true }, userId: { $nin: hiddenUserIds } }).exec(),
+    ]);
+    clauses.push({ $or: [{ title: expression }, { authorId: { $in: authors.map(author => author._id) } }, { _id: { $in: quotedBookIds } }] });
   }
   if (after) {
     try {

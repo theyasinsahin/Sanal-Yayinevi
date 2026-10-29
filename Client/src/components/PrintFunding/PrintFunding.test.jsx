@@ -5,6 +5,7 @@ import { MockedProvider } from '@apollo/client/testing';
 import PrintCheckout from '../../pages/PrintCheckout';
 import FundingHistory from '../../pages/FundingHistory';
 import BookFundingPanel from './BookFundingPanel';
+import PaymentCard from './PaymentCard';
 import { money, toMinor } from './shared';
 import * as api from '../../graphql/printFunding';
 
@@ -16,6 +17,7 @@ const payment = { id: 'payment', campaignId: 'campaign', bookId: 'book', provide
 campaign.__typename = 'FundingCampaign';
 payment.__typename = 'FundingPayment'; payment.reservation.__typename = 'PrintPaymentReservation';
 payment.issue = '';
+payment.checkoutUrl = null;
 const overviewMock = data => ({ request: { query: api.PRINT_OVERVIEW, variables: { bookId: 'book' } }, result: { data: { ...data, printOverview: { ...data.printOverview, __typename: 'PrintOverview' } } } });
 function show(element, mocks, path = '/donate/book', currentPayment = payment) {
   const responses = [...mocks, { request: { query: api.MY_FUNDING_PAYMENT, variables: { id: 'payment' } }, result: { data: { myFundingPayment: currentPayment } } }];
@@ -68,6 +70,32 @@ test('a lost checkout response retains the same operation key and prevents cart 
   expect(await screen.findByRole('alert')).toHaveTextContent('Yanıt kayboldu');
   expect(screen.getByLabelText('Fiziksel kitap adedi')).toBeDisabled(); fireEvent.click(screen.getByRole('button', { name: 'Aynı işlemi güvenle yeniden sorgula' }));
   expect(await screen.findByText('payment')).toBeInTheDocument();
+});
+
+test('iyzico sandbox enables funding and provides only the hosted test-card checkout', async () => {
+  const hosted = { ...payment, provider: 'IYZICO_SANDBOX', checkoutUrl: 'https://sandbox-cpp.iyzipay.com/?token=test-token' };
+  const data = { ...overview(), printPaymentMode: 'IYZICO_SANDBOX' };
+  show(<PrintCheckout />, [overviewMock(data), overviewMock(data), {
+    request: { query: api.START_PRINT_CHECKOUT, variables: { input: { campaignId: 'campaign', idempotencyKey: 'test-idempotency-00000001', quantity: 0, donationMinor: 5000 } } },
+    result: { data: { startPrintCheckout: hosted } },
+  }], '/donate/book', hosted);
+  fireEvent.click(await screen.findByLabelText(/Sepetin tam bedeline/));
+  fireEvent.click(screen.getByRole('button', { name: 'iyzico test ödemesine geç' }));
+  expect(await screen.findByRole('link', { name: 'iyzico ile test kartıyla öde' })).toHaveAttribute('href', hosted.checkoutUrl);
+  expect(screen.queryByRole('button', { name: 'Test ödemesini başarılı sonuçlandır' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Başarısız ödeme dene' })).not.toBeInTheDocument();
+});
+
+test('iyzico sandbox campaigns expose the support link', async () => {
+  show(<BookFundingPanel bookId="book" />, [overviewMock({ ...overview(), printPaymentMode: 'IYZICO_SANDBOX' })]);
+  expect(await screen.findByRole('link', { name: /Destek ve ön sipariş seçenekleri/ })).toHaveAttribute('href', '/donate/book');
+});
+
+test.each(['DISABLED', 'SANDBOX'])('an existing iyzico checkout does not expose a payment or simulation action in %s mode', mode => {
+  const hosted = { ...payment, provider: 'IYZICO_SANDBOX', checkoutUrl: 'https://sandbox-cpp.iyzipay.com/?token=test-token' };
+  show(<PaymentCard payment={hosted} mode={mode} refresh={jest.fn()} />, []);
+  expect(screen.queryByRole('link', { name: 'iyzico ile test kartıyla öde' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Test ödemesini başarılı sonuçlandır' })).not.toBeInTheDocument();
 });
 test('history renders refund failure and shipment tracking from server records', async () => {
   const paid = { ...payment, state: 'REFUND_PENDING', captured: true, refund: { __typename: 'FundingRefund', id: 'refund', paymentId: 'payment', amountMinor: 5000, reason: 'CAMPAIGN_UNSUCCESSFUL', state: 'FAILED', attempts: 2, lastError: 'PROVIDER_OR_DATABASE_ERROR', retryAt: null, providerRefundId: null }, order: { __typename: 'PrintPreOrder', id: 'order', paymentId: 'payment', campaignId: 'campaign', quantity: 1, unitPriceMinor: 20000, totalMinor: 20000, state: 'SHIPPED', previousState: null, revision: 3, carrier: 'Test Kargo', trackingNumber: 'TEST-123', createdAt: payment.createdAt } };

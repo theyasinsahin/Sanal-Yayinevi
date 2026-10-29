@@ -1,10 +1,13 @@
 import { createHmac, timingSafeEqual, randomUUID } from 'node:crypto';
 import { SandboxCharge } from '../../models/printFunding.js';
 import { fail, int } from './common.js';
+import { printPaymentMode } from './paymentConfig.js';
+import { iyzicoProvider } from './iyzicoProvider.js';
 
-export function sandboxEnabled() { return process.env.PRINT_SYSTEM_ENABLED === 'true' && ['development', 'test'].includes(process.env.NODE_ENV) && process.env.PRINT_PAYMENTS_MODE === 'SANDBOX' && (process.env.PRINT_SANDBOX_WEBHOOK_SECRET?.length || 0) >= 32; }
-export function assertSandbox() { if (!sandboxEnabled()) throw fail('Ödemeler kapalı. Yalnızca açıkça etkinleştirilmiş geliştirme/test sandbox ortamı kullanılabilir.', 'PAYMENTS_DISABLED'); }
+export function sandboxEnabled() { return printPaymentMode() !== 'DISABLED'; }
+export function assertSandbox() { if (!sandboxEnabled()) throw fail('Ödemeler kapalı. iyzico test sağlayıcısını veya geliştirme simülasyonunu etkinleştirin.', 'PAYMENTS_DISABLED'); }
 const signature = (timestamp, raw) => createHmac('sha256', process.env.PRINT_SANDBOX_WEBHOOK_SECRET).update(`${timestamp}.`).update(raw).digest('hex');
+function assertMock() { if (printPaymentMode() !== 'SANDBOX') throw fail('Simülasyon yalnızca yerel test sağlayıcısında kullanılabilir.', 'PAYMENTS_DISABLED'); }
 
 /** Provider contract: initialize({reference,amountMinor,currency}), retrieve(reference),
  * cancel(reference), refund({reference,refundReference,amountMinor}), verifyWebhook(raw,headers).
@@ -56,4 +59,9 @@ export const sandboxProvider = {
     return this.retrieve(reference);
   },
 };
-export function getPaymentProvider() { assertSandbox(); return sandboxProvider; }
+export function getPaymentProvider(provider = printPaymentMode()) {
+  assertSandbox();
+  if (provider === 'IYZICO_SANDBOX') return iyzicoProvider;
+  if (provider === 'SANDBOX') { assertMock(); return sandboxProvider; }
+  throw fail('Ödeme sağlayıcısı desteklenmiyor.', 'PAYMENTS_DISABLED');
+}
