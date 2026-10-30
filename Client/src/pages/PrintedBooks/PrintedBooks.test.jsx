@@ -123,13 +123,14 @@ test('claim evidence is submitted without granting content access locally', asyn
   expect(screen.queryByRole('link', { name: 'Bölüm ekle / düzenle' })).not.toBeInTheDocument();
 });
 
-test('printed quote posts the source page without inventing a chapter', async () => {
+test.each(['PUBLIC', 'PRIVATE'])('printed quote posts the source page with %s visibility without inventing a chapter', async visibility => {
   const text = 'Kitaptan paylaşılacak kısa bir alıntı.';
-  show(detail(), [quotes(), quotes(), { request: { query: CREATE_PRINTED_QUOTE, variables: { bookId: book.id, text, pageNumber: 12, note: '', isSpoiler: false } }, result: { data: { createQuote: { id: 'quote', text, pageNumber: 12 } } } }]);
+  show(detail(), [quotes(), quotes(), { request: { query: CREATE_PRINTED_QUOTE, variables: { bookId: book.id, text, pageNumber: 12, note: '', isSpoiler: false, visibility } }, result: { data: { createQuote: { id: 'quote', text, pageNumber: 12, visibility } } } }]);
   fireEvent.change(screen.getByLabelText(/Kısa alıntı/), { target: { value: text } });
   fireEvent.change(screen.getByLabelText(/Basılı kitaptaki sayfa numarası/), { target: { value: '12' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Alıntıyı paylaş', hidden: true }));
-  expect(await screen.findByText('Alıntınız paylaşıldı.')).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText('Alıntı görünürlüğü'), { target: { value: visibility } });
+  fireEvent.click(screen.getByRole('button', { name: visibility === 'PRIVATE' ? 'Özel olarak kaydet' : 'Alıntıyı paylaş', hidden: true }));
+  expect(await screen.findByText(visibility === 'PRIVATE' ? 'Alıntınız yalnızca sizin görebileceğiniz şekilde kaydedildi.' : 'Alıntınız paylaşıldı.')).toBeInTheDocument();
 });
 
 test('admin review requires a rejection reason and approval removes the pending item after refetch', async () => {

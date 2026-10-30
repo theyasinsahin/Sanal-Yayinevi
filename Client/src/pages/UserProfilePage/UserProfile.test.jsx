@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client';
 import { useAuth } from '../../context/AuthContext';
 import { GET_USER_BY_ID } from '../../graphql/queries/user';
+import { GET_QUOTES_BY_USER } from '../../graphql/queries/quote';
 import UserProfile from './index';
 
 jest.mock('@apollo/client', () => ({ ...jest.requireActual('@apollo/client'), useQuery: jest.fn(), useMutation: jest.fn() }));
@@ -14,7 +15,7 @@ jest.mock('../../components/Layout/MainLayout', () => ({ MainLayout: ({ children
 jest.mock('../../components/Books/BookCarousel', () => ({ __esModule: true, default: ({ books = [] }) => <div>{books.map(book => <span key={book.id}>{book.title}</span>)}</div> }));
 jest.mock('../../components/Books/PrintedReadingLibrary', () => ({ __esModule: true, default: ({ userId }) => <div>Basılı kitaplık: {userId}</div> }));
 jest.mock('../../components/ImageUpload', () => () => null);
-jest.mock('../../components/Quote/QuoteCard', () => () => null);
+jest.mock('../../components/Quote/QuoteCard', () => ({ quote }) => <blockquote>{quote.text}</blockquote>);
 jest.mock('../../components/Settings/UserSettings', () => () => null);
 jest.mock('../../components/Follow/UserFollowButton', () => () => null);
 jest.mock('../../components/Follow/RemoveFollowerButton', () => () => null);
@@ -30,6 +31,25 @@ beforeEach(() => {
   useMutation.mockReturnValue([jest.fn(), { loading: false }]);
 });
 const show = () => render(<MemoryRouter><UserProfile resolvedId="owner" /></MemoryRouter>);
+
+test.each([true, false])('profile groups quotes by book and limits private groups to owner (%s)', isOwner => {
+  if (!isOwner) useAuth.mockReturnValue({ user: { id: 'visitor' } });
+  const quotes = [
+    { id: 'first', text: 'First public quote', visibility: 'PUBLIC', book: { id: 'one', title: 'Birinci kitap' } },
+    { id: 'private', text: 'Personal quote', visibility: 'PRIVATE', book: { id: 'two', title: 'Özel kitap' } },
+    { id: 'repost', text: 'Reposted quote', visibility: 'PUBLIC', isRepost: true, originalQuote: { book: { id: 'one', title: 'Birinci kitap' } } },
+  ];
+  const previous = useQuery.getMockImplementation();
+  useQuery.mockImplementation(query => query === GET_QUOTES_BY_USER ? { data: { getQuotesByUser: quotes } } : previous(query));
+  show(); fireEvent.click(screen.getByRole('button', { name: /Alıntılar/ }));
+  expect(screen.getAllByRole('heading', { name: 'Birinci kitap' })).toHaveLength(1);
+  expect(screen.getByText('2 alıntı')).toBeInTheDocument();
+  if (isOwner) expect(screen.getByRole('heading', { name: 'Özel kitap' })).toBeInTheDocument();
+  else {
+    expect(screen.queryByText('Personal quote')).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Özel kitap' })).not.toBeInTheDocument();
+  }
+});
 
 test('profile exposes a separate tab that loads the target users printed library', () => {
   show();

@@ -61,7 +61,7 @@ export const REVIEW_BOOK_CLAIM = gql`
   }
 `;
 export const CREATE_PRINTED_QUOTE = gql`
-  mutation CreatePrintedQuote($bookId: ID!, $text: String!, $pageNumber: Int!, $note: String, $isSpoiler: Boolean) {
-    createQuote(bookId: $bookId, text: $text, pageNumber: $pageNumber, note: $note, isSpoiler: $isSpoiler) { id text pageNumber }
+  mutation CreatePrintedQuote($bookId: ID!, $text: String!, $pageNumber: Int!, $note: String, $isSpoiler: Boolean, $visibility: QuoteVisibility = PUBLIC) {
+    createQuote(bookId: $bookId, text: $text, pageNumber: $pageNumber, note: $note, isSpoiler: $isSpoiler, visibility: $visibility) { id text pageNumber visibility }
   }
 `;

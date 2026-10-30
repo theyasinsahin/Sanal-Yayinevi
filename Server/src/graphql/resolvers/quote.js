@@ -3,12 +3,12 @@ import * as QuoteService from '../../services/quoteService.js';
 
 export default {
   Query: {
-    getQuotesByBook: (_, { bookId }) => QuoteService.getQuotesByBook(bookId),
+    getQuotesByBook: (_, { bookId }, { user }) => QuoteService.getQuotesByBook(bookId, user),
     getQuotesByUser: (_, { userId }, { user }) => QuoteService.getQuotesByUser(userId, user),
     getQuotesFeed: (_, { limit, offset, sortBy }) => QuoteService.getQuotesFeed(limit, offset, sortBy),
     searchQuotes: (_, { query, limit, offset }) => QuoteService.searchQuotes(query, limit, offset),
-    checkQuoteExists: (_, { text, bookId }) => QuoteService.checkQuoteExists(text, bookId),
-    getQuoteComments: (_, { quoteId }) => QuoteService.getQuoteComments(quoteId),
+    checkQuoteExists: (_, { text, bookId, visibility }, { user }) => QuoteService.checkQuoteExists(text, bookId, user, visibility),
+    getQuoteComments: (_, { quoteId }, { user }) => QuoteService.getQuoteComments(quoteId, user),
   },
 
   Mutation: {
@@ -47,6 +47,7 @@ export default {
   },
 
   Quote: {
+    visibility: parent => parent.visibility || 'PUBLIC',
     user: (parent) => parent.userId,
     book: (parent) => parent.bookId,
     originalQuote: (parent) => parent.originalQuoteId,

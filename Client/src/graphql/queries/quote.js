@@ -3,11 +3,11 @@ import { gql } from '@apollo/client';
 
 const QUOTE_FIELDS = gql`
   fragment QuoteFields on Quote {
-    id text note chapterTitle chapterIndex pageNumber likedBy isRepost repostComment repostedBy createdAt isSpoiler
+    id text note visibility chapterTitle chapterIndex pageNumber likedBy isRepost repostComment repostedBy createdAt isSpoiler
     user { id username fullName profilePicture }
     book { publicPath id title imageUrl }
     originalQuote {
-      id text note chapterTitle pageNumber
+      id text note visibility chapterTitle pageNumber
       user { id username fullName profilePicture }
       book { publicPath id title imageUrl }
     }
@@ -57,11 +57,11 @@ export const SEARCH_QUOTES = gql`
 `;
 
 export const CHECK_QUOTE_EXISTS = gql`
-  query CheckQuoteExists($text: String!, $bookId: ID!) {
-    checkQuoteExists(text: $text, bookId: $bookId) {
+  query CheckQuoteExists($text: String!, $bookId: ID!, $visibility: QuoteVisibility = PUBLIC) {
+    checkQuoteExists(text: $text, bookId: $bookId, visibility: $visibility) {
       exists
       quote {
-        id text
+        id text visibility
         user { id username profilePicture }
         book { publicPath id title }
         likedBy repostedBy

@@ -8,6 +8,7 @@ import Session from '../models/session.js';
 import { canViewProfile } from '../utils/profileAccess.js';
 import { bookPath, chapterPath, profilePath, sessionPath } from './publicUrlService.js';
 import { sessionCover } from '../utils/sessionCover.js';
+import { publicQuoteFilter } from '../utils/quoteAccess.js';
 
 export const SHARE_TYPES = ['BOOK', 'CHAPTER', 'QUOTE', 'PROFILE', 'SESSION'];
 const publicStatuses = ['WRITING', 'COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'];
@@ -30,8 +31,8 @@ async function publicBook(id) {
 
 export async function getPublicQuote(id) {
   if (!mongoose.isObjectIdOrHexString(id)) throw unavailable();
-  let quote = await Quote.findOne({ _id: id, isDeleted: false });
-  if (quote?.isRepost) quote = await Quote.findOne({ _id: quote.originalQuoteId, isDeleted: false });
+  let quote = await Quote.findOne({ _id: id, isDeleted: false, ...publicQuoteFilter() });
+  if (quote?.isRepost) quote = await Quote.findOne({ _id: quote.originalQuoteId, isDeleted: false, ...publicQuoteFilter() });
   if (!quote) throw unavailable();
   const owner = await activeUser(quote.userId);
   if (!owner || !canViewProfile(owner, null)) throw unavailable();

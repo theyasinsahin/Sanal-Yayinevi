@@ -16,6 +16,31 @@ import Genre from '../models/genre.js';
 import UserScore from '../models/userScore.js';
 import { moderateVisibility } from './adminVisibility.js';
 import { normalizeIsbn } from '../utils/printedBooks.js';
+import Quote from '../models/quote.js';
+import { canReadQuote, isPublicQuote, quoteVisibilityFilter } from '../utils/quoteAccess.js';
+
+async function quotePrivacyFilter(name, viewer) {
+  if (name === 'Quote') {
+    const privateIds = await Quote.distinct('_id', { visibility: 'PRIVATE' });
+    return { $and: [quoteVisibilityFilter(viewer), { originalQuoteId: { $nin: privateIds } }] };
+  }
+  if (name === 'QuoteComment') {
+    const privateIds = await Quote.distinct('_id', { visibility: 'PRIVATE', userId: { $ne: viewer._id } });
+    return { quoteId: { $nin: privateIds } };
+  }
+  return {};
+}
+
+async function canReadQuoteRecord(name, record, viewer, session) {
+  if (name === 'QuoteComment') {
+    const parent = await Quote.findById(record.quoteId).session(session || null);
+    return Boolean(parent && canReadQuote(parent, viewer));
+  }
+  if (name !== 'Quote') return true;
+  if (!canReadQuote(record, viewer)) return false;
+  if (!record.isRepost) return true;
+  return isPublicQuote(await Quote.findById(record.originalQuoteId).session(session || null));
+}
 
 const fail = (message, code = 'BAD_USER_INPUT') => new GraphQLError(message, { extensions: { code } });
 const escape = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -44,11 +69,11 @@ export async function getAdminResources(context) {
 }
 
 export async function getAdminRecords(context, { resource: name, page = 1, limit = 25, search = '', state = 'ALL', relatedField, relatedId }) {
-  await requireAdmin(context);
+  const viewer = await requireAdmin(context);
   const resource = getResource(name);
   if (!Number.isInteger(page) || page < 1 || page > 10000 || !Number.isInteger(limit) || limit < 1 || limit > 100) throw fail('Geçerli bir sayfa ve liste boyutu seçin.');
   if (search.length > 120 || !['ALL', 'ACTIVE', 'INACTIVE', 'DELETED'].includes(state)) throw fail('Geçerli arama ve durum filtresi seçin.');
-  const query = {}, paths = fieldsFor(resource);
+  const query = { $and: [await quotePrivacyFilter(name, viewer)] }, paths = fieldsFor(resource);
   if (state === 'DELETED') query.isDeleted = resource.model.schema.path('isDeleted') ? true : { $exists: true };
   if (state === 'ACTIVE') {
     if (resource.model.schema.path('isDeleted')) query.isDeleted = { $ne: true };
@@ -94,17 +119,17 @@ export async function getAdminRecords(context, { resource: name, page = 1, limit
 }
 
 export async function getAdminRecord(context, { resource: name, id }) {
-  await requireAdmin(context);
+  const viewer = await requireAdmin(context);
   const resource = getResource(name); validId(resource, id);
   const record = await resource.model.findById(id).exec();
-  if (!record) return null;
+  if (!record || !await canReadQuoteRecord(name, record, viewer)) return null;
   const result = recordOf(record);
   const references = [];
   for (const field of fieldsFor(resource).filter(field => field.reference && resources.has(field.reference))) {
     const value = record.get(field.name);
     const ids = (Array.isArray(value) ? value : value ? [value] : []).slice(0, 100);
     if (!ids.length) continue;
-    const targets = await resources.get(field.reference).model.find({ _id: { $in: ids } }).select('_id title name username email').lean().exec();
+    const targets = await resources.get(field.reference).model.find({ _id: { $in: ids }, $and: [await quotePrivacyFilter(field.reference, viewer)] }).select('_id title name username email').lean().exec();
     const map = new Map(targets.map(target => [String(target._id), titleOf(target)]));
     for (const key of ids) references.push({ field: field.name, resource: field.reference, id: String(key), title: map.get(String(key)) || 'Kayıt bulunamadı', exists: map.has(String(key)) });
   }
@@ -160,6 +185,7 @@ export async function saveAdminRecord(context, { resource: name, id, revision, c
       const actor = await requireAdmin(context, session);
       const record = creating ? new resource.model() : await resource.model.findById(id).session(session).exec();
       if (!record) throw fail('Kayıt bulunamadı.');
+      if (!await canReadQuoteRecord(name, record, actor, session)) throw fail('Kayıt bulunamadı.', 'NOT_FOUND');
       if (!creating && revision !== revisionOf(valuesOf(record))) throw fail('Bu kayıt başka bir işlemde değişti. Güncel kaydı yükleyip yeniden düzenleyin.', 'CONFLICT');
       let updates = await checkedChanges(resource, changes, session);
       if (name === 'Genre') {
@@ -254,12 +280,15 @@ export async function saveAdminRecord(context, { resource: name, id, revision, c
 }
 
 export async function getAdminOverview(context) {
-  await requireAdmin(context);
+  const viewer = await requireAdmin(context);
   const keys = ['User', 'Book', 'Genre', 'Session', 'Comment', 'Quote'];
-  const counts = await Promise.all(keys.map(async name => ({ resource: name, label: getResource(name).label,
-    total: await getResource(name).model.countDocuments().exec(),
-    active: await getResource(name).model.countDocuments({ ...(getResource(name).model.schema.path('isDeleted') ? { isDeleted: { $ne: true } } : {}), ...(getResource(name).model.schema.path('isActive') ? { isActive: { $ne: false } } : {}) }).exec(),
-  })));
+  const counts = await Promise.all(keys.map(async name => {
+    const privacy = await quotePrivacyFilter(name, viewer);
+    return { resource: name, label: getResource(name).label,
+      total: await getResource(name).model.countDocuments(privacy).exec(),
+      active: await getResource(name).model.countDocuments({ $and: [privacy], ...(getResource(name).model.schema.path('isDeleted') ? { isDeleted: { $ne: true } } : {}), ...(getResource(name).model.schema.path('isActive') ? { isActive: { $ne: false } } : {}) }).exec(),
+    };
+  }));
   const [pendingBooks, pendingPrintApplications, pendingClaims, pendingSessionAccess, revenue, recent] = await Promise.all([
     Book.countDocuments({ kind: 'PRINTED', publicationStatus: 'PENDING', isDeleted: false }).exec(),
     PrintApplication.countDocuments({ state: 'SUBMITTED' }).exec(),
