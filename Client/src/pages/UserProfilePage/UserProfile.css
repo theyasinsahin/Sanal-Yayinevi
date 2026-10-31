@@ -299,6 +299,18 @@
   gap: 0.625rem;
 }
 
+.profile-funding-link {
+  grid-column: 1 / -1;
+  text-decoration: none;
+  white-space: normal;
+  text-align: center;
+}
+
+.profile-funding-link:focus-visible {
+  outline: 2px solid var(--text-main);
+  outline-offset: 3px;
+}
+
 .other-actions {
   display: flex;
   flex-direction: column;
@@ -862,6 +874,7 @@
   }
 
   .my-actions > button,
+  .my-actions > .profile-funding-link,
   .other-actions > button {
     width: 100%;
     min-width: 0;
@@ -874,6 +887,7 @@
   }
 
   .my-actions > button svg,
+  .my-actions > .profile-funding-link svg,
   .other-actions > button svg {
     flex: 0 0 auto;
   }
@@ -949,6 +963,7 @@
   }
 
   .other-actions > button,
+  .my-actions > .profile-funding-link,
   .my-actions > button {
     min-height: 52px;
     font-size: 0.82rem;

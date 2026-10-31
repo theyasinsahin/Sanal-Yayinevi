@@ -20,7 +20,7 @@ jest.mock('../../components/Settings/UserSettings', () => () => null);
 jest.mock('../../components/Follow/UserFollowButton', () => () => null);
 jest.mock('../../components/Follow/RemoveFollowerButton', () => () => null);
 jest.mock('../../components/Sharing/SocialShareButton', () => () => null);
-jest.mock('@mui/icons-material', () => Object.fromEntries(['Person', 'Email', 'Link', 'Book', 'Bookmark', 'Edit', 'Save', 'Cancel', 'Close', 'Logout', 'Verified', 'TrendingUp', 'Star', 'Chat', 'Settings', 'FormatQuote'].map(name => [name, () => null])));
+jest.mock('@mui/icons-material', () => Object.fromEntries(['Person', 'Email', 'Link', 'Book', 'Bookmark', 'Edit', 'Save', 'Cancel', 'Close', 'Logout', 'Verified', 'TrendingUp', 'Star', 'Chat', 'Settings', 'FormatQuote', 'Receipt'].map(name => [name, () => null])));
 
 let profile;
 beforeEach(() => {
@@ -31,6 +31,17 @@ beforeEach(() => {
   useMutation.mockReturnValue([jest.fn(), { loading: false }]);
 });
 const show = () => render(<MemoryRouter><UserProfile resolvedId="owner" /></MemoryRouter>);
+
+test('profile owner can open their funding and preorder history from the account actions', () => {
+  show();
+  expect(screen.getByRole('link', { name: 'Desteklerim' })).toHaveAttribute('href', '/funding-history');
+});
+
+test.each([{ id: 'visitor' }, null])('funding history stays private when another person views the profile (%j)', user => {
+  useAuth.mockReturnValue({ user });
+  show();
+  expect(screen.queryByRole('link', { name: 'Desteklerim' })).not.toBeInTheDocument();
+});
 
 test.each([true, false])('profile groups quotes by book and limits private groups to owner (%s)', isOwner => {
   if (!isOwner) useAuth.mockReturnValue({ user: { id: 'visitor' } });
@@ -44,11 +55,8 @@ test.each([true, false])('profile groups quotes by book and limits private group
   show(); fireEvent.click(screen.getByRole('button', { name: /Alıntılar/ }));
   expect(screen.getAllByRole('heading', { name: 'Birinci kitap' })).toHaveLength(1);
   expect(screen.getByText('2 alıntı')).toBeInTheDocument();
-  if (isOwner) expect(screen.getByRole('heading', { name: 'Özel kitap' })).toBeInTheDocument();
-  else {
-    expect(screen.queryByText('Personal quote')).not.toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: 'Özel kitap' })).not.toBeInTheDocument();
-  }
+  expect(screen.queryAllByText('Personal quote')).toHaveLength(Number(isOwner));
+  expect(screen.queryAllByRole('heading', { name: 'Özel kitap' })).toHaveLength(Number(isOwner));
 });
 
 test('profile exposes a separate tab that loads the target users printed library', () => {
