@@ -58,7 +58,7 @@ const ParagraphCommentPanel = ({ bookId, chapterId, paragraphIndex, onClose }) =
             <span className="pcpanel-count">{comments.length}</span>
           )}
         </span>
-        <button className="pcpanel-close" onClick={onClose}>
+        <button className="pcpanel-close" aria-label="Yorumları kapat" onClick={onClose}>
           <Close fontSize="small" />
         </button>
       </div>
@@ -97,6 +97,7 @@ const ParagraphCommentPanel = ({ bookId, chapterId, paragraphIndex, onClose }) =
                 {user?.id === comment.user?.id && (
                   <button 
                     className="pcpanel-delete"
+                    aria-label="Yorumu sil"
                     onClick={() => handleDelete(comment.id)}
                   >
                     <Delete fontSize="inherit" />

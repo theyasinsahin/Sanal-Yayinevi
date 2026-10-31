@@ -66,6 +66,18 @@ Makineyle okunabilir özetler `Server/coverage/coverage-summary.json` ve `Client
 
 Kapsam yüzdesi tek başına doğruluğu kanıtlamaz. Özellikle mock kullanılan bir test, gerçek dış servis bağlantısının çalıştığını göstermez. Henüz bütün projeyi temsil edecek kapsam eşiği belirlenmediği için düşük kapsam testleri otomatik olarak başarısız yapmaz.
 
+### 31.10.2026 doğrulama sonucu
+
+| Paket | Önce | Son doğrulama | Satır kapsamı önce → sonra |
+| --- | ---: | ---: | ---: |
+| Sunucu | 348 test | 38 dosyada 600 test geçti | %82,60 → %89,80 |
+| Arayüz | 296 test | 70 dosyada 455 test geçti | %59,45 → %78,65 |
+| Edge masaüstü ve telefon boyutu | Yok | 6 tarayıcı testi geçti | Ayrı ölçülür |
+
+Toplam 417 yeni test senaryosuyla 1.061 test geçti. Bunların 179'u istemci GraphQL işlemlerinin gerçek şemayla uyumunu denetler. Üretim derlemesi tamamlandı; projedeki mevcut bağımlılık/lint uyarıları devam ediyor. Değiştirilen istemci JavaScript dosyalarının ayrı lint kontrolü hatasız tamamlandı.
+
+Testlerin yakaladığı ve regresyon testleriyle düzeltilen davranışlar: populate edilmiş yazar kimliklerinin yüklenmesi, canlı mesajın gönderici/kitap eki bilgilerinin serileştirilmesi, kapalı özel oturuma yeni ileti kabul edilmemesi, başarısız oturum iletisinde taslağın korunması, iç içe profil bağlantıları, boş son sayfadan sonra sayfalamanın durması, bildirimlerin birbirinden bağımsız süreleri ve eski yorum/işlem sorgularının şema uyumu.
+
 ## Geliştirme sırasında izleme
 
 ```powershell
@@ -83,11 +95,39 @@ Bu komutlar açık kalır; testlerden çıkmak için `Ctrl+C` kullanın. Kapsam 
 - Ücretsiz oturum izni: başvuru–onay–oluşturma, ret–yeniden başvuru, izin kaldırma, başvuru gizliliği, sayfalama, çift istek, eşzamanlı kararlar ve işlem geçmişinin atomik kaydı.
 - Mevcut testler ayrıca kitap/bölüm işlemleri, otomatik kayıt, basılı kitap ve hak talepleri, okuma ilerlemesi/puanlar, takip ve gizlilik, paylaşım, e-posta şablonları ve admin işlemlerini kontrol eder.
 
+## Genişletilen davranış testleri
+
+| Alan | Denetlenen davranışlar |
+| --- | --- |
+| Mesajlaşma | Konuşmayı yeniden kullanma, katılımcı yetkisi, alıcı gizliliği, okunmamış sayıları, düzenleme/silme, sayfalama, gerçek GraphQL aboneliği, gönderici ve kitap eki serileştirmesi |
+| İstemci mesaj önbelleği | İyimser ekleme ve başarısız istekte geri alma, tekrarlanan canlı iletileri ayıklama, son sayfada durma, konuşma önizlemesini güncelleme |
+| Oturumlar | Erişim kodu, takipçi erişimi, kapatma, katılımcı sayısı, ileti silme/beğenme, etiketleme bildirimleri, hesap silme temizliği, başarısız gönderimde taslağı koruma |
+| Yorumlar ve takip | Paragraf eşleştirmesi, görünürlük, beğeni/silme yetkileri, paragraf sayıları, kitap takip sayıları ve yeni bölüm bildirimleri |
+| Alıntılar | Beğeni/bildirim tercihleri, yorumlar, yeniden paylaşma ve geri alma, silme temizliği, kitap bazında önbellek geçersizleştirme, arama ve sonsuz kaydırma |
+| Hesap | Giriş/kayıt, e-posta kodu, parola kuralları, şifre sıfırlama, Google dönüşü, hesap devre dışı bırakma/silme onayı ve başarısız işlemlerde oturumu koruma |
+| Okuma ve keşif | Filtreler ve sıralama, kanonik profil/kitap yolları, dönüş adresi, HTML sayfalama, ayraç ve okuma geçmişi, tercihler ve öneriler |
+| Bildirim ve arayüz | Bağımsız bildirim süreleri, okundu işaretleme hatası, lider tablosu, PWA kurulum adımları, okuma boyutu ve tercih kalıcılığı |
+| API sözleşmesi | İstemci kaynaklarındaki adlandırılmış GraphQL işlemlerini gerçek sunucu şemasına karşı doğrulama; Google HTTP callback alan sınırları ve eski ödeme callback'inin kapalı kalması |
+
+Sunucu testleri işlemleri gerçek şema ve geçici MongoDB üzerinde yürütür. İstemci testlerinde Apollo'nun gerçek önbelleği ve `MockedProvider` kullanılır; sayfaya özgü testlerde bağımsız veri hook'ları gerektiğinde kontrollü sınırlar olarak değiştirilir. HTML sayfalama testindeki `innerText` desteği JSDOM için sağlanır; bu, gerçek piksel ölçümü değildir.
+
+## Gerçek tarayıcı testleri
+
+```powershell
+npm.cmd --prefix Client run test:e2e
+```
+
+Playwright testleri Windows'ta kurulu Microsoft Edge'i kullanır. Diğer sistemlerde ilk çalıştırmadan önce `Client` klasöründe `npx playwright install chromium` çalıştırın.
+
+Test komutu kendine ait geliştirme sunucusunu `http://127.0.0.1:3100` üzerinde başlatır ve sonunda kapatır; bu port boş olmalıdır. Kullanıcının 3000 portundaki geliştirme sunucusu yeniden kullanılmaz. Gerçek uygulama masaüstü ve telefon ekranlarında açılır. Destek ve ödeme geçmişi başlıklarının navbar altında kalması, yatay taşma, bağlantı stilleri, geri gezinme ve misafir yönlendirmesi denetlenir.
+
+Tarayıcı testleri yalnızca örnek kullanıcı/ödeme verileri kullanır. HTTP API yanıtları yakalanır ve dış istekler engellenir; bunlar gerçek ödeme, Google veya SMTP hesabıyla yapılan uçtan uca testler değildir. Birim/entegrasyon kapsam yüzdelerine tarayıcı testleri dahil edilmez. Başarısız koşuların ekran görüntüsü/izleri `Client/test-results`, HTML raporu `Client/playwright-report` altında tutulur; bu klasörler Git'e eklenmez.
+
 ## Kalan test eksikleri
 
-- Gerçek tarayıcı üzerinde uçtan uca test altyapısı yok. React/JSDOM testleri gerçek mobil tarayıcı, çerez/depolama davranışı, görsel yerleşim ve tarayıcı geri/ileri önbelleğini bütünüyle doğrulamaz.
+- Playwright'ın masaüstü/telefon testleri Edge/Chromium ile sınırlıdır. Gerçek iOS/Safari, Android cihazı, tam uygulama–sunucu akışı ve bütün sayfaların görsel regresyonları henüz kapsanmaz.
 - Google OAuth yönlendirmesi, Iyzico ödeme başlatma/callback, Cloudinary yükleme ve gerçek SMTP teslimatı için ayrı test ortamında entegrasyon doğrulaması gerekir. Şablon veya mock testleri dış servis başarısının kanıtı değildir.
-- Coverage raporunda kapsanmayan ekranlar/işlevler vardır; örneğin bağış/ödeme ekranları, mesajlaşmanın bütün kullanıcı akışları ve bazı ana sayfa/akış bileşenleri. Bunlar için yeni davranış testleri ve ardından tarayıcı testleri önceliklidir.
+- Kapsam raporunda henüz çalıştırılmayan dallar bulunabilir. Özellikle dış servislerin gerçek hata yanıtları, cihaz özellikleri ve operasyonel scriptler için yüzde yüz kapsam iddiası yoktur; yeni hata düzeltmelerine davranış testi eklenmelidir.
 - Derleme kontrolü testlerden ayrıdır: `npm.cmd --prefix Client run build`. Projedeki mevcut ESLint uyarıları `CI=true` ortamında derlemeyi durdurabilir; testlerin başarılı olması derlemenin de temiz olduğunu göstermez.
 
 ## Yayın öncesi manuel kontrol

@@ -6,8 +6,8 @@ export const GET_COMMENT_BY_ID = gql`
       id
       content
       date
-      userId # Yazarın ismini çekmek için bu ID'ye ihtiyacımız olacak
-      likes
+      userId { id username profilePicture }
+      likedBy
     }
   }
 `;

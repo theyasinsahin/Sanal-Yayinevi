@@ -173,6 +173,8 @@ const EntryCard = ({ entry, isOwn, onDelete, onLike, currentUserId, index }) => 
       <div className="entry-card-footer">
         <button
           className={`entry-card-like-btn${isLiked ? ' entry-card-like-btn--liked' : ''}`}
+          aria-label="Yazıyı beğen"
+          aria-pressed={Boolean(isLiked)}
           onClick={() => onLike(entry.id)}
         >
           <span className="entry-card-like-icon">♥</span>
@@ -192,7 +194,8 @@ const EntryComposer = ({ onSend, sending, disabled }) => {
   const handleSubmit = async () => {
     const content = value.trim();
     if (!content || sending) return;
-    await onSend(content);
+    const sent = await onSend(content);
+    if (sent === false) return;
     setValue('');
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -276,6 +279,7 @@ const { session, loading: sessionLoading, error: sessionError } = useGetSession(
     try {
       await addEntry(content, accessCode);
       setAccessError('');
+      return true;
     } catch (err) {
       if (err.message?.includes('kodu')) {
         setAccessCode(null);
@@ -285,6 +289,7 @@ const { session, loading: sessionLoading, error: sessionError } = useGetSession(
         // hiçbir şey görmüyordu. Artık her zaman bir uyarı gösteriyoruz.
         showToast(err.message || 'Yazı gönderilemedi.', 'error');
       }
+      return false;
     }
   };
 
@@ -457,7 +462,7 @@ const { session, loading: sessionLoading, error: sessionError } = useGetSession(
                   )}
                 </div>
                 <span className="session-detail-author-name">
-                  <UserProfileLink user={session.createdBy}>{session.createdBy?.fullName ?? session.createdBy?.username}</UserProfileLink>
+                  {session.createdBy?.fullName ?? session.createdBy?.username}
                 </span>
                 <span className="session-detail-author-sep">·</span>
                 <span className="session-detail-participant-count">

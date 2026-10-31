@@ -44,6 +44,7 @@
     "test": "react-scripts test",
     "test:ci": "react-scripts test --watchAll=false --runInBand --watchman=false",
     "test:coverage": "npm run test:ci -- --coverage --coverageReporters=text-summary --coverageReporters=html --coverageReporters=json-summary",
+    "test:e2e": "playwright test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -68,5 +69,8 @@
   "main": "index.js",
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.64.1"
+  }
 }

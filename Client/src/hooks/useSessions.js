@@ -1,5 +1,6 @@
 // src/hooks/useSessions.js
-import { useQuery, useMutation, useSubscription, useLazyQuery } from '@apollo/client';
+import { useEffect, useState } from 'react';
+import { useQuery, useMutation, useSubscription } from '@apollo/client';
 import {
   GET_SESSIONS,
   GET_SESSION,
@@ -16,6 +17,8 @@ const ENTRIES_PER_PAGE = 30;
 
 // --- Oturum listesi ---
 export const useGetSessions = (limit = 20) => {
+  const [exhausted, setExhausted] = useState(false);
+  useEffect(() => setExhausted(false), [limit]);
   const { data, loading, error, fetchMore } = useQuery(GET_SESSIONS, {
     variables: { limit, offset: 0 },
     fetchPolicy: 'cache-and-network',
@@ -26,7 +29,7 @@ export const useGetSessions = (limit = 20) => {
     fetchMore({
       variables: { limit, offset: currentCount },
       updateQuery: (prev, { fetchMoreResult }) => {
-        if (!fetchMoreResult?.getSessions?.length) return prev;
+        if (!fetchMoreResult?.getSessions?.length) { setExhausted(true); return prev; }
         return {
           getSessions: [...prev.getSessions, ...fetchMoreResult.getSessions],
         };
@@ -39,7 +42,7 @@ export const useGetSessions = (limit = 20) => {
     loading,
     error,
     loadMore,
-    hasMore: (data?.getSessions?.length ?? 0) % limit === 0 &&
+    hasMore: !exhausted && (data?.getSessions?.length ?? 0) % limit === 0 &&
              (data?.getSessions?.length ?? 0) > 0,
   };
 };
@@ -61,6 +64,8 @@ export const useGetSession = (sessionId) => {
 
 // --- Oturum yazıları ---
 export const useGetSessionEntries = (sessionId) => {
+  const [exhausted, setExhausted] = useState(false);
+  useEffect(() => setExhausted(false), [sessionId]);
   const { data, loading, error, fetchMore } = useQuery(GET_SESSION_ENTRIES, {
     variables: { sessionId, limit: ENTRIES_PER_PAGE, offset: 0 },
     skip: !sessionId,
@@ -72,7 +77,7 @@ export const useGetSessionEntries = (sessionId) => {
     fetchMore({
       variables: { sessionId, limit: ENTRIES_PER_PAGE, offset: currentCount },
       updateQuery: (prev, { fetchMoreResult }) => {
-        if (!fetchMoreResult?.getSessionEntries?.length) return prev;
+        if (!fetchMoreResult?.getSessionEntries?.length) { setExhausted(true); return prev; }
         return {
           getSessionEntries: [
             ...prev.getSessionEntries,
@@ -88,7 +93,7 @@ export const useGetSessionEntries = (sessionId) => {
     loading,
     error,
     loadMore,
-    hasMore: (data?.getSessionEntries?.length ?? 0) % ENTRIES_PER_PAGE === 0 &&
+    hasMore: !exhausted && (data?.getSessionEntries?.length ?? 0) % ENTRIES_PER_PAGE === 0 &&
              (data?.getSessionEntries?.length ?? 0) > 0,
   };
 };

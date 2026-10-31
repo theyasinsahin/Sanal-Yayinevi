@@ -7,6 +7,8 @@ import { useAuth } from '../../context/AuthContext';
 import { PRINT_OVERVIEW, START_PRINT_CHECKOUT, MY_FUNDING_PAYMENT } from '../../graphql/printFunding';
 import { CampaignCard, Feedback, money, toMinor, checkoutKey, usePrintAction } from '../../components/PrintFunding/shared';
 import PaymentCard from '../../components/PrintFunding/PaymentCard';
+import PrintLink from '../../components/PrintFunding/PrintLink';
+import './PrintCheckout.css';
 
 export default function PrintCheckoutPage() {
   const { bookId } = useParams(), { user } = useAuth();
@@ -28,7 +30,11 @@ export default function PrintCheckoutPage() {
     const result = await action.run(START_PRINT_CHECKOUT, { input: { campaignId: campaign.id, idempotencyKey: key.current, quantity, donationMinor, ...(quantity ? { shippingAddress } : {}) } });
     if (result) setPayment(result.startPrintCheckout);
   }
-  return <MainLayout><div className="print-page"><Link to={`/book-detail/${bookId}`}>← Kitaba dön</Link><h1>Destek ve kitap ön siparişi</h1>
+    return (
+      <MainLayout>
+        <div className="print-page print-checkout-page">
+          <PrintLink variant="ghost" to={`/book-detail/${bookId}`}>← Kitaba dön</PrintLink>
+          <h1>Destek ve kitap ön siparişi</h1>
     <p className="print-sandbox">{mode === 'IYZICO_SANDBOX' ? 'iyzico test ortamı · Test kartlarıyla ödeme ve ön sipariş akışını kullanabilirsiniz. Gerçek para tahsil edilmez.' : 'Yalnızca sandbox testi. Gerçek ödeme alınmaz; fiziksel teslimat taahhüdü oluşmaz.'}</p>
     {loading && !campaign && <p role="status">Kampanya yükleniyor…</p>}<Feedback error={error || action.error || paymentError} />
     {campaign && <CampaignCard campaign={campaign} />}
@@ -50,6 +56,6 @@ export default function PrintCheckoutPage() {
       <Button type="submit" disabled={action.busy || !validAmount || !total || !accepted || !paymentsEnabled || !user || campaign.state !== 'ACTIVE'}>{attempted ? 'Aynı işlemi güvenle yeniden sorgula' : mode === 'IYZICO_SANDBOX' ? 'iyzico test ödemesine geç' : 'Test ödeme rezervasyonu oluştur'}</Button>
       {attempted && <><p className="ui-notice">İstek gönderildi; sepet kilitlendi. Yanıt kaybolduysa aynı düğmeyle mevcut işlem alınır. Yeniden başlamadan önce <Link to="/funding-history">işlem geçmişinizi</Link> kontrol edin.</p><Button variant="ghost" disabled={action.busy} onClick={() => { sessionStorage.removeItem(storageKey); key.current = null; setAttempted(false); setAccepted(false); }}>Yeni sepet hazırla (önceki işlem ayrıca sürer)</Button></>}
       </form></section>}
-    <p><Link to="/funding-history">Ödeme sonucumu ve siparişlerimi sunucudan kontrol et →</Link></p>
-  </div></MainLayout>;
+    <div className="print-actions"><PrintLink to="/funding-history">Desteklerim ve ön siparişlerim →</PrintLink></div>
+  </div></MainLayout>);
 }
