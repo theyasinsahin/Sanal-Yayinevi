@@ -1,3 +1,4 @@
+import UserProfileLink from '../../UI/UserProfileLink';
 import { bookPath } from '../../../utils/publicPaths';
 import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -56,7 +57,7 @@ const BookAttachment = ({ book }) => {
         </Typography>
         {book.author && (
           <Typography variant="caption" color="muted">
-            {book.author.fullName ?? book.author.username}
+            <UserProfileLink user={book.author}>{book.author.fullName ?? book.author.username}</UserProfileLink>
           </Typography>
         )}
         <span className="bubble-book-link">Kitaba git →</span>

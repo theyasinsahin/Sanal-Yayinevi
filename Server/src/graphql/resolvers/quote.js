@@ -1,5 +1,11 @@
 // src/graphql/resolvers/quote.js
 import * as QuoteService from '../../services/quoteService.js';
+import { getLoaders } from '../loaders.js';
+
+const visibleText = field => async (quote, _, context) => {
+  const chapter = quote.chapterId ? await getLoaders(context).chapters.load(quote.chapterId) : null;
+  return chapter?.isHidden ? '' : quote[field] || '';
+};
 
 export default {
   Query: {
@@ -47,6 +53,9 @@ export default {
   },
 
   Quote: {
+    text: visibleText('text'),
+    note: visibleText('note'),
+    repostComment: visibleText('repostComment'),
     user: (parent) => parent.userId,
     book: (parent) => parent.bookId,
     originalQuote: (parent) => parent.originalQuoteId,
@@ -57,6 +66,11 @@ export default {
   },
 
   QuoteComment: {
+    content: async (comment, _, context) => {
+      const quote = comment.quoteId ? await getLoaders(context).quotes.load(comment.quoteId) : null;
+      const chapter = quote?.chapterId ? await getLoaders(context).chapters.load(quote.chapterId) : null;
+      return chapter?.isHidden ? '' : comment.content;
+    },
     user: (parent) => parent.userId,
   },
 };

@@ -144,3 +144,17 @@ test('chapter mode downloads only the selected chapter after restoring the saved
   expect(result).toHaveBeenCalledTimes(1);
   expect(screen.queryByText(book.chapters[0].content)).not.toBeInTheDocument();
 });
+
+test('a hidden chapter keeps its title and length but exposes no content, sharing or completion controls', async () => {
+  const lockedBook = { ...book, chapters: [{ id: 'first', title: 'Gizli Bölüm', content: '', isHidden: true, canReadContent: false, wordCount: 1200, pageCount: 6 }] };
+  show('/book-reader/book', { book: lockedBook });
+  expect(await screen.findByRole('heading', { name: 'Gizli Bölüm' })).toBeInTheDocument();
+  expect(await screen.findByRole('region', { name: 'Gizli bölüm' })).toHaveTextContent('1.200 kelime · 6 sayfa');
+  expect(screen.queryByRole('article')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Bölümü paylaş' })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Okuyuculara kapalı' })).toBeDisabled();
+  expect(screen.getByRole('link', { name: 'Kitaba destek ol' })).toHaveAttribute('href', '/donate/book');
+  fireEvent.click(screen.getByRole('button', { name: 'Kitap görünümü' }));
+  expect(await screen.findByRole('region', { name: 'Gizli bölüm' })).toBeInTheDocument();
+  expect(screen.queryByText('İlk bölümün metni.')).not.toBeInTheDocument();
+});

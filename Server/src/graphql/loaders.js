@@ -3,18 +3,23 @@ import User from '../models/user.js';
 import Genre from '../models/genre.js';
 import ClassificationTerm from '../models/classificationTerm.js';
 import Comment from '../models/comment.js';
+import Book from '../models/book.js';
+import Chapter from '../models/chapter.js';
+import Quote from '../models/quote.js';
 import { inactiveUserIds } from '../utils/activeUsers.js';
 
 export function createLoaders() {
   let inactive;
   const inactiveIds = () => inactive ||= Promise.resolve(inactiveUserIds());
   const byId = Model => new DataLoader(async ids => {
-    const records = await Model.find({ _id: { $in: ids }, ...(Model === User ? { isDeleted: false, isActive: { $ne: false } } : {}) }).exec();
+    const query = Model.find({ _id: { $in: ids }, ...(Model === User ? { isDeleted: false, isActive: { $ne: false } } : {}) });
+    if (Model === Chapter) query.select('-content');
+    const records = await query.exec();
     const map = new Map(records.map(record => [String(record._id), record]));
     return ids.map(id => map.get(String(id)) || null);
   }, { cacheKeyFn: String, maxBatchSize: 100 });
   return {
-    users: byId(User), genres: byId(Genre), classificationTerms: byId(ClassificationTerm), inactiveIds,
+    users: byId(User), books: byId(Book), chapters: byId(Chapter), quotes: byId(Quote), genres: byId(Genre), classificationTerms: byId(ClassificationTerm), inactiveIds,
     commentCounts: new DataLoader(async ids => {
       const counts = await Comment.aggregate([
         { $match: { bookId: { $in: ids.map(id => new Comment.base.Types.ObjectId(String(id))) }, isDeleted: false, userId: { $nin: await inactiveIds() } } },

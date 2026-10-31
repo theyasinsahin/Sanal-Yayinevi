@@ -1,3 +1,5 @@
+import HiddenChapterNotice from '../../components/Books/HiddenChapterNotice';
+import { isChapterLocked, chapterLengthLabel } from '../../utils/chapterVisibility';
 import { bookPath } from '../../utils/publicPaths';
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
@@ -113,7 +115,7 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
   const chapterId = chapters[currentChapterIndex]?.id;
   const { data: chapterData, loading: chapterLoading, error: chapterError, refetch: refetchChapter } = useQuery(GET_READING_CHAPTER, {
     variables: { bookId, chapterId }, skip: !progressReady || !chapterId || readingMode !== 'chapter',
-    fetchPolicy: 'cache-and-network', nextFetchPolicy: 'cache-first',
+    fetchPolicy: 'no-cache',
   });
   const { data: fullData, loading: fullLoading, error: fullError, refetch: refetchFull } = useQuery(GET_BOOK_READER_FULL, {
     variables: { id: bookId }, skip: !progressReady || readingMode !== 'book', fetchPolicy: 'no-cache',
@@ -122,10 +124,11 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
   const loadedChapter = readingMode === 'book' ? fullChapters?.find(chapter => chapter.id === chapterId) : chapterData?.getReadingChapter;
   const chapterReady = Boolean(chapterId && loadedChapter?.id === chapterId);
   // Apollo may retain the previous variables' result while a new chapter loads.
-  const currentChapter = { ...chapters[currentChapterIndex], content: loadedChapter?.id === chapterId ? loadedChapter?.content : undefined };
+  const locked = isChapterLocked(chapters[currentChapterIndex]) || (loadedChapter?.id === chapterId && isChapterLocked(loadedChapter));
+  const currentChapter = { ...chapters[currentChapterIndex], ...(loadedChapter?.id === chapterId ? loadedChapter : {}), content: !locked && loadedChapter?.id === chapterId ? loadedChapter?.content : undefined };
 
   const readingStatus = useReadingTracker({
-    isActive: Boolean(progressReady && user?.id && book && book.status !== 'DRAFT' &&
+    isActive: Boolean(!locked && progressReady && user?.id && book && book.status !== 'DRAFT' &&
       (book.kind !== 'PRINTED' || book.publicationStatus === 'APPROVED') && currentChapter.content?.replace(/<[^>]*>/g, '').trim()),
     userId: user?.id, bookId: book?.id, chapterId: chapters[currentChapterIndex]?.id,
     onIdleWarning: () => setShowIdleWarning(true),
@@ -195,7 +198,7 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
   const pages = useMemo(() => {
     if (readingMode !== 'book' || !book || !fullChapters?.length) return [];
     return [{ type: 'title_page', bookTitle: book.title, author: authorName, genre: [book.format?.name, ...(book.genres || []).map(item => item.name)].filter(Boolean).join(' / ') },
-      ...fullChapters.flatMap(chapter => parseContentToPages(chapter.content, chapter.title)
+      ...fullChapters.flatMap(chapter => isChapterLocked(chapter) ? [{ type: 'hidden_chapter', chapter, chapterId: chapter.id }] : parseContentToPages(chapter.content, chapter.title)
         .map(page => ({ ...page, chapterId: chapter.id })))];
   }, [book, fullChapters, authorName, readingMode]);
   useEffect(() => {
@@ -206,6 +209,7 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
   }, [pages, chapterId]);
 
   const toggleChapterCompletion = (index) => {
+    if (isChapterLocked(chapters[index])) return;
     setCompletedChapters(prev =>
       prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
     );
@@ -258,6 +262,7 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
 
   const renderPageContent = (pageData) => {
     if (!pageData) return null;
+    if (pageData.type === 'hidden_chapter') return <div className="page-inner"><h2>{pageData.chapter.title}</h2><HiddenChapterNotice chapter={pageData.chapter} bookId={bookId} /></div>;
     if (pageData.type === 'title_page') {
       return (
         <div className="page-inner title-page-content">
@@ -351,18 +356,22 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
               className={`chapter-item ${currentChapterIndex === index ? 'active' : ''} ${completedChapters.includes(index) ? 'completed' : ''}`}
               onClick={() => goToChapter(index)}
             >
-              <div 
+              <button type="button"
                 className={`chapter-checkbox ${completedChapters.includes(index) ? 'checked' : ''}`}
+                disabled={isChapterLocked(chapter)}
+                aria-label={`${chapter.title}: okundu durumunu değiştir`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  toggleChapterCompletion(index);
+                  if (!isChapterLocked(chapter)) toggleChapterCompletion(index);
                 }}
               >
                 {completedChapters.includes(index) && <Check />}
-              </div>
+              </button>
               <div className="chapter-info">
                 <div className="chapter-number">Bölüm {index + 1}</div>
                 <div className="chapter-title">{chapter.title}</div>
+                <span className="chapter-length">{chapterLengthLabel(chapter)}</span>
+                {chapter.isHidden && <span className="chapter-visibility-label">Okuyuculara kapal?</span>}
               </div>
             </div>
           ))}
@@ -417,7 +426,7 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
         {readingMode === 'chapter' && chapterId && (
           <div className="chapter-reading-mode">
 
-            {user && (
+            {user && !currentChapter.isHidden && !locked && (
               <QuotePopup
                 bookId={bookId}
                 chapterId={currentChapter.id}
@@ -432,11 +441,11 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
                 Bölüm {currentChapterIndex + 1} / {chapters.length}
               </div>
               <h2>{currentChapter.title}</h2>
-              <SocialShareButton type="CHAPTER" id={currentChapter.id} label="Bölümü paylaş" />
+              {!currentChapter.isHidden && <SocialShareButton type="CHAPTER" id={currentChapter.id} label="Bölümü paylaş" />}
             </div>
 
             {/* Bölüm İçeriği */}
-            {chapterLoading && !chapterReady ? <p role="status">Bölüm yükleniyor...</p> : chapterError || !chapterReady ?
+            {locked ? <HiddenChapterNotice chapter={currentChapter} bookId={bookId} /> : chapterLoading && !chapterReady ? <p role="status">Bölüm yükleniyor...</p> : chapterError || !chapterReady ?
               <p className="ui-notice" role="alert">Bölüm yüklenemedi. <button className="ui-text-link" onClick={() => refetchChapter()}>Tekrar dene</button></p> : <ParagraphRenderer
               key={currentChapter.id}
               restoreParagraphIndex={restoreParagraphIndex}
@@ -469,9 +478,9 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
                     goToChapter(currentChapterIndex + 1);
                   }
                 }}
-                disabled={isLastChapter && completedChapters.includes(currentChapterIndex)}
+                disabled={isLastChapter && (locked || completedChapters.includes(currentChapterIndex))}
               >
-                {isLastChapter
+                {locked ? (isLastChapter ? 'Okuyuculara kapalı' : 'Sonraki Bölüm') : isLastChapter
                   ? completedChapters.includes(currentChapterIndex)
                     ? '✦ Tamamlandı'
                     : 'Tamamla'

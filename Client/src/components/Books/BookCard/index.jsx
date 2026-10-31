@@ -1,3 +1,4 @@
+import UserProfileLink from '../../UI/UserProfileLink';
 import ClassificationSummary from '../Classification/ClassificationSummary';
 import { bookPath } from '../../../utils/publicPaths';
 import React, { lazy, Suspense, useState } from 'react';
@@ -144,7 +145,7 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
           <div className="book-author">
             <Typography variant="caption" color="muted">Yazar:</Typography>
             <Typography variant="caption" weight="medium" color="primary">
-              {displayAuthor}
+              <UserProfileLink user={author}>{displayAuthor}</UserProfileLink>
             </Typography>
           </div>
 

@@ -1,10 +1,10 @@
+import UserProfileLink from '../../UI/UserProfileLink';
 import React, { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { AccountCircle, FavoriteBorder, Favorite, Delete, Reply } from '@mui/icons-material';
 
 // --- LOGIC ---
 import { DELETE_COMMENT_MUTATION, TOGGLE_COMMENT_LIKE_MUTATION, REPLY_TO_COMMENT_MUTATION } from '../../../graphql/mutations/comment';
-import { GET_BOOK_BY_ID } from '../../../graphql/queries/book';
 import { GET_COMMENTS_BY_BOOK_ID } from '../../../graphql/queries/comment';
 
 // --- UI KIT ---
@@ -111,7 +111,7 @@ const CommentItem = ({ comment, currentUserId, bookId, isReply = false }) => {
           {!profilePic && <AccountCircle className="avatar-fallback-icon" style={{display: 'none'}} />}
 
           <div className="user-meta">
-            <span className="username">{username}</span>
+            <UserProfileLink user={author} className="username">{username}</UserProfileLink>
             <span className="date">{dateStr}</span>
           </div>
         </div>

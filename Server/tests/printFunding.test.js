@@ -86,10 +86,12 @@ test('only the author can apply; approval needs a current admin and complete dec
 test('special narrative features keep digital publication available and require separate print review', async () => {
   const feature = await ClassificationTerm.create({ kind: 'FEATURE', slug: 'hayran-kurgusu', name: 'Hayran Kurgusu' });
   await Book.updateOne({ _id: book._id }, { narrativeFeatureIds: [feature._id] });
+  await Chapter.updateMany({ bookId: book._id }, { isHidden: true });
   const published = await applications.updateDigitalStatus(context(user), { bookId: book.id, status: 'WRITING' });
   expect(published.digitalStatus).toBe('PUBLISHED');
   const app = await submitted();
   const version = await models.BookPrintVersion.findById(app.versionId);
+  expect(version.chapters[0].content).toContain('sabit sürüm');
   expect(version.classificationReview).toMatchObject({ reviewRequired: true, features: [{ slug: 'hayran-kurgusu', name: 'Hayran Kurgusu' }] });
   await expect(campaigns.openCampaign(context(admin), { applicationId: app.id, revision: app.revision })).rejects.toThrow('onaylı');
 });

@@ -1,3 +1,4 @@
+import UserProfileLink from '../../UI/UserProfileLink';
 // src/components/Quote/QuotePopup/index.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useMutation, useLazyQuery } from '@apollo/client';
@@ -131,7 +132,7 @@ const QuotePopup = ({ bookId, chapterId, chapterTitle, chapterIndex }) => {
             </button>
           </div>
           <p className="quote-popup-existing-info">
-            <strong>@{existingQuote.user?.username}</strong> tarafından alıntılandı.
+            <UserProfileLink user={existingQuote.user}><strong>@{existingQuote.user?.username}</strong></UserProfileLink> tarafından alıntılandı.
             Yeniden paylaşarak destek verebilirsin.
           </p>
 

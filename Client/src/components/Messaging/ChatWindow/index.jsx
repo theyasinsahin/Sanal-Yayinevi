@@ -1,5 +1,5 @@
+import UserProfileLink from '../../UI/UserProfileLink';
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { Typography } from '../../UI/Typography';
 import { Input } from '../../UI/Input';
@@ -26,7 +26,6 @@ const getInitials = (user) => {
 const ChatWindow = ({ conversationId, onBack }) => {
   const { user: currentUser } = useAuth();
   const currentUserId = currentUser?.id ?? currentUser?._id;
-  const navigate = useNavigate();
 
   const [inputValue, setInputValue]     = useState('');
   const [sendError, setSendError] = useState('');
@@ -131,11 +130,7 @@ const ChatWindow = ({ conversationId, onBack }) => {
           ←
         </button>
 
-        <div
-          className="chat-header-user"
-          onClick={() => otherUser && navigate(`/profile/${otherUser.username}`)}
-          style={{ cursor: otherUser ? 'pointer' : 'default' }}
-        >
+        <UserProfileLink user={otherUser} className="chat-header-user">
           <div className="chat-header-avatar">
             {otherUser?.profilePicture ? (
               <img src={otherUser.profilePicture} alt={otherUser.fullName} />
@@ -153,7 +148,7 @@ const ChatWindow = ({ conversationId, onBack }) => {
               </Typography>
             )}
           </div>
-        </div>
+        </UserProfileLink>
       </div>
 
       {/* MESAJLAR */}

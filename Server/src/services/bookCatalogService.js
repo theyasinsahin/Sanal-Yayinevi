@@ -1,3 +1,4 @@
+import { hiddenChapterIds } from '../utils/chapterAccess.js';
 import mongoose from 'mongoose';
 import Book from '../models/book.js';
 import { classificationFilter } from './classificationService.js';
@@ -22,7 +23,7 @@ export async function getBookFeed({ limit = 24, after, sort = 'NEWEST', classifi
     const expression = new RegExp(escape(term).replace(/[iİıI]/g, '[iİıI]'), 'i');
     const [authors, quotedBookIds] = await Promise.all([
       User.find({ isDeleted: false, isActive: { $ne: false }, $or: [{ username: expression }, { fullName: expression }] }).select('_id').lean().exec(),
-      Quote.distinct('bookId', { text: expression, isRepost: false, isDeleted: { $ne: true }, userId: { $nin: hiddenUserIds } }).exec(),
+      Quote.distinct('bookId', { text: expression, chapterId: { $nin: await hiddenChapterIds() }, isRepost: false, isDeleted: { $ne: true }, userId: { $nin: hiddenUserIds } }).exec(),
     ]);
     clauses.push({ $or: [{ title: expression }, { authorId: { $in: authors.map(author => author._id) } }, { _id: { $in: quotedBookIds } }] });
   }

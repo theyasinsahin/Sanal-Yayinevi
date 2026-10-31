@@ -1,3 +1,4 @@
+import { hiddenChapterIds } from '../utils/chapterAccess.js';
 // src/services/quoteService.js
 import { notifyUser } from './notificationService.js';
 import User from '../models/user.js';
@@ -36,7 +37,7 @@ const populateQuote = (query) => {
 export const checkQuoteExists = async (text, bookId) => {
   const normalized = normalizeText(text);
   const existing = await populateQuote(
-    Quote.findOne({ normalizedText: normalized, bookId, isRepost: false })
+    Quote.findOne({ normalizedText: normalized, bookId, isRepost: false, chapterId: { $nin: await hiddenChapterIds() } })
   );
   return { exists: !!existing, quote: existing || null };
 };
@@ -44,7 +45,7 @@ export const checkQuoteExists = async (text, bookId) => {
 export const createQuote = async (userId, data) => {
   const book = await Book.findOne({ _id: data.bookId, isDeleted: false });
   if (!book) throw new Error('Kitap bulunamadı.');
-  const chapterExists = data.chapterId && await Chapter.exists({ _id: data.chapterId, bookId: book._id, isDeleted: false });
+  const chapterExists = data.chapterId && await Chapter.exists({ _id: data.chapterId, bookId: book._id, isDeleted: false, isHidden: { $ne: true } });
   if (isPrintedBook(book)) {
     if (book.publicationStatus !== 'APPROVED') throw new Error('Kitap henüz kataloğa alınmadı.');
     if (!data.text || data.text.trim().length < 10 || data.text.length > 1000) throw new Error('Alıntı 10–1000 karakter olmalıdır.');
@@ -79,6 +80,7 @@ export const createQuote = async (userId, data) => {
 
 export const repostQuote = async (userId, originalQuoteId, repostComment, isSpoiler) => {
   const original = await Quote.findById(originalQuoteId);
+  if (original?.chapterId && await Chapter.exists({ _id: original.chapterId, isHidden: true })) throw new Error('Gizli bölümlerden alıntı paylaşılamaz.');
   if (!original) throw new Error('Orijinal alıntı bulunamadı.');
 
   // Aynı kullanıcı zaten repost etmiş mi?
@@ -119,13 +121,13 @@ export const repostQuote = async (userId, originalQuoteId, repostComment, isSpoi
 export const getQuotesByUser = async (userId, viewer) => {
   if (!canViewProfile(await User.findById(userId), viewer)) return [];
   return await populateQuote(
-    Quote.find({ userId, isDeleted: false }).sort({ createdAt: -1 })
+    Quote.find({ userId, isDeleted: false, chapterId: { $nin: await hiddenChapterIds() } }).sort({ createdAt: -1 })
   );
 };
 
 export const getQuotesByBook = async (bookId) => {
   return await populateQuote(
-    Quote.find({ bookId, isRepost: false, isDeleted: { $ne: true }, userId: { $nin: await inactiveUserIds() } }).sort({ createdAt: -1 })
+    Quote.find({ bookId, chapterId: { $nin: await hiddenChapterIds() }, isRepost: false, isDeleted: { $ne: true }, userId: { $nin: await inactiveUserIds() } }).sort({ createdAt: -1 })
   );
 };
 
@@ -136,7 +138,7 @@ export const getQuotesFeed = async (limit = 20, offset = 0, sortBy = 'popular') 
     : { createdAt: -1 };
 
   const results = await Quote.aggregate([
-    { $match: { isRepost: false, isDeleted: { $ne: true }, userId: { $nin: await inactiveUserIds() } } },
+    { $match: { chapterId: { $nin: await hiddenChapterIds() }, isRepost: false, isDeleted: { $ne: true }, userId: { $nin: await inactiveUserIds() } } },
     { $addFields: { likesCount: { $size: { $ifNull: ['$likedBy', []] } } } },
     { $sort: sortOption },
     { $skip: offset },
@@ -194,6 +196,7 @@ export const searchQuotes = async (query, limit = 20, offset = 0) => {
   const bookIds = matchingBooks.map(b => b._id);
 
   const results = await Quote.find({
+    chapterId: { $nin: await hiddenChapterIds() },
     isDeleted: { $ne: true }, userId: { $nin: await inactiveUserIds() },
     $or: [
       { text: { $regex: query, $options: 'i' } },
@@ -246,6 +249,8 @@ export const toggleQuoteLike = async (id, userId) => {
 
 // --- YORUM FONKSİYONLARI ---
 export const addQuoteComment = async (userId, quoteId, content) => {
+  const source = await Quote.findById(quoteId).select('chapterId').lean();
+  if (source?.chapterId && await Chapter.exists({ _id: source.chapterId, isHidden: true })) throw new Error('Gizli bölümün alıntısına erişiminiz yok.');
   const comment = new QuoteComment({ userId, quoteId, content });
   const saved = await comment.save();
   return await QuoteComment.findById(saved._id)
@@ -253,6 +258,8 @@ export const addQuoteComment = async (userId, quoteId, content) => {
 };
 
 export const getQuoteComments = async (quoteId) => {
+  const source = await Quote.findById(quoteId).select('chapterId').lean();
+  if (source?.chapterId && await Chapter.exists({ _id: source.chapterId, isHidden: true })) return [];
   return await QuoteComment.find({ quoteId, isDeleted: { $ne: true }, userId: { $nin: await inactiveUserIds() } })
     .populate('userId', 'username fullName profilePicture')
     .sort({ createdAt: -1 });

@@ -1,3 +1,4 @@
+import UserProfileLink from '../../components/UI/UserProfileLink';
 import { profilePath } from '../../utils/publicPaths';
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
@@ -133,10 +134,10 @@ const EntryCard = ({ entry, isOwn, onDelete, onLike, currentUserId, index }) => 
           )}
         </div>
         <div className="entry-card-author-info">
-          <span className="entry-card-name">
+          <UserProfileLink user={entry.user} className="entry-card-name">
             {entry.user?.fullName ?? entry.user?.username ?? 'Kullanıcı'}
             {isOwn && <span className="entry-card-own-tag">Sen</span>}
-          </span>
+          </UserProfileLink>
           <span className="entry-card-date">{formattedDate}</span>
         </div>
 
@@ -456,7 +457,7 @@ const { session, loading: sessionLoading, error: sessionError } = useGetSession(
                   )}
                 </div>
                 <span className="session-detail-author-name">
-                  {session.createdBy?.fullName ?? session.createdBy?.username}
+                  <UserProfileLink user={session.createdBy}>{session.createdBy?.fullName ?? session.createdBy?.username}</UserProfileLink>
                 </span>
                 <span className="session-detail-author-sep">·</span>
                 <span className="session-detail-participant-count">

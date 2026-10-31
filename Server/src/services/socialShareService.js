@@ -32,7 +32,7 @@ export async function getPublicQuote(id) {
   if (!mongoose.isObjectIdOrHexString(id)) throw unavailable();
   let quote = await Quote.findOne({ _id: id, isDeleted: false });
   if (quote?.isRepost) quote = await Quote.findOne({ _id: quote.originalQuoteId, isDeleted: false });
-  if (!quote) throw unavailable();
+  if (!quote || (quote.chapterId && await Chapter.exists({ _id: quote.chapterId, isHidden: true }))) throw unavailable();
   const owner = await activeUser(quote.userId);
   if (!owner || !canViewProfile(owner, null)) throw unavailable();
   await publicBook(quote.bookId);
@@ -74,7 +74,7 @@ export async function getSocialShare(type, id) {
     path = await bookPath(book);
   } else if (type === 'CHAPTER') {
     const chapter = await Chapter.findOne({ _id: id, isDeleted: false });
-    if (!chapter) throw unavailable();
+    if (!chapter || chapter.isHidden) throw unavailable();
     const book = await publicBook(chapter.bookId);
     title = `${chapter.title} — ${book.title}`;
     description = `${book.title} kitabının “${chapter.title}” bölümünü Betik'te oku.`;
