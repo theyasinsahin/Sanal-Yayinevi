@@ -1,0 +1,6 @@
+.quote-visibility { display: grid; gap: 0.5rem; margin: 0.75rem 0; }
+.quote-visibility label { font-weight: 600; font-size: 0.875rem; }
+.quote-visibility select { width: 100%; min-height: 44px; padding: 0.65rem; border: 1px solid var(--fog, #ccc); border-radius: 6px; background: var(--bg-surface, #fff); color: var(--text-main, #222); font: inherit; }
+.quote-visibility p { margin: 0; font-size: 0.8rem; line-height: 1.5; }
+.quote-popup .quote-visibility { color: rgba(255,255,255,0.9); }
+.quote-popup .quote-visibility select { background: #253042; color: #fff; border-color: #526176; }

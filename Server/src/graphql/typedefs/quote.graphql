@@ -1,5 +1,10 @@
 # src/graphql/typeDefs/quote.graphql
 
+enum QuoteVisibility {
+  PUBLIC
+  PRIVATE
+}
+
 type QuoteLocation {
   startOffset: Int
   endOffset: Int
@@ -19,6 +24,7 @@ type Quote {
   id: ID!
   text: String!
   note: String
+  visibility: QuoteVisibility!
   user: User
   book: Book
   chapterId: ID
@@ -51,7 +57,7 @@ extend type Query {
   getQuotesByUser(userId: ID!): [Quote]
   getQuotesFeed(limit: Int, offset: Int, sortBy: String): [Quote]
   searchQuotes(query: String!, limit: Int, offset: Int): [Quote]
-  checkQuoteExists(text: String!, bookId: ID!): QuoteCheckResult!
+  checkQuoteExists(text: String!, bookId: ID!, visibility: QuoteVisibility = PUBLIC): QuoteCheckResult!
   getQuoteComments(quoteId: ID!): [QuoteComment]
 }
 
@@ -66,6 +72,7 @@ extend type Mutation {
     chapterIndex: Int
     location: QuoteLocationInput
     isSpoiler: Boolean
+    visibility: QuoteVisibility = PUBLIC
   ): Quote!
 
   repostQuote(

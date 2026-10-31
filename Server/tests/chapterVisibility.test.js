@@ -84,7 +84,8 @@ test('paragraph comments, quotes, feeds and public shares cannot expose a hidden
   const denied = await run('mutation($b:ID!,$c:ID!){addParagraphComment(bookId:$b,chapterId:$c,paragraphIndex:0,content:"Comment"){id}}', { b: book.id, c: hidden.id }, reader);
   expect(denied.errors).toBeDefined();
   const like = await run('mutation($id:ID!){toggleQuoteCommentLike(id:$id){content}}', { id: quoteComment.id }, reader);
-  expect(like.errors).toBeUndefined(); expect(like.data.toggleQuoteCommentLike.content).toBe('');
+  expect(like.errors).toBeDefined();
+  expect(JSON.stringify(like.data)).not.toContain(secret);
 });
 test('legacy chapters remain public and the retired content warning is excluded even in an unmigrated database', async () => {
   await Chapter.collection.updateOne({ _id: visible._id }, { $unset: { isHidden: 1, wordCount: 1 } });

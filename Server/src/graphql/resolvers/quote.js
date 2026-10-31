@@ -1,20 +1,21 @@
 // src/graphql/resolvers/quote.js
 import * as QuoteService from '../../services/quoteService.js';
 import { getLoaders } from '../loaders.js';
+import { canReadQuote } from '../../utils/quoteAccess.js';
 
 const visibleText = field => async (quote, _, context) => {
   const chapter = quote.chapterId ? await getLoaders(context).chapters.load(quote.chapterId) : null;
-  return chapter?.isHidden ? '' : quote[field] || '';
+  return chapter?.isHidden || !canReadQuote(quote, context.user) ? '' : quote[field] || '';
 };
 
 export default {
   Query: {
-    getQuotesByBook: (_, { bookId }) => QuoteService.getQuotesByBook(bookId),
+    getQuotesByBook: (_, { bookId }, { user }) => QuoteService.getQuotesByBook(bookId, user),
     getQuotesByUser: (_, { userId }, { user }) => QuoteService.getQuotesByUser(userId, user),
     getQuotesFeed: (_, { limit, offset, sortBy }) => QuoteService.getQuotesFeed(limit, offset, sortBy),
     searchQuotes: (_, { query, limit, offset }) => QuoteService.searchQuotes(query, limit, offset),
-    checkQuoteExists: (_, { text, bookId }) => QuoteService.checkQuoteExists(text, bookId),
-    getQuoteComments: (_, { quoteId }) => QuoteService.getQuoteComments(quoteId),
+    checkQuoteExists: (_, { text, bookId, visibility }, { user }) => QuoteService.checkQuoteExists(text, bookId, user, visibility),
+    getQuoteComments: (_, { quoteId }, { user }) => QuoteService.getQuoteComments(quoteId, user),
   },
 
   Mutation: {
@@ -56,6 +57,7 @@ export default {
     text: visibleText('text'),
     note: visibleText('note'),
     repostComment: visibleText('repostComment'),
+    visibility: parent => parent.visibility || 'PUBLIC',
     user: (parent) => parent.userId,
     book: (parent) => parent.bookId,
     originalQuote: (parent) => parent.originalQuoteId,
