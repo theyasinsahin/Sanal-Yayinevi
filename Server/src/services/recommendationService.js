@@ -25,9 +25,10 @@ const W = {
 const buildGenreWeightMap = (bookList, weight) => {
   const map = {};
   for (const book of bookList) {
-    if (!book.genreId) continue;
-    const key = book.genreId.toString();
-    map[key] = (map[key] || 0) + weight;
+    for (const genreId of book.genreIds || []) {
+      const key = genreId.toString();
+      map[key] = (map[key] || 0) + weight;
+    }
   }
   return map;
 };
@@ -52,15 +53,15 @@ export const getRecommendations = async (userId, { limit = 10, offset = 0 } = {}
 
   // 2. Kullanıcının etkileşimde bulunduğu kitapları çek
   const [likedBooks, savedBooks, commentedBooks, quotedBooks, readBooks] = await Promise.all([
-    Book.find({ likedBy: userId }).select('genreId').lean(),
-    Book.find({ _id: { $in: user.savedBooks } }).select('genreId').lean(),
+    Book.find({ likedBy: userId }).select('genreIds').lean(),
+    Book.find({ _id: { $in: user.savedBooks } }).select('genreIds').lean(),
     Comment.find({ userId }).select('bookId').lean().then(async (comments) => {
       const ids = [...new Set(comments.map(c => c.bookId?.toString()).filter(Boolean))];
-      return Book.find({ _id: { $in: ids } }).select('genreId').lean();
+      return Book.find({ _id: { $in: ids } }).select('genreIds').lean();
     }),
     Quote.find({ userId, isRepost: false }).select('bookId').lean().then(async (quotes) => {
       const ids = [...new Set(quotes.map(q => q.bookId?.toString()).filter(Boolean))];
-      return Book.find({ _id: { $in: ids } }).select('genreId').lean();
+      return Book.find({ _id: { $in: ids } }).select('genreIds').lean();
     }),
     ReadingProgress.find({ userId }).select('bookId').lean(),
   ]);
@@ -87,7 +88,7 @@ export const getRecommendations = async (userId, { limit = 10, offset = 0 } = {}
   if (followingIds.length > 0) {
     const followingLikedBooks = await Book.find({
       likedBy: { $in: followingIds },
-    }).select('genreId').lean();
+    }).select('genreIds').lean();
     mergeMaps(genreWeights, buildGenreWeightMap(followingLikedBooks, W.SOCIAL));
   }
 
@@ -106,7 +107,7 @@ export const getRecommendations = async (userId, { limit = 10, offset = 0 } = {}
     isDeleted: false,
     authorId: { $ne: userId, $nin: await inactiveUserIds() },                // kullanıcının kendi kitaplarını önerme
   })
-  .select('_id urlSlug title authorId genreId imageUrl stats likedBy createdAt status description publishDate');
+  .select('_id urlSlug title authorId formatId genreIds tagIds narrativeFeatureIds targetAudienceId contentWarningIds classificationStatus imageUrl stats likedBy createdAt status description publishDate');
 
   // 8. Her adaya skor hesapla
   const reasonGenres = [likedBooks, savedBooks, commentedBooks, quotedBooks].map(books => buildGenreWeightMap(books, 1));
@@ -116,7 +117,7 @@ export const getRecommendations = async (userId, { limit = 10, offset = 0 } = {}
     let score = 0;
     const reasons = [];
 
-    const genreKey = book.genreId?.toString();
+    const genreKey = (book.genreIds || []).map(String).sort((a, b) => (genreWeights[b] || 0) - (genreWeights[a] || 0))[0];
 
     // Tür skoru
     if (genreKey && genreWeights[genreKey]) {
@@ -209,7 +210,7 @@ export const getUserReadingHistory = async (userId) => {
 // --- ONBOARDING ---
 export const saveUserPreference = async (userId, genreIds) => {
   const unique = [...new Set(genreIds.map(String))];
-  const genres = await Genre.find({ _id: { $in: unique }, isActive: true });
+  const genres = await Genre.find({ _id: { $in: unique }, isActive: true, classificationVersion: 1 });
   if (genres.length !== unique.length) throw new Error('Geçersiz kitap türü.');
   await User.findByIdAndUpdate(userId, { 'authorSettings.preferredGenres': genres.map(genre => genre.name) });
   return await UserPreference.findOneAndUpdate(

@@ -73,7 +73,7 @@ test('reading size persists across remounts; theme and language controls are abs
 });
 
 test('author settings use real genres and send only supported fields', async () => {
-  const genre = { id: 'genre-1', name: 'Roman', isActive: true, slug: 'roman', description: '', iconUrl: '', hexColor: '#000', createdAt: '', updatedAt: '' };
+  const genre = { id: 'genre-1', name: 'Roman', isActive: true, slug: 'roman', group: 'FICTION', sortOrder: 0, description: '', iconUrl: '', hexColor: '#000', createdAt: '', updatedAt: '' };
   const authorSettings = { copyrightNote: 'Telif notum', weeklyWordGoal: 200, preferredGenres: ['Roman'] };
   const updated = jest.fn();
   show([

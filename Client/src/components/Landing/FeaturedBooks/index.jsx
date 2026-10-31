@@ -7,7 +7,7 @@ import { Container } from '../../UI/Container';
 import BookCard from '../../Books/BookCard';
 import './FeaturedBooks.css';
 
-const BOOKS_PER_PAGE = 8;
+const BOOKS_PER_PAGE = 10;
 
 const FeaturedBooks = ({ search = '', onClearSearch }) => {
   const { books, loading, searchPending, error, refetch, loadMore, loadingMore, moreError, hasNextPage } = useBookFeed(

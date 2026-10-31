@@ -1,4 +1,5 @@
 import React from 'react';
+import { GET_CLASSIFICATION_OPTIONS } from '../../graphql/classification';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MockedProvider } from '@apollo/client/testing';
 import { MemoryRouter } from 'react-router-dom';
@@ -71,9 +72,14 @@ test('submission does not reach the server when credentials disappear just befor
 });
 
 test('manual submissions are sent for review and do not appear as approved books immediately', async () => {
-  const input = { isbn: '', title: book.title, printedAuthor: book.printedAuthor, publisher: book.publisher, publicationYear: 2020, pageCount: 200, description: book.description, imageUrl: '', purchaseUrl: '', publicationEvidenceUrl: 'https://example.test/catalog' };
-  show(<PrintedBooks />, [catalog([]), mine(), mine(), { request: { query: SUBMIT_PRINTED_BOOK, variables: { input } }, result: { data: { submitPrintedBook: { id: 'pending', title: book.title, publicationStatus: 'PENDING' } } } }]);
+  const classification = { formatId: 'format', genreIds: ['topic'], tags: [], narrativeFeatureIds: [], targetAudienceId: null, contentWarningIds: [] };
+  const input = { classification, isbn: '', title: book.title, printedAuthor: book.printedAuthor, publisher: book.publisher, publicationYear: 2020, pageCount: 200, description: book.description, imageUrl: '', purchaseUrl: '', publicationEvidenceUrl: 'https://example.test/catalog' };
+  const options = { request: { query: GET_CLASSIFICATION_OPTIONS }, result: { data: { getClassificationOptions: { formats: [{ id: 'format', slug: 'roman', name: 'Roman', isActive: true }], genres: [{ id: 'topic', slug: 'fantastik', name: 'Fantastik', group: 'FICTION', hexColor: '#666666', isActive: true }], narrativeFeatures: [], targetAudiences: [], contentWarnings: [] } } } };
+  show(<PrintedBooks />, [options, catalog([]), mine(), mine(), { request: { query: SUBMIT_PRINTED_BOOK, variables: { input } }, result: { data: { submitPrintedBook: { id: 'pending', title: book.title, publicationStatus: 'PENDING' } } } }]);
   fireEvent.click(screen.getByRole('button', { name: 'Basılı kitap ekle' }));
+  await screen.findByLabelText('Fantastik');
+  fireEvent.change(screen.getByLabelText('Eser biçimi *'), { target: { value: 'format' } });
+  fireEvent.click(screen.getByLabelText('Fantastik'));
   for (const [label, value] of [['Kitap adı', book.title], ['Kitapta yazan yazar adı', book.printedAuthor], ['Yayınevi / Basım adı', book.publisher], ['Bu baskının yılı', '2020'], ['Basılı sayfa sayısı', '200'], ['Kitap tanıtımı', book.description], ['Baskıyı doğrulayan yayınevi veya katalog bağlantısı', input.publicationEvidenceUrl]]) {
     fireEvent.change(screen.getByLabelText(new RegExp(label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))), { target: { value } });
   }

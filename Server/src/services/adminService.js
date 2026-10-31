@@ -13,6 +13,7 @@ import Book from '../models/book.js';
 import Chapter from '../models/chapter.js';
 import { PrintApplication } from '../models/printFunding.js';
 import Genre from '../models/genre.js';
+import { normalizeTag } from './classificationService.js';
 import UserScore from '../models/userScore.js';
 import { moderateVisibility } from './adminVisibility.js';
 import { normalizeIsbn } from '../utils/printedBooks.js';
@@ -70,7 +71,7 @@ export async function getAdminRecords(context, { resource: name, page = 1, limit
       choices.push({ [name === 'Book' ? 'authorId' : 'userId']: { $in: users.map(user => user._id) } });
       if (name === 'Book') {
         const genres = await Genre.find({ name: expression }).select('_id').lean().exec();
-        choices.push({ genreId: { $in: genres.map(genre => genre._id) } });
+        choices.push({ genreIds: { $in: genres.map(genre => genre._id) } });
       } else {
         const books = await Book.find({ title: expression }).select('_id').lean().exec();
         choices.push({ bookId: { $in: books.map(book => book._id) } });
@@ -126,12 +127,12 @@ async function checkedChanges(resource, changes, session) {
     if (path.instance === 'Array' && reference) {
       if (value.some(id => !mongoose.isObjectIdOrHexString(id))) throw fail('İlişkiler geçerli kayıt kimliklerinden oluşmalı.');
       const unique = [...new Set(value)];
-      const count = await resources.get(reference).model.countDocuments({ _id: { $in: unique }, ...(reference === 'Genre' ? { isActive: true } : {}) }).session(session).exec();
+      const count = await resources.get(reference).model.countDocuments({ _id: { $in: unique }, ...(reference === 'Genre' ? { isActive: true, classificationVersion: 1 } : {}) }).session(session).exec();
       if (count !== unique.length) throw fail('İlişkili kayıtlardan biri bulunamadı veya pasif.');
       result[key] = unique; continue;
     }
     if (path.instance === 'ObjectId') {
-      if (!mongoose.isObjectIdOrHexString(value) || !await resources.get(path.options.ref).model.exists({ _id: value, ...(path.options.ref === 'Genre' ? { isActive: true } : {}) }).session(session)) throw fail('Seçilen ilişkili kayıt bulunamadı veya pasif.');
+      if (!mongoose.isObjectIdOrHexString(value) || !await resources.get(path.options.ref).model.exists({ _id: value, ...(path.options.ref === 'Genre' ? { isActive: true, classificationVersion: 1 } : {}) }).session(session)) throw fail('Seçilen ilişkili kayıt bulunamadı veya pasif.');
     }
     if (path.enumValues?.length && !path.enumValues.includes(value)) throw fail(`${key} için listeden seçim yapın.`);
     if (typeof value === 'string' && (/(?:Url|Picture)$/.test(key) || key === 'website') && value) {
@@ -162,7 +163,14 @@ export async function saveAdminRecord(context, { resource: name, id, revision, c
       if (!record) throw fail('Kayıt bulunamadı.');
       if (!creating && revision !== revisionOf(valuesOf(record))) throw fail('Bu kayıt başka bir işlemde değişti. Güncel kaydı yükleyip yeniden düzenleyin.', 'CONFLICT');
       let updates = await checkedChanges(resource, changes, session);
+      if (name === 'ClassificationTerm') {
+        if (!creating && ((updates.slug && updates.slug !== record.slug) || (updates.kind && updates.kind !== record.kind))) throw fail('Kod ve alan tipi değiştirilemez.');
+        if ((updates.kind || record.kind) === 'TAG' && (creating || updates.name)) Object.assign(updates, normalizeTag(updates.name || record.name));
+      }
       if (name === 'Genre') {
+        if (!creating && updates.slug && updates.slug !== record.slug) throw fail('Tür kodu değiştirilemez.');
+        if ((creating || record.classificationVersion !== 1) && !['FICTION', 'KNOWLEDGE'].includes(updates.group)) throw fail('Tür için bir grup seçin.');
+        updates.classificationVersion = 1;
         updates = normalizeGenre(updates, creating);
         if (updates.name && await Genre.exists({ _id: { $ne: record._id }, name: new RegExp(`^${escape(updates.name)}$`, 'i') }).session(session)) throw fail('Bu tür adı zaten kullanılıyor.');
         if (!creating && updates.name && updates.name !== record.name) await User.updateMany({ 'authorSettings.preferredGenres': record.name }, [{ $set: { 'authorSettings.preferredGenres': { $setUnion: [{ $map: { input: '$authorSettings.preferredGenres', as: 'genre', in: { $cond: [{ $eq: ['$$genre', record.name] }, updates.name, '$$genre'] } } }, []] } } }], { session }).exec();

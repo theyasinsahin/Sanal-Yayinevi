@@ -1,3 +1,4 @@
+import { WORK_CLASSIFICATION_FIELDS } from '../classification';
 import { gql } from '@apollo/client';
 
 export const GET_BOOK_VIEWER = gql`
@@ -7,6 +8,7 @@ export const GET_BOOK_VIEWER = gql`
 `;
 
 export const GET_USER_BY_ID = gql`
+  ${WORK_CLASSIFICATION_FIELDS}
     query GetUserById($id:ID!){
         getUserById(id: $id){
           followStatus
@@ -36,13 +38,7 @@ export const GET_USER_BY_ID = gql`
               profilePicture
             }
             imageUrl
-            genre{
-              name
-              slug
-
-              hexColor
-              isActive
-            }
+            ...WorkClassificationFields
             description
             stats {
               views
@@ -65,13 +61,7 @@ export const GET_USER_BY_ID = gql`
               profilePicture
             }
               imageUrl
-            genre{
-              name
-              slug
-
-              hexColor
-              isActive
-            }
+            ...WorkClassificationFields
             description
             stats {
               views

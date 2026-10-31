@@ -17,6 +17,8 @@ extend type Mutation {
   createGenre(
     name: String!
     slug: String!
+    group: String!
+    sortOrder: Int
     description: String
     iconUrl: String
     hexColor: String
@@ -25,6 +27,8 @@ extend type Mutation {
   updateGenre(
     id: ID!
     name: String
+    group: String
+    sortOrder: Int
     slug: String
     description: String
     iconUrl: String
@@ -36,6 +40,8 @@ extend type Mutation {
 }
 
 type Genre {
+  group: String
+  sortOrder: Int
   id: ID!
   name: String!
   slug: String!

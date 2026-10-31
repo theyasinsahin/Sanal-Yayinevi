@@ -1,4 +1,5 @@
-import { genreName } from '../../utils/genreDisplay';
+import ClassificationSummary from '../../components/Books/Classification/ClassificationSummary';
+import ClassificationEditor from '../../components/Books/Classification/ClassificationEditor';
 import { useAuth } from '../../context/AuthContext';
 import { profilePath, readerPath } from '../../utils/publicPaths';
 import React, { useEffect, useState } from 'react';
@@ -30,10 +31,10 @@ import { MainLayout } from '../../components/Layout/MainLayout';
 import { Container } from '../../components/UI/Container';
 import { Typography } from '../../components/UI/Typography';
 import { Button } from '../../components/UI/Button';
-import { Badge } from '../../components/UI/Badge';
 import { Toast } from '../../components/UI/Toast';
 import { Textarea } from '../../components/UI/Textarea';
 import BookFollowButton from '../../components/Books/BookFollowButton';
+import CatalogBackLink from '../../components/Books/CatalogBackLink';
 
 // --- COMPONENTS ---
 import CommentList from '../../components/Comments/CommentList';
@@ -268,9 +269,9 @@ const BookDetailPage = ({ resolvedId } = {}) => {
       <div className="book-detail-page">
         <Container maxWidth="5xl">
           
-          <Link to="/feed" className="back-link">
+          <CatalogBackLink to="/feed" className="back-link">
             <ArrowBack fontSize="small" /> Kitaplığa Dön
-          </Link>
+          </CatalogBackLink>
 
           <div className="book-detail-grid">
             
@@ -300,8 +301,8 @@ const BookDetailPage = ({ resolvedId } = {}) => {
 
               <div className="meta-info-card">
                 <div className="meta-row">
-                  <span className="meta-label">Kategori:</span>
-                  <Badge variant="neutral" className="capitalize">{genreName(book.genre?.name) || 'Belirtilmemiş'}</Badge>
+                  <span className="meta-label">Biçim / Tür:</span>
+                  <ClassificationSummary book={book} compact />
                 </div>
                 <div className="meta-row">
                   <span className="meta-label">Sayfa:</span>
@@ -391,6 +392,8 @@ const BookDetailPage = ({ resolvedId } = {}) => {
                   {book.description}
                 </Typography>
               </div>
+              <ClassificationSummary book={book} />
+              {(isAuthor || isAdmin) && <ClassificationEditor key={book.id} book={book} />}
               <BookFundingPanel bookId={book.id} />
 
               <div className="comments-wrapper">

@@ -28,14 +28,17 @@ const show = () => render(<MockedProvider addTypename={false} mocks={[{
   result: { data: { getSocialShare: { type: 'SESSION', id: session.id, title: session.title, description: session.description, path: session.publicPath, imagePath: DEFAULT_SESSION_COVER, webOrigin: 'https://betik.example' } } },
 }]}><MemoryRouter initialEntries={['/sessions']}><SessionsPage /><Location /></MemoryRouter></MockedProvider>);
 
-test('legacy cards show a photo above the session information and preserve readable links', () => {
+test('sessions without a cover preserve their content and readable links without a placeholder photo', () => {
   show(); const card = screen.getByRole('article');
-  const image = within(card).getByRole('img', { name: /kapak fotoğrafı/ });
-  expect(image).toHaveAttribute('src', DEFAULT_SESSION_COVER);
+  expect(within(card).queryByRole('img')).not.toBeInTheDocument();
   const heading = within(card).getByRole('heading', { name: session.title });
-  expect(image.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   expect(heading.closest('a')).toHaveAttribute('href', session.publicPath);
-  expect(within(card).getByRole('button', { name: 'Oturumu paylaş' }).closest('a')).toBeNull();
+});
+
+test('sessions with a cover display the uploaded photo', () => {
+  const cover = 'https://res.cloudinary.com/c/image/upload/event.jpg';
+  useGetSessions.mockReturnValue({ sessions: [{ ...session, coverImageUrl: cover }], loading: false, hasMore: false });
+  show(); expect(within(screen.getByRole('article')).getByRole('img')).toHaveAttribute('src', cover);
 });
 
 test('legacy premium membership alone does not reveal session creation', () => {
@@ -79,6 +82,18 @@ test('creating a session includes the selected uploaded cover', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Oturum Oluştur' }));
   await screen.findByRole('dialog');
   expect(onCreate).toHaveBeenCalledWith(expect.objectContaining({ title: 'Etkinlik', type: 'OPEN', coverImageUrl: 'https://res.cloudinary.com/dw1sepw7z/image/upload/cover.jpg' }));
+});
+
+test('creating without a photo or after removing a selected photo submits an empty cover', async () => {
+  const onCreate = jest.fn().mockResolvedValue({});
+  render(<CreateSessionModal onCreate={onCreate} onClose={jest.fn()} />);
+  fireEvent.change(screen.getByRole('textbox', { name: 'Başlık' }), { target: { value: 'Etkinlik' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Oturum Oluştur' }));
+  expect(onCreate).toHaveBeenLastCalledWith(expect.objectContaining({ coverImageUrl: '' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Fotoğraf seç' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Fotoğrafı kaldır' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Oturum Oluştur' }));
+  expect(onCreate).toHaveBeenLastCalledWith(expect.objectContaining({ coverImageUrl: '' }));
 });
 
 test('submission is disabled until the image finishes uploading', () => {

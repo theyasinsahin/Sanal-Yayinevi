@@ -5,12 +5,13 @@ export const GET_ALL_GENRES = gql`
     getAllGenres(includeInactive: $includeInactive) {
       id
       name
+      group
+      sortOrder
       isActive
       slug
       description
 
       hexColor
-      isActive
       createdAt
       updatedAt
     }

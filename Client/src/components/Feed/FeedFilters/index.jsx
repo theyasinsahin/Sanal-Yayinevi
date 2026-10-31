@@ -1,5 +1,5 @@
 import React from 'react';
-import { genreName } from '../../../utils/genreDisplay';
+import ClassificationFilters from '../../Books/Classification/ClassificationFilters';
 import { useFilters } from '../../../context/FiltersContext';
 
 // UI Kit
@@ -8,46 +8,13 @@ import { Typography } from '../../UI/Typography';
 import './FeedFilters.css';
 
 // Props olarak 'genres' listesini FeedPage'den alıyoruz
-const FeedFilters = ({ genres = [] }) => {
+const FeedFilters = () => {
   const { filters, updateFilters } = useFilters();
 
   return (
     <div className="feed-filters">  
       
-      {/* --- KATEGORİLER --- */}
-      <div className="filter-section">
-        <Typography variant="h6" weight="bold" className="filter-title">
-          Kategoriler
-        </Typography>
-        
-        <div className="categories-grid">
-          {/* Tümü Butonu */}
-          <button
-            className={`category-pill ${filters.genre === 'Tümü' ? 'active' : ''}`}
-            onClick={() => updateFilters('genre', 'Tümü')}
-          >
-            <span className="category-text">Tümü</span>
-          </button>
-
-          {/* Dinamik Kategoriler (Veritabanından Gelen) */}
-          {genres.map(genre => (
-            <button
-              key={genre.id || genre._id}
-              className={`category-pill ${filters.genre === genre.slug ? 'active' : ''}`}
-              style={filters.genre === genre.slug ? { borderColor: genre.hexColor, backgroundColor: `${genre.hexColor}15` } : {}}
-              onClick={() => {
-                // Eğer zaten seçiliyse 'Tümü'ne dön, değilse bu türün slug'ını seç
-                const nextGenre = filters.genre === genre.slug ? 'Tümü' : genre.slug;
-                updateFilters('genre', nextGenre);
-              }}
-            >
-              <span className="category-text" style={{ color: filters.genre === genre.slug ? genre.hexColor : 'inherit' }}>
-                {genreName(genre.name)}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
+      <ClassificationFilters value={filters.classification || {}} onChange={value => updateFilters('classification', value)} />
 
       {/* --- SIRALAMA --- */}
       <div className="filter-section">

@@ -9,6 +9,7 @@ const bookResolversModule = await import('../../src/graphql/resolvers/book.js');
 const bookResolvers = bookResolversModule.default; // { Query, Mutation, Book }
 
 import { connect, clearDatabase, closeDatabase } from '../db.js';
+import Term from '../../src/models/classificationTerm.js';
 import Genre from '../../src/models/genre.js';
 import Book from '../../src/models/book.js';
 import User from '../../src/models/user.js';
@@ -62,8 +63,9 @@ describe('Book Resolvers', () => {
     // --- MUTATIONS ---
     describe('MUTATIONS', () => {
         it('createBook should create book', async () => {
-            const genre = await Genre.create({ name: 'Bilim Kurgu', slug: 'bilim-kurgu' });
-            const args = { title: 'New Book', genreId: genre._id, description: 'Desc', imageUrl: 'img.jpg' };
+            const genre = await Genre.create({ name: 'Bilim Kurgu', slug: 'bilim-kurgu', group: 'FICTION', classificationVersion: 1 });
+            const format = await Term.create({ kind: 'FORMAT', slug: 'roman', name: 'Roman' });
+            const args = { title: 'New Book', classification: { formatId: String(format._id), genreIds: [String(genre._id)] }, description: 'Desc', imageUrl: 'img.jpg' };
             const res = await bookResolvers.Mutation.createBook(null, args, context);
             
             expect(res.title).toBe('New Book');

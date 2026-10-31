@@ -1,15 +1,16 @@
 import React from 'react';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { MockedProvider } from '@apollo/client/testing';
+import { InMemoryCache } from '@apollo/client';
 import { GET_BOOK_FEED } from '../graphql/queries/book';
 import { useBookFeed } from './useBookFeed';
 
-const card = id => ({ __typename: 'Book', id, publicPath: `/kitap/${id}`, title: id, description: '', imageUrl: '', pageCount: 0,
+const card = id => ({ __typename: 'Book', format: null, genres: [], classificationTags: [], narrativeFeatures: [], targetAudience: null, contentWarnings: [], classificationStatus: 'NEEDS_REVIEW', id, publicPath: `/kitap/${id}`, title: id, description: '', imageUrl: '', pageCount: 0,
   publishDate: null, status: 'WRITING', kind: 'DIGITAL', printedAuthor: null, publisher: null,
-  publicationYear: null, isbn: null, author: null, genre: null, stats: { __typename: 'BookStats', views: 0, likes: 0 },
+  publicationYear: null, isbn: null, author: null, classification: null, stats: { __typename: 'BookStats', views: 0, likes: 0 },
   commentCount: 0, currentFunding: 0, fundingTarget: 0, backerCount: 0 });
-const filters = { genre: 'Tümü', sortBy: 'newest', search: '' };
-const variables = { limit: 24, sort: 'NEWEST', genre: null, search: null };
+const filters = { classification: null, sortBy: 'newest', search: '' };
+const variables = { limit: 24, sort: 'NEWEST', classification: null, search: null };
 const result = (ids, endCursor, hasNextPage) => ({ data: { getBookFeed: { __typename: 'BookFeedPage', books: ids.map(card), endCursor, hasNextPage } } });
 const wrapper = mocks => ({ children }) => <MockedProvider mocks={mocks}>{children}</MockedProvider>;
 
@@ -29,12 +30,12 @@ test('a delayed older page cannot enter the results after the filter changes', a
   const hook = renderHook(({ filter }) => useBookFeed(filter), { initialProps: { filter: filters }, wrapper: wrapper([
     { request: { query: GET_BOOK_FEED, variables }, result: result(['first'], 'cursor', true) },
     { request: { query: GET_BOOK_FEED, variables: { ...variables, after: 'cursor' } }, delay: 100, result: result(['old-page'], 'end', false) },
-    { request: { query: GET_BOOK_FEED, variables: { ...variables, genre: 'roman' } }, result: result(['filtered'], 'end', false) },
+    { request: { query: GET_BOOK_FEED, variables: { ...variables, classification: { genres: ['fantastik'] } } }, result: result(['filtered'], 'end', false) },
   ]) });
   await waitFor(() => expect(hook.result.current.books[0]?.id).toBe('first'));
   let request;
   act(() => { request = hook.result.current.loadMore(); });
-  hook.rerender({ filter: { ...filters, genre: 'roman' } });
+  hook.rerender({ filter: { ...filters, classification: { genres: ['fantastik'] } } });
   await act(async () => { await request; });
   await waitFor(() => expect(hook.result.current.books.map(book => book.id)).toEqual(['filtered']));
 });
@@ -44,7 +45,7 @@ test('search waits for typing to settle and sends genre and sort to the server',
   const hook = renderHook(({ filter }) => useBookFeed(filter), { initialProps: { filter: filters }, wrapper: wrapper([
     { request: { query: GET_BOOK_FEED, variables }, result: result(['first'], 'end', false) },
     { request: { query: GET_BOOK_FEED, variables: { ...variables, search: 'roman' } }, result: searched },
-    { request: { query: GET_BOOK_FEED, variables: { ...variables, search: 'roman', genre: 'roman', sort: 'POPULAR' } }, result: result(['popular'], 'end', false) },
+    { request: { query: GET_BOOK_FEED, variables: { ...variables, search: 'roman', classification: { genres: ['fantastik'] }, sort: 'POPULAR' } }, result: result(['popular'], 'end', false) },
   ]) });
   await waitFor(() => expect(hook.result.current.books).toHaveLength(1));
   hook.rerender({ filter: { ...filters, search: 'r' } });
@@ -52,7 +53,7 @@ test('search waits for typing to settle and sends genre and sort to the server',
   expect(searched).not.toHaveBeenCalled();
   await waitFor(() => expect(hook.result.current.books[0]?.id).toBe('matching'));
   expect(searched).toHaveBeenCalledTimes(1);
-  hook.rerender({ filter: { ...filters, search: 'roman', genre: 'roman', sortBy: 'popular' } });
+  hook.rerender({ filter: { ...filters, search: 'roman', classification: { genres: ['fantastik'] }, sortBy: 'popular' } });
   await waitFor(() => expect(hook.result.current.books[0]?.id).toBe('popular'));
 });
 
@@ -65,4 +66,24 @@ test('recommendation tab does not download the catalog until enabled', async () 
   hook.rerender({ enabled: true });
   await waitFor(() => expect(hook.result.current.books).toHaveLength(1));
   expect(fetched).toHaveBeenCalledTimes(1);
+});
+
+test('returning to discovery retains books loaded with load more and the pagination cursor', async () => {
+  const cache = new InMemoryCache();
+  const mocks = [
+    { request: { query: GET_BOOK_FEED, variables }, result: result(['first'], 'cursor', true) },
+    { request: { query: GET_BOOK_FEED, variables: { ...variables, after: 'cursor' } }, result: result(['second'], 'next', true) },
+  ];
+  const provider = ({ children }) => <MockedProvider cache={cache} mocks={mocks}>{children}</MockedProvider>;
+  const first = renderHook(() => useBookFeed(filters), { wrapper: provider });
+  await waitFor(() => expect(first.result.current.books).toHaveLength(1));
+  await act(async () => { await first.result.current.loadMore(); });
+  await waitFor(() => expect(first.result.current.books).toHaveLength(2));
+  first.unmount();
+  const returned = renderHook(() => useBookFeed(filters), {
+    wrapper: ({ children }) => <MockedProvider cache={cache} mocks={[]}>{children}</MockedProvider>,
+  });
+  expect(returned.result.current.books.map(book => book.id)).toEqual(['first', 'second']);
+  expect(returned.result.current.loading).toBe(false);
+  expect(returned.result.current.hasNextPage).toBe(true);
 });

@@ -142,7 +142,7 @@ export const updateAuthorSettings = async (userId, input) => {
     throw new Error('Kelime hedefi sıfır veya pozitif bir tam sayı olmalı.');
   }
   if (input.preferredGenres) {
-    const genres = await Genre.find({ name: { $in: input.preferredGenres }, isActive: true });
+    const genres = await Genre.find({ name: { $in: input.preferredGenres }, isActive: true, classificationVersion: 1 });
     if (genres.length !== new Set(input.preferredGenres).size) throw new Error('Geçersiz kitap türü.');
     await saveUserPreference(userId, genres.map(genre => genre._id));
   }

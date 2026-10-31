@@ -1,6 +1,9 @@
 import mongoose from 'mongoose';
 
 const GenreSchema = new mongoose.Schema({
+  group: { type: String, enum: ['FICTION', 'KNOWLEDGE'] },
+  sortOrder: { type: Number, default: 0 },
+  classificationVersion: Number,
   name: { 
     type: String, 
     required: true, 

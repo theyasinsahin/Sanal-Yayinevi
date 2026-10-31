@@ -1,18 +1,23 @@
+import { WORK_CLASSIFICATION_FIELDS } from './classification';
 import { gql } from '@apollo/client';
 
 export const PRINTED_BOOK_FIELDS = gql`
+  ${WORK_CLASSIFICATION_FIELDS}
   fragment PrintedBookFields on Book {
+    ...WorkClassificationFields
     publicPath
     kind isbn printedAuthor publisher publicationYear publicationStatus purchaseUrl
     publicationEvidenceUrl reviewNote canEditContent
+    submittedBy { id }
     myClaim { id status reviewNote }
   }
 `;
 export const GET_PRINTED_BOOKS = gql`
-  query GetPrintedBooks($page: Int, $search: String) {
-    getPrintedBooks(page: $page, search: $search) {
+  ${WORK_CLASSIFICATION_FIELDS}
+  query GetPrintedBooks($page: Int, $search: String, $classification: ClassificationFilter) {
+    getPrintedBooks(page: $page, search: $search, classification: $classification) {
       total page totalPages
-      books { publicPath id title printedAuthor publisher publicationYear isbn imageUrl pageCount description }
+      books { ...WorkClassificationFields publicPath id title printedAuthor publisher publicationYear isbn imageUrl pageCount description }
     }
   }
 `;

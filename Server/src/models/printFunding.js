@@ -16,7 +16,7 @@ const asset = new Schema({ ownerId: ref('User'), sha256: { type: String, require
 asset.index({ ownerId: 1, sha256: 1 }, { unique: true }); appendOnly(asset);
 export const PrintAsset = model('PrintAsset', asset);
 
-const version = new Schema({ bookId: ref('Book'), authorId: ref('User'), title: { type: String, required: true }, authorName: { type: String, required: true }, chapters: { type: [new Schema({ sourceId: ref('Chapter'), title: String, content: String }, { _id: false })], required: true }, wordCount: integer(), estimatedPages: integer(), contentHash: { type: String, required: true }, specification: { type: Schema.Types.Mixed, required: true }, declarations: { type: Schema.Types.Mixed, required: true } }, options);
+const version = new Schema({ classificationReview: { type: Schema.Types.Mixed }, bookId: ref('Book'), authorId: ref('User'), title: { type: String, required: true }, authorName: { type: String, required: true }, chapters: { type: [new Schema({ sourceId: ref('Chapter'), title: String, content: String }, { _id: false })], required: true }, wordCount: integer(), estimatedPages: integer(), contentHash: { type: String, required: true }, specification: { type: Schema.Types.Mixed, required: true }, declarations: { type: Schema.Types.Mixed, required: true } }, options);
 version.index({ bookId: 1, createdAt: -1 }); appendOnly(version);
 export const BookPrintVersion = model('BookPrintVersion', version);
 

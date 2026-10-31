@@ -1,3 +1,4 @@
+import ClassificationTerm from './classificationTerm.js';
 import User from "./user.js";
 import Book from "./book.js";
 import PrintedBookReading from './printedBookReading.js';
@@ -21,7 +22,7 @@ import ParagraphComment from "./paragraphComment.js";
 import Bookmark from "./bookmark.js";
 import pointEvent from "./pointEvent.js";
 
-export default {User, Book, PrintedBookReading, Chapter,
+export default {ClassificationTerm, User, Book, PrintedBookReading, Chapter,
     Comment, Transaction, Genre, Quote, 
     QuoteComment, UserScore, UserBadge, 
     Badge, Notification, UserPreference, 

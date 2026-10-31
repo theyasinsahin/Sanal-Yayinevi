@@ -8,6 +8,7 @@ export default function ApplicationDetails({ application, showContent = false })
   const { data, loading, error } = useQuery(PRINT_APPLICATION_DETAIL, { variables: { id: application.id }, skip: !expanded, fetchPolicy: 'network-only' });
   const version = application.version, quote = application.verifiedQuote;
   return <>
+    {version.classificationReview?.reviewRequired && <p className="ui-notice">Bu eserin anlatım özellikleri için sabit baskı metni, görsel hakları ve varsa üçüncü taraf telif izinleri ayrıca incelenmelidir. Özellik seçimi basım uygunluğu onayı değildir. {version.classificationReview.features.map(feature => feature.name).join(', ')}</p>}
     <p>{version.authorName} · {version.wordCount.toLocaleString('tr-TR')} kelime · tahmini {version.estimatedPages} sayfa</p>
     <p className="print-muted">Kesin sayfa sayısı seçilen boyut, yazı tipi, mizanpaj ve matbaa ön kontrolünden sonra doğrulanır. Editör sayfa sayısı baskı sayfası değildir.</p>
     <p>Sabitleştirilmiş sürüm: <code>{version.id}</code><br />SHA-256: <code>{version.contentHash}</code></p>

@@ -3,7 +3,7 @@ scalar MinorAmount
 
 type PrintOverview { bookId: ID!, digitalStatus: String!, writingStatus: String!, interestCount: Int!, interested: Boolean!, campaign: FundingCampaign }
 type PrintTariff { id: ID!, version: String!, label: String!, environment: String!, configuration: JSON!, policy: JSON! }
-type BookPrintVersion { id: ID!, bookId: ID!, title: String!, authorName: String!, wordCount: Int!, estimatedPages: Int!, contentHash: String!, specification: JSON!, declarations: JSON!, chapters: [PrintVersionChapter!]!, createdAt: DateTime! }
+type BookPrintVersion { classificationReview: JSON, id: ID!, bookId: ID!, title: String!, authorName: String!, wordCount: Int!, estimatedPages: Int!, contentHash: String!, specification: JSON!, declarations: JSON!, chapters: [PrintVersionChapter!]!, createdAt: DateTime! }
 type PrintVersionChapter { sourceId: ID!, title: String!, content: String! }
 type PrintApplication { id: ID!, bookId: ID!, authorId: ID!, revision: Int!, state: String!, version: BookPrintVersion!, estimate: JSON!, verifiedQuote: JSON, approvedTargetMinor: MinorAmount!, approvedUnitPriceMinor: MinorAmount!, reviewNote: String!, createdAt: DateTime!, updatedAt: DateTime!, tariffId: ID! }
 type PrintAudit { id: ID!, actorId: ID, action: String!, from: String, to: String, reason: String, metadata: JSON, createdAt: DateTime! }
