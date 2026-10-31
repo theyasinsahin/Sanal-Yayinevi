@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { validateClassification, classificationFilter } from './classificationService.js';
 import Book from '../models/book.js';
 import BookClaim from '../models/bookClaim.js';
 import User from '../models/user.js';
@@ -40,6 +41,7 @@ export async function submitPrintedBook(input, user) {
   if (!Number.isInteger(input.publicationYear) || input.publicationYear < 1400 || input.publicationYear > new Date().getFullYear()) throw new Error('Geçerli bir basım yılı girin.');
   if (!Number.isInteger(input.pageCount) || input.pageCount < 1 || input.pageCount > 50000) throw new Error('Sayfa sayısı 1–50000 arasında olmalıdır.');
   const data = {
+    ...await validateClassification(input.classification, userId),
     kind: 'PRINTED', publicationStatus: 'PENDING', status: 'DRAFT', submittedBy: userId,
     ...(isbn ? { isbn } : {}), title: text(input.title, 'Kitap adı', 1, 200),
     printedAuthor: text(input.printedAuthor, 'Yazar adı', 2, 300), publisher: text(input.publisher, 'Yayınevi', 2, 200),
@@ -65,11 +67,11 @@ export async function submitPrintedBook(input, user) {
   }
 }
 
-export async function getPrintedBooks({ page = 1, search = '' }) {
+export async function getPrintedBooks({ page = 1, search = '', classification }) {
   if (!Number.isInteger(page) || page < 1 || page > 10000) throw new Error('Geçersiz sayfa.');
   const searchText = text(search, 'Arama', 0, 150);
   const escaped = searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const filter = { kind: 'PRINTED', publicationStatus: 'APPROVED', isDeleted: false };
+  const filter = { kind: 'PRINTED', publicationStatus: 'APPROVED', isDeleted: false, ...await classificationFilter(classification) };
   if (searchText) filter.$or = ['title', 'printedAuthor', 'isbn', 'publisher'].map(field => ({ [field]: { $regex: escaped, $options: 'i' } }));
   if (searchText) {
     try { filter.$or.push({ isbn: normalizeIsbn(searchText) }); } catch { /* A title or author search is not an ISBN. */ }

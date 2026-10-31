@@ -15,7 +15,7 @@ export function useBookFeed(filters, enabled = true, { limit = 24 } = {}) {
     return () => clearTimeout(timer);
   }, [filters.search]);
   const variables = { limit, sort: sorts[filters.sortBy] || 'NEWEST',
-    genre: filters.genre && filters.genre !== 'Tümü' ? filters.genre : null, search: search || null };
+    classification: filters.classification || null, search: search || null };
   const key = JSON.stringify(variables);
   const activeKey = useRef(key);
   activeKey.current = key;

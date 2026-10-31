@@ -24,6 +24,19 @@ test('saving an uploaded cover updates the same Session in Apollo cache and clos
   expect(screen.getByRole('img')).toHaveAttribute('src', url);
 });
 
+test('removing a cover updates the cached session and removes the image', async () => {
+  const close = jest.fn();
+  const covered = { ...session, coverImageUrl: 'https://res.cloudinary.com/c/image/upload/old.jpg' };
+  render(<MockedProvider mocks={[
+    { request: { query: GET_SESSION, variables: { sessionId: 'session' } }, result: { data: { getSession: covered } } },
+    { request: { query: UPDATE_SESSION_COVER, variables: { sessionId: 'session', coverImageUrl: '' } }, result: { data: { updateSessionCover: { ...session, coverImageUrl: '' } } } },
+  ]}><View close={close} /></MockedProvider>);
+  fireEvent.click(await screen.findByRole('button', { name: 'Fotoğrafı kaldır' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Kapağı kaydet' }));
+  await waitFor(() => expect(close).toHaveBeenCalled());
+  expect(screen.queryByRole('img')).not.toBeInTheDocument();
+});
+
 test('a failed cover update keeps the editor open and the old image visible', async () => {
   const close = jest.fn();
   render(<MockedProvider mocks={[

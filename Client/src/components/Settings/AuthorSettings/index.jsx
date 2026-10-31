@@ -1,4 +1,4 @@
-import { genreName } from '../../../utils/genreDisplay';
+import GenrePreferenceChoices from '../../Books/Classification/GenrePreferenceChoices';
 import React, { useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
 import { Button } from '../../UI/Button';
@@ -60,14 +60,7 @@ export default function AuthorSettings({ profile, onUpdate, showToast }) {
       <p className="settings-row-sublabel">Keşfet sayfasındaki önerilerinizi etkiler.</p>
       {genresLoading && <p role="status">Türler yükleniyor…</p>}
       {genresError && <p role="alert">Türler yüklenemedi. <button onClick={() => refetch()}>Tekrar dene</button></p>}
-      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-        {(data?.getAllGenres || []).filter(genre => genre.isActive).map(genre =>
-          <label key={genre.id} className="settings-radio-option">
-            <input type="checkbox" checked={form.preferredGenres.includes(genre.name)}
-              onChange={event => set('preferredGenres', event.target.checked ? [...form.preferredGenres, genre.name] : form.preferredGenres.filter(name => name !== genre.name))} />
-            {genreName(genre.name)}
-          </label>)}
-      </div>
+      <GenrePreferenceChoices genres={(data?.getAllGenres || []).filter(genre => genre.isActive)} selected={form.preferredGenres} onChange={values => set('preferredGenres', values)} valueKey="name" disabled={loading} />
     </fieldset>
     {dirty && <div className="settings-actions"><Button onClick={handleSave} isLoading={loading}>Kaydet</Button></div>}
   </div>;

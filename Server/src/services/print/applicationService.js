@@ -1,4 +1,5 @@
 import Book from '../../models/book.js';
+import ClassificationTerm from '../../models/classificationTerm.js';
 import Chapter from '../../models/chapter.js';
 import User from '../../models/user.js';
 import { BookPrintVersion, PrintApplication, PrintTariff, PrintAsset, FundingCampaign, PrintInterest, PrintAudit } from '../../models/printFunding.js';
@@ -74,7 +75,9 @@ async function snapshot(book, user, input, session) {
   const chapters = (await Chapter.find({ bookId: book._id, isDeleted: false }).sort({ createdAt: 1, _id: 1 }).session(session).lean()).map(chapter => ({ sourceId: String(chapter._id), title: chapter.title || '', content: chapter.content || '' }));
   const words = chapters.map(chapter => plainText(chapter.content)).join(' ').trim().split(/\s+/u).filter(Boolean).length;
   if (!words || Buffer.byteLength(JSON.stringify(chapters)) > 8000000) throw fail('Basım metni boş veya 8 MB sınırını aşıyor.');
-  const body = { bookId: String(book._id), authorId: String(book.authorId), title: book.title, authorName: user.fullName, chapters, specification: { ...spec, coverSha256: asset.sha256 }, declarations: { copyright: true, permissions: true, terms: true, termsVersion: 'print-sandbox-v1', acceptedAt: new Date().toISOString() } };
+  const features = await ClassificationTerm.find({ _id: { $in: book.narrativeFeatureIds || [] }, kind: 'FEATURE' }).session(session).select('slug name').lean();
+  const classificationReview = { features: features.map(({ slug, name }) => ({ slug, name })), reviewRequired: features.some(feature => ['etkilesimli-kurgu', 'sohbet-kurgusu', 'gorsel-roman', 'oyunlastirilmis-kurgu', 'hayran-kurgusu', 'oyun-evreni-kurgusu'].includes(feature.slug)) };
+  const body = { classificationReview, bookId: String(book._id), authorId: String(book.authorId), title: book.title, authorName: user.fullName, chapters, specification: { ...spec, coverSha256: asset.sha256 }, declarations: { copyright: true, permissions: true, terms: true, termsVersion: 'print-sandbox-v1', acceptedAt: new Date().toISOString() } };
   const [version] = await BookPrintVersion.create([{ ...body, contentHash: hash(body), wordCount: words, estimatedPages: Math.ceil(words / (spec.dimension === '16x24' ? 350 : 250)) }], { session });
   return version;
 }

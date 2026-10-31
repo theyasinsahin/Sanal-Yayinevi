@@ -1,3 +1,4 @@
+import ClassificationFilters from '../../components/Books/Classification/ClassificationFilters';
 import { bookPath } from '../../utils/publicPaths';
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -21,12 +22,14 @@ export default function PrintedBooksPage() {
   const requestedPage = Number(params.get('page') || 1);
   const page = Number.isInteger(requestedPage) && requestedPage > 0 && requestedPage <= 10000 ? requestedPage : 1;
   const search = (params.get('search') || '').slice(0, 150);
+  const classification = Object.fromEntries(['formats', 'genres', 'tags', 'features', 'audiences'].map(key => [key, params.getAll(key)]));
+  const hasClassification = Object.values(classification).some(values => values.length);
   const [term, setTerm] = useState(search);
   const [adding, setAdding] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   useEffect(() => { setAdding(false); setSubmitted(false); }, [user?.id]);
   useEffect(() => setTerm(search), [search]);
-  const { data, loading, error, refetch } = useQuery(GET_PRINTED_BOOKS, { variables: { page, search }, fetchPolicy: 'cache-and-network' });
+  const { data, loading, error, refetch } = useQuery(GET_PRINTED_BOOKS, { variables: { page, search, ...(hasClassification ? { classification } : {}) }, fetchPolicy: 'cache-and-network' });
   const { data: mine, error: mineError, refetch: refreshMine } = useQuery(GET_MY_PRINTED_SUBMISSIONS, { skip: !user, fetchPolicy: 'network-only' });
   const catalog = data?.getPrintedBooks;
   return <MainLayout><div className="printed-page"><Container maxWidth="6xl">
@@ -37,10 +40,15 @@ export default function PrintedBooksPage() {
     {adding && user && <PrintedBookSubmissionForm onClose={() => setAdding(false)} onSubmitted={() => { setAdding(false); setSubmitted(true); refreshMine().catch(() => {}); }} />}
     {user && mine?.getMyPrintedSubmissions?.length > 0 && <details className="printed-panel"><summary>Başvurularım ({mine.getMyPrintedSubmissions.length})</summary><ul className="printed-submissions">{mine.getMyPrintedSubmissions.map(book => <li key={book.id}><Link to={bookPath(book)} className="ui-text-link">{book.title}</Link><Badge variant={book.publicationStatus === 'APPROVED' ? 'success' : book.publicationStatus === 'REJECTED' ? 'danger' : 'warning'}>{reviewLabels[book.publicationStatus]}</Badge>{book.reviewNote && <p>{book.reviewNote}</p>}</li>)}</ul></details>}
     {user && mineError && <p className="ui-notice ui-notice--error" role="alert">Başvurularınız yüklenemedi. {mineError.message}</p>}
-    <form className="printed-search" onSubmit={event => { event.preventDefault(); setParams({ search: term.trim(), page: '1' }); }}><Input label="Kitap, yazar, yayınevi veya ISBN ara" name="printed-search" value={term} onChange={event => setTerm(event.target.value)} maxLength={150} /><Button type="submit" variant="outline">Ara</Button></form>
+    <form className="printed-search" onSubmit={event => { event.preventDefault(); setParams(previous => { const next = new URLSearchParams(previous); next.set('search', term.trim()); next.set('page', '1'); return next; }); }}><Input label="Kitap, yazar, yayınevi veya ISBN ara" name="printed-search" value={term} onChange={event => setTerm(event.target.value)} maxLength={150} /><Button type="submit" variant="outline">Ara</Button></form>
+    <details className="printed-panel"><summary>Eser bi?imi, t?r ve di?er filtreler</summary><ClassificationFilters value={classification} onChange={value => setParams(previous => {
+      const next = new URLSearchParams(previous);
+      for (const key of ['formats', 'genres', 'tags', 'features', 'audiences']) { next.delete(key); for (const code of value[key] || []) next.append(key, code); }
+      next.set('page', '1'); return next;
+    })} /></details>
     {loading && <p role="status">Basılı kitaplar yükleniyor…</p>}
     {error && <div className="ui-notice ui-notice--error" role="alert"><p>{error.message}</p><Button onClick={() => refetch()}>Tekrar dene</Button></div>}
     {!error && catalog && <><p className="printed-count">{catalog.total} basılı eser</p>{catalog.books.length ? <div className="printed-grid">{catalog.books.map(book => <PrintedBookCard key={book.id} book={book} />)}</div> : <section className="printed-panel printed-empty"><h2>{search ? 'Aramanıza uygun bir eser bulunamadı' : 'Raflarımız ilk eserlerini bekliyor'}</h2><p>{search ? 'Başka bir kitap adı, yazar veya ISBN ile arayın.' : 'Fiziksel olarak yayımlanmış bir kitabı incelemeye göndererek kataloğa katkıda bulunabilirsiniz.'}</p></section>}
-      {catalog.totalPages > 1 && <nav className="printed-actions" aria-label="Basılı kitap sayfaları"><Button variant="outline" disabled={page <= 1} onClick={() => setParams({ search, page: String(page - 1) })}>Önceki</Button><span>{page} / {catalog.totalPages}</span><Button variant="outline" disabled={page >= catalog.totalPages} onClick={() => setParams({ search, page: String(page + 1) })}>Sonraki</Button></nav>}</>}
+      {catalog.totalPages > 1 && <nav className="printed-actions" aria-label="Basılı kitap sayfaları"><Button variant="outline" disabled={page <= 1} onClick={() => setParams(previous => { const next = new URLSearchParams(previous); next.set('page', String(page - 1)); return next; })}>Önceki</Button><span>{page} / {catalog.totalPages}</span><Button variant="outline" disabled={page >= catalog.totalPages} onClick={() => setParams(previous => { const next = new URLSearchParams(previous); next.set('page', String(page + 1)); return next; })}>Sonraki</Button></nav>}</>}
   </Container></div></MainLayout>;
 }

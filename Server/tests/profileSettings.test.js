@@ -121,10 +121,10 @@ test('session mentions and replies respect their separate preferences', async ()
 test('author genre settings and discovery onboarding update the same recommendation preferences', async () => {
   const user = await createUser('reader');
   const author = await createUser('writer');
-  const genre = await Genre.create({ name: 'Bilim Kurgu', slug: 'bilim-kurgu', isActive: true });
+  const genre = await Genre.create({ name: 'Bilim Kurgu', slug: 'bilim-kurgu', isActive: true, group: 'FICTION', classificationVersion: 1 });
   await users.updateAuthorSettings(user._id, { preferredGenres: [genre.name], weeklyWordGoal: 100 });
   expect((await recommendations.getUserPreference(user._id)).preferredGenres[0].name).toBe(genre.name);
-  const book = await Book.create({ title: 'Önerilen', authorId: author._id, genreId: genre._id, status: 'WRITING' });
+  const book = await Book.create({ title: 'Önerilen', authorId: author._id, genreIds: [genre._id], status: 'WRITING' });
   expect((await recommendations.getRecommendations(user._id))[0]).toMatchObject({ reason: 'ONBOARDING_GENRE', book: { id: String(book._id) } });
   await recommendations.saveUserPreference(user._id, []);
   expect((await User.findById(user._id)).authorSettings.preferredGenres).toHaveLength(0);

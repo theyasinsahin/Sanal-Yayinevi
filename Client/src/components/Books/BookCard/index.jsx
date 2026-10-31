@@ -1,6 +1,7 @@
+import ClassificationSummary from '../Classification/ClassificationSummary';
 import { bookPath } from '../../../utils/publicPaths';
 import React, { lazy, Suspense, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import { 
   FavoriteBorder, 
@@ -29,6 +30,7 @@ const SocialShareDialog = lazy(() => import('../../Sharing/SocialShareDialog'));
 
 const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [shareOpen, setShareOpen] = useState(false);
   const [messageOpen, setMessageOpen] = useState(false);
@@ -78,7 +80,9 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
     return num.toString();
   };
 
-  const handleBookClick = () => navigate(bookPath(book));
+  const handleBookClick = () => navigate(bookPath(book), {
+    state: { catalogReturn: ['/feed', '/printed-books'].includes(location.pathname) ? location.pathname + location.search : undefined },
+  });
 
   const handleShareClick = (e) => {
     e.stopPropagation(); // kartın navigate'ini tetikleme
@@ -126,6 +130,7 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
         </div>
 
         <div className="card-content">
+          <ClassificationSummary book={book} compact />
           <Typography variant="h6" weight="bold" className="book-title" title={title}>
             {title}
           </Typography>

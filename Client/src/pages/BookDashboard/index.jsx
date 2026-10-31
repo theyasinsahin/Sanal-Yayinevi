@@ -1,3 +1,4 @@
+import ClassificationEditor from '../../components/Books/Classification/ClassificationEditor';
 import { bookPath, readerPath } from '../../utils/publicPaths';
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, Link, useNavigate, useBlocker } from 'react-router-dom';
@@ -266,6 +267,7 @@ const BookDashboard = () => {
 
         {/* Aksiyon Butonları */}
         <div className="sidebar-actions">
+           <ClassificationEditor key={book.id} book={book} />
            <Link to={readerPath(book)} className="w-full no-underline">
               <Button variant="outline" size="small" className="w-full" icon={<Visibility fontSize="small"/>}>
                 Okuyucu Modu

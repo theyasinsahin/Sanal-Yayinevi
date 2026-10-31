@@ -18,7 +18,8 @@
     "perf:benchmark": "node src/scripts/performanceBenchmark.js optimized",
     "seed:badges": "node src/scripts/seedBadges.js",
     "seed:books": "node src/scripts/seedBook.js",
-    "migrate:points": "node src/scripts/migratePoints.js"
+    "migrate:points": "node src/scripts/migratePoints.js",
+    "migrate:classification": "node src/scripts/migrateClassification.js"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.22.9",

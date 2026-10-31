@@ -1,5 +1,6 @@
+import Term from '../src/models/classificationTerm.js';
 import { jest } from '@jest/globals';
-import { graphql } from 'graphql';
+import { graphql, parse, print } from 'graphql';
 import { ApolloServer } from '@apollo/server';
 import { readFileSync } from 'node:fs';
 import schema from '../src/graphql/schema.js';
@@ -24,6 +25,9 @@ let user, other, admin;
 beforeAll(async () => { await connect(); await Promise.all([Book.init(), BookClaim.init(), Notification.init()]); });
 afterAll(closeDatabase);
 beforeEach(async () => {
+  const format = await Term.create({ kind: 'FORMAT', slug: 'roman', name: 'Roman' });
+  const topic = await Genre.create({ name: 'Edebi Kurgu', slug: 'edebi-kurgu', classificationVersion: 1, group: 'FICTION' });
+  input.classification = { formatId: String(format._id), genreIds: [String(topic._id)] };
   [user, other, admin] = await User.create([
     { username: 'submitter', email: 'first@example.test', fullName: 'First', password: 'test' },
     { username: 'author', email: 'author@example.test', fullName: 'Author', password: 'test' },
@@ -38,7 +42,10 @@ const approved = async () => {
 const context = actor => ({ user: actor, Book, User, Chapter, Comment, Genre });
 
 const clientDocument = (file, name) => readFileSync(new URL(`../../Client/src/graphql/${file}`, import.meta.url), 'utf8').split(`export const ${name} = gql\``)[1].split('`;')[0];
-const clientBookQuery = clientDocument('queries/book.js', 'GET_BOOK_BY_ID').replace('${PRINTED_BOOK_FIELDS}', clientDocument('printedBooks.js', 'PRINTED_BOOK_FIELDS'));
+const rawClientBookQuery = clientDocument('queries/book.js', 'GET_BOOK_BY_ID').replace('${PRINTED_BOOK_FIELDS}', clientDocument('printedBooks.js', 'PRINTED_BOOK_FIELDS')).replaceAll('${WORK_CLASSIFICATION_FIELDS}', clientDocument('classification.js', 'WORK_CLASSIFICATION_FIELDS'));
+const bookAst = parse(rawClientBookQuery), seenFragments = new Set();
+bookAst.definitions = bookAst.definitions.filter(definition => { const key = definition.name?.value; if (seenFragments.has(key)) return false; seenFragments.add(key); return true; });
+const clientBookQuery = print(bookAst);
 const clientReviewQuery = clientDocument('printedBooks.js', 'GET_PRINTED_REVIEWS');
 // Apollo's field instrumentation observes resolver results as well as GraphQL
 // execution. A raw Mongoose Query cannot safely be observed twice.
@@ -61,8 +68,7 @@ async function apolloQuery(query, actor, variables) {
 test('the full client book query opens legacy and newly created digital books through Apollo', async () => {
   const legacy = await Book.create({ title: 'Legacy book', authorId: user._id, description: 'Legacy description', status: 'WRITING' });
   await Book.collection.updateOne({ _id: legacy._id }, { $unset: { kind: 1 } });
-  const genre = await Genre.create({ name: 'Roman', slug: 'roman' });
-  const created = await books.createBook({ title: 'New digital book', description: 'New description', genreId: genre.id, imageUrl: '' }, user._id);
+  const created = await books.createBook({ title: 'New digital book', description: 'New description', classification: input.classification, imageUrl: '' }, user._id);
   for (const book of [legacy, created]) {
     const result = await apolloQuery(clientBookQuery, user, { id: book.id });
     expect(result.getBookById).toMatchObject({ id: book.id, title: book.title, kind: 'DIGITAL', myClaim: null });

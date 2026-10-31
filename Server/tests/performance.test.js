@@ -1,3 +1,4 @@
+import { parse, print } from 'graphql';
 import { readFileSync } from 'node:fs';
 import mongoose from 'mongoose';
 import { ApolloServer } from '@apollo/server';
@@ -10,11 +11,14 @@ import { createLoaders } from '../src/graphql/loaders.js';
 import { compressResponses, operationTiming } from '../src/config/httpPerformance.js';
 
 let api, authors, books, chapters, genre;
-const sources = ['queries/book.js', 'printedBooks.js'].map(path => readFileSync(new URL(`../../Client/src/graphql/${path}`, import.meta.url), 'utf8'));
+const sources = ['queries/book.js', 'printedBooks.js', 'classification.js'].map(path => readFileSync(new URL(`../../Client/src/graphql/${path}`, import.meta.url), 'utf8'));
 function document(name) {
   const pattern = new RegExp(`(?:export )?const ${name} = gql` + '`([\\s\\S]*?)`;');
   const raw = sources.map(source => source.match(pattern)?.[1]).find(Boolean);
-  return raw.replace(/\$\{([A-Z_]+)\}/g, (_, fragment) => document(fragment));
+  const expanded = raw.replace(/\$\{([A-Z_]+)\}/g, (_, fragment) => document(fragment));
+  const ast = parse(expanded), seen = new Set();
+  ast.definitions = ast.definitions.filter(definition => { const key = definition.name?.value; if (seen.has(key)) return false; seen.add(key); return true; });
+  return print(ast);
 }
 async function run(name, variables, user = null) {
   const calls = [];
@@ -38,9 +42,9 @@ beforeEach(async () => {
     { username: 'ada', fullName: 'Ada Yazar', email: 'ada@fixture.test', password: 'test' },
     { username: 'inactive', fullName: 'Inactive User', email: 'inactive@fixture.test', password: 'test', isActive: false },
   ]);
-  genre = await models.Genre.create({ name: 'Roman', slug: 'roman' });
+  genre = await models.Genre.create({ name: 'Roman', slug: 'roman', group: 'FICTION', classificationVersion: 1 });
   books = await models.Book.insertMany(Array.from({ length: 48 }, (_, index) => ({ title: `Book ${String(index).padStart(2, '0')}`, description: 'Fixture description.',
-    urlSlug: `book-${index}`, authorId: authors[index % 2]._id, genreId: genre._id, status: 'WRITING',
+    urlSlug: `book-${index}`, authorId: authors[index % 2]._id, genreIds: [genre._id], status: 'WRITING',
     publishDate: new Date(1700000000000 + Math.floor(index / 3) * 1000), stats: { likes: index, views: index },
   })));
   chapters = await models.Chapter.create(Array.from({ length: 12 }, (_, index) => ({ bookId: books[0]._id,
@@ -81,16 +85,16 @@ test.each(['NEWEST', 'OLDEST', 'UPDATED', 'POPULAR'])('%s cursor pages preserve 
 
 test('search, genre and public visibility are enforced on the server before pagination', async () => {
   await models.Book.create([
-    { title: 'Draft', authorId: authors[0]._id, genreId: genre._id, status: 'DRAFT' },
+    { title: 'Draft', authorId: authors[0]._id, genreIds: [genre._id], status: 'DRAFT' },
     { title: 'Deleted', authorId: authors[0]._id, isDeleted: true, status: 'WRITING' },
     { title: 'Inactive', authorId: authors[2]._id, status: 'WRITING' },
     { title: 'Printed', kind: 'PRINTED', publicationStatus: 'APPROVED', status: 'PUBLISHED' },
   ]);
-  const filtered = await getBookFeed({ genre: 'roman', search: 'Deniz', limit: 48 });
+  const filtered = await getBookFeed({ classification: { genres: ['roman'] }, search: 'Deniz', limit: 48 });
   expect(filtered.books).toHaveLength(24);
   expect(filtered.books.every(book => String(book.authorId) === authors[0].id)).toBe(true);
   expect((await getBookFeed({ search: '.*' })).books).toHaveLength(0);
-  expect((await getBookFeed({ genre: 'missing' })).books).toHaveLength(0);
+  expect((await getBookFeed({ classification: { genres: ['missing'] } })).books).toHaveLength(0);
   expect((await getBookFeed({ limit: 48 })).books).toHaveLength(48);
 });
 
@@ -152,12 +156,12 @@ test('quote search respects deleted quotes, inactive users, book visibility and 
   const otherGenre = await models.Genre.create({ name: 'Şiir', slug: 'siir' });
   const deletedUser = await models.User.create({ username: 'removed', fullName: 'Removed Reader', email: 'removed@fixture.test', password: 'test', isDeleted: true });
   const hiddenBooks = await models.Book.create([
-    { title: 'Draft', authorId: authors[0]._id, genreId: genre._id, status: 'DRAFT' },
-    { title: 'Removed book', authorId: authors[0]._id, genreId: genre._id, status: 'WRITING', isDeleted: true },
-    { title: 'Inactive author', authorId: authors[2]._id, genreId: genre._id, status: 'WRITING' },
-    { title: 'Printed', kind: 'PRINTED', publicationStatus: 'APPROVED', genreId: genre._id, status: 'PUBLISHED' },
-    { title: 'Another genre', authorId: authors[0]._id, genreId: otherGenre._id, status: 'WRITING' },
-    { title: 'Deleted author', authorId: deletedUser._id, genreId: genre._id, status: 'WRITING' },
+    { title: 'Draft', authorId: authors[0]._id, genreIds: [genre._id], status: 'DRAFT' },
+    { title: 'Removed book', authorId: authors[0]._id, genreIds: [genre._id], status: 'WRITING', isDeleted: true },
+    { title: 'Inactive author', authorId: authors[2]._id, genreIds: [genre._id], status: 'WRITING' },
+    { title: 'Printed', kind: 'PRINTED', publicationStatus: 'APPROVED', genreIds: [genre._id], status: 'PUBLISHED' },
+    { title: 'Another genre', authorId: authors[0]._id, genreIds: [otherGenre._id], status: 'WRITING' },
+    { title: 'Deleted author', authorId: deletedUser._id, genreIds: [genre._id], status: 'WRITING' },
   ]);
   const original = await models.Quote.create({ text, normalizedText: 'visible', bookId: books[0]._id, userId: authors[0]._id });
   await models.Quote.create([
@@ -169,7 +173,7 @@ test('quote search respects deleted quotes, inactive users, book visibility and 
     ...hiddenBooks.map((book, index) => ({ text, normalizedText: `hidden-${index}`, bookId: book._id, userId: authors[0]._id })),
   ]);
   await models.Quote.collection.insertOne({ text, normalizedText: 'legacy', bookId: books[6]._id, userId: authors[0]._id, isRepost: false });
-  const page = await getBookFeed({ search: text, genre: 'roman', sort: 'POPULAR', limit: 48 });
+  const page = await getBookFeed({ search: text, classification: { genres: ['roman'] }, sort: 'POPULAR', limit: 48 });
   expect(page.books.map(book => book.id)).toEqual([books[6].id, books[0].id]);
   expect(page.hasNextPage).toBe(false);
 });

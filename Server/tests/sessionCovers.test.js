@@ -37,14 +37,21 @@ const source = readFileSync(new URL('../../Client/src/graphql/queries/session.js
 const body = name => source.split(`const ${name} = gql\``)[1].split('`;')[0];
 const document = name => body(name).replace('${SESSION_FIELDS}', body('SESSION_FIELDS'));
 
-test('legacy sessions receive the default cover through the actual client list/detail queries without a migration', async () => {
+test('legacy sessions remain without a cover through the actual client list/detail queries without a migration', async () => {
   const legacy = await Session.create({ title: 'Eski Etkinlik', createdBy: owner.id, type: 'OPEN' });
   await Session.collection.updateOne({ _id: legacy._id }, { $unset: { coverImageUrl: 1 } });
   const list = await run(document('GET_SESSIONS'), { limit: 20, offset: 0 });
   expect(list.errors).toBeUndefined();
-  expect(list.data.getSessions[0]).toMatchObject({ id: legacy.id, coverImageUrl: DEFAULT_SESSION_COVER });
+  expect(list.data.getSessions[0]).toMatchObject({ id: legacy.id, coverImageUrl: '' });
   const detail = await run(document('GET_SESSION'), { sessionId: legacy.id });
-  expect(detail.errors).toBeUndefined(); expect(detail.data.getSession.coverImageUrl).toBe(DEFAULT_SESSION_COVER);
+  expect(detail.errors).toBeUndefined(); expect(detail.data.getSession.coverImageUrl).toBe('');
+});
+
+test.each([undefined, ''])('organizers can create a session without a cover (%s)', async coverImageUrl => {
+  const created = await run(document('CREATE_SESSION'), { input: { title: 'Coverless session', type: 'OPEN', ...(coverImageUrl !== undefined && { coverImageUrl }) } }, owner);
+  expect(created.errors).toBeUndefined();
+  expect(created.data.createSession.coverImageUrl).toBe('');
+  expect((await Session.findById(created.data.createSession.id)).coverImageUrl).toBe('');
 });
 
 test('approved organizers can create sessions with an uploaded cover and unauthorized members cannot', async () => {
@@ -59,7 +66,7 @@ test('owners can update/reset existing covers and the actual client mutation ret
   const updated = await run(document('UPDATE_SESSION_COVER'), { sessionId: session.id, coverImageUrl: cover }, owner);
   expect(updated.errors).toBeUndefined(); expect(updated.data.updateSessionCover.coverImageUrl).toBe(cover);
   const reset = await run(document('UPDATE_SESSION_COVER'), { sessionId: session.id, coverImageUrl: '' }, owner);
-  expect(reset.errors).toBeUndefined(); expect(reset.data.updateSessionCover.coverImageUrl).toBe(DEFAULT_SESSION_COVER);
+  expect(reset.errors).toBeUndefined(); expect(reset.data.updateSessionCover.coverImageUrl).toBe('');
 });
 
 test('anonymous visitors and other members cannot change covers, while admins can moderate them', async () => {

@@ -11,6 +11,6 @@ export function normalizeSessionCover(value) {
   return url.href;
 }
 export function sessionCover(session) {
-  try { return normalizeSessionCover(session.coverImageUrl) || DEFAULT_SESSION_COVER; }
-  catch { return DEFAULT_SESSION_COVER; }
+  try { return normalizeSessionCover(session.coverImageUrl); }
+  catch { return ''; }
 }

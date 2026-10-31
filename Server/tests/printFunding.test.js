@@ -13,6 +13,7 @@ import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import User from '../src/models/user.js';
 import Book from '../src/models/book.js';
+import ClassificationTerm from '../src/models/classificationTerm.js';
 import Chapter from '../src/models/chapter.js';
 import Notification from '../src/models/notification.js';
 import Transaction from '../src/models/transaction.js';
@@ -82,6 +83,17 @@ test('only the author can apply; approval needs a current admin and complete dec
   await User.updateOne({ _id: admin._id }, { role: 'USER' });
   await expect(applications.reviewApplication(context(admin), { applicationId: app.id, revision: app.revision })).rejects.toThrow('yönetici');
 });
+test('special narrative features keep digital publication available and require separate print review', async () => {
+  const feature = await ClassificationTerm.create({ kind: 'FEATURE', slug: 'hayran-kurgusu', name: 'Hayran Kurgusu' });
+  await Book.updateOne({ _id: book._id }, { narrativeFeatureIds: [feature._id] });
+  const published = await applications.updateDigitalStatus(context(user), { bookId: book.id, status: 'WRITING' });
+  expect(published.digitalStatus).toBe('PUBLISHED');
+  const app = await submitted();
+  const version = await models.BookPrintVersion.findById(app.versionId);
+  expect(version.classificationReview).toMatchObject({ reviewRequired: true, features: [{ slug: 'hayran-kurgusu', name: 'Hayran Kurgusu' }] });
+  await expect(campaigns.openCampaign(context(admin), { applicationId: app.id, revision: app.revision })).rejects.toThrow('onaylı');
+});
+
 test('revision keeps immutable versions and rejection cannot collect funds', async () => {
   let app = await submitted(); const old = await models.BookPrintVersion.findById(app.versionId);
   app = await applications.reviewApplication(context(admin), { applicationId: app.id, revision: app.revision, decision: 'REVISION_REQUESTED', reason: 'Kapak mizanpajı düzeltilmeli.' });

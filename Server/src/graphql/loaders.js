@@ -1,6 +1,7 @@
 import DataLoader from 'dataloader';
 import User from '../models/user.js';
 import Genre from '../models/genre.js';
+import ClassificationTerm from '../models/classificationTerm.js';
 import Comment from '../models/comment.js';
 import { inactiveUserIds } from '../utils/activeUsers.js';
 
@@ -13,7 +14,7 @@ export function createLoaders() {
     return ids.map(id => map.get(String(id)) || null);
   }, { cacheKeyFn: String, maxBatchSize: 100 });
   return {
-    users: byId(User), genres: byId(Genre), inactiveIds,
+    users: byId(User), genres: byId(Genre), classificationTerms: byId(ClassificationTerm), inactiveIds,
     commentCounts: new DataLoader(async ids => {
       const counts = await Comment.aggregate([
         { $match: { bookId: { $in: ids.map(id => new Comment.base.Types.ObjectId(String(id))) }, isDeleted: false, userId: { $nin: await inactiveIds() } } },

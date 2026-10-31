@@ -1,3 +1,5 @@
+import ClassificationSummary from '../Classification/ClassificationSummary';
+import ClassificationEditor from '../Classification/ClassificationEditor';
 import { profilePath, readerPath } from '../../../utils/publicPaths';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -15,6 +17,7 @@ import { GET_QUOTES_BY_BOOK } from '../../../graphql/queries/quote';
 import { CREATE_PRINTED_QUOTE, REQUEST_BOOK_CLAIM } from '../../../graphql/printedBooks';
 import './PrintedBookDetail.css';
 import BookShareButton from '../BookShareButton';
+import CatalogBackLink from '../CatalogBackLink';
 import PrintedReadingEditor from '../PrintedReadingEditor';
 
 function ClaimForm({ book, refresh }) {
@@ -61,7 +64,7 @@ export default function PrintedBookDetail({ book, comments, commentsLoading, cur
     } catch (failure) { setQuoteError(failure.message.includes('QUOTE_EXISTS:') ? 'Bu alıntı daha önce paylaşıldı. Kitabın alıntılarını inceleyebilirsiniz.' : failure.message); }
   }
   return <MainLayout><div className="printed-page"><Container maxWidth="5xl">
-    <Link to="/printed-books" className="ui-text-link">← Basılı kitaplara dön</Link>
+    <CatalogBackLink to="/printed-books" className="ui-text-link">← Basılı kitaplara dön</CatalogBackLink>
     <article className="printed-detail-layout">
       <aside className="printed-detail-cover">{book.imageUrl && failedUrl !== book.imageUrl ? <img src={book.imageUrl} alt={`${book.title} kapağı`} onError={() => setFailedUrl(book.imageUrl)} /> : <div className="printed-cover-placeholder">{book.title}</div>}</aside>
       <div className="printed-detail-intro"><Badge variant="neutral">Basılı eser</Badge><h1>{book.title}</h1><p className="printed-detail-author">{book.printedAuthor}</p>
@@ -70,6 +73,8 @@ export default function PrintedBookDetail({ book, comments, commentsLoading, cur
         {book.author && <p className="printed-detail-hint">Betik'te onaylanan yazar: <Link to={profilePath(book.author)} className="ui-text-link">{book.author.fullName || book.author.username}</Link></p>}
       </div>
     </article>
+    <ClassificationSummary book={book} />
+    {user && ((currentUserId && book.authorId === currentUserId) || user.role === 'ADMIN' || (!approved && book.submittedBy?.id === currentUserId)) && <ClassificationEditor key={book.id} book={book} />}
     {approved && <BookShareButton book={book} />}
     {approved && <PrintedReadingEditor key={`${book.id}:${user?.id || 'guest'}`} bookId={book.id} />}
     {!approved && <p className="ui-notice ui-notice--warning" role="status">{book.publicationStatus === 'PENDING' ? 'Bu başvuru Betik incelemesinde. Henüz herkese açık katalogda yer almıyor.' : `Başvurunuz için düzenleme gerekiyor. ${book.reviewNote || ''} Bilgileri düzelterek basılı kitaplar sayfasından yeniden başvurabilirsiniz.`}</p>}

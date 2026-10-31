@@ -3,9 +3,8 @@
 extend type Mutation {
   createBook(
     title: String!
-    genreId: ID!
+    classification: ClassificationInput!
     description: String!
-    tags: [String]
     imageUrl: String!
   ): Book!
 
@@ -14,7 +13,7 @@ extend type Mutation {
   updateBook(
     bookId: ID!
     title: String
-    genre: String
+    classification: ClassificationInput
     description: String
   ): Book!
 
@@ -31,7 +30,6 @@ extend type Mutation {
 extend type Query {
   getBookById(id: ID!): Book
   getBooksByAuthorId(authorId: ID!): [Book!]
-  getBooksByGenre(genre: String!): [Book!]
   getBookByTitle(title: String!): Book
   searchBooks(query: String!): [Book!]
   getAllBooks: [Book!]
@@ -64,8 +62,6 @@ type Book {
   author: User
   imageUrl: String!
   pageCount: Int!
-  genreId: ID
-  genre: Genre
   description: String!
   stats: BookStats
   createdAt: DateTime!

@@ -36,7 +36,6 @@ export const getFollowedBooks = async (userId) => {
       path: 'followedBooks',
       populate: [
         { path: 'authorId', select: 'username fullName profilePicture' },
-        { path: 'genreId', select: 'name slug hexColor' },
       ]
     });
   return user?.followedBooks || [];

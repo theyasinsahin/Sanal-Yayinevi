@@ -2,7 +2,7 @@ import { notifyUser } from './notificationService.js';
 import { inactiveUserIds } from '../utils/activeUsers.js';
 import Book from '../models/book.js';
 import User from '../models/user.js';
-import Genre from '../models/genre.js';
+import { validateClassification } from './classificationService.js';
 import Quote from '../models/quote.js';
 import * as ScoreService from './scoreService.js';
 import * as ChapterService from './chapterService.js';
@@ -42,10 +42,6 @@ export const findBooksByAuthorId = async (authorId) => {
   return await Book.find({ authorId, isDeleted: false }).sort({ createdAt: -1 });
 };
 
-export const findBooksByGenre = async (genre) => {
-  return await Book.find({ ...digitalBookFilter, genre, isDeleted: false, authorId: { $nin: await inactiveUserIds() }, status: { $ne: 'DRAFT' } });
-};
-
 export const findBookByTitle = async (title) => {
   return await Book.findOne({ ...visiblePrintedFilter, title, isDeleted: false, authorId: { $nin: await inactiveUserIds() }, status: { $ne: 'DRAFT' } });
 };
@@ -72,19 +68,11 @@ export const searchBooksInDb = async (query) => {
 };
 
 export const createBook = async (bookData, userId) => {
-  // genre slug kontrolü yerine genreId ile çalış
-  if (!bookData.genreId) {
-    throw new Error('Kitap oluşturulurken bir tür seçmek zorunludur.');
-  }
-
-  // genreId'nin geçerli bir Genre olduğunu doğrula
-  const genreDoc = await Genre.findById(bookData.genreId);
-  if (!genreDoc || !genreDoc.isActive) {
-    throw new Error('Seçilen tür bulunamadı veya aktif değil.');
-  }
-
+  const { classification, ...metadata } = bookData;
+  const validated = await validateClassification(classification, userId);
   const newBook = new Book({
-    ...bookData,
+    ...metadata,
+    ...validated,
     authorId: userId
   });
 

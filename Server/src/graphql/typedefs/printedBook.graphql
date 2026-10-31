@@ -38,6 +38,7 @@ type IsbnLookup {
   publicationYear: Int
 }
 input PrintedBookInput {
+  classification: ClassificationInput!
   isbn: String
   title: String!
   printedAuthor: String!
@@ -50,7 +51,7 @@ input PrintedBookInput {
   publicationEvidenceUrl: String!
 }
 extend type Query {
-  getPrintedBooks(page: Int = 1, search: String = ""): PrintedBookPage!
+  getPrintedBooks(page: Int = 1, search: String = "", classification: ClassificationFilter): PrintedBookPage!
   lookupPrintedBook(isbn: String!): IsbnLookup!
   getMyPrintedSubmissions: [Book!]!
   getPrintedBookReviews: [Book!]!

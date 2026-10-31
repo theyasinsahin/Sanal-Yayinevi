@@ -18,9 +18,9 @@ jest.mock('../../components/Books/BookCard', () => ({ book, skeleton }) => skele
   : <a href={book.publicPath} data-testid="book-card">{book.title}</a>);
 
 const book = (id, title) => ({
-  __typename: 'Book', id, publicPath: `/kitap/${id}`, title, description: '', imageUrl: '', pageCount: 10,
+  __typename: 'Book', format: null, genres: [], classificationTags: [], narrativeFeatures: [], targetAudience: null, contentWarnings: [], classificationStatus: 'NEEDS_REVIEW', id, publicPath: `/kitap/${id}`, title, description: '', imageUrl: '', pageCount: 10,
   status: 'WRITING', kind: 'DIGITAL', publishDate: null, printedAuthor: null, publisher: null,
-  publicationYear: null, isbn: null, author: null, genre: null,
+  publicationYear: null, isbn: null, author: null, classification: null,
   stats: { __typename: 'BookStats', likes: 0, views: 0 }, commentCount: 0, currentFunding: 0, fundingTarget: 0, backerCount: 0,
 });
 const quotedBook = book('quoted', 'Kıyıda Bir Sabah');
@@ -35,10 +35,10 @@ const response = (variables, books) => ({
 beforeEach(() => { window.scrollTo = jest.fn(); });
 
 test.each([
-  ['homepage', LandingPage, 8, 'POPULAR'],
+  ['homepage', LandingPage, 10, 'POPULAR'],
   ['discovery', FeedPage, 24, 'NEWEST'],
 ])('%s searches quote text through the book catalog and displays only books', async (_, Page, limit, sort) => {
-  const variables = { limit, sort, genre: null, search: null };
+  const variables = { limit, sort, classification: null, search: null };
   render(
     <MockedProvider mocks={[
       response(variables, [quotedBook, otherBook]),
@@ -51,7 +51,7 @@ test.each([
     </MockedProvider>
   );
   await screen.findByRole('link', { name: otherBook.title });
-  const input = screen.getByRole('searchbox');
+  const input = screen.getByRole('searchbox', { name: /Kitap, yazar|Bir sonraki kitabını bul/ });
   expect(input).toHaveAttribute('placeholder', 'Kitap, yazar veya alıntı ara...');
   await act(async () => userEvent.type(input, term));
   await waitFor(() => expect(screen.getAllByTestId('book-card')).toHaveLength(1));

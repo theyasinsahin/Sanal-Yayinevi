@@ -1,12 +1,14 @@
+import { WORK_CLASSIFICATION_FIELDS } from '../classification';
 import { gql } from '@apollo/client';
 import { PRINTED_BOOK_FIELDS } from '../printedBooks';
 
 export const BOOK_CARD_FIELDS = gql`
+  ${WORK_CLASSIFICATION_FIELDS}
   fragment BookCardFields on Book {
     id publicPath title description imageUrl pageCount publishDate status
     kind printedAuthor publisher publicationYear isbn
     author { id username fullName profilePicture }
-    genre { id name slug  hexColor isActive }
+    ...WorkClassificationFields
     stats { views likes }
     commentCount currentFunding fundingTarget backerCount
   }
@@ -14,8 +16,8 @@ export const BOOK_CARD_FIELDS = gql`
 
 export const GET_BOOK_FEED = gql`
   ${BOOK_CARD_FIELDS}
-  query GetBookFeed($limit: Int, $after: String, $sort: BookSort, $genre: String, $search: String) {
-    getBookFeed(limit: $limit, after: $after, sort: $sort, genre: $genre, search: $search) {
+  query GetBookFeed($limit: Int, $after: String, $sort: BookSort, $classification: ClassificationFilter, $search: String) {
+    getBookFeed(limit: $limit, after: $after, sort: $sort, classification: $classification, search: $search) {
       books { ...BookCardFields }
       endCursor hasNextPage
     }
@@ -40,6 +42,7 @@ export const GET_BOOK_DETAIL = gql`
 `;
 
 export const GET_BOOKS = gql`
+  ${WORK_CLASSIFICATION_FIELDS}
   query GetAllBooks{
     getAllBooks{
       publicPath
@@ -77,13 +80,7 @@ export const GET_BOOKS = gql`
           }
         },
         likedBy,
-        genre{
-          name
-          slug
-
-          hexColor
-          isActive
-        },
+        ...WorkClassificationFields,
         tags,
         imageUrl,
         pageCount,
@@ -106,6 +103,7 @@ export const GET_BOOKS = gql`
 `;
 
 export const GET_BOOK_BY_ID = gql`
+  ${WORK_CLASSIFICATION_FIELDS}
   ${PRINTED_BOOK_FIELDS}
   query GetBookById($id: ID!) {
     getBookById(id: $id) {
@@ -115,13 +113,7 @@ export const GET_BOOK_BY_ID = gql`
       title
       description
       imageUrl
-      genre{
-          name
-          slug
-
-          hexColor
-          isActive
-        }
+      ...WorkClassificationFields
       pageCount
       publishDate
       authorId
@@ -181,6 +173,7 @@ export const GET_BOOK_BY_ID = gql`
 
 // Yorumları ve gereksiz detayları içermeyen HAFİF sorgu
 export const GET_BOOK_READER_DATA = gql`
+  ${WORK_CLASSIFICATION_FIELDS}
   query GetBookReaderData($id: ID!) {
     getBookById(id: $id) {
       publicPath
@@ -195,13 +188,7 @@ export const GET_BOOK_READER_DATA = gql`
         id
         title
       }
-        genre{
-          name
-          slug
-
-          hexColor
-          isActive
-        }
+        ...WorkClassificationFields
     }
   }
 `;

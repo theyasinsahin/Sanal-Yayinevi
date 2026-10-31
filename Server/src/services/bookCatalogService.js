@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import Book from '../models/book.js';
-import Genre from '../models/genre.js';
+import { classificationFilter } from './classificationService.js';
 import User from '../models/user.js';
 import Quote from '../models/quote.js';
 import { inactiveUserIds } from '../utils/activeUsers.js';
@@ -8,18 +8,14 @@ import { inactiveUserIds } from '../utils/activeUsers.js';
 const SORTS = { NEWEST: ['publishDate', -1], OLDEST: ['publishDate', 1], UPDATED: ['updatedAt', -1], POPULAR: ['stats.likes', -1] };
 const PUBLIC_STATUSES = ['WRITING', 'COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'];
 const escape = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const fields = 'urlSlug title description authorId genreId imageUrl pageCount publishDate stats createdAt updatedAt status backerCount fundingTarget currentFunding tags kind printedAuthor publisher publicationYear isbn';
+const fields = 'urlSlug title description authorId formatId genreIds tagIds narrativeFeatureIds targetAudienceId contentWarningIds classificationStatus imageUrl pageCount publishDate stats createdAt updatedAt status backerCount fundingTarget currentFunding kind printedAuthor publisher publicationYear isbn';
 
-export async function getBookFeed({ limit = 24, after, sort = 'NEWEST', genre, search } = {}) {
+export async function getBookFeed({ limit = 24, after, sort = 'NEWEST', classification, search } = {}) {
   if (!Number.isInteger(limit) || limit < 1 || limit > 48 || !SORTS[sort]) throw new Error('Geçerli bir sayfa boyutu ve sıralama seçin.');
   const [field, direction] = SORTS[sort];
   const hiddenUserIds = await inactiveUserIds();
   const clauses = [{ kind: { $ne: 'PRINTED' }, isDeleted: false, status: { $in: PUBLIC_STATUSES }, authorId: { $nin: hiddenUserIds } }];
-  if (genre) {
-    const selected = await Genre.findOne({ slug: genre, isActive: true }).select('_id').lean().exec();
-    if (!selected) return { books: [], endCursor: null, hasNextPage: false };
-    clauses.push({ genreId: selected._id });
-  }
+  clauses.push(await classificationFilter(classification));
   const term = String(search || '').trim();
   if (term.length > 100) throw new Error('Arama en fazla 100 karakter olabilir.');
   if (term) {

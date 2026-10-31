@@ -1,3 +1,4 @@
+import ClassificationFields, { emptyClassification, classificationInput, classificationError } from '../Classification/ClassificationFields';
 import React, { useState } from 'react';
 import { useLazyQuery, useMutation } from '@apollo/client';
 import { Input } from '../../UI/Input';
@@ -9,6 +10,7 @@ import { useAuth } from '../../../context/AuthContext';
 const initial = { isbn: '', title: '', printedAuthor: '', publisher: '', publicationYear: '', pageCount: '', description: '', imageUrl: '', purchaseUrl: '', publicationEvidenceUrl: '' };
 export default function PrintedBookSubmissionForm({ onSubmitted, onClose }) {
   const { ensureSession } = useAuth();
+  const [classification, setClassification] = useState(emptyClassification);
   const [form, setForm] = useState(initial);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -30,7 +32,9 @@ export default function PrintedBookSubmissionForm({ onSubmitted, onClose }) {
     event.preventDefault(); setError('');
     if (!ensureSession()) return;
     try {
-      await submit({ variables: { input: { ...form, publicationYear: Number(form.publicationYear), pageCount: Number(form.pageCount) } } });
+      const invalid = classificationError(classification);
+      if (invalid) throw new Error(invalid);
+      await submit({ variables: { input: { ...form, classification: classificationInput(classification), publicationYear: Number(form.publicationYear), pageCount: Number(form.pageCount) } } });
       onSubmitted();
     } catch (failure) { setError(failure.message); }
   }
@@ -51,6 +55,7 @@ export default function PrintedBookSubmissionForm({ onSubmitted, onClose }) {
         <Input label="Basılı sayfa sayısı" name="pageCount" type="number" value={form.pageCount} onChange={change} disabled={busy} required min={1} max={50000} />
         <Input label="Kapak görseli bağlantısı (isteğe bağlı)" name="imageUrl" type="url" value={form.imageUrl} onChange={change} disabled={busy} placeholder="https://…" maxLength={1500} />
       </div>
+      <ClassificationFields value={classification} onChange={setClassification} disabled={busy} />
       <Textarea label="Kitap tanıtımı" name="description" value={form.description} onChange={change} disabled={busy} required minLength={20} maxLength={5000} />
       <Input label="Satın alma bağlantısı (isteğe bağlı)" name="purchaseUrl" type="url" value={form.purchaseUrl} onChange={change} disabled={busy} placeholder="https://…" maxLength={1500} />
       <Input label="Baskıyı doğrulayan yayınevi veya katalog bağlantısı" name="publicationEvidenceUrl" type="url" value={form.publicationEvidenceUrl} onChange={change} disabled={busy} required placeholder="https://…" maxLength={1500} />

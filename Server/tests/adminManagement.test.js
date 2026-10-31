@@ -43,13 +43,13 @@ beforeEach(async () => {
     { username: 'admin', fullName: 'Yönetici', email: 'admin@fixture.test', password: 'secret-hash', role: 'ADMIN' },
     { username: 'reader', fullName: 'Okur', email: 'reader@fixture.test', password: 'private-hash' },
   ]);
-  genre = await Genre.create({ name: 'Roman', slug: 'roman', iconUrl: '📚' });
-  book = await Book.create({ title: 'Roman', description: 'Açıklama', authorId: member._id, genreId: genre._id, status: 'DRAFT' });
+  genre = await Genre.create({ name: 'Roman', slug: 'roman', group: 'FICTION', classificationVersion: 1, iconUrl: '📚' });
+  book = await Book.create({ title: 'Roman', description: 'Açıklama', authorId: member._id, genreIds: [genre._id], status: 'DRAFT' });
 });
 
 test.each([null, 'USER', 'forged'])('admin API rejects unauthenticated, ordinary and forged role contexts: %s', async kind => {
   const user = kind === null ? null : kind === 'USER' ? member : { _id: member._id, role: 'ADMIN' };
-  for (const [name, variables] of [['GET_ADMIN_RESOURCES', {}], ['GET_ADMIN_OVERVIEW', {}], ['GET_ADMIN_RECORDS', { resource: 'User' }], ['GET_ADMIN_RECORD', { resource: 'User', id: admin.id }], ['SAVE_ADMIN_RECORD', { resource: 'Genre', changes: { name: 'Yeni' }, reason: 'Test oluşturma.' }]]) {
+  for (const [name, variables] of [['GET_ADMIN_RESOURCES', {}], ['GET_ADMIN_OVERVIEW', {}], ['GET_ADMIN_RECORDS', { resource: 'User' }], ['GET_ADMIN_RECORD', { resource: 'User', id: admin.id }], ['SAVE_ADMIN_RECORD', { resource: 'Genre', changes: { group: 'FICTION', name: 'Yeni' }, reason: 'Test oluşturma.' }]]) {
     const result = await run(name, variables, user);
     expect(result.errors?.[0].extensions.code).toBe('FORBIDDEN');
   }
@@ -59,7 +59,7 @@ test('all application models, schema fields, references and indexes are availabl
   const result = await run('GET_ADMIN_RESOURCES'); expect(result.errors).toBeUndefined();
   expect(result.data.getAdminResources).toHaveLength(resources.size);
   expect(result.data.getAdminResources.find(item => item.name === 'User').fields.find(field => field.name === 'password')).toMatchObject({ sensitive: true, editable: false });
-  expect(result.data.getAdminResources.find(item => item.name === 'Book').fields.find(field => field.name === 'genreId')).toMatchObject({ reference: 'Genre', editable: true });
+  expect(result.data.getAdminResources.find(item => item.name === 'Book').fields.find(field => field.name === 'genreIds')).toMatchObject({ reference: 'Genre', editable: false });
   expect(result.data.getAdminResources.find(item => item.name === 'Book').indexes.length).toBeGreaterThan(0);
   await User.updateOne({ _id: admin._id }, { role: 'USER' });
   expect((await run('GET_ADMIN_RESOURCES')).errors[0].extensions.code).toBe('FORBIDDEN');
@@ -86,7 +86,7 @@ test('list includes draft, printed and deleted books with search, paging and sta
 });
 
 test('genre creation generates a Turkish slug, strips emoji, and records the mutation through the client document', async () => {
-  const response = await run('SAVE_ADMIN_RECORD', { resource: 'Genre', changes: { name: '🧙 Çağdaş Öykü' }, reason: 'Yeni tür tanımlandı.' });
+  const response = await run('SAVE_ADMIN_RECORD', { resource: 'Genre', changes: { group: 'FICTION', name: '🧙 Çağdaş Öykü' }, reason: 'Yeni tür tanımlandı.' });
   expect(response.errors).toBeUndefined();
   const saved = await Genre.findById(response.data.saveAdminRecord.id);
   expect(saved).toMatchObject({ name: 'Çağdaş Öykü', slug: 'cagdas-oyku', iconUrl: '', isActive: true });
@@ -99,14 +99,14 @@ test('genre rename synchronizes named preferences while retaining book and ID-ba
   await User.updateOne({ _id: member._id }, { 'authorSettings.preferredGenres': ['Roman', 'Şiir'] });
   await update('Genre', genre.id, { name: 'Çağdaş Roman', isActive: false });
   expect((await User.findById(member.id)).authorSettings.preferredGenres).toEqual(['Çağdaş Roman', 'Şiir']);
-  expect(String((await Book.findById(book.id)).genreId)).toBe(genre.id);
+  expect(String((await Book.findById(book.id)).genreIds[0])).toBe(genre.id);
   expect((await Genre.findById(genre.id)).iconUrl).toBe('');
   expect((await run('GET_ADMIN_RECORDS', { resource: 'Genre', state: 'INACTIVE' })).data.getAdminRecords.total).toBe(1);
   expect((await run('GET_ADMIN_RECORD', { resource: 'Book', id: book.id })).data.getAdminRecord.references).toEqual(expect.arrayContaining([expect.objectContaining({ resource: 'Genre', id: genre.id })]));
 });
 
 test('invalid/duplicate genre data and arbitrary schema or computed updates cannot write', async () => {
-  for (const changes of [{ name: '' }, { name: '📚' }, { name: 'Başka', slug: 'roman' }, { name: 'roman' }, { name: 'Başka', hexColor: 'red' }, { name: 'Başka', isActive: 'false' }, { name: 'Başka', $where: 'unsafe' }]) {
+  for (const changes of [{ name: '' }, { name: '📚' }, { name: 'Başka', slug: 'roman', group: 'FICTION', classificationVersion: 1 }, { name: 'roman' }, { name: 'Başka', hexColor: 'red' }, { name: 'Başka', isActive: 'false' }, { name: 'Başka', $where: 'unsafe' }]) {
     await expect(adminService.saveAdminRecord(context(), { resource: 'Genre', changes, reason: 'Yeni tür denemesi.' })).rejects.toThrow();
   }
   await expect(update('User', member.id, { password: 'changed' })).rejects.toThrow('düzenlenemez');
@@ -196,9 +196,9 @@ test('account archive and restore keep related records and invalidate old sessio
 
 test('reading preferences synchronize author genre names and reject inactive references', async () => {
   const preference = await resources.get('UserPreference').model.create({ userId: member.id, preferredGenres: [genre.id], onboardingCompleted: true });
-  const second = await Genre.create({ name: 'Öykü', slug: 'oyku' });
+  const second = await Genre.create({ name: 'Gizem', slug: 'gizem', classificationVersion: 1, group: 'FICTION' });
   await update('UserPreference', preference.id, { preferredGenres: [second.id] });
-  expect((await User.findById(member.id)).authorSettings.preferredGenres).toEqual(['Öykü']);
+  expect((await User.findById(member.id)).authorSettings.preferredGenres).toEqual(['Gizem']);
   await Genre.updateOne({ _id: second.id }, { isActive: false });
   await expect(update('UserPreference', preference.id, { preferredGenres: [second.id] })).rejects.toThrow('pasif');
   await expect(update('UserPreference', preference.id, { preferredGenres: [] })).rejects.toThrow('en az');
@@ -247,7 +247,7 @@ test('legacy user deactivation and genre mutations use current authorization and
   expect(denied.body.singleResult.errors).toBeDefined();
   const allowed = await api.executeOperation({ query: source, variables: { id: member.id } }, { contextValue: context() });
   expect(allowed.body.singleResult.errors).toBeUndefined(); expect((await User.findById(member.id)).isActive).toBe(false);
-  const created = await api.executeOperation({ query: 'mutation{createGenre(name:"Bilim Kurgu",slug:"bilim-kurgu"){id name iconUrl}}' }, { contextValue: context() });
+  const created = await api.executeOperation({ query: 'mutation{createGenre(name:"Bilim Kurgu",slug:"bilim-kurgu",group:"FICTION"){id name iconUrl}}' }, { contextValue: context() });
   expect(created.body.singleResult.errors).toBeUndefined(); expect(created.body.singleResult.data.createGenre.iconUrl).toBe('');
   expect(await AdminAudit.countDocuments()).toBe(2);
 });

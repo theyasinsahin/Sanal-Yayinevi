@@ -1,14 +1,17 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { MockedProvider } from '@apollo/client/testing';
 import Filters from './index';
 import { useFilters } from '../../../context/FiltersContext';
+import { GET_CLASSIFICATION_OPTIONS } from '../../../graphql/classification';
 jest.mock('../../../context/FiltersContext', () => ({ useFilters: jest.fn() }));
 
-test('genres are plain Turkish labels even when older records contain emoji or icon URLs', () => {
-  const updateFilters = jest.fn(); useFilters.mockReturnValue({ filters: { genre: 'Tümü', sortBy: 'newest' }, updateFilters });
-  render(<Filters genres={[{ id: 'g', slug: 'roman', name: '📚 Roman', iconUrl: 'https://example.test/old-icon.png', hexColor: '#6366f1' }]} />);
-  expect(screen.queryByRole('img')).not.toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: 'Roman' }));
-  expect(updateFilters).toHaveBeenCalledWith('genre', 'roman');
-  expect(screen.queryByText('📚')).not.toBeInTheDocument();
+test('format and topic filters use separate stable codes from the API', async () => {
+  const updateFilters = jest.fn(); useFilters.mockReturnValue({ filters: { classification: null, sortBy: 'newest' }, updateFilters });
+  render(<MockedProvider mocks={[{ request: { query: GET_CLASSIFICATION_OPTIONS }, result: { data: { getClassificationOptions: { formats: [{ id: 'f', slug: 'roman', name: 'Roman', isActive: true }], genres: [{ id: 'g', slug: 'fantastik', name: 'Fantastik', group: 'FICTION', isActive: true, hexColor: '#666666' }], narrativeFeatures: [], targetAudiences: [], contentWarnings: [] } } } }]}><Filters /></MockedProvider>);
+  await screen.findByRole('option', { name: 'Roman' });
+  fireEvent.change(screen.getAllByRole('combobox')[0], { target: { value: 'roman' } });
+  expect(updateFilters).toHaveBeenCalledWith('classification', { formats: ['roman'] });
+  fireEvent.change(screen.getAllByRole('combobox')[1], { target: { value: 'fantastik' } });
+  expect(updateFilters).toHaveBeenCalledWith('classification', { genres: ['fantastik'] });
 });

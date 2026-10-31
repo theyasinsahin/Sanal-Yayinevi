@@ -1,3 +1,4 @@
+import { validateClassification } from '../../services/classificationService.js';
 import { inactiveUserIds } from '../../utils/activeUsers.js';
 import { canViewProfile, sameUser } from '../../utils/profileAccess.js';
 import * as BookService from '../../services/bookService.js';
@@ -18,7 +19,6 @@ export default {
       return sameUser(profile, user) || user?.role === 'ADMIN' ? books : books.filter(book => book.status !== 'DRAFT');
     },
 
-    getBooksByGenre: async (_, { genre }) => BookService.findBooksByGenre(genre),
 
     getAllBooks: async () => BookService.findAllBooks(),
 
@@ -33,7 +33,6 @@ export default {
         // Kullanıcı doğrulaması
         if(!user) throw new Error("Giriş yapmalısınız");
 
-        // args objesinin içindeki 'genre', "bilim-kurgu" gibi bir metin olarak Servis'e gider
         const newBook = await BookService.createBook(args, user._id);
         
         return newBook;
@@ -54,7 +53,9 @@ export default {
         }
 
         // Import edilen Book modeli kullanılıyor
-        return Book.findByIdAndUpdate(bookId, updates, { new: true });
+        const { classification, ...metadata } = updates;
+        const validated = classification ? await validateClassification(classification, user._id) : {};
+        return Book.findByIdAndUpdate(bookId, { $set: { ...metadata, ...validated } }, { new: true, runValidators: true });
     },
 
     deleteBook: async (_, { id }, { user }) => {
@@ -109,12 +110,6 @@ export default {
             if (info && !selectedFields(info).has('content')) query.select('-content');
             return await query.exec();
          } catch (e) { return [] }
-    },
-
-    genre: async (parent, args, context) => {
-        try {
-            return parent.genreId ? await getLoaders(context).genres.load(parent.genreId) : null;
-        } catch (e) { return null }
     },
 
     commentCount: async (parent, args, context) => {

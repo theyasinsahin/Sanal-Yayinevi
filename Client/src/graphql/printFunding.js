@@ -12,7 +12,7 @@ export const PRINT_CAMPAIGN_FIELDS = gql`
 export const PRINT_APPLICATION_FIELDS = gql`
   fragment PrintApplicationFields on PrintApplication {
     id bookId authorId revision state tariffId estimate verifiedQuote approvedTargetMinor approvedUnitPriceMinor reviewNote createdAt updatedAt
-    version { id title authorName wordCount estimatedPages contentHash specification declarations }
+    version { classificationReview id title authorName wordCount estimatedPages contentHash specification declarations }
   }
 `;
 export const PRINT_ORDER_FIELDS = gql`

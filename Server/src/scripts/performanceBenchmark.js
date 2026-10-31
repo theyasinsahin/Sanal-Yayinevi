@@ -1,3 +1,4 @@
+import { parse, print } from 'graphql';
 // Isolated fixture benchmark. Never reads MONGO_URI or connects to application data.
 import fs from 'node:fs';
 import { performance } from 'node:perf_hooks';
@@ -14,11 +15,14 @@ const output = new URL(`../../../docs/performance/${label}.json`, import.meta.ur
 const bookSource = fs.readFileSync(new URL('../../../Client/src/graphql/queries/book.js', import.meta.url), 'utf8');
 const printedSource = fs.readFileSync(new URL('../../../Client/src/graphql/printedBooks.js', import.meta.url), 'utf8');
 function document(name) {
-  const sources = [bookSource, printedSource];
+  const sources = [bookSource, printedSource, fs.readFileSync(new URL('../../../Client/src/graphql/classification.js', import.meta.url), 'utf8')];
   const pattern = new RegExp(`(?:export )?const ${name} = gql` + '`([\\s\\S]*?)`;');
   const raw = sources.map(source => source.match(pattern)?.[1]).find(Boolean);
   if (!raw) return null;
-  return raw.replace(/\$\{([A-Z_]+)\}/g, (_, fragment) => document(fragment));
+  const expanded = raw.replace(/\$\{([A-Z_]+)\}/g, (_, fragment) => document(fragment));
+  const ast = parse(expanded), seen = new Set();
+  ast.definitions = ast.definitions.filter(definition => { const key = definition.name?.value; if (seen.has(key)) return false; seen.add(key); return true; });
+  return print(ast);
 }
 const db = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
 let api;
@@ -26,8 +30,8 @@ try {
   await mongoose.connect(db.getUri());
   await Promise.all(Object.values(models).filter(model => typeof model?.init === 'function').map(model => model.init()));
   const authors = await models.User.create(Array.from({ length: 6 }, (_, i) => ({ username: `author${i}`, fullName: `Author ${i}`, email: `author${i}@fixture.test`, password: 'fixture' })));
-  const genre = await models.Genre.create({ name: 'Roman', slug: 'roman' });
-  const books = await models.Book.create(Array.from({ length: 48 }, (_, i) => ({ title: `Fixture Book ${String(i).padStart(2, '0')}`, urlSlug: `fixture-book-${i}`, authorId: authors[i % 6]._id, genreId: genre._id, status: 'WRITING', description: 'Fixture description.', createdAt: new Date(1700000000000 + i * 1000), publishDate: new Date(1700000000000 + i * 1000), stats: { views: i, likes: i, shares: 0 } })));
+  const genre = await models.Genre.create({ name: 'Roman', slug: 'roman', group: 'FICTION', classificationVersion: 1 });
+  const books = await models.Book.create(Array.from({ length: 48 }, (_, i) => ({ title: `Fixture Book ${String(i).padStart(2, '0')}`, urlSlug: `fixture-book-${i}`, authorId: authors[i % 6]._id, genreIds: [genre._id], status: 'WRITING', description: 'Fixture description.', createdAt: new Date(1700000000000 + i * 1000), publishDate: new Date(1700000000000 + i * 1000), stats: { views: i, likes: i, shares: 0 } })));
   const chapters = await models.Chapter.insertMany(books.flatMap(book => Array.from({ length: 12 }, (_, i) => ({ bookId: book._id, authorId: book.authorId, title: `Chapter ${i + 1}`, content: `<p>${'Okuma metni. '.repeat(1000)}</p>`, pageCount: 8, createdAt: new Date(1700000000000 + i * 1000) }))));
   await models.Book.bulkWrite(books.map(book => ({ updateOne: { filter: { _id: book._id }, update: { $set: { chapters: chapters.filter(chapter => String(chapter.bookId) === book.id).map(chapter => chapter._id) } } } })));
   await models.Comment.insertMany(books.flatMap(book => Array.from({ length: 5 }, (_, i) => ({ bookId: book._id, userId: authors[i]._id, content: 'Yorum metni. '.repeat(20), date: new Date() }))));

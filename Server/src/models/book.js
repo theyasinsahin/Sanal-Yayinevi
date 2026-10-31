@@ -23,6 +23,15 @@ const BookSchema = new mongoose.Schema({
   imageUrl: { type: String, default: '' },
   pageCount: { type: Number, default: 0 },
   genreId: { type: mongoose.Schema.Types.ObjectId, ref: 'Genre' },
+  // genreId and tags are retained only as reversible migration source data.
+  formatId: { type: mongoose.Schema.Types.ObjectId, ref: 'ClassificationTerm' },
+  genreIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Genre' }],
+  tagIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'ClassificationTerm' }],
+  narrativeFeatureIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'ClassificationTerm' }],
+  targetAudienceId: { type: mongoose.Schema.Types.ObjectId, ref: 'ClassificationTerm' },
+  contentWarningIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'ClassificationTerm' }],
+  classificationStatus: { type: String, enum: ['COMPLETE', 'NEEDS_REVIEW'], default: 'NEEDS_REVIEW' },
+  classificationVersion: Number,
   tags: { type: [String], default: [] },
   description: String,
   stats: {
@@ -82,6 +91,8 @@ BookSchema.index({ kind: 1, publicationStatus: 1, createdAt: -1 });
 BookSchema.index({ isDeleted: 1, publishDate: -1, _id: -1 });
 BookSchema.index({ isDeleted: 1, updatedAt: -1, _id: -1 });
 BookSchema.index({ isDeleted: 1, 'stats.likes': -1, _id: -1 });
-BookSchema.index({ isDeleted: 1, genreId: 1, publishDate: -1, _id: -1 });
+for (const field of ['formatId', 'genreIds', 'tagIds', 'narrativeFeatureIds', 'targetAudienceId']) {
+  BookSchema.index({ isDeleted: 1, [field]: 1, publishDate: -1, _id: -1 });
+}
 
 export default mongoose.model('Book', BookSchema);

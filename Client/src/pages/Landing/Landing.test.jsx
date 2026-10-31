@@ -14,9 +14,9 @@ jest.mock('../../components/Books/BookCard', () => ({ book, skeleton }) => skele
   : <a href={book.publicPath} data-testid="book-card">{book.title}</a>);
 
 const book = (id, title, likes, views = 0, author = null) => ({
-  __typename: 'Book', id, publicPath: `/kitap/${id}`, title, description: '', imageUrl: '', pageCount: 10,
+  __typename: 'Book', format: null, genres: [], classificationTags: [], narrativeFeatures: [], targetAudience: null, contentWarnings: [], classificationStatus: 'NEEDS_REVIEW', id, publicPath: `/kitap/${id}`, title, description: '', imageUrl: '', pageCount: 10,
   status: 'WRITING', kind: 'DIGITAL', publishDate: null, printedAuthor: null, publisher: null,
-  publicationYear: null, isbn: null, author, genre: null,
+  publicationYear: null, isbn: null, author, classification: null,
   stats: { __typename: 'BookStats', likes, views }, commentCount: 0, currentFunding: 0, fundingTarget: 0, backerCount: 0,
 });
 const books = [
@@ -24,7 +24,7 @@ const books = [
   book('other', 'Diğer Roman', 10, 10),
   book('first', 'İstanbul Hikâyeleri', 2, 20, { __typename: 'User', id: 'author', fullName: 'Işıl Yılmaz', username: 'kitapkurdu', profilePicture: '' }),
 ];
-const variables = { limit: 8, sort: 'POPULAR', genre: null, search: null };
+const variables = { limit: 10, sort: 'POPULAR', classification: null, search: null };
 const response = (records, overrides = {}, hasNextPage = false, endCursor = null) => ({
   request: { query: GET_BOOK_FEED, variables: { ...variables, ...overrides } },
   result: { data: { getBookFeed: { __typename: 'BookFeedPage', books: records, hasNextPage, endCursor } } },
@@ -40,7 +40,7 @@ test('retains the introduction and requests a bounded page sorted by server popu
   expect(screen.getByText('Kaleminizden çıkan eserlerin gerçek bir kitaba dönüşme yolculuğuna tanık olun')).toBeInTheDocument();
   expect(screen.getByRole('searchbox', { name: 'Bir sonraki kitabını bul' })).toHaveAttribute('aria-controls', 'home-books');
   expect(screen.getByRole('searchbox')).toHaveAttribute('maxlength', '100');
-  expect(screen.getAllByTestId('book-skeleton')).toHaveLength(8);
+  expect(screen.getAllByTestId('book-skeleton')).toHaveLength(10);
   await screen.findByText('En Sevilen Roman');
   expect(screen.getAllByTestId('book-card').map(card => card.textContent)).toEqual(books.map(item => item.title));
   expect(screen.getByRole('link', { name: 'Tüm Kitapları Gör →' })).toHaveAttribute('href', '/feed');
