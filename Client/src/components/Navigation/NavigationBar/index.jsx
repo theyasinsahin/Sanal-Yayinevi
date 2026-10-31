@@ -93,7 +93,6 @@ const NavigationBar = () => {
                   </Link>
 
                   <NotificationBell />
-                  <Link to="/funding-history" className="nav-item">Desteklerim</Link>
 
                   {/* Profil İkonu */}
                   <Link to="/profile" className="profile-btn" title="Profilim">

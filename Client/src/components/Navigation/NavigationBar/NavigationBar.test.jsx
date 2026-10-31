@@ -37,6 +37,12 @@ test('guests see login links and cannot see desktop or mobile creation controls'
   expect(screen.queryAllByRole('link', { name: 'Mesajlar' })).toHaveLength(0);
 });
 
+test('funding history is absent from both desktop and mobile navigation for signed-in readers', async () => {
+  store(); show(); await flush();
+  expect(screen.getAllByRole('link', { name: 'Kitap Oluştur' })).toHaveLength(2);
+  expect(screen.queryAllByRole('link', { name: /Desteklerim/ })).toHaveLength(0);
+});
+
 test('removing credentials updates both real navigation menus without a page reload', async () => {
   store(); show(); await flush();
   expect(screen.getAllByRole('link', { name: 'Kitap Oluştur' })).toHaveLength(2);

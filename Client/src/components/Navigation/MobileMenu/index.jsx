@@ -87,10 +87,6 @@ const MobileMenu = ({ isOpen, onClose }) => {
                 <Person className="mobile-icon" />
                 <Typography variant="body" weight="medium">Profilim</Typography>
               </Link>
-              <Link to="/funding-history" className="mobile-nav-item" onClick={onClose}>
-                <MenuBook className="mobile-icon" />
-                <Typography variant="body" weight="medium">Desteklerim ve Ön Siparişlerim</Typography>
-              </Link>
 
               <Link to="/create-book" className="mobile-nav-item" onClick={onClose}>
                 <Create className="mobile-icon" />

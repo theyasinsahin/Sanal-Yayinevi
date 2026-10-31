@@ -3,14 +3,14 @@ import { profilePath } from '../../utils/publicPaths';
 import { useGetOrCreateConversation } from '../../hooks/useMessages';
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client';
 import { 
-  Person, Email, Link as LinkIcon, 
+  Person, Email,
   Book, Bookmark, 
   Edit, Save, Cancel, Close,
   Logout,
-  Verified, TrendingUp, Star, Chat, Settings
+  Verified, TrendingUp, Star, Chat, Settings, Receipt
 } from '@mui/icons-material';
 
 import { useAuth } from '../../context/AuthContext';
@@ -349,6 +349,10 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
               {isMe ? (
                 !isEditing && (
                   <div className="my-actions">
+                    <Link to="/funding-history" className="btn btn-outline btn-medium profile-funding-link" title="Desteklerim ve ön siparişlerim">
+                      <Receipt fontSize="small" />
+                      <span>Desteklerim</span>
+                    </Link>
                     <Button variant="outline" onClick={() => setIsEditing(true)} icon={<Edit fontSize="small"/>}>Düzenle</Button>
                     <Button variant="outline" onClick={handleLogout} icon={<Logout fontSize="small"/>}>Çıkış Yap</Button>
                   </div>
