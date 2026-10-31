@@ -8,12 +8,12 @@ export const GET_ALL_TRANSACTIONS = gql`
       currency
       status
       createdAt
-      userId {
+      userId: user {
         username
         email
         profilePicture
       }
-      bookId {
+      bookId: book {
         title
         imageUrl
       }

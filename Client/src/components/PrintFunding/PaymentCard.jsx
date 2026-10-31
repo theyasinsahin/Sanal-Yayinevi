@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '../UI/Button';
-import { Link } from 'react-router-dom';
+import PrintLink from './PrintLink';
 import { SIMULATE_PRINT_PAYMENT, CANCEL_PRINT_PAYMENT } from '../../graphql/printFunding';
 import { Feedback, money, Status, usePrintAction } from './shared';
 
@@ -23,7 +23,7 @@ export default function PaymentCard({ payment, mode, refresh }) {
     {mode === 'IYZICO_SANDBOX' && payment.provider === 'IYZICO_SANDBOX' && pending && <>
       <p>Kart bilgilerinizi iyzico'nun güvenli test ödeme sayfasında girin. Yalnızca iyzico test kartları kullanılır.</p>
       <div className="print-actions">
-        {checkoutUrl ? <a className="btn btn-primary" href={checkoutUrl}>iyzico ile test kartıyla öde</a> : <p role="status">iyzico ödeme sayfası hazırlanıyor. Ödeme durumunu yeniden kontrol edin.</p>}
+        {checkoutUrl ? <a className="btn btn-primary btn-medium print-link" href={checkoutUrl}>iyzico ile test kartıyla öde</a> : <p role="status">iyzico ödeme sayfası hazırlanıyor. Ödeme durumunu yeniden kontrol edin.</p>}
         <Button variant="outline" onClick={refresh}>Ödeme durumunu güncelle</Button>
         <Button variant="ghost" disabled={action.busy} onClick={() => action.run(CANCEL_PRINT_PAYMENT, { paymentId: payment.id })}>Ödemeyi iptal et</Button>
       </div>
@@ -33,6 +33,6 @@ export default function PaymentCard({ payment, mode, refresh }) {
       <Button variant="outline" disabled={action.busy} onClick={() => action.run(SIMULATE_PRINT_PAYMENT, { paymentId: payment.id, outcome: 'FAILED' })}>Başarısız ödeme dene</Button>
       <Button variant="ghost" disabled={action.busy} onClick={() => action.run(CANCEL_PRINT_PAYMENT, { paymentId: payment.id })}>Ödemeyi iptal et</Button>
     </div></>}
-    <div className="print-actions"><Link to={`/book-detail/${payment.bookId}`}>Kitaba dön</Link><Link to="/funding-history">Destek ve ön sipariş geçmişim</Link></div>
+    <div className="print-actions"><PrintLink to={`/book-detail/${payment.bookId}`}>Kitaba dön</PrintLink><PrintLink to="/funding-history">Destek ve ön sipariş geçmişim</PrintLink></div>
   </section>;
 }

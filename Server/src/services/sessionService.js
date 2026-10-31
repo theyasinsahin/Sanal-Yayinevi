@@ -142,6 +142,7 @@ export const closeSession = async (sessionId, userId) => {
 export const addSessionEntry = async (userId, sessionId, content, accessCode = null) => {
   const session = await Session.findOne({ _id: sessionId, isDeleted: false, createdBy: { $nin: await inactiveUserIds() } });
   if (!session) throw new Error('Oturum bulunamadı.');
+  if (!session.isActive) throw new Error('Bu oturum kapatılmış.');
 
   // PRIVATE tipinde accessCode ile doğrulama
   if (session.type === 'PRIVATE') {

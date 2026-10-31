@@ -11,13 +11,14 @@ import { inactiveUserIds } from '../utils/activeUsers.js';
 export function createLoaders() {
   let inactive;
   const inactiveIds = () => inactive ||= Promise.resolve(inactiveUserIds());
+  const recordId = value => String(value?._id ?? value);
   const byId = Model => new DataLoader(async ids => {
-    const query = Model.find({ _id: { $in: ids }, ...(Model === User ? { isDeleted: false, isActive: { $ne: false } } : {}) });
+    const query = Model.find({ _id: { $in: ids.map(recordId) }, ...(Model === User ? { isDeleted: false, isActive: { $ne: false } } : {}) });
     if (Model === Chapter) query.select('-content');
     const records = await query.exec();
     const map = new Map(records.map(record => [String(record._id), record]));
-    return ids.map(id => map.get(String(id)) || null);
-  }, { cacheKeyFn: String, maxBatchSize: 100 });
+    return ids.map(id => map.get(recordId(id)) || null);
+  }, { cacheKeyFn: recordId, maxBatchSize: 100 });
   return {
     users: byId(User), books: byId(Book), chapters: byId(Chapter), quotes: byId(Quote), genres: byId(Genre), classificationTerms: byId(ClassificationTerm), inactiveIds,
     commentCounts: new DataLoader(async ids => {

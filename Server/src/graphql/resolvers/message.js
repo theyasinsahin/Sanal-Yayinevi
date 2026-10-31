@@ -148,9 +148,10 @@ export default {
 
       // Populate edilmiş obje mi?
       if (typeof sid === 'object' && sid.username) {
+        const sender = typeof sid.toObject === 'function' ? sid.toObject() : sid;
         // _id'yi id olarak normalize et
         return {
-          ...sid,
+          ...sender,
           id: sid._id?.toString() ?? sid.id,
         };
       }
@@ -198,7 +199,8 @@ export default {
       if (typeof bid === 'object' && bid._id) {
         // Silinmiş bir kitap populate edilmiş olsa bile gösterme
         if (bid.isDeleted) return null;
-        return { ...bid, id: bid._id?.toString() };
+        const book = typeof bid.toObject === 'function' ? bid.toObject() : bid;
+        return { ...book, id: book._id?.toString() };
       }
 
       try {

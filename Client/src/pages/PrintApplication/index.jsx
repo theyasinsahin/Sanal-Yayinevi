@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import { MainLayout } from '../../components/Layout/MainLayout';
 import { Button } from '../../components/UI/Button';
@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { GET_BOOK_CARD } from '../../graphql/queries/book';
 import { AUTHOR_PRINT_WORKSPACE, SAVE_PRINT_APPLICATION, SUBMIT_PRINT_APPLICATION, CANCEL_PRINT_APPLICATION } from '../../graphql/printFunding';
 import { CampaignCard, Feedback, FileUpload, Status, usePrintAction } from '../../components/PrintFunding/shared';
+import PrintLink from '../../components/PrintFunding/PrintLink';
 import ApplicationDetails from '../../components/PrintFunding/ApplicationDetails';
 
 function ApplicationEditor({ bookId, application, tariffs, refresh }) {
@@ -47,7 +48,7 @@ export default function PrintApplicationPage() {
   const canEdit = !app || ['PREPARING', 'REVISION_REQUESTED'].includes(app.state) || newApplication;
   const hasCampaign = overview?.campaign?.applicationId === app?.id;
   const isAuthor = bookData?.getBookById?.author?.id === user?.id;
-  return <MainLayout><div className="print-page"><Link to={`/dashboard/${bookId}`}>← Yazı masasına dön</Link><h1>Basım başvurusu</h1><p className="print-sandbox">Test ortamı. Kampanya yönetici onayıyla açılır; gerçek ödeme ve basım sözleşmesi kurulmaz.</p>
+  return <MainLayout><div className="print-page"><PrintLink variant="ghost" to={`/dashboard/${bookId}`}>← Yazı masasına dön</PrintLink><h1>Basım başvurusu</h1><p className="print-sandbox">Test ortamı. Kampanya yönetici onayıyla açılır; gerçek ödeme ve basım sözleşmesi kurulmaz.</p>
     {loading && <p role="status">Başvuru yükleniyor…</p>}<Feedback error={error || action.error} message={action.message} />
     {overview && <p>Dijital yayın: {overview.digitalStatus === 'PUBLISHED' ? 'Yayında' : 'Taslak'} · Yazım: {overview.writingStatus === 'COMPLETED' ? 'Tamamlandı' : 'Sürüyor'} · Ücretsiz basım ilgisi: {overview.interestCount}</p>}
     {overview?.campaign && <CampaignCard campaign={overview.campaign} />}

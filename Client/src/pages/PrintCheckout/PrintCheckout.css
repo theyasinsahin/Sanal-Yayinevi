@@ -1,0 +1,3 @@
+.print-page.print-checkout-page {
+  margin-top: calc(var(--navbar-height, 80px) + 32px);
+}
