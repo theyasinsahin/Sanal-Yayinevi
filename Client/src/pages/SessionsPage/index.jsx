@@ -1,3 +1,4 @@
+import UserProfileLink from '../../components/UI/UserProfileLink';
 import { sessionPath } from '../../utils/publicPaths';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -242,7 +243,7 @@ export const SessionCard = ({ session }) => (
             )}
           </div>
           <Typography variant="caption" color="muted">
-            {session.createdBy?.fullName ?? session.createdBy?.username}
+            <UserProfileLink user={session.createdBy}>{session.createdBy?.fullName ?? session.createdBy?.username}</UserProfileLink>
           </Typography>
         </div>
         <Typography variant="caption" color="muted">

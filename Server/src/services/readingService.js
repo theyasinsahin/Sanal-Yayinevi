@@ -1,3 +1,4 @@
+import { canReadChapter } from '../utils/chapterAccess.js';
 import { randomUUID } from 'node:crypto';
 import mongoose from 'mongoose';
 import { GraphQLError } from 'graphql';
@@ -12,8 +13,8 @@ const fail = (message, code = 'BAD_USER_INPUT') => new GraphQLError(message, { e
 async function readableBook(user, bookId, chapterId) {
   if (!mongoose.isObjectIdOrHexString(bookId) || !mongoose.isObjectIdOrHexString(chapterId)) throw fail('Geçerli bir kitap ve bölüm seçmelisiniz.');
   const book = await findBookById(bookId, { viewer: user });
-  const chapter = book && await Chapter.findOne({ _id: chapterId, bookId, isDeleted: false }).select('content').lean().exec();
-  if (!book || book.status === 'DRAFT' || (book.kind === 'PRINTED' && book.publicationStatus !== 'APPROVED') || !chapter?.content?.replace(/<[^>]*>/g, '').trim()) throw fail('Bu içerik için okuma puanı kazanılamaz.');
+  const chapter = book && await Chapter.findOne({ _id: chapterId, bookId, isDeleted: false }).select('content isHidden isDeleted').lean().exec();
+  if (!canReadChapter(chapter, book, user) || !book || book.status === 'DRAFT' || (book.kind === 'PRINTED' && book.publicationStatus !== 'APPROVED') || !chapter?.content?.replace(/<[^>]*>/g, '').trim()) throw fail('Bu içerik için okuma puanı kazanılamaz.');
 }
 
 export async function startReadingSession(user, bookId, chapterId) {

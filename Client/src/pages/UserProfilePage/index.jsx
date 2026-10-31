@@ -33,7 +33,7 @@ import ImageUpload from '../../components/ImageUpload';
 
 import { FormatQuote } from '@mui/icons-material';
 import { GET_QUOTES_BY_USER } from '../../graphql/queries/quote';
-import QuoteCard from '../../components/Quote/QuoteCard';
+import ProfileQuoteGroups from '../../components/Quote/ProfileQuoteGroups';
 import UserSettings from '../../components/Settings/UserSettings';
 import UserFollowButton from '../../components/Follow/UserFollowButton';
 import RemoveFollowerButton from '../../components/Follow/RemoveFollowerButton';
@@ -69,11 +69,12 @@ const UserProfile = ({ resolvedId } = {}) => {
     fetchPolicy: 'network-only'
   });
 
-  const { data: quotesData } = useQuery(GET_QUOTES_BY_USER, {
+  const { data: quotesData, loading: quotesLoading, error: quotesError } = useQuery(GET_QUOTES_BY_USER, {
     variables: { userId: targetId },
     skip: !targetId,
+    fetchPolicy: 'network-only',
   });
-  const userQuotes = quotesData?.getQuotesByUser || [];
+  const userQuotes = (quotesData?.getQuotesByUser || []).filter(quote => quote.visibility !== 'PRIVATE' || isMe);
 
   const profile = data?.getUserById;
   useEffect(() => {
@@ -448,12 +449,14 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
             )}
             {canViewLibrary && activeTab === 'printed-read' && <PrintedReadingLibrary key={`${targetId}:${authUser?.id || 'guest'}`} userId={targetId} />}
             {canView && activeTab === 'quotes' && (
-              <div className="quotes-tab-grid">
+              <div>
+                {quotesLoading ? <p role="status">Alıntılar yükleniyor…</p> : quotesError ? <p role="alert">Alıntılar yüklenemedi.</p> : <>
                 {userQuotes.length === 0 ? (
                   <Typography variant="body" color="muted">Henüz alıntı yok.</Typography>
                 ) : (
-                  userQuotes.map(q => <QuoteCard key={q.id} quote={q} />)
+                  <ProfileQuoteGroups quotes={userQuotes} />
                 )}
+                </>}
               </div>
             )}
             {isMe && activeTab === 'followed' && (

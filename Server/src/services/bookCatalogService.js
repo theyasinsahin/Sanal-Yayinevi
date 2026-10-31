@@ -1,9 +1,11 @@
+import { hiddenChapterIds } from '../utils/chapterAccess.js';
 import mongoose from 'mongoose';
 import Book from '../models/book.js';
 import { classificationFilter } from './classificationService.js';
 import User from '../models/user.js';
 import Quote from '../models/quote.js';
 import { inactiveUserIds } from '../utils/activeUsers.js';
+import { publicQuoteFilter } from '../utils/quoteAccess.js';
 
 const SORTS = { NEWEST: ['publishDate', -1], OLDEST: ['publishDate', 1], UPDATED: ['updatedAt', -1], POPULAR: ['stats.likes', -1] };
 const PUBLIC_STATUSES = ['WRITING', 'COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'];
@@ -22,7 +24,7 @@ export async function getBookFeed({ limit = 24, after, sort = 'NEWEST', classifi
     const expression = new RegExp(escape(term).replace(/[iİıI]/g, '[iİıI]'), 'i');
     const [authors, quotedBookIds] = await Promise.all([
       User.find({ isDeleted: false, isActive: { $ne: false }, $or: [{ username: expression }, { fullName: expression }] }).select('_id').lean().exec(),
-      Quote.distinct('bookId', { text: expression, isRepost: false, isDeleted: { $ne: true }, userId: { $nin: hiddenUserIds } }).exec(),
+      Quote.distinct('bookId', { chapterId: { $nin: await hiddenChapterIds() }, text: expression, isRepost: false, isDeleted: { $ne: true }, userId: { $nin: hiddenUserIds }, ...publicQuoteFilter() }).exec(),
     ]);
     clauses.push({ $or: [{ title: expression }, { authorId: { $in: authors.map(author => author._id) } }, { _id: { $in: quotedBookIds } }] });
   }

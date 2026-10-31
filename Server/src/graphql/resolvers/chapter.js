@@ -1,5 +1,7 @@
 import * as ChapterService from '../../services/chapterService.js';
-import * as UserService from '../../services/userService.js';
+import { getLoaders } from '../loaders.js';
+import { canReadChapter } from '../../utils/chapterAccess.js';
+import { chapterWordCount } from '../../utils/chapterLength.js';
 import * as BookService from '../../services/bookService.js';
 import * as BookFollowService from '../../services/bookFollowService.js';
 import { assertContentAccess } from '../../utils/printedBooks.js';
@@ -27,7 +29,7 @@ export default {
   },
 
     Mutation: {
-        createChapter: async (_, { bookId, title, content, pageCount }, { user }) => {
+        createChapter: async (_, { bookId, title, content, pageCount, isHidden }, { user }) => {
   if (!user) throw new Error("Giriş yapmalısınız.");
 
   const book = await BookService.findBookById(bookId);
@@ -43,6 +45,7 @@ export default {
     title,
     content,
     pageCount: pageCount || 0,
+    isHidden: isHidden === true,
     authorId: user._id
   });
 
@@ -53,7 +56,7 @@ export default {
   return chapter;
 },
 
-        updateChapter: async (_, { chapterId, title, content, pageCount }, { user }) => {
+        updateChapter: async (_, { chapterId, title, content, pageCount, isHidden }, { user }) => {
             if (!user) throw new Error("Giriş yapmalısınız.");
 
             const chapter = await ChapterService.findChapterById(chapterId);
@@ -69,7 +72,8 @@ export default {
             return ChapterService.updateChapter(chapterId, {
                 ...(title && { title }),
                 ...(typeof content === 'string' && { content }),
-                ...(pageCount !== undefined && { pageCount })
+                ...(pageCount !== undefined && { pageCount }),
+                ...(isHidden != null && { isHidden })
             });
         },
 
@@ -91,14 +95,15 @@ export default {
 
   // FIELD RESOLVERS
   Chapter: {
-    // chapter.authorId: ID! olarak tanımlı TypeDef'te.
-    // Eğer TypeDef'i "author: User" yaparsan aşağıdaki kodu kullanırsın.
-    // Şimdilik sadece ID döndüğü için özel bir resolver'a gerek yok aslında.
-    // Ancak ileride User objesi dönmek istersen yapı şöyle olmalı:
-    /*
-    author: async (parent) => {
-        return UserService.findUserById(parent.authorId);
-    }
-    */
+    isHidden: chapter => chapter.isHidden === true,
+    canReadContent: chapterReadable,
+    content: async (chapter, args, context) => await chapterReadable(chapter, args, context) ? chapter.content || '' : '',
+    wordCount: chapter => Number.isInteger(chapter.wordCount) ? chapter.wordCount : typeof chapter.content === 'string' ? chapterWordCount(chapter.content) : null,
   }
 };
+
+async function chapterReadable(chapter, _, context) {
+  const loaders = getLoaders(context);
+  const [book, inactive] = await Promise.all([loaders.books.load(chapter.bookId), loaders.inactiveIds()]);
+  return canReadChapter(chapter, book, context.user) && !inactive.some(id => String(id) === String(book?.authorId) || String(id) === String(chapter.authorId));
+}

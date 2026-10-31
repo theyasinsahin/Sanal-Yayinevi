@@ -51,7 +51,7 @@ export function resolveReaderProgress({ chapters, bookmark, local, server, reque
     source = 'progress';
   }
   if (source === 'bookmark' || source === 'progress') ids.slice(0, index).forEach(id => completed.add(id));
-  return { chapterId: ids[index] || null, completedChapterIds: ids.filter(id => completed.has(id)), paragraphIndex, source,
+  return { chapterId: ids[index] || null, completedChapterIds: ids.filter(id => completed.has(id) && chapters.find(chapter => chapter.id === id)?.canReadContent !== false), paragraphIndex, source,
     missingSharedChapter: Boolean(requestedChapterId && requestedIndex < 0) };
 }
 

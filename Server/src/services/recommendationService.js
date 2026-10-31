@@ -181,7 +181,7 @@ export const getRecommendations = async (userId, { limit = 10, offset = 0 } = {}
 // --- OKUMA İLERLEMESİ ---
 export const markChapterAsRead = async (userId, bookId, chapterId) => {
   const chapters = await readerChapters(userId, bookId);
-  if (!chapters.some(chapter => String(chapter._id) === String(chapterId))) throw new Error('Bu bölüm kitapta bulunamadı.');
+  if (!chapters.some(chapter => chapter.canReadContent && String(chapter._id) === String(chapterId))) throw new Error('Bu bölüm kitapta bulunamadı.');
   const progress = await ReadingProgress.findOneAndUpdate(
     { userId, bookId },
     {
@@ -192,7 +192,7 @@ export const markChapterAsRead = async (userId, bookId, chapterId) => {
   );
 
   return ReadingProgress.findByIdAndUpdate(progress._id, [{ $set: {
-    isCompleted: chapters.length > 0 ? { $setIsSubset: [chapters.map(chapter => chapter._id), { $ifNull: ['$completedChapters', []] }] } : false,
+    isCompleted: chapters.length > 0 && chapters.every(chapter => chapter.canReadContent) ? { $setIsSubset: [chapters.map(chapter => chapter._id), { $ifNull: ['$completedChapters', []] }] } : false,
   } }], { new: true }).exec();
 };
 

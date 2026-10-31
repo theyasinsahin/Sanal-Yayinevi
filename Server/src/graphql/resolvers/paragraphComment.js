@@ -3,10 +3,10 @@ import * as ParagraphCommentService from '../../services/paragraphCommentService
 
 export default {
   Query: {
-    getParagraphComments: (_, { chapterId, paragraphIndex }) =>
-      ParagraphCommentService.getParagraphComments(chapterId, paragraphIndex),
-    getParagraphCommentCounts: (_, { chapterId }) =>
-      ParagraphCommentService.getParagraphCommentCounts(chapterId),
+    getParagraphComments: (_, { chapterId, paragraphIndex }, { user }) =>
+      ParagraphCommentService.getParagraphComments(chapterId, paragraphIndex, user),
+    getParagraphCommentCounts: (_, { chapterId }, { user }) =>
+      ParagraphCommentService.getParagraphCommentCounts(chapterId, user),
   },
 
   Mutation: {

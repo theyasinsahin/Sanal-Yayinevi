@@ -289,3 +289,4 @@
 @media (prefers-reduced-motion: reduce) {
   .dashboard-sidebar { transition: none; }
 }
+.new-chapter-visibility { display: flex; align-items: center; gap: .5rem; margin-top: .75rem; font-size: .8rem; }

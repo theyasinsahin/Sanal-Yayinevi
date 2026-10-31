@@ -37,7 +37,7 @@ export const classificationSeed = {
   AUDIENCE: [['cocuk', 'Çocuk'], ['genc', 'Genç'], ['yetiskin', 'Yetişkin'], ['genel-okur', 'Genel Okur']],
   WARNING: [
     ['siddet', 'Şiddet'], ['korkutucu-icerik', 'Korkutucu İçerik'], ['cinsel-icerik', 'Cinsel İçerik'],
-    ['istismar', 'İstismar'], ['kendine-zarar', 'Kendine Zarar Verme'], ['bagimlilik', 'Bağımlılık'],
+    ['kendine-zarar', 'Kendine Zarar Verme'], ['bagimlilik', 'Bağımlılık'],
     ['ayrimcilik', 'Ayrımcılık'], ['agir-dil', 'Ağır Dil'],
   ],
 };

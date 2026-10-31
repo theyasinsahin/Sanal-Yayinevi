@@ -8,6 +8,7 @@ import Session from '../models/session.js';
 import { canViewProfile } from '../utils/profileAccess.js';
 import { bookPath, chapterPath, profilePath, sessionPath } from './publicUrlService.js';
 import { sessionCover, DEFAULT_SESSION_COVER } from '../utils/sessionCover.js';
+import { publicQuoteFilter } from '../utils/quoteAccess.js';
 
 export const SHARE_TYPES = ['BOOK', 'CHAPTER', 'QUOTE', 'PROFILE', 'SESSION'];
 const publicStatuses = ['WRITING', 'COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'];
@@ -30,9 +31,9 @@ async function publicBook(id) {
 
 export async function getPublicQuote(id) {
   if (!mongoose.isObjectIdOrHexString(id)) throw unavailable();
-  let quote = await Quote.findOne({ _id: id, isDeleted: false });
-  if (quote?.isRepost) quote = await Quote.findOne({ _id: quote.originalQuoteId, isDeleted: false });
-  if (!quote) throw unavailable();
+  let quote = await Quote.findOne({ _id: id, isDeleted: false, ...publicQuoteFilter() });
+  if (quote?.isRepost) quote = await Quote.findOne({ _id: quote.originalQuoteId, isDeleted: false, ...publicQuoteFilter() });
+  if (!quote || (quote.chapterId && await Chapter.exists({ _id: quote.chapterId, isHidden: true }))) throw unavailable();
   const owner = await activeUser(quote.userId);
   if (!owner || !canViewProfile(owner, null)) throw unavailable();
   await publicBook(quote.bookId);
@@ -74,7 +75,7 @@ export async function getSocialShare(type, id) {
     path = await bookPath(book);
   } else if (type === 'CHAPTER') {
     const chapter = await Chapter.findOne({ _id: id, isDeleted: false });
-    if (!chapter) throw unavailable();
+    if (!chapter || chapter.isHidden) throw unavailable();
     const book = await publicBook(chapter.bookId);
     title = `${chapter.title} — ${book.title}`;
     description = `${book.title} kitabının “${chapter.title}” bölümünü Betik'te oku.`;

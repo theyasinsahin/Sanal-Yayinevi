@@ -1,0 +1,22 @@
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
+import QuoteCard from './index';
+jest.mock('@apollo/client', () => ({ ...jest.requireActual('@apollo/client'), useMutation: () => [jest.fn(), {}], useQuery: () => ({}) }));
+jest.mock('../../../context/AuthContext', () => ({ useAuth: jest.fn() }));
+jest.mock('../../Messaging/ShareModal', () => () => null);
+jest.mock('../../Sharing/SocialShareDialog', () => () => null);
+jest.mock('@mui/icons-material', () => Object.fromEntries(['Favorite', 'FavoriteBorder', 'FormatQuote', 'Person', 'Repeat', 'ChatBubbleOutline', 'Delete', 'Send', 'IosShare'].map(name => [name, () => null])));
+const quote = { id: 'quote', text: 'Özel alıntı metni', note: 'Saklı not', visibility: 'PRIVATE', user: { id: 'owner', username: 'owner' } };
+test('only the owner can render a private quote and no social actions are offered', () => {
+  useAuth.mockReturnValue({ user: { id: 'owner' } });
+  const { rerender } = render(<MemoryRouter><QuoteCard quote={quote} /></MemoryRouter>);
+  expect(screen.getByText('Özel · Sadece ben')).toBeInTheDocument();
+  expect(screen.getByText(quote.text)).toBeInTheDocument();
+  expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  useAuth.mockReturnValue({ user: { id: 'visitor' } });
+  rerender(<MemoryRouter><QuoteCard quote={quote} /></MemoryRouter>);
+  expect(screen.queryByText(quote.text)).not.toBeInTheDocument();
+  expect(screen.queryByText(/Saklı not/)).not.toBeInTheDocument();
+});

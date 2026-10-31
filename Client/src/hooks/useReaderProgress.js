@@ -60,7 +60,7 @@ export function useReaderProgress({ bookId, userId, chapters, bookLoading, bookm
 
   useEffect(() => {
     if (!ready || !state.chapterId || (state.fallback && !state.dirty)) return undefined;
-    const completedChapterIds = chapters.filter(chapter => state.completedChapterIds.includes(chapter.id)).map(chapter => chapter.id);
+    const completedChapterIds = chapters.filter(chapter => chapter.canReadContent !== false && state.completedChapterIds.includes(chapter.id)).map(chapter => chapter.id);
     try { localStorage.setItem(progressStorageKey(bookId, userId), JSON.stringify({ version: 2, lastChapterId: state.chapterId, completedChapterIds, pending: Boolean(userId), updatedAt: new Date().toISOString() })); }
     catch { /* Server sync still works when browser storage is disabled. */ }
     if (!userId) return undefined;
@@ -88,12 +88,12 @@ export function useReaderProgress({ bookId, userId, chapters, bookLoading, bookm
     setState(previous => {
       const indices = chapters.map((chapter, index) => previous.completedChapterIds.includes(chapter.id) ? index : -1).filter(index => index >= 0);
       const next = typeof update === 'function' ? update(indices) : update;
-      return { ...previous, completedChapterIds: chapters.filter((_, index) => next.includes(index)).map(chapter => chapter.id), dirty: true };
+      return { ...previous, completedChapterIds: chapters.filter((chapter, index) => chapter.canReadContent !== false && next.includes(index)).map(chapter => chapter.id), dirty: true };
     });
   }, [chapters]);
   return {
     ready, currentChapterIndex: Math.max(0, chapters.findIndex(chapter => chapter.id === state.chapterId)),
-    completedChapters: chapters.map((chapter, index) => state.completedChapterIds.includes(chapter.id) ? index : -1).filter(index => index >= 0),
+    completedChapters: chapters.map((chapter, index) => chapter.canReadContent !== false && state.completedChapterIds.includes(chapter.id) ? index : -1).filter(index => index >= 0),
     setCurrentChapterIndex, setCompletedChapters,
     clearParagraphRestore: () => setState(previous => ({ ...previous, paragraphIndex: null })),
     restoreParagraphIndex: ready ? state.paragraphIndex : null,

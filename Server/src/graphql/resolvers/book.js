@@ -106,6 +106,7 @@ export default {
 
     chapters: async (parent, args, context, info) => {
          try {
+            getLoaders(context).books.prime(parent.id || parent._id, parent);
             const query = context.Chapter.find({ bookId: parent.id, isDeleted: false, authorId: { $nin: await getLoaders(context).inactiveIds() } }).sort({ createdAt: 1, _id: 1 });
             if (info && !selectedFields(info).has('content')) query.select('-content');
             return await query.exec();

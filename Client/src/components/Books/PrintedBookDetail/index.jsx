@@ -12,6 +12,8 @@ import { Textarea } from '../../UI/Textarea';
 import { Badge } from '../../UI/Badge';
 import CommentList from '../../Comments/CommentList';
 import QuoteCard from '../../Quote/QuoteCard';
+import QuoteVisibility from '../../Quote/QuoteVisibility';
+import { invalidateQuoteLists } from '../../../utils/quoteCache';
 import { useAuth } from '../../../context/AuthContext';
 import { GET_QUOTES_BY_BOOK } from '../../../graphql/queries/quote';
 import { CREATE_PRINTED_QUOTE, REQUEST_BOOK_CLAIM } from '../../../graphql/printedBooks';
@@ -51,17 +53,18 @@ export default function PrintedBookDetail({ book, comments, commentsLoading, cur
   const [note, setNote] = useState('');
   const [page, setPage] = useState('');
   const [spoiler, setSpoiler] = useState(false);
+  const [visibility, setVisibility] = useState('PUBLIC');
   const [quoteError, setQuoteError] = useState('');
   const [quoteSent, setQuoteSent] = useState(false);
   const [failedUrl, setFailedUrl] = useState(null);
-  const { data, loading, error, refetch } = useQuery(GET_QUOTES_BY_BOOK, { variables: { bookId: book.id }, skip: !approved, fetchPolicy: 'cache-and-network' });
-  const [quote, { loading: quoting }] = useMutation(CREATE_PRINTED_QUOTE);
+  const { data, loading, error, refetch } = useQuery(GET_QUOTES_BY_BOOK, { variables: { bookId: book.id }, skip: !approved, fetchPolicy: 'network-only' });
+  const [quote, { loading: quoting }] = useMutation(CREATE_PRINTED_QUOTE, { update: invalidateQuoteLists });
   async function shareQuote(event) {
     event.preventDefault(); setQuoteError(''); setQuoteSent(false);
     try {
-      await quote({ variables: { bookId: book.id, text: text.trim(), pageNumber: Number(page), note: note.trim(), isSpoiler: spoiler } });
+      await quote({ variables: { bookId: book.id, text: text.trim(), pageNumber: Number(page), note: note.trim(), isSpoiler: spoiler, visibility } });
       setText(''); setNote(''); setPage(''); setSpoiler(false); setQuoteSent(true); await refetch();
-    } catch (failure) { setQuoteError(failure.message.includes('QUOTE_EXISTS:') ? 'Bu alıntı daha önce paylaşıldı. Kitabın alıntılarını inceleyebilirsiniz.' : failure.message); }
+    } catch (failure) { setQuoteError(failure.message.includes('QUOTE_EXISTS:') ? 'Bu alıntı seçtiğiniz görünürlükle zaten kaydedilmiş.' : failure.message); }
   }
   return <MainLayout><div className="printed-page"><Container maxWidth="5xl">
     <CatalogBackLink to="/printed-books" className="ui-text-link">← Basılı kitaplara dön</CatalogBackLink>
@@ -87,9 +90,10 @@ export default function PrintedBookDetail({ book, comments, commentsLoading, cur
         <Input label="Basılı kitaptaki sayfa numarası" name="printed-page-number" type="number" value={page} onChange={event => setPage(event.target.value)} required min={1} max={book.pageCount} disabled={quoting} />
         <Textarea label="Notunuz (isteğe bağlı)" name="printed-quote-note" value={note} onChange={event => setNote(event.target.value)} maxLength={1000} disabled={quoting} />
         <label className="printed-check"><input type="checkbox" checked={spoiler} onChange={event => setSpoiler(event.target.checked)} disabled={quoting} /> Spoiler içeriyor</label>
-        <Button type="submit" isLoading={quoting}>Alıntıyı paylaş</Button>
+        <QuoteVisibility value={visibility} onChange={setVisibility} disabled={quoting} id="printed-quote-visibility" />
+        <Button type="submit" isLoading={quoting}>{visibility === 'PRIVATE' ? 'Özel olarak kaydet' : 'Alıntıyı paylaş'}</Button>
       </form></details> : <p><Link className="ui-text-link" to="/login">Alıntı paylaşmak için giriş yapın</Link></p>}
-      {quoteError && <p className="ui-notice ui-notice--error" role="alert">{quoteError}</p>}{quoteSent && <p className="ui-notice ui-notice--success" role="status">Alıntınız paylaşıldı.</p>}
+      {quoteError && <p className="ui-notice ui-notice--error" role="alert">{quoteError}</p>}{quoteSent && <p className="ui-notice ui-notice--success" role="status">{visibility === 'PRIVATE' ? 'Alıntınız yalnızca sizin görebileceğiniz şekilde kaydedildi.' : 'Alıntınız paylaşıldı.'}</p>}
       {loading && <p role="status">Alıntılar yükleniyor…</p>}{error && <p className="ui-notice ui-notice--error" role="alert">Alıntılar yüklenemedi. {error.message}</p>}
       <div className="printed-quotes">{data?.getQuotesByBook?.map(item => <QuoteCard key={item.id} quote={item} />)}{!loading && !error && data?.getQuotesByBook?.length === 0 && <p>Bu kitaptan henüz bir alıntı paylaşılmadı.</p>}</div>
       </section>

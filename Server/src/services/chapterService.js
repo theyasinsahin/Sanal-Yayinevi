@@ -1,3 +1,4 @@
+import { chapterWordCount } from '../utils/chapterLength.js';
 import { recordWriting } from './writingService.js';
 import { inactiveUserIds } from '../utils/activeUsers.js';
 import Chapter from '../models/chapter.js';
@@ -53,8 +54,8 @@ export const updateChapter = async (chapterId, data) => {
   const previous = await Chapter.findOne({ _id: chapterId, isDeleted: false });
   const updatedChapter = await Chapter.findOneAndUpdate(
     { _id: chapterId, isDeleted: false },
-    data,
-    { new: true }
+    { ...data, ...(typeof data.content === 'string' ? { wordCount: chapterWordCount(data.content) } : previous?.wordCount == null ? { wordCount: chapterWordCount(previous?.content) } : {}) },
+    { new: true, runValidators: true }
   );
   if (updatedChapter) {
     await recordWriting(updatedChapter.authorId, chapterId, previous?.content, updatedChapter.content);

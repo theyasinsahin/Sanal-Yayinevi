@@ -22,6 +22,7 @@ export async function seedClassification() {
       } else await Term.updateOne({ kind, slug }, { $setOnInsert: { kind, slug, name, isActive: true, sortOrder } }, { upsert: true });
     }
   }
+  await Term.updateOne({ kind: 'WARNING', slug: 'istismar' }, { $set: { isActive: false } });
 }
 const ids = (values, min, max, label) => {
   if (!Array.isArray(values) || values.length < min || values.length > max || values.some(id => !mongoose.isObjectIdOrHexString(id)) || new Set(values.map(String)).size !== values.length) throw new Error(`${label}: ${min}–${max} farklı, geçerli seçim yapın.`);
@@ -40,7 +41,7 @@ export async function validateClassification(input, userId, session = null) {
   const groups = [['FORMAT', format], ['FEATURE', features], ['WARNING', warnings], ['AUDIENCE', audience]];
   const [validGenres, terms, existingTags] = await Promise.all([
     Genre.countDocuments({ _id: { $in: genres }, isActive: true, classificationVersion: 1 }).session(session),
-    Term.find({ _id: { $in: groups.flatMap(([, values]) => values) }, isActive: true }).session(session).lean(),
+    Term.find({ _id: { $in: groups.flatMap(([, values]) => values) }, isActive: true, $nor: [{ kind: 'WARNING', slug: 'istismar' }] }).session(session).lean(),
     Term.find({ kind: 'TAG', normalizedName: { $in: tags.map(tag => tag.normalizedName) } }).session(session).lean(),
   ]);
   if (validGenres !== genres.length || groups.some(([kind, values]) => values.some(id => !terms.some(term => String(term._id) === id && term.kind === kind)))) throw new Error('Seçilen sınıflandırma bulunamadı, pasif veya yanlış alanda kullanıldı.');
@@ -66,7 +67,7 @@ export async function validateClassification(input, userId, session = null) {
 }
 export async function getClassificationOptions() {
   const [terms, genres] = await Promise.all([
-    Term.find({ isActive: true, kind: { $ne: 'TAG' } }).sort({ sortOrder: 1, _id: 1 }),
+    Term.find({ isActive: true, kind: { $ne: 'TAG' }, $nor: [{ kind: 'WARNING', slug: 'istismar' }] }).sort({ sortOrder: 1, _id: 1 }),
     Genre.find({ isActive: true, classificationVersion: 1 }).sort({ group: 1, sortOrder: 1, _id: 1 }),
   ]);
   const of = kind => terms.filter(term => term.kind === kind);

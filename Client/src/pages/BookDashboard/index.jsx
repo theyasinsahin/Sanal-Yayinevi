@@ -19,7 +19,7 @@ import {
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_BOOK_BY_ID } from '../../graphql/queries/book'; 
 import { UPDATE_BOOK_STATUS_MUTATION } from '../../graphql/mutations/book';
-import { CREATE_CHAPTER_MUTATION, UPDATE_CHAPTER_MUTATION, DELETE_CHAPTER_MUTATION } from '../../graphql/mutations/chapter';
+import { CREATE_CHAPTER_MUTATION, UPDATE_CHAPTER_MUTATION, DELETE_CHAPTER_MUTATION, SET_CHAPTER_VISIBILITY } from '../../graphql/mutations/chapter';
 import { parseContentToPages } from '../../utils/htmlPageSplitter';
 import useChapterAutosave from '../../hooks/useChapterAutosave';
 import SocialShareButton from '../../components/Sharing/SocialShareButton';
@@ -60,6 +60,9 @@ const BookDashboard = () => {
   });
   
   const [saveChapterContent] = useMutation(UPDATE_CHAPTER_MUTATION);
+  const [setChapterVisibility] = useMutation(SET_CHAPTER_VISIBILITY, {
+    refetchQueries: [{ query: GET_BOOK_BY_ID, variables: { id: bookId } }], awaitRefetchQueries: true,
+  });
   const [deleteChapterMutation] = useMutation(DELETE_CHAPTER_MUTATION);
 
   const persistChapter = useCallback(async ({ chapterId, content, title }) => {
@@ -73,6 +76,7 @@ const BookDashboard = () => {
   // --- STATE ---
   const [book, setBook] = useState(null);
   const [newChapterTitle, setNewChapterTitle] = useState('');
+  const [newChapterHidden, setNewChapterHidden] = useState(false);
   const [notification, setNotification] = useState({ isVisible: false, message: '', type: '' });
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
@@ -203,7 +207,7 @@ const BookDashboard = () => {
   const addNewChapter = async () => {
     if (!newChapterTitle.trim() || !bookId) return;
     await runAfterSaving(async () => {
-      await addChapter({ variables: { bookId, title: newChapterTitle.trim(), content: '', userId: user?.id } });
+      await addChapter({ variables: { bookId, title: newChapterTitle.trim(), content: '', userId: user?.id, ...(newChapterHidden ? { isHidden: true } : {}) } });
       setNewChapterTitle('');
     });
   };
@@ -215,6 +219,14 @@ const BookDashboard = () => {
       await deleteChapterMutation({ variables: { id: chapterId } });
       manager.remove(chapterId);
       showNotification('Bölüm silindi', 'success');
+    });
+  };
+
+  const toggleChapterVisibility = async () => {
+    const chapter = chapters.find(item => item.id === selectedChapter);
+    if (!chapter) return;
+    await runAfterSaving(async () => {
+      await setChapterVisibility({ variables: { chapterId: chapter.id, isHidden: !chapter.isHidden } });
     });
   };
 
@@ -299,6 +311,7 @@ const BookDashboard = () => {
             <Button variant="secondary" size="small" onClick={addNewChapter} disabled={editorLocked} className="w-full">
                <Add fontSize="small" /> Ekle
             </Button>
+            <label className="new-chapter-visibility"><input type="checkbox" checked={newChapterHidden} disabled={editorLocked} onChange={event => setNewChapterHidden(event.target.checked)} /> Yeni bölümü gizli oluştur</label>
           </div>
 
           <div className="chapter-list-scroll">
@@ -310,7 +323,7 @@ const BookDashboard = () => {
               >
                 <div className="chapter-row-content">
                   <FolderOpen fontSize="small" className="folder-icon" />
-                  <span className="chapter-title-text">{chapter.title}</span>
+                  <span className="chapter-title-text">{chapter.title}{chapter.isHidden && <small> · Gizli</small>}</span>
                 </div>
                 <button 
                   className="delete-btn"
@@ -406,7 +419,10 @@ const BookDashboard = () => {
                 </span>
               </div>
               <div className="editor-topbar-actions">
-                {book.status !== 'DRAFT' && <SocialShareButton type="CHAPTER" id={selectedChapter} label="Bölümü paylaş" beforeOpen={() => manager.flush()} disabled={editorLocked} />}
+                <Button type="button" variant="outline" disabled={editorLocked} aria-pressed={chapters.find(c => c.id === selectedChapter)?.isHidden === true} onClick={toggleChapterVisibility}>
+                  {chapters.find(c => c.id === selectedChapter)?.isHidden ? 'Okuyuculara aç' : 'Okuyuculardan gizle'}
+                </Button>
+                {book.status !== 'DRAFT' && !chapters.find(c => c.id === selectedChapter)?.isHidden && <SocialShareButton type="CHAPTER" id={selectedChapter} label="Bölümü paylaş" beforeOpen={() => manager.flush()} disabled={editorLocked} />}
               <Button variant="primary" onClick={saveChapter}
                 className="dashboard-save-button"
                 aria-label="Bölümü kaydet"

@@ -36,7 +36,7 @@ export const GET_BOOK_DETAIL = gql`
     getBookById(id: $id) {
       ...BookCardFields ...PrintedBookFields
       authorId likedBy tags
-      chapters { id title createdAt pageCount }
+      chapters { id title createdAt pageCount isHidden canReadContent wordCount }
     }
   }
 `;
@@ -157,6 +157,7 @@ export const GET_BOOK_BY_ID = gql`
         id
         title
         content
+        isHidden canReadContent wordCount
         createdAt
         pageCount
       }
@@ -187,6 +188,7 @@ export const GET_BOOK_READER_DATA = gql`
       chapters {
         id
         title
+        pageCount wordCount isHidden canReadContent
       }
         ...WorkClassificationFields
     }
@@ -195,13 +197,13 @@ export const GET_BOOK_READER_DATA = gql`
 
 export const GET_READING_CHAPTER = gql`
   query GetReadingChapter($bookId: ID!, $chapterId: ID!) {
-    getReadingChapter(bookId: $bookId, chapterId: $chapterId) { id title content }
+    getReadingChapter(bookId: $bookId, chapterId: $chapterId) { id title content isHidden canReadContent wordCount pageCount }
   }
 `;
 
 export const GET_BOOK_READER_FULL = gql`
   query GetBookReaderFull($id: ID!) {
-    getBookById(id: $id) { id chapters { id title content } }
+    getBookById(id: $id) { id chapters { id title content isHidden canReadContent wordCount pageCount } }
   }
 `;
 

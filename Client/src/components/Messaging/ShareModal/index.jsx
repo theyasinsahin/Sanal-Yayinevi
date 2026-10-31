@@ -1,3 +1,4 @@
+import UserProfileLink from '../../UI/UserProfileLink';
 import React, { useState } from 'react';
 import { useGetConversations, useGetOrCreateConversation, useSendMessage } from '../../../hooks/useMessages';
 import { Typography } from '../../UI/Typography';
@@ -91,7 +92,7 @@ const ShareModal = ({ isOpen, onClose, type, attachedBookId, attachedBook, attac
               <div>
                 <Typography variant="caption" weight="medium">{attachedBook.title}</Typography>
                 <Typography variant="caption" color="muted">
-                  {attachedBook.author?.fullName ?? attachedBook.author?.username}
+                  <UserProfileLink user={attachedBook.author}>{attachedBook.author?.fullName ?? attachedBook.author?.username}</UserProfileLink>
                 </Typography>
               </div>
             </div>

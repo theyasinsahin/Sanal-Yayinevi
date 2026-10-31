@@ -1,3 +1,4 @@
+import UserProfileLink from '../../UI/UserProfileLink';
 // src/components/ParagraphComment/ParagraphCommentPanel/index.jsx
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
@@ -90,7 +91,7 @@ const ParagraphCommentPanel = ({ bookId, chapterId, paragraphIndex, onClose }) =
                   </div>
                 )}
                 <div className="pcpanel-comment-meta">
-                  <span className="pcpanel-username">@{comment.user?.username}</span>
+                  <UserProfileLink user={comment.user} className="pcpanel-username">@{comment.user?.username}</UserProfileLink>
                   <span className="pcpanel-time">{timeAgo(comment.createdAt)}</span>
                 </div>
                 {user?.id === comment.user?.id && (
