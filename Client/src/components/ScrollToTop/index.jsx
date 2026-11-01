@@ -7,6 +7,7 @@ export default function ScrollToTop() {
   const location = useLocation();
   const navigationType = useNavigationType();
   const positions = useRef(new Map());
+  const previousPath = useRef(null);
 
   useLayoutEffect(() => {
     const previous = window.history.scrollRestoration;
@@ -15,6 +16,10 @@ export default function ScrollToTop() {
   }, []);
 
   useLayoutEffect(() => {
+    const preservePosition = navigationType === 'REPLACE'
+      && catalogPaths.has(location.pathname)
+      && previousPath.current === location.pathname;
+    previousPath.current = location.pathname;
     const saved = positions.current.get(location.key);
     const target = navigationType === 'POP' && catalogPaths.has(location.pathname) ? saved : null;
     let restoring = Boolean(target);
@@ -42,7 +47,7 @@ export default function ScrollToTop() {
       timeout = setTimeout(stopRestoring, 10000);
       restore();
     } else {
-      window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
+      if (!preservePosition) window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
       remember();
     }
     window.addEventListener('scroll', remember, { passive: true });

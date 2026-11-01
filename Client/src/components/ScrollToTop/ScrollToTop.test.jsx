@@ -12,6 +12,7 @@ function Navigation() {
   const navigate = useNavigate();
   const location = useLocation();
   return <><Link to="/kitap/example">Book</Link><Link to="/feed">Discover</Link><button onClick={() => navigate(-1)}>Back</button><button onClick={() => navigate(1)}>Forward</button>
+    <button onClick={() => navigate(`${location.pathname}?search=Eyrükit&page=1`, { replace: true })}>Search</button>
     <PrintedBookCard book={{ id: 'example', publicPath: '/kitap/example', title: 'Printed example' }} />
     <CatalogBackLink to="/printed-books">Return to catalog</CatalogBackLink>
     <output data-testid="location">{location.pathname}{location.search}</output>
@@ -52,6 +53,20 @@ test('restoration waits for delayed catalog content and stops once the saved pos
   resized();
   expect(window.scrollTo).toHaveBeenCalledWith({ left: 0, top: 3000, behavior: 'instant' });
   expect(disconnected).toHaveBeenCalled();
+});
+
+test.each(['/feed', '/printed-books?page=3'])('replacing search on %s preserves scroll and remembers it for returning from a book', path => {
+  show(path);
+  window.scrollY = 650;
+  fireEvent.scroll(window);
+  window.scrollTo.mockClear();
+  fireEvent.click(screen.getByText('Search'));
+  expect(window.scrollTo).not.toHaveBeenCalled();
+  expect(window.scrollY).toBe(650);
+  fireEvent.click(screen.getByText('Book'));
+  expect(window.scrollY).toBe(0);
+  fireEvent.click(screen.getByText('Back'));
+  expect(window.scrollY).toBe(650);
 });
 
 test('new catalog visits start at the top and have independent history positions', () => {
