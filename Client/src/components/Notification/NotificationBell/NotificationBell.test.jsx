@@ -51,7 +51,7 @@ test.each([['USER', '/book-detail/book'], ['ADMIN', '/admin/printed-books']])('r
   mockNotifications = [{ id: 'n', type: 'BOOK_REVIEW', title: 'Review', message: 'Decision', createdAt: String(Date.now()), isRead: true, meta: { bookId: 'book' } }];
   show();
   fireEvent.click(screen.getByRole('button', { name: 'Bildirimler' }));
-  expect(screen.getByRole('link', { name: 'Başvuruyu görüntüle' })).toHaveAttribute('href', path);
-  fireEvent.click(screen.getByRole('link', { name: 'Başvuruyu görüntüle' }));
+  expect(screen.getByRole('link', { name: 'İsteği görüntüle' })).toHaveAttribute('href', path);
+  fireEvent.click(screen.getByRole('link', { name: 'İsteği görüntüle' }));
   expect(screen.getByRole('button', { name: 'Bildirimler' })).toHaveAttribute('aria-expanded', 'false');
 });

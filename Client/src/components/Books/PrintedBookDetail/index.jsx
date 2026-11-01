@@ -80,7 +80,7 @@ export default function PrintedBookDetail({ book, comments, commentsLoading, cur
     {user && ((currentUserId && book.authorId === currentUserId) || user.role === 'ADMIN' || (!approved && book.submittedBy?.id === currentUserId)) && <ClassificationEditor key={book.id} book={book} />}
     {approved && <BookShareButton book={book} />}
     {approved && <PrintedReadingEditor key={`${book.id}:${user?.id || 'guest'}`} bookId={book.id} />}
-    {!approved && <p className="ui-notice ui-notice--warning" role="status">{book.publicationStatus === 'PENDING' ? 'Bu başvuru Betik incelemesinde. Henüz herkese açık katalogda yer almıyor.' : `Başvurunuz için düzenleme gerekiyor. ${book.reviewNote || ''} Bilgileri düzelterek basılı kitaplar sayfasından yeniden başvurabilirsiniz.`}</p>}
+    {!approved && <p className="ui-notice ui-notice--warning" role="status">{book.publicationStatus === 'PENDING' ? 'Bu istek Betik incelemesinde. Henüz herkese açık katalogda yer almıyor.' : `İsteğiniz için düzenleme gerekiyor. ${book.reviewNote || ''} Bilgileri düzelterek basılı kitaplar sayfasından yeniden istek gönderebilirsiniz.`}</p>}
     <section className="printed-panel"><h2>Kitap hakkında</h2><p className="printed-description">{book.description}</p></section>
     {approved && user && !book.authorId && <ClaimForm book={book} refresh={refresh} />}
     {approved && <>

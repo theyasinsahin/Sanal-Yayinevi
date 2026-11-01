@@ -10,3 +10,6 @@
 .printed-book-card-body .printed-book-author { color: var(--text-main); font-weight: 600; }
 .printed-book-card-body .ui-text-link { display: inline-block; margin-top: .5rem; font-size: .8rem; }
 @media (max-width: 400px) { .printed-book-card { gap: 1rem; padding: 1rem; } .printed-book-cover { width: 76px; } }
+.printed-book-card--cover-only { display: block; padding: 0; border: 0; background: transparent; border-radius: 3px 6px 6px 3px; }
+.printed-book-card--cover-only .printed-book-cover { width: 100%; border-left: 0; }
+.printed-book-card--cover-only .printed-book-cover img { display: block; }

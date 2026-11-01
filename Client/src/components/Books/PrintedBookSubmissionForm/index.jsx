@@ -25,7 +25,7 @@ export default function PrintedBookSubmissionForm({ onSubmitted, onClose }) {
       const { data } = await lookup({ variables: { isbn: form.isbn } });
       const result = data.lookupPrintedBook;
       setForm(current => ({ ...current, isbn: result.isbn, ...(result.found ? Object.fromEntries(['title', 'printedAuthor', 'publisher', 'publicationYear', 'pageCount', 'imageUrl'].filter(key => result[key]).map(key => [key, String(result[key])])) : {}) }));
-      setMessage(result.found ? 'Kitap bilgileri getirildi. Baskı bilgilerini kontrol edip eksik alanları tamamlayın.' : 'Bu ISBN için bilgi getirilemedi. Künye bilgilerini elle girerek başvurabilirsiniz.');
+      setMessage(result.found ? 'Kitap bilgileri getirildi. Baskı bilgilerini kontrol edip eksik alanları tamamlayın.' : 'Bu ISBN için bilgi getirilemedi. Künye bilgilerini elle girerek istek gönderebilirsiniz.');
     } catch (failure) { setError(failure.message); }
   }
   async function send(event) {
@@ -39,8 +39,8 @@ export default function PrintedBookSubmissionForm({ onSubmitted, onClose }) {
     } catch (failure) { setError(failure.message); }
   }
   return <section className="printed-panel" aria-labelledby="printed-submit-title">
-    <h2 id="printed-submit-title">Basılı kitap başvurusu</h2>
-    <p className="ui-notice">Başvurunuz Betik tarafından incelendikten sonra listelenir. Kitabı eklemek, içerik yayımlama yetkisi vermez. Yazarsanız onaylanan kitap üzerinden ayrıca hak talebinde bulunabilirsiniz.</p>
+    <h2 id="printed-submit-title">Basılı kitap ekleme isteği</h2>
+    <p className="ui-notice">Kitap ekleme isteğiniz Betik tarafından incelenir. Onaylanan kitaplar katalogda listelenir. Kitabı eklemek, içerik yayımlama yetkisi vermez. Yazarsanız onaylanan kitap üzerinden ayrıca hak talebinde bulunabilirsiniz.</p>
     <form onSubmit={send}>
       <div className="printed-isbn-row">
         <Input label="ISBN (varsa)" name="isbn" value={form.isbn} onChange={change} disabled={busy} placeholder="978…" maxLength={32} />

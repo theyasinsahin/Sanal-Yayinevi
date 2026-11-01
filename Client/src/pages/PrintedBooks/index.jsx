@@ -24,23 +24,29 @@ export default function PrintedBooksPage() {
   const search = (params.get('search') || '').slice(0, 150);
   const classification = Object.fromEntries(['formats', 'genres', 'tags', 'features', 'audiences'].map(key => [key, params.getAll(key)]));
   const hasClassification = Object.values(classification).some(values => values.length);
-  const [term, setTerm] = useState(search);
   const [adding, setAdding] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   useEffect(() => { setAdding(false); setSubmitted(false); }, [user?.id]);
-  useEffect(() => setTerm(search), [search]);
   const { data, loading, error, refetch } = useQuery(GET_PRINTED_BOOKS, { variables: { page, search, ...(hasClassification ? { classification } : {}) }, fetchPolicy: 'cache-and-network' });
   const { data: mine, error: mineError, refetch: refreshMine } = useQuery(GET_MY_PRINTED_SUBMISSIONS, { skip: !user, fetchPolicy: 'network-only' });
   const catalog = data?.getPrintedBooks;
   return <MainLayout><div className="printed-page"><Container maxWidth="6xl">
     <header className="printed-heading"><Typography variant="caption">BETİK KİTAPLIĞI</Typography><Typography variant="h1" weight="bold">Basılı Kitaplar</Typography><Typography variant="body" color="muted">Raflarda yerini almış eserleri keşfedin. Okur yorumlarıyla tanışın, sevdiğiniz satırları paylaşın.</Typography>
-      <div className="printed-actions">{user ? <Button onClick={() => { setAdding(value => !value); setSubmitted(false); }}>{adding ? 'Başvuruyu kapat' : 'Basılı kitap ekle'}</Button> : <Link className="ui-text-link" to="/login">Kitap eklemek için giriş yapın</Link>}</div>
+      <div className="printed-actions">{user ? <Button onClick={() => { setAdding(value => !value); setSubmitted(false); }}>{adding ? 'İstek formunu kapat' : 'Basılı kitap ekle'}</Button> : <Link className="ui-text-link" to="/login">Kitap eklemek için giriş yapın</Link>}</div>
     </header>
-    {submitted && <p className="ui-notice ui-notice--success" role="status">Başvurunuz Betik'e iletildi. Onaydan sonra kitabınız burada listelenecek.</p>}
+    {submitted && <p className="ui-notice ui-notice--success" role="status">İsteğiniz Betik'e iletildi. Onaydan sonra kitabınız burada listelenecek.</p>}
     {adding && user && <PrintedBookSubmissionForm onClose={() => setAdding(false)} onSubmitted={() => { setAdding(false); setSubmitted(true); refreshMine().catch(() => {}); }} />}
-    {user && mine?.getMyPrintedSubmissions?.length > 0 && <details className="printed-panel"><summary>Başvurularım ({mine.getMyPrintedSubmissions.length})</summary><ul className="printed-submissions">{mine.getMyPrintedSubmissions.map(book => <li key={book.id}><Link to={bookPath(book)} className="ui-text-link">{book.title}</Link><Badge variant={book.publicationStatus === 'APPROVED' ? 'success' : book.publicationStatus === 'REJECTED' ? 'danger' : 'warning'}>{reviewLabels[book.publicationStatus]}</Badge>{book.reviewNote && <p>{book.reviewNote}</p>}</li>)}</ul></details>}
-    {user && mineError && <p className="ui-notice ui-notice--error" role="alert">Başvurularınız yüklenemedi. {mineError.message}</p>}
-    <form className="printed-search" onSubmit={event => { event.preventDefault(); setParams(previous => { const next = new URLSearchParams(previous); next.set('search', term.trim()); next.set('page', '1'); return next; }); }}><Input label="Kitap, yazar, yayınevi veya ISBN ara" name="printed-search" value={term} onChange={event => setTerm(event.target.value)} maxLength={150} /><Button type="submit" variant="outline">Ara</Button></form>
+    {user && mine?.getMyPrintedSubmissions?.length > 0 && <details className="printed-panel"><summary>Basılı Kitap Katkılarım ({mine.getMyPrintedSubmissions.length})</summary><ul className="printed-submissions">{mine.getMyPrintedSubmissions.map(book => <li key={book.id}><Link to={bookPath(book)} className="ui-text-link">{book.title}</Link><Badge variant={book.publicationStatus === 'APPROVED' ? 'success' : book.publicationStatus === 'REJECTED' ? 'danger' : 'warning'}>{reviewLabels[book.publicationStatus]}</Badge>{book.reviewNote && <p>{book.reviewNote}</p>}</li>)}</ul></details>}
+    {user && mineError && <p className="ui-notice ui-notice--error" role="alert">Basılı kitap katkılarınız yüklenemedi. {mineError.message}</p>}
+    <form className="printed-search" role="search" onSubmit={event => event.preventDefault()}><Input type="search" label="Kitap, yazar, yayınevi veya ISBN ara" name="printed-search" value={search} onChange={event => {
+      const value = event.target.value.slice(0, 150);
+      setParams(previous => {
+        const next = new URLSearchParams(previous);
+        if (value) next.set('search', value); else next.delete('search');
+        next.set('page', '1');
+        return next;
+      }, { replace: true, preventScrollReset: true });
+    }} maxLength={150} /></form>
     <details className="printed-panel"><summary>Eser biçimi, tür ve diğer filtreler</summary><ClassificationFilters value={classification} onChange={value => setParams(previous => {
       const next = new URLSearchParams(previous);
       for (const key of ['formats', 'genres', 'tags', 'features', 'audiences']) { next.delete(key); for (const code of value[key] || []) next.append(key, code); }
@@ -48,7 +54,7 @@ export default function PrintedBooksPage() {
     })} /></details>
     {loading && <p role="status">Basılı kitaplar yükleniyor…</p>}
     {error && <div className="ui-notice ui-notice--error" role="alert"><p>{error.message}</p><Button onClick={() => refetch()}>Tekrar dene</Button></div>}
-    {!error && catalog && <><p className="printed-count">{catalog.total} basılı eser</p>{catalog.books.length ? <div className="printed-grid">{catalog.books.map(book => <PrintedBookCard key={book.id} book={book} />)}</div> : <section className="printed-panel printed-empty"><h2>{search ? 'Aramanıza uygun bir eser bulunamadı' : 'Raflarımız ilk eserlerini bekliyor'}</h2><p>{search ? 'Başka bir kitap adı, yazar veya ISBN ile arayın.' : 'Fiziksel olarak yayımlanmış bir kitabı incelemeye göndererek kataloğa katkıda bulunabilirsiniz.'}</p></section>}
+    {!error && catalog && <><p className="printed-count">{catalog.total} basılı eser</p>{catalog.books.length ? <div className="printed-grid">{catalog.books.map(book => <PrintedBookCard key={book.id} book={book} coverOnly />)}</div> : <section className="printed-panel printed-empty"><h2>{search ? 'Aramanıza uygun bir eser bulunamadı' : 'Raflarımız ilk eserlerini bekliyor'}</h2><p>{search ? 'Başka bir kitap adı, yazar veya ISBN ile arayın.' : 'Fiziksel olarak yayımlanmış bir kitabı incelemeye göndererek kataloğa katkıda bulunabilirsiniz.'}</p></section>}
       {catalog.totalPages > 1 && <nav className="printed-actions" aria-label="Basılı kitap sayfaları"><Button variant="outline" disabled={page <= 1} onClick={() => setParams(previous => { const next = new URLSearchParams(previous); next.set('page', String(page - 1)); return next; })}>Önceki</Button><span>{page} / {catalog.totalPages}</span><Button variant="outline" disabled={page >= catalog.totalPages} onClick={() => setParams(previous => { const next = new URLSearchParams(previous); next.set('page', String(page + 1)); return next; })}>Sonraki</Button></nav>}</>}
   </Container></div></MainLayout>;
 }
