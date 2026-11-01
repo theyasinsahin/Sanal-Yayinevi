@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import GenrePreferenceChoices from '../../components/Books/Classification/GenrePreferenceChoices';
+import { genreName } from '../../utils/genreDisplay';
+import React, { useState } from 'react';
 import { useQuery } from '@apollo/client';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 import { useFilters } from '../../context/FiltersContext';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { filterBooks } from '../../utils/FilterBooks';
-import { GET_BOOKS } from '../../graphql/queries/book';
-import { GET_ALL_USERS } from '../../graphql/queries/user';
+import { useBookFeed } from '../../hooks/useBookFeed';
 import { GET_ALL_GENRES } from '../../graphql/queries/genre';
 
 import FeedFilters from '../../components/Feed/FeedFilters';
@@ -28,14 +28,6 @@ const FeedOnboarding = ({ onComplete }) => {
   const { data, loading } = useQuery(GET_ALL_GENRES);
   const { savePreference, saving } = useUserPreference();
   const { showToast } = useToast();
-
-  const toggle = (id) => {
-    setSelected(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
 
   const handleSave = async () => {
     if (selected.size === 0) return;
@@ -61,22 +53,7 @@ const FeedOnboarding = ({ onComplete }) => {
         En az bir tür seç, sana özel kitap önerileri hazırlayalım.
       </Typography>
 
-      <div className="feed-onboarding-genres">
-        {genres.map((genre) => {
-          const isSelected = selected.has(genre.id);
-          const color = genre.hexColor ?? '#6B7280';
-          return (
-            <button
-              key={genre.id}
-              className={`genre-pill${isSelected ? ' selected' : ''}`}
-              style={isSelected ? { color, borderColor: color, backgroundColor: color + '15' } : {}}
-              onClick={() => toggle(genre.id)}
-            >
-              {genre.name}
-            </button>
-          );
-        })}
-      </div>
+      <GenrePreferenceChoices genres={genres} selected={[...selected]} onChange={values => setSelected(new Set(values))} disabled={saving} />
 
       <button
         className="onboarding-save-btn"
@@ -118,7 +95,7 @@ const PreferenceBox = ({ preference, onEdit }) => {
               backgroundColor: (genre.hexColor ?? '#6B7280') + '12',
             }}
           >
-            {genre.name}
+            {genreName(genre.name)}
           </span>
         ))}
       </div>
@@ -129,29 +106,28 @@ const PreferenceBox = ({ preference, onEdit }) => {
 // --- ANA SAYFA ---
 const FeedPage = () => {
   const { filters } = useFilters();
+  const catalogTitle = filters.sortBy === 'closestToTarget' ? 'Hedefe en yakın kitaplar' :
+    filters.funding === 'FUNDED' ? 'Hedefini tamamlayan kitaplar' : filters.funding === 'ACTIVE' ? 'Desteği açık kitaplar' : 'Keşfet';
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('all');
+  const [params, setParams] = useSearchParams();
+  const activeTab = params.get('tab') === 'for-you' ? 'for-you' : 'all';
+  const setActiveTab = tab => setParams(previous => {
+    const next = new URLSearchParams(previous);
+    if (tab === 'all') next.delete('tab');
+    else next.set('tab', tab);
+    return next;
+  }, { replace: true });
   const [editingPreference, setEditingPreference] = useState(false);
 
-  // Keşfet sayfasına her girişte sayfayı en üste al: kullanıcı önceki
-  // sayfada aşağı kaydırmış olsa bile buraya gelince tarayıcı scroll
-  // pozisyonunu koruyabiliyor, bu da sidebar'daki tür filtreleri ve
-  // arama kutusunun görünmemesine yol açıyordu.
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-  const { loading: booksLoading, error: booksError, data: booksData } = useQuery(GET_BOOKS);
-  const { loading: usersLoading, data: usersData } = useQuery(GET_ALL_USERS);
-  const { loading: genresLoading, data: genresData } = useQuery(GET_ALL_GENRES);
+  const { books: filteredBooks, loading: booksLoading, error: booksError, refetch, loadMore: loadMoreBooks, loadingMore, moreError, hasNextPage } = useBookFeed(filters, activeTab === 'all');
   const { preference, onboardingCompleted, preferenceLoading } = useUserPreference();
 
   // Recommendations her zaman hook seviyesinde çağrılmalı (hooks koşullu çağrılamaz)
-  const { recommendations, loading: recLoading, loadMore } = useRecommendations(10);
+  const { recommendations, loading: recLoading, loadMore } = useRecommendations(10, 0, activeTab === 'for-you' && onboardingCompleted, { fetchPolicy: 'cache-first' });
   const recommendedBooks = recommendations.map(r => r.book);
 
   // Loading
-  if (booksLoading || usersLoading || genresLoading) {
+  if (booksLoading && activeTab === 'all') {
     return (
       <MainLayout>
         <div className="feed-page-wrapper">
@@ -159,11 +135,11 @@ const FeedPage = () => {
             <div className="feed-layout-grid">
               <aside className="feed-sidebar">
                 <FeedSearch />
-                <FeedFilters genres={[]} />
+                <FeedFilters />
               </aside>
               <main className="feed-main-content">
                 <div className="feed-header">
-                  <Typography variant="h4" weight="bold">Keşfet</Typography>
+                  <Typography variant="h4" weight="bold">{catalogTitle}</Typography>
                   <Typography variant="body" color="muted">Yükleniyor...</Typography>
                 </div>
                 <BookGrid loading={true} skeletonCount={9} />
@@ -176,7 +152,7 @@ const FeedPage = () => {
   }
 
   // Hata
-  if (booksError) {
+  if (booksError && activeTab === 'all') {
     return (
       <MainLayout>
         <div className="feed-page-wrapper">
@@ -184,7 +160,7 @@ const FeedPage = () => {
             <div className="feed-layout-grid">
               <aside className="feed-sidebar">
                 <FeedSearch />
-                <FeedFilters genres={[]} />
+                <FeedFilters />
               </aside>
               <main className="feed-main-content">
                 <div style={{ textAlign: 'center', padding: '4rem 1rem' }}>
@@ -193,7 +169,7 @@ const FeedPage = () => {
                     Geçici bir sorun olabilir. Lütfen biraz sonra tekrar deneyin.
                   </Typography>
                   <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
-                    <Button variant="primary" onClick={() => window.location.reload()}>Yenile</Button>
+                    <Button variant="primary" onClick={() => refetch()}>Yenile</Button>
                     <Link to="/" style={{ textDecoration: 'none' }}>
                       <Button variant="outline">Ana Sayfaya Dön</Button>
                     </Link>
@@ -208,20 +184,6 @@ const FeedPage = () => {
   }
 
   // Veri işleme
-  const rawBooks  = booksData?.getAllBooks  ?? [];
-  const allUsers  = usersData?.getAllUsers  ?? [];
-  const allGenres = genresData?.getAllGenres ?? [];
-
-  const enrichedBooks = rawBooks.map(book => {
-    const authorDetail = allUsers.find(u => u.id === book.authorId || u._id === book.authorId);
-    return {
-      ...book,
-      author: authorDetail || { username: 'Bilinmiyor', fullName: 'Bilinmiyor' },
-      genre:  book.genre?.slug ?? 'Tümü',
-    };
-  });
-
-  const filteredBooks = filterBooks(enrichedBooks, filters);
 
   const handlePreferenceEdit = () => {
     setEditingPreference(true);
@@ -241,7 +203,7 @@ const FeedPage = () => {
             {/* SIDEBAR */}
             <aside className="feed-sidebar">
               <FeedSearch />
-              <FeedFilters genres={allGenres} />
+              <FeedFilters />
               {!preferenceLoading && (
                 <PreferenceBox
                   preference={preference}
@@ -276,7 +238,7 @@ const FeedPage = () => {
               {activeTab === 'all' && (
                 <>
                   <div className="feed-header">
-                    <Typography variant="h4" weight="bold">Keşfet</Typography>
+                    <Typography variant="h4" weight="bold">{catalogTitle}</Typography>
                     <Typography variant="body" color="muted">
                       {filteredBooks.length} kitap listeleniyor
                     </Typography>
@@ -294,6 +256,12 @@ const FeedPage = () => {
                       </Typography>
                     </div>
                   )}
+                  {moreError && <p className="ui-notice" role="alert">Kitaplar yüklenemedi. Yeniden deneyebilirsiniz.</p>}
+                  {hasNextPage && <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+                    <Button variant="outline" disabled={loadingMore} onClick={loadMoreBooks}>
+                      {loadingMore ? 'Yükleniyor...' : 'Daha fazla göster'}
+                    </Button>
+                  </div>}
                 </>
               )}
 
@@ -331,7 +299,7 @@ const FeedPage = () => {
 
                       <BookGrid
                         books={recommendedBooks}
-                        loading={recLoading}
+                        loading={recLoading && !recommendedBooks.length}
                         recommendations={recommendations}
                         skeletonCount={6}
                       />

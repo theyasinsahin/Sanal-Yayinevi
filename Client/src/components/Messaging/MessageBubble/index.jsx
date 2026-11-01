@@ -1,3 +1,5 @@
+import UserProfileLink from '../../UI/UserProfileLink';
+import { bookPath } from '../../../utils/publicPaths';
 import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Typography } from '../../UI/Typography';
@@ -38,7 +40,7 @@ const BookAttachment = ({ book }) => {
       className="bubble-book-card"
       onClick={(e) => {
         e.stopPropagation();
-        navigate(`/book-detail/${book.id}`);
+        navigate(bookPath(book));
       }}
     >
       {book.imageUrl && (
@@ -55,7 +57,7 @@ const BookAttachment = ({ book }) => {
         </Typography>
         {book.author && (
           <Typography variant="caption" color="muted">
-            {book.author.fullName ?? book.author.username}
+            <UserProfileLink user={book.author}>{book.author.fullName ?? book.author.username}</UserProfileLink>
           </Typography>
         )}
         <span className="bubble-book-link">Kitaba git →</span>
@@ -73,7 +75,7 @@ const QuoteAttachment = ({ quote }) => {
       className="bubble-quote-card"
       onClick={(e) => {
         e.stopPropagation();
-        if (quote.book?.id) navigate(`/book-detail/${quote.book.id}`);
+        if (quote.book?.id) navigate(bookPath(quote.book));
       }}
     >
       <span className="bubble-quote-label">Alıntı</span>

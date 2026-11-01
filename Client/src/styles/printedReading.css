@@ -1,0 +1,13 @@
+/* Shared by the printed-book detail and profile library. */
+.printed-reading-editor form { display: grid; gap: 1rem; }
+.printed-rating-label { display: grid; gap: .5rem; max-width: 16rem; font-weight: 600; }
+.printed-rating-label select { padding: .65rem; border: 1px solid var(--color-border-secondary); border-radius: var(--border-radius-lg); color: var(--color-text-primary); background: var(--color-background-secondary); font: inherit; }
+.printed-reading-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 1rem; }
+.printed-reading-card { border: 1px solid var(--color-border-secondary); border-radius: var(--border-radius-lg); padding: 1rem; min-width: 0; background: var(--color-background-secondary); }
+.printed-reading-book { display: flex; gap: 1rem; align-items: flex-start; }
+.printed-reading-book img { width: 64px; height: 94px; object-fit: cover; border-radius: .3rem; }
+.printed-reading-book h3 { margin: 0 0 .4rem; }
+.printed-reading-stars { color: var(--color-text-primary); margin: .8rem 0; }
+.printed-reading-stars span[aria-hidden] { color: #b67b08; letter-spacing: .08em; }
+.printed-reading-review { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
+.printed-reading-actions { display: flex; gap: .8rem; align-items: center; flex-wrap: wrap; margin-top: 1rem; }

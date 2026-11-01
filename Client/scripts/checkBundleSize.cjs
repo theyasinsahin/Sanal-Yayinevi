@@ -1,0 +1,10 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const { gzipSync } = require('node:zlib');
+const build = path.resolve(__dirname, '../build');
+const manifest = JSON.parse(fs.readFileSync(path.join(build, 'asset-manifest.json'), 'utf8'));
+const initial = manifest.entrypoints.filter(file => file.endsWith('.js'));
+const bytes = initial.reduce((sum, file) => sum + gzipSync(fs.readFileSync(path.join(build, file))).length, 0);
+const budget = 220 * 1024;
+console.log(`Initial JavaScript: ${bytes} gzip bytes (budget ${budget}).`);
+if (bytes > budget) process.exitCode = 1;

@@ -2,25 +2,34 @@ import { notifyUser } from './notificationService.js';
 import { inactiveUserIds } from '../utils/activeUsers.js';
 import Book from '../models/book.js';
 import User from '../models/user.js';
-import Genre from '../models/genre.js';
+import { validateClassification } from './classificationService.js';
 import Quote from '../models/quote.js';
 import * as ScoreService from './scoreService.js';
 import * as ChapterService from './chapterService.js';
 import * as CommentService from './commentService.js';
+import { isPrintedBook, visiblePrintedFilter, digitalBookFilter } from '../utils/printedBooks.js';
+import { FundingCampaign } from '../models/printFunding.js';
 
 // ── Okuma İşlemleri ──────────────────────────────────────────────
 // Varsayılan olarak tüm okuma fonksiyonları silinmiş (isDeleted: true)
 // kitapları hariç tutar. Admin panelinde silinenleri de görmek gerekirse
 // includeDeleted: true geçilebilir.
 
-export const findBookById = async (id, { includeDeleted = false } = {}) => {
+export const findBookById = async (id, { includeDeleted = false, viewer } = {}) => {
   const query = { _id: id };
-  if (!includeDeleted) { query.isDeleted = false; query.authorId = { $nin: await inactiveUserIds() }; }
-  return await Book.findOne(query);
+  if (!includeDeleted) query.isDeleted = false;
+  // Printed editions remain catalog records even without a Betik author account.
+  const book = await Book.findOne(query);
+  if (!book || includeDeleted) return book;
+  if (isPrintedBook(book)) {
+    return book.publicationStatus === 'APPROVED' || viewer?.role === 'ADMIN' || (viewer && String(book.submittedBy) === String(viewer._id || viewer.id)) ? book : null;
+  }
+  return (await inactiveUserIds()).some(userId => String(userId) === String(book.authorId)) ? null : book;
 };
 
 export const findAllBooks = async () => {
   return await Book.find({
+    ...digitalBookFilter,
     isDeleted: false,
     authorId: { $nin: await inactiveUserIds() },
     status: { $in: ['WRITING', 'COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'] }
@@ -33,12 +42,8 @@ export const findBooksByAuthorId = async (authorId) => {
   return await Book.find({ authorId, isDeleted: false }).sort({ createdAt: -1 });
 };
 
-export const findBooksByGenre = async (genre) => {
-  return await Book.find({ genre, isDeleted: false, authorId: { $nin: await inactiveUserIds() }, status: { $ne: 'DRAFT' } });
-};
-
 export const findBookByTitle = async (title) => {
-  return await Book.findOne({ title, isDeleted: false, authorId: { $nin: await inactiveUserIds() }, status: { $ne: 'DRAFT' } });
+  return await Book.findOne({ ...visiblePrintedFilter, title, isDeleted: false, authorId: { $nin: await inactiveUserIds() }, status: { $ne: 'DRAFT' } });
 };
 
 export const searchBooksInDb = async (query) => {
@@ -50,6 +55,7 @@ export const searchBooksInDb = async (query) => {
   const matchingUserIds = matchingUsers.map(u => u._id);
 
   return await Book.find({
+    ...digitalBookFilter,
     isDeleted: false,
     authorId: { $nin: await inactiveUserIds() },
     status: { $ne: 'DRAFT' },
@@ -62,19 +68,11 @@ export const searchBooksInDb = async (query) => {
 };
 
 export const createBook = async (bookData, userId) => {
-  // genre slug kontrolü yerine genreId ile çalış
-  if (!bookData.genreId) {
-    throw new Error('Kitap oluşturulurken bir tür seçmek zorunludur.');
-  }
-
-  // genreId'nin geçerli bir Genre olduğunu doğrula
-  const genreDoc = await Genre.findById(bookData.genreId);
-  if (!genreDoc || !genreDoc.isActive) {
-    throw new Error('Seçilen tür bulunamadı veya aktif değil.');
-  }
-
+  const { classification, ...metadata } = bookData;
+  const validated = await validateClassification(classification, userId);
   const newBook = new Book({
-    ...bookData,
+    ...metadata,
+    ...validated,
     authorId: userId
   });
 
@@ -85,7 +83,7 @@ export const createBook = async (bookData, userId) => {
 };
 
 export const toggleLike = async (bookId, userId) => {
-  const book = await Book.findOne({ _id: bookId, isDeleted: false });
+  const book = await Book.findOne({ ...visiblePrintedFilter, _id: bookId, isDeleted: false });
   if (!book) throw new Error('Kitap bulunamadı.');
 
   if (book.likedBy.includes(userId)) {
@@ -101,7 +99,7 @@ export const toggleLike = async (bookId, userId) => {
 
 export const incrementViews = async (bookId) => {
   return await Book.findOneAndUpdate(
-    { _id: bookId, isDeleted: false },
+    { ...visiblePrintedFilter, _id: bookId, isDeleted: false },
     { $inc: { 'stats.views': 1 } },
     { new: true }
   );
@@ -109,7 +107,7 @@ export const incrementViews = async (bookId) => {
 
 export const findBooksByIds = async (bookIds) => {
   if (!bookIds || bookIds.length === 0) return [];
-  return await Book.find({ _id: { $in: bookIds }, isDeleted: false, authorId: { $nin: await inactiveUserIds() }, status: { $ne: 'DRAFT' } });
+  return await Book.find({ ...visiblePrintedFilter, _id: { $in: bookIds }, isDeleted: false, authorId: { $nin: await inactiveUserIds() }, status: { $ne: 'DRAFT' } });
 };
 
 export const findDraftsByAuthorId = async (authorId) => {
@@ -127,9 +125,10 @@ export const softDeleteBook = async (bookId) => {
   const now = new Date();
 
   // 1. Kitabı işaretle
-  book.isDeleted = true;
-  book.deletedAt = now;
-  await book.save();
+  if (await FundingCampaign.exists({ bookId, $or: [{ activeLock: true }, { state: 'REFUNDING' }, { state: 'SUCCEEDED', productionState: { $nin: ['COMPLETED', 'CANCELLED'] } }] })) throw new Error('Aktif kampanya/üretim varken kitap kaldırılamaz. Önce kontrollü iptal sürecini yürütün.');
+  const changed = await Book.updateOne({ _id: book._id, isDeleted: false, $or: [{ printRevision: book.printRevision || 0 }, { printRevision: { $exists: false } }] }, { $set: { isDeleted: true, deletedAt: now }, $inc: { printRevision: 1 } });
+  if (!changed.modifiedCount) throw new Error('Kitap başka bir işlemde değişti; güncel durumu yeniden yükleyin.');
+  book.isDeleted = true; book.deletedAt = now;
 
   // 2. Bağlı bölümleri soft-delete et
   await ChapterService.softDeleteChaptersByBookId(bookId);

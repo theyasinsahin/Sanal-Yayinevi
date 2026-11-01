@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import UserProfileLink from '../../components/UI/UserProfileLink';
+import { sessionPath } from '../../utils/publicPaths';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { MainLayout } from '../../components/Layout/MainLayout';
 import { Container } from '../../components/UI/Container';
@@ -10,6 +12,11 @@ import { Badge } from '../../components/UI/Badge';
 import { Textarea } from '../../components/UI/Textarea';
 import { useGetSessions, useCreateSession } from '../../hooks/useSessions';
 import './SessionsPage.css';
+import SessionCover from '../../components/Sessions/SessionCover';
+import SessionCoverField from '../../components/Sessions/SessionCoverField';
+import SocialShareButton from '../../components/Sharing/SocialShareButton';
+import SessionAccessRequest from '../../components/Sessions/SessionAccessRequest';
+import useSessionCreationAccess from '../../hooks/useSessionCreationAccess';
 
 const SESSION_TYPE_LABEL = {
   OPEN: 'Herkese Açık',
@@ -23,15 +30,17 @@ const SESSION_TYPE_VARIANT = {
   PRIVATE: 'neutral',
 };
 
-const CreateSessionModal = ({ onClose, onCreate }) => {
+export const CreateSessionModal = ({ onClose, onCreate, creating = false }) => {
   const [form, setForm] = useState({
     title: '',
+    coverImageUrl: '',
     description: '',
     type: 'OPEN',
     accessCode: '',
     tags: [],
   });
   const [tagInput, setTagInput] = useState('');
+  const [uploading, setUploading] = useState(false);
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
@@ -62,30 +71,34 @@ const CreateSessionModal = ({ onClose, onCreate }) => {
   };
 
   const handleSubmit = async () => {
+    if (creating || uploading) return;
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
+    setErrors({});
 
     const input = {
       title: form.title.trim(),
+      coverImageUrl: form.coverImageUrl,
       description: form.description.trim(),
       type: form.type,
       tags: form.tags,
       ...(form.type === 'PRIVATE' && { accessCode: form.accessCode.trim() }),
     };
-    await onCreate(input);
-    onClose();
+    try { await onCreate(input); onClose(); }
+    catch (failure) { setErrors(previous => ({ ...previous, submit: failure.message })); }
   };
 
   return (
-    <div className="sessions-modal-overlay" onClick={onClose}>
-      <div className="sessions-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="sessions-modal-overlay" onClick={() => { if (!creating) onClose(); }}>
+      <div className="sessions-modal" role="dialog" aria-modal="true" aria-labelledby="create-session-title" onClick={(e) => e.stopPropagation()}>
 
         <div className="sessions-modal-header">
-          <Typography variant="h5" weight="bold">Yeni Oturum Aç</Typography>
-          <button className="sessions-modal-close" onClick={onClose}>✕</button>
+          <Typography variant="h5" weight="bold" id="create-session-title">Yeni Oturum Aç</Typography>
+          <button className="sessions-modal-close" disabled={creating} onClick={onClose}>✕</button>
         </div>
 
         <div className="sessions-modal-body">
+          <SessionCoverField value={form.coverImageUrl} onChange={coverImageUrl => setForm(previous => ({ ...previous, coverImageUrl }))} onLoadingChange={setUploading} disabled={creating || uploading} />
           <Input
             label="Başlık"
             name="title"
@@ -166,8 +179,9 @@ const CreateSessionModal = ({ onClose, onCreate }) => {
         </div>
 
         <div className="sessions-modal-footer">
-          <Button variant="ghost" onClick={onClose}>İptal</Button>
-          <Button variant="primary" onClick={handleSubmit}>Oturum Oluştur</Button>
+          {errors.submit && <p className="ui-notice" role="alert">{errors.submit}</p>}
+          <Button variant="ghost" disabled={creating} onClick={onClose}>İptal</Button>
+          <Button variant="primary" disabled={uploading} isLoading={creating} onClick={handleSubmit}>Oturum Oluştur</Button>
         </div>
 
       </div>
@@ -175,72 +189,82 @@ const CreateSessionModal = ({ onClose, onCreate }) => {
   );
 };
 
-const SessionCard = ({ session, onClick }) => (
-  <div className="session-card" onClick={onClick}>
-    <div className="session-card-header">
-      <div className="session-card-meta">
-        <Badge variant={SESSION_TYPE_VARIANT[session.type]}>
-          {SESSION_TYPE_LABEL[session.type]}
-        </Badge>
-        {!session.isActive && (
-          <Badge variant="neutral">Kapalı</Badge>
+export const SessionCard = ({ session }) => (
+  <article className="session-card">
+    <Link className="session-card-main" to={sessionPath(session)}>
+      <SessionCover src={session.coverImageUrl} title={session.title} className="session-card-cover" />
+      <div className="session-card-body">
+        <div className="session-card-header">
+          <div className="session-card-meta">
+            <Badge variant={SESSION_TYPE_VARIANT[session.type]}>
+              {SESSION_TYPE_LABEL[session.type]}
+            </Badge>
+            {!session.isActive && (
+              <Badge variant="neutral">Kapalı</Badge>
+            )}
+          </div>
+          <Typography variant="caption" color="muted">
+            {new Date(session.createdAt).toLocaleDateString('tr-TR')}
+          </Typography>
+        </div>
+
+        <Typography variant="h6" weight="bold" className="session-card-title">
+          {session.title}
+        </Typography>
+
+        {session.description && (
+          <Typography variant="caption" color="muted" className="session-card-desc">
+            {session.description}
+          </Typography>
         )}
+
+        {session.tags?.length > 0 && (
+          <div className="session-card-tags">
+            {session.tags.map((tag) => (
+              <span key={tag} className="session-card-tag">#{tag}</span>
+            ))}
+          </div>
+        )}
+
       </div>
-      <Typography variant="caption" color="muted">
-        {new Date(session.createdAt).toLocaleDateString('tr-TR')}
-      </Typography>
-    </div>
-
-    <Typography variant="h6" weight="bold" className="session-card-title">
-      {session.title}
-    </Typography>
-
-    {session.description && (
-      <Typography variant="caption" color="muted" className="session-card-desc">
-        {session.description}
-      </Typography>
-    )}
-
-    {session.tags?.length > 0 && (
-      <div className="session-card-tags">
-        {session.tags.map((tag) => (
-          <span key={tag} className="session-card-tag">#{tag}</span>
-        ))}
-      </div>
-    )}
-
+    </Link>
     <div className="session-card-footer">
-      <div className="session-card-author">
-        <div className="session-card-avatar">
-          {session.createdBy?.profilePicture ? (
-            <img src={session.createdBy.profilePicture} alt="" />
-          ) : (
-            <span>
-              {(session.createdBy?.fullName || session.createdBy?.username || '?')
-                .charAt(0)
-                .toUpperCase()}
-            </span>
-          )}
+      <div className="session-card-footer-meta">
+        <div className="session-card-author">
+          <div className="session-card-avatar">
+            {session.createdBy?.profilePicture ? (
+              <img src={session.createdBy.profilePicture} alt="" />
+            ) : (
+              <span>
+                {(session.createdBy?.fullName || session.createdBy?.username || '?')
+                  .charAt(0)
+                  .toUpperCase()}
+              </span>
+            )}
+          </div>
+          <Typography variant="caption" color="muted">
+            <UserProfileLink user={session.createdBy}>{session.createdBy?.fullName ?? session.createdBy?.username}</UserProfileLink>
+          </Typography>
         </div>
         <Typography variant="caption" color="muted">
-          {session.createdBy?.fullName ?? session.createdBy?.username}
+          {session.participantCount} katılımcı
         </Typography>
       </div>
-      <Typography variant="caption" color="muted">
-        {session.participantCount} katılımcı
-      </Typography>
+      {session.type === 'OPEN' && session.isActive && <div className="session-card-actions"><SocialShareButton type="SESSION" id={session.id} label="Oturumu paylaş" /></div>}
     </div>
-  </div>
+  </article>
 );
 
 const SessionsPage = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
+  const accessState = useSessionCreationAccess();
+  const canCreate = Boolean(user && accessState.access?.status === 'APPROVED' && !accessState.error);
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState('');
 
   const { sessions, loading, error, loadMore, hasMore } = useGetSessions();
   const { createSession, loading: creating } = useCreateSession();
+  useEffect(() => { setShowModal(false); }, [user?.id, canCreate]);
 
   const filtered = sessions.filter((s) => {
     if (!search.trim()) return true;
@@ -264,29 +288,12 @@ const SessionsPage = () => {
                 Bir konuya katıl, düşüncelerini paylaş.
               </Typography>
             </div>
-            {user?.isPremium ? (
+            {canCreate ? (
               <Button variant="primary" onClick={() => setShowModal(true)}>
                 + Oturum Aç
               </Button>
             ) : (
-              <div className="sessions-premium-cta">
-                <span className="sessions-premium-icon">✦</span>
-                <div className="sessions-premium-text">
-                  <Typography variant="caption" weight="medium">
-                    Oturum açmak ister misin?
-                  </Typography>
-                  <Typography variant="caption" color="muted">
-                    Ücretli üyeler kendi oturumlarını oluşturabilir.
-                  </Typography>
-                </div>
-                <Button
-                  variant="outline"
-                  size="small"
-                  onClick={() => navigate('/premium')}
-                >
-                  Ücretli Üyeliğe Geç
-                </Button>
-              </div>
+              <SessionAccessRequest key={user?.id || 'guest'} user={user} {...accessState} />
             )}
           </div>
 
@@ -329,7 +336,6 @@ const SessionsPage = () => {
               <SessionCard
                 key={session.id}
                 session={session}
-                onClick={() => navigate(`/sessions/${session.id}`)}
               />
             ))}
           </div>
@@ -345,10 +351,11 @@ const SessionsPage = () => {
         </Container>
       </div>
 
-      {showModal && (
+      {showModal && canCreate && (
         <CreateSessionModal
           onClose={() => setShowModal(false)}
           onCreate={createSession}
+          creating={creating}
         />
       )}
     </MainLayout>

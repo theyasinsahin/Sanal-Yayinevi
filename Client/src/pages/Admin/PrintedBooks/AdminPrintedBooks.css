@@ -1,0 +1,12 @@
+.admin-printed-books .admin-header { height: auto; min-height: 64px; padding-top: 1rem; padding-bottom: 1rem; }
+.admin-printed-books .printed-panel { overflow-wrap: anywhere; }
+.admin-printed-books .printed-description { margin: 1rem 0; white-space: pre-wrap; }
+.admin-printed-books .printed-panel > .input-wrapper { margin-top: 1.25rem; }
+.admin-printed-books .printed-panel > .ui-notice { margin-top: 1rem; }
+@media (max-width: 900px) {
+  .admin-printed-books { flex-direction: column; }
+  .admin-printed-books .admin-sidebar { width: 100%; }
+  .admin-printed-books .admin-nav { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .admin-printed-books .admin-link { margin-bottom: 0; }
+  .admin-printed-books .admin-page-body, .admin-printed-books .admin-header { padding-left: 1rem; padding-right: 1rem; }
+}

@@ -4,9 +4,11 @@ import { gql } from '@apollo/client';
 // --- FRAGMENTS ---
 const SESSION_FIELDS = gql`
   fragment SessionFields on Session {
+    publicPath
     id
     title
     description
+    coverImageUrl
     type
     isActive
     tags
@@ -44,6 +46,7 @@ export const GET_SESSIONS = gql`
   ${SESSION_FIELDS}
   query GetSessions($limit: Int, $offset: Int) {
     getSessions(limit: $limit, offset: $offset) {
+      publicPath
       ...SessionFields
     }
   }
@@ -53,6 +56,7 @@ export const GET_SESSION = gql`
   ${SESSION_FIELDS}
   query GetSession($sessionId: ID!) {
     getSession(sessionId: $sessionId) {
+      publicPath
       ...SessionFields
     }
   }
@@ -72,8 +76,16 @@ export const CREATE_SESSION = gql`
   ${SESSION_FIELDS}
   mutation CreateSession($input: CreateSessionInput!) {
     createSession(input: $input) {
+      publicPath
       ...SessionFields
     }
+  }
+`;
+
+export const UPDATE_SESSION_COVER = gql`
+  ${SESSION_FIELDS}
+  mutation UpdateSessionCover($sessionId: ID!, $coverImageUrl: String) {
+    updateSessionCover(sessionId: $sessionId, coverImageUrl: $coverImageUrl) { ...SessionFields }
   }
 `;
 

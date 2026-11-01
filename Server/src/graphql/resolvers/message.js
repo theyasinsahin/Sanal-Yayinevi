@@ -1,6 +1,7 @@
 import * as MessageService from '../../services/messageService.js';
 import { withFilter } from 'graphql-subscriptions';
 import { pubsub } from '../../config/pubsub.js';
+import { getPublicQuote } from '../../services/socialShareService.js';
 
 const NEW_MESSAGE = 'NEW_MESSAGE';
 
@@ -147,9 +148,10 @@ export default {
 
       // Populate edilmiş obje mi?
       if (typeof sid === 'object' && sid.username) {
+        const sender = typeof sid.toObject === 'function' ? sid.toObject() : sid;
         // _id'yi id olarak normalize et
         return {
-          ...sid,
+          ...sender,
           id: sid._id?.toString() ?? sid.id,
         };
       }
@@ -161,37 +163,14 @@ export default {
 
     content: (parent) => parent.content ?? '',
 
-    attachedQuote: async (parent, _, { Quote }) => {
+    attachedQuote: async parent => {
   const qid = parent.attachedQuoteId;
   if (!qid) return null;
 
-  // Populate edilmiş Mongoose dökümanı mı?
-  if (typeof qid === 'object' && qid._id) {
-    const q = typeof qid.toObject === 'function' ? qid.toObject() : qid;
-
-    // Silinmiş bir alıntı populate edilmiş olsa bile gösterme
-    if (q.isDeleted) return null;
-
-    // İç içe populate edilmiş userId ve bookId'yi de normalize et
-    const normalizeRef = (ref) => {
-      if (!ref) return null;
-      const obj = typeof ref.toObject === 'function' ? ref.toObject() : ref;
-      return { ...obj, id: obj._id?.toString() };
-    };
-
-    return {
-      ...q,
-      id: q._id.toString(),
-      userId: normalizeRef(q.userId),
-      bookId: normalizeRef(q.bookId),
-    };
-  }
-
-  // Ham ObjectId ise DB'den çek (silinmiş alıntıyı hariç tut)
   try {
-    const quote = await Quote.findOne({ _id: qid._id ?? qid, isDeleted: false })
-      .populate('userId', 'username fullName profilePicture')
-      .populate('bookId', 'title imageUrl');
+    // Revalidate even populated attachments; private quotes must not leak through
+    // old messages, subscriptions, or a guessed attachment ID.
+    const quote = await getPublicQuote(qid._id ?? qid.id ?? qid);
 
     if (!quote) return null;
     const q = quote.toObject();
@@ -207,8 +186,9 @@ export default {
       userId: normalizeRef(q.userId),
       bookId: normalizeRef(q.bookId),
     };
-  } catch {
-    return null;
+  } catch (error) {
+    if (error.extensions?.code === 'NOT_FOUND') return null;
+    throw error;
   }
 },
 
@@ -219,7 +199,8 @@ export default {
       if (typeof bid === 'object' && bid._id) {
         // Silinmiş bir kitap populate edilmiş olsa bile gösterme
         if (bid.isDeleted) return null;
-        return { ...bid, id: bid._id?.toString() };
+        const book = typeof bid.toObject === 'function' ? bid.toObject() : bid;
+        return { ...book, id: book._id?.toString() };
       }
 
       try {

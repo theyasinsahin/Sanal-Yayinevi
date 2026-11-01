@@ -7,13 +7,15 @@ Betik, yazarların kitaplarını dijital ortamda yazıp yayınlayabildiği, okur
 
 ## 🚀 Proje Hakkında
 
-Bu proje, geleneksel yayıncılık zorluklarını aşmak amacıyla geliştirilmiştir. Yazarlar, eserlerini parçalar halinde (Chapter) yayınlayabilir, topluluk oluşturabilir ve kitap tamamlandığında "Baskı Maliyeti Hesaplayıcı" ile hedef bir fon tutarı belirleyerek okurlarından destek toplayabilirler.
+Yazarlar eserlerini dijital olarak yayımlayabilir; tamamlanan eserler için ayrı basım başvurusu hazırlayabilir. Sabit içerik sürümü, yönetici incelemesi ve maliyet onayından sonra destek kampanyası açılır.
+
+**Ödeme durumu:** Canlı tahsilat kapalıdır. Eski iyzico başlatma/callback akışı devre dışıdır. Yeni karşılıksız destek, ön sipariş, rezervasyon ve iade akışı yalnızca açıkça etkinleştirilen geliştirme/test sandbox sağlayıcısıyla çalışır. Eski kitaplar ve ödeme geçmişi korunur. Kurulum, durum geçişleri, migration ve canlıya geçiş eksikleri: [Basım ve destek sistemi](docs/print-funding.md).
 
 ### Öne Çıkan Özellikler
 
 - **🎨 Füturistik UI/UX:** Glassmorphism tasarım dili, yumuşak gradyanlar ve modern animasyonlar.
-- **🔄 Kitap Yaşam Döngüsü:** Taslak -> Yazılıyor -> Tamamlandı -> Fonlanıyor -> Basıldı döngüsü.
-- **💰 Kitle Fonlama (Crowdfunding):** Iyzico entegrasyonu ile güvenli ödeme ve ilerleme çubuğu (Progress Bar) takibi.
+- **🔄 Ayrı yaşam döngüleri:** Dijital yayın, yazım tamamlanması, başvuru, kampanya, üretim ve sipariş.
+- **💰 Destek ve ön sipariş:** Sandbox ödeme, kuruş hesabı, atomik rezervasyon, tekil muhasebe, uzlaştırma ve tam iade.
 - **📖 Gelişmiş Okuma Modu:** Gerçekçi sayfa çevirme efekti ve odaklanmış okuma deneyimi.
 - **🛡️ Yönetim Paneli (SaaS Dashboard):** Kullanıcı, içerik ve finansal işlemlerin yönetildiği, grafiklerle desteklenen admin paneli.
 
@@ -35,21 +37,21 @@ Bu proje, geleneksel yayıncılık zorluklarını aşmak amacıyla geliştirilmi
 - **API:** GraphQL (Apollo Server)
 - **Database:** MongoDB & Mongoose ORM
 - **Auth:** JWT (JSON Web Tokens)
-- **Payment:** Iyzico API
+- **Payment:** Sağlayıcı arayüzü + kalıcı sandbox; canlı sağlayıcı adaptörü kapalı/uygulanmamış.
 - **Media:** Cloudinary (Görsel optimizasyonu için)
 
 ---
 
 ## 🏗️ Veritabanı Mimarisi
 
-Proje 4 ana koleksiyon üzerine kuruludur:
+Mevcut ana koleksiyonlar korunur:
 
-1.  **Users:** Kullanıcı rolleri (`ADMIN`, `USER`), kayıtlı kitaplar, takipçiler.
-2.  **Books:** \* `status`: Kitabın görünürlüğünü yönetir (`DRAFT`, `WRITING`, `COMPLETED`, `FUNDING`, `PUBLISHED`).
-    - `printConfig`: Kağıt türü, boyut vb. baskı detayları.
-    - `finance`: Hedeflenen ve toplanan fon miktarı.
-3.  **Transactions:** Ödeme geçmişi, tutar, durum (`SUCCESS`, `FAILURE`) ve ilişkili kitap/kullanıcı.
+1.  **Users:** Kullanıcı rolleri (`ADMIN`, `PUBLISHER`, `USER`), kayıtlı kitaplar, takipçiler. Yayınevi sahipleri için [portal ve yetki açıklamaları](docs/publisher-portal.md).
+2.  **Books:** `digitalStatus` ve `writingStatus` ayrıdır. Eski `status`, `printConfig`, `fundingTarget` ve `currentFunding` alanları geçmiş/uyumluluk için korunur; yeni finansın kaynağı değildir.
+3.  **Transactions:** Geçmiş TL cinsinden ödeme kayıtları; yeni sandbox muhasebesine otomatik aktarılmaz.
 4.  **Chapters & Comments:** Kitap içeriği ve etkileşimler.
+
+Yeni basım koleksiyonları `Server/src/models/printFunding.js` içindedir: içerik sürümleri, özel PDF dosyaları, başvurular, tarifeler, kampanyalar, kuruş cinsinden ödeme/rezervasyon/ledger/iade, şifreli adresli ön sipariş, basım ilgisi, güncellemeler ve bildirim outbox'ı. Ayrıntılı alan/index/API açıklamaları [teknik dokümanda](docs/print-funding.md).
 
 ---
 
@@ -59,36 +61,30 @@ Projeyi yerel ortamınızda çalıştırmak için aşağıdaki adımları izleyi
 
 ### Gereksinimler
 
-- Node.js (v14 veya üzeri)
-- MongoDB (Yerel veya Atlas URI)
+- Node.js 22 (bu geliştirmede test edilen sürüm: 22.14.0)
+- MongoDB replica set veya mongos; tek düğümlü standalone finansal transaction desteklemez.
 
-### 1. Repoyu Klonlayın
+### Kurulum
 
-```bash
-git clone https://github.com/theyasinsahin/Sanal-Yayinevi.git Betik
-cd Betik
-2. Backend Kurulumu
-Bash
-cd Server
-npm install
-# .env dosyasını oluşturun ve gerekli değişkenleri girin (Aşağıda listelenmiştir)
-npm start
-3. Frontend Kurulumu
-Bash
-cd Client
-npm install
-npm start
-🔐 Çevresel Değişkenler (.env)
-Backend klasöründe .env dosyası oluşturup şu değerleri girmelisiniz:
-
-Kod snippet'i
-PORT=4000
-MONGO_URI=mongodb+srv://<kullanici>:<sifre>@cluster.mongodb.net/betik
-JWT_SECRET=cok_gizli_anahtar_buraya
-IYZICO_API_KEY=iyzico_api_key_buraya
-IYZICO_SECRET_KEY=iyzico_secret_key_buraya
-CLOUDINARY_URL=cloudinary://...
-CLIENT_URL=http://localhost:3000
+```powershell
+npm.cmd --prefix Server ci
+npm.cmd --prefix Client ci
 ```
+
+Backend için `Server/.env` içinde ayrı test ortamına ait `MONGO_URI`, `JWT_SECRET`, `CLIENT_URL` ve mevcut medya/e-posta ayarlarını yapılandırın. Canlı ödeme anahtarı eklemeyin. Basım sandbox ayarları için [Server/.env.print.example](Server/.env.print.example) ve [kurulum kılavuzunu](docs/print-funding.md) izleyin. Gerçek üretim veritabanında migration veya veri sıfırlama çalıştırmayın.
+
+İki ayrı terminalde:
+
+```powershell
+npm.cmd --prefix Server start
+```
+
+```powershell
+npm.cmd --prefix Client start
+```
+
+Testler: [test kılavuzu](docs/testing.md). Basım sisteminin doğrulama sonuçları ve canlı kullanım eksikleri: [sonuç raporu](docs/print-funding-report.md).
+
+Kitap kartlarında destek tutarları ve Keşfet'teki hedefe yakın/tamamlanmış kampanya listeleri: [kullanım ve teknik açıklamalar](docs/book-funding-discovery.md).
 
 Betik © 2026 - Tüm Hakları Saklıdır.

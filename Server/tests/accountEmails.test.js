@@ -8,6 +8,7 @@ jest.unstable_mockModule('../src/models/user.js', () => ({ default: { findOne } 
 jest.unstable_mockModule('../src/models/verification.js', () => ({ default: { findOneAndUpdate } }));
 jest.unstable_mockModule('../src/services/bookService.js', () => ({}));
 jest.unstable_mockModule('../src/services/sessionService.js', () => ({}));
+jest.unstable_mockModule('../src/services/recommendationService.js', () => ({ saveUserPreference: jest.fn() }));
 jest.unstable_mockModule('bcryptjs', () => ({ default: { compare: jest.fn().mockResolvedValue(true) } }));
 const { sendRegistrationCode, forgotPassword, changeEmail } = await import('../src/services/userService.js');
 

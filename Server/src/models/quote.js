@@ -5,9 +5,11 @@ const QuoteSchema = new mongoose.Schema({
   text: { type: String, required: true },
   normalizedText: { type: String, required: true }, // çakışma tespiti için
   note: { type: String, default: '' },
+  visibility: { type: String, enum: ['PUBLIC', 'PRIVATE'], default: 'PUBLIC', required: true },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   bookId: { type: mongoose.Schema.Types.ObjectId, ref: 'Book', required: true },
-  chapterId: { type: mongoose.Schema.Types.ObjectId, ref: 'Chapter', required: true },
+  chapterId: { type: mongoose.Schema.Types.ObjectId, ref: 'Chapter' },
+  pageNumber: { type: Number, min: 1 },
   chapterTitle: { type: String, default: '' },
   chapterIndex: { type: Number, default: 0 },
   location: {
@@ -24,6 +26,7 @@ const QuoteSchema = new mongoose.Schema({
   isSpoiler: { type: Boolean, default: false }, // spoiler içeren alıntılar için
 
   // ── Soft-delete ──────────────────────────────────────────────────
+  adminArchiveId: { type: mongoose.Schema.Types.ObjectId, ref: 'AdminAudit' },
   isDeleted: { type: Boolean, default: false },
   deletedAt: { type: Date, default: null },
 }, { timestamps: true });
@@ -31,5 +34,7 @@ const QuoteSchema = new mongoose.Schema({
 // Normalize için index
 QuoteSchema.index({ normalizedText: 1, bookId: 1 });
 QuoteSchema.index({ isDeleted: 1 });
+QuoteSchema.index({ userId: 1, visibility: 1, createdAt: -1 });
+QuoteSchema.index({ bookId: 1, visibility: 1, isDeleted: 1 });
 
 export default mongoose.model('Quote', QuoteSchema);

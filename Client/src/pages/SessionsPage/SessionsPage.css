@@ -21,28 +21,31 @@ min-height: calc(100vh - var(--navbar-height));
   margin-bottom: 1.5rem;
 }
 
-/* --- PREMIUM CTA --- */
-.sessions-premium-cta {
+/* --- SESSION ACCESS REQUEST --- */
+.sessions-access-cta {
   display: flex;
-  align-items: center;
   gap: 10px;
   padding: 10px 14px;
   border: 0.5px solid var(--color-border-secondary);
   border-radius: var(--border-radius-lg);
   background: var(--color-background-secondary);
   flex-shrink: 0;
+  flex-direction: column;
+  align-items: stretch;
+  max-width: 420px;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
-.sessions-premium-icon {
-  font-size: 18px;
-  color: #c9a84c;
-  flex-shrink: 0;
+.sessions-access-cta h2 {
+  font-size: 1rem;
+  margin: 0;
 }
 
-.sessions-premium-text {
+.sessions-access-cta form {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 10px;
 }
 
 /* --- SEARCH --- */
@@ -53,6 +56,7 @@ min-height: calc(100vh - var(--navbar-height));
 /* --- GRID --- */
 .sessions-grid {
   display: grid;
+  align-items: start;
   grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
   gap: 1rem;
 }
@@ -61,14 +65,22 @@ min-height: calc(100vh - var(--navbar-height));
 .session-card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 1.25rem;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  min-width: 0;
   border: 0.5px solid var(--color-border-tertiary);
   border-radius: var(--border-radius-lg);
   background: var(--color-background-primary);
-  cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
+
+.session-card-main { display: flex; flex: 1; flex-direction: column; color: inherit; text-decoration: none; min-width: 0; }
+.session-card-main:focus-visible { outline: 3px solid var(--color-border-primary, #c9a84c); outline-offset: -3px; }
+.session-card-cover { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: var(--color-background-secondary); }
+.session-card-body { padding: 1.25rem; display: flex; flex-direction: column; gap: 0.65rem; }
+.session-card-footer-meta { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; width: 100%; }
+.session-card-actions { display: flex; justify-content: flex-end; width: 100%; }
 
 .session-card:hover {
   border-color: var(--color-border-primary);
@@ -117,11 +129,12 @@ min-height: calc(100vh - var(--navbar-height));
 
 .session-card-footer {
   display: flex;
-  align-items: center;
+  align-items: stretch;
+  flex-direction: column;
   justify-content: space-between;
   gap: 8px;
-  margin-top: 4px;
-  padding-top: 8px;
+  margin-top: 0;
+  padding: 0.85rem 1.25rem;
   border-top: 0.5px solid var(--color-border-tertiary);
 }
 
@@ -167,7 +180,7 @@ min-height: calc(100vh - var(--navbar-height));
 }
 
 .session-card-skeleton {
-  height: 180px;
+  height: 360px;
   border-radius: var(--border-radius-lg);
   background: var(--color-background-secondary);
   animation: sessions-pulse 1.5s ease-in-out infinite;
@@ -261,6 +274,7 @@ min-height: calc(100vh - var(--navbar-height));
 
 .sessions-modal-footer {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 10px;
   padding: 1.25rem 1.5rem;
@@ -268,6 +282,7 @@ min-height: calc(100vh - var(--navbar-height));
   background: var(--color-background-secondary, #f8fafc); /* Footer alanını belirginleştirdik */
   flex-shrink: 0;
 }
+.sessions-modal-footer > .ui-notice { flex-basis: 100%; margin: 0; }
 
 /* --- FORM ELEMENTS --- */
 .sessions-field {
@@ -414,13 +429,9 @@ min-height: calc(100vh - var(--navbar-height));
     align-items: stretch;
   }
 
-  .sessions-premium-cta {
+  .sessions-access-cta {
     width: 100%;
     flex-wrap: wrap;
-  }
-
-  .sessions-premium-cta .sessions-premium-text {
-    min-width: 0;
   }
 
   .sessions-grid,
@@ -471,6 +482,6 @@ min-height: calc(100vh - var(--navbar-height));
   }
 
   .session-card {
-    padding: 1rem;
+    padding: 0;
   }
 }

@@ -50,7 +50,7 @@ test('a failed request preserves the original follow state and allows retry', as
   await waitFor(() => expect(showToast).toHaveBeenCalledWith('Bağlantı kesildi', 'error'));
   expect(updated).not.toHaveBeenCalled();
   expect(screen.getByTestId('status')).toHaveTextContent('NOT_FOLLOWING');
-  expect(screen.getByRole('button', { name: 'Takip İsteği Gönder' })).toBeEnabled();
+  expect(await screen.findByRole('button', { name: 'Takip İsteği Gönder' })).toBeEnabled();
 });
 
 test.each([true, false])('the inbox sends the selected approval decision (%s) and removes handled requests', async accept => {

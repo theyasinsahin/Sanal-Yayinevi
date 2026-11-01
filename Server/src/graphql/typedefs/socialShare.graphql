@@ -1,0 +1,14 @@
+enum SocialShareType { BOOK CHAPTER QUOTE PROFILE SESSION }
+type SocialShare {
+  type: SocialShareType!
+  id: ID!
+  title: String!
+  description: String!
+  path: String!
+  imagePath: String!
+  webOrigin: String!
+}
+extend type Query {
+  getSocialShare(type: SocialShareType!, id: ID!): SocialShare!
+  getQuoteById(id: ID!): Quote
+}

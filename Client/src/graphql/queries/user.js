@@ -1,6 +1,16 @@
+import { WORK_CLASSIFICATION_FIELDS } from '../classification';
 import { gql } from '@apollo/client';
+import { BOOK_FUNDING_FIELDS } from './book';
+
+export const GET_BOOK_VIEWER = gql`
+  query GetBookViewer($id: ID!) {
+    getUserById(id: $id) { id role savedBooks { id } }
+  }
+`;
 
 export const GET_USER_BY_ID = gql`
+  ${WORK_CLASSIFICATION_FIELDS}
+  ${BOOK_FUNDING_FIELDS}
     query GetUserById($id:ID!){
         getUserById(id: $id){
           followStatus
@@ -13,12 +23,14 @@ export const GET_USER_BY_ID = gql`
           privacySettings { isProfilePublic isLibraryPublic isFollowListPublic allowMessages showInSearchEngines }
           notificationSettings { newFollower mentionInSession bookComment bookLike quoteLike sessionReply }
           authorSettings { copyrightNote weeklyWordGoal preferredGenres }
-          isPremium,
-          id,    
+          id,
           username,
           fullName,
           email,
           savedBooks {
+            ...BookFundingFields
+            publicPath
+            kind printedAuthor publisher publicationYear isbn
             status
             id
             title
@@ -29,13 +41,7 @@ export const GET_USER_BY_ID = gql`
               profilePicture
             }
             imageUrl
-            genre{
-              name
-              slug
-              iconUrl
-              hexColor
-              isActive
-            }
+            ...WorkClassificationFields
             description
             stats {
               views
@@ -46,6 +52,9 @@ export const GET_USER_BY_ID = gql`
           },
           role,
           usersBooks {
+            ...BookFundingFields
+            publicPath
+            kind printedAuthor publisher publicationYear isbn
             status
             id
             title
@@ -56,13 +65,7 @@ export const GET_USER_BY_ID = gql`
               profilePicture
             }
               imageUrl
-            genre{
-              name
-              slug
-              iconUrl
-              hexColor
-              isActive
-            }
+            ...WorkClassificationFields
             description
             stats {
               views
@@ -94,6 +97,7 @@ export const ME_QUERY = gql`
     me {
       id
       email
+      role
     }
   }
 `;
@@ -103,7 +107,6 @@ export const ME_QUERY = gql`
 export const GET_ALL_USERS = gql`
   query GetAllUsers{
     getAllUsers {
-      isPremium,
       id,
       username,
       email,

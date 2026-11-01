@@ -1,5 +1,5 @@
 import React from 'react';
-import { Apps } from '@mui/icons-material';
+import ClassificationFilters from '../../Books/Classification/ClassificationFilters';
 import { useFilters } from '../../../context/FiltersContext';
 
 // UI Kit
@@ -8,49 +8,25 @@ import { Typography } from '../../UI/Typography';
 import './FeedFilters.css';
 
 // Props olarak 'genres' listesini FeedPage'den alıyoruz
-const FeedFilters = ({ genres = [] }) => {
+const FeedFilters = () => {
   const { filters, updateFilters } = useFilters();
 
   return (
     <div className="feed-filters">  
       
-      {/* --- KATEGORİLER --- */}
-      <div className="filter-section">
-        <Typography variant="h6" weight="bold" className="filter-title">
-          Kategoriler
-        </Typography>
-        
-        <div className="categories-grid">
-          {/* Tümü Butonu */}
-          <button
-            className={`category-pill ${filters.genre === 'Tümü' ? 'active' : ''}`}
-            onClick={() => updateFilters('genre', 'Tümü')}
-          >
-            <span className="category-icon"><Apps fontSize="small"/></span>
-            <span className="category-text">Tümü</span>
-          </button>
+      <ClassificationFilters value={filters.classification || {}} onChange={value => updateFilters('classification', value)} />
 
-          {/* Dinamik Kategoriler (Veritabanından Gelen) */}
-          {genres.map(genre => (
-            <button
-              key={genre.id || genre._id}
-              className={`category-pill ${filters.genre === genre.slug ? 'active' : ''}`}
-              style={filters.genre === genre.slug ? { borderColor: genre.hexColor, backgroundColor: `${genre.hexColor}15` } : {}}
-              onClick={() => {
-                // Eğer zaten seçiliyse 'Tümü'ne dön, değilse bu türün slug'ını seç
-                const nextGenre = filters.genre === genre.slug ? 'Tümü' : genre.slug;
-                updateFilters('genre', nextGenre);
-              }}
-            >
-              {/* Varsa iconUrl kullanılabilir, yoksa direkt text */}
-              {genre.iconUrl && (
-                <img src={genre.iconUrl} alt="" className="category-custom-icon" style={{ width: 16, height: 16, marginRight: 8 }} />
-              )}
-              <span className="category-text" style={{ color: filters.genre === genre.slug ? genre.hexColor : 'inherit' }}>
-                {genre.name}
-              </span>
-            </button>
-          ))}
+      <div className="filter-section">
+        <Typography variant="h6" weight="bold" className="filter-title">Destek durumu</Typography>
+        <div className="sort-options">
+          {[
+            { value: 'ALL', label: 'Tüm kitaplar' },
+            { value: 'ACTIVE', label: 'Desteği açık kitaplar' },
+            { value: 'FUNDED', label: 'Hedefini tamamlayan kitaplar' },
+          ].map(option => <label key={option.value} className="sort-option">
+            <input type="radio" name="funding" value={option.value} checked={(filters.funding || 'ALL') === option.value} onChange={event => updateFilters('funding', event.target.value)} />
+            <span className="radio-label">{option.label}</span>
+          </label>)}
         </div>
       </div>
 
@@ -66,6 +42,7 @@ const FeedFilters = ({ genres = [] }) => {
             { value: 'popular', label: 'En Popüler' },
             { value: 'oldest', label: 'En Eski' },
             { value: 'lastUpdated', label: 'En Son Güncellenen' },
+            { value: 'closestToTarget', label: 'Hedefe en yakın' },
           ].map(option => (
             <label key={option.value} className="sort-option">
               <input
@@ -80,6 +57,7 @@ const FeedFilters = ({ genres = [] }) => {
             </label>
           ))}
         </div>
+        {filters.sortBy === 'closestToTarget' && <p className="funding-sort-hint">Desteği açık kitaplar, hedefe kalan TL tutarı en az olandan başlayarak listelenir.</p>}
       </div>
       
     </div>

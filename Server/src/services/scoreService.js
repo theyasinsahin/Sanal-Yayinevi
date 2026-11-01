@@ -1,177 +1,28 @@
-// src/services/scoreService.js
 import { pendingFollowRequestCount } from './followService.js';
 import UserScore from '../models/userScore.js';
 import PointEvent from '../models/pointEvent.js';
-import Badge from '../models/badge.js';
-import UserBadge from '../models/userBadge.js';
 import Notification from '../models/notification.js';
 import mongoose from 'mongoose';
+import { inactiveUserIds } from '../utils/activeUsers.js';
+export { awardPoints, initializeScores, onQuoteCreated, onCommentCreated, onRepostCreated, onBookPublished, onChapterAdded, onSessionEntryAdded } from './scoreAwards.js';
 
-const POINTS = {
-  quote:        10,
-  comment:       5,
-  repost:        3,
-  publish:      50,
-  chapter:      15,
-  readMinute:    1,
-  sessionEntry:  5,
-};
+import { getPeriodStart } from '../utils/scorePeriod.js';
 
-// --- YARDIMCI: Periyot başlangıç tarihlerini hesapla ---
-// SQL'deki DATE_SUB(NOW(), INTERVAL 1 DAY) mantığı
-const getPeriodStart = (period) => {
-  const now = new Date();
-  switch (period) {
-    case 'daily':
-      // Bugünün başlangıcı (00:00:00)
-      return new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    case 'weekly':
-      // Bu haftanın Pazartesi'si
-      const day = now.getDay(); // 0=Pazar, 1=Pazartesi...
-      const diff = (day === 0 ? -6 : 1 - day); // Pazartesi'ye geri git
-      const monday = new Date(now);
-      monday.setDate(now.getDate() + diff);
-      monday.setHours(0, 0, 0, 0);
-      return monday;
-    case 'monthly':
-      // Bu ayın ilk günü
-      return new Date(now.getFullYear(), now.getMonth(), 1);
-    default:
-      return null; // total — tarih filtresi yok
-  }
-};
+export async function getScorePeriods(userId) {
+  const starts = Object.fromEntries(['daily', 'weekly', 'monthly'].map(period => [period, getPeriodStart(period)]));
+  const [totals] = await PointEvent.aggregate([
+    { $match: { userId: new mongoose.Types.ObjectId(userId), createdAt: { $gte: new Date(Math.min(...Object.values(starts).map(date => date.getTime()))) } } },
+    { $group: { _id: null, ...Object.fromEntries(Object.entries(starts).map(([period, start]) => [period, { $sum: { $cond: [{ $gte: ['$createdAt', start] }, '$points', 0] } }])) } },
+  ]);
+  return totals || { daily: 0, weekly: 0, monthly: 0 };
+}
 
-// --- YARDIMCI: Puan ekle (PointEvent + UserScore) ---
-const addPoints = async (userId, points, action) => {
-  // 1. PointEvent kaydı oluştur (SQL'deki INSERT INTO point_events)
-  await PointEvent.create({ userId, points, action });
-
-  // 2. UserScore'daki totalPoints'i güncelle
-  const score = await UserScore.findOneAndUpdate(
-    { userId },
-    { $inc: { totalPoints: points } },
-    { upsert: true, new: true }
-  );
-
-  return score;
-};
-
-// --- BADGE KONTROLÜ ---
-const checkAndAwardBadges = async (userId, stats) => {
-  const allBadges = await Badge.find();
-  const earnedBadgeIds = (await UserBadge.find({ userId }))
-    .map(ub => ub.badgeId.toString());
-
-  for (const badge of allBadges) {
-    if (earnedBadgeIds.includes(badge._id.toString())) continue;
-    const statValue = stats[badge.condition.stat] || 0;
-    if (statValue >= badge.condition.threshold) {
-      await UserBadge.create({ userId, badgeId: badge._id });
-      await Notification.create({
-        userId,
-        type: 'BADGE_EARNED',
-        title: 'Yeni Rozet Kazandın! 🏅',
-        message: `${badge.icon} ${badge.name} rozeti kazandın: ${badge.description}`,
-        icon: badge.icon,
-        meta: { badgeKey: badge.key },
-      });
-    }
-  }
-};
-
-// --- AKSİYON FONKSİYONLARI ---
-export const onQuoteCreated = async (userId) => {
-  await addPoints(userId, POINTS.quote, 'quote');
-  const score = await UserScore.findOneAndUpdate(
-    { userId },
-    { $inc: { 'stats.quotesCreated': 1 } },
-    { upsert: true, new: true }
-  );
-  await Notification.create({ userId, type: 'POINTS_EARNED', title: `+${POINTS.quote} Puan!`, message: 'Alıntı yaptığın için puan kazandın.', icon: '⭐', meta: { points: POINTS.quote } });
-  await checkAndAwardBadges(userId, score.stats);
-};
-
-export const onCommentCreated = async (userId) => {
-  await addPoints(userId, POINTS.comment, 'comment');
-  const score = await UserScore.findOneAndUpdate(
-    { userId },
-    { $inc: { 'stats.commentsCreated': 1 } },
-    { upsert: true, new: true }
-  );
-  await Notification.create({ userId, type: 'POINTS_EARNED', title: `+${POINTS.comment} Puan!`, message: 'Yorum yaptığın için puan kazandın.', icon: '⭐', meta: { points: POINTS.comment } });
-  await checkAndAwardBadges(userId, score.stats);
-};
-
-export const onRepostCreated = async (userId) => {
-  await addPoints(userId, POINTS.repost, 'repost');
-  const score = await UserScore.findOneAndUpdate(
-    { userId },
-    { $inc: { 'stats.repostsCreated': 1 } },
-    { upsert: true, new: true }
-  );
-  await Notification.create({ userId, type: 'POINTS_EARNED', title: `+${POINTS.repost} Puan!`, message: 'Alıntıyı yeniden paylaştığın için puan kazandın.', icon: '⭐', meta: { points: POINTS.repost } });
-  await checkAndAwardBadges(userId, score.stats);
-};
-
-export const onBookPublished = async (userId) => {
-  await addPoints(userId, POINTS.publish, 'publish');
-  const score = await UserScore.findOneAndUpdate(
-    { userId },
-    { $inc: { 'stats.booksPublished': 1 } },
-    { upsert: true, new: true }
-  );
-  await Notification.create({ userId, type: 'POINTS_EARNED', title: `+${POINTS.publish} Puan!`, message: 'Kitap yayınladığın için puan kazandın.', icon: '⭐', meta: { points: POINTS.publish } });
-  await checkAndAwardBadges(userId, score.stats);
-};
-
-export const onChapterAdded = async (userId) => {
-  await addPoints(userId, POINTS.chapter, 'chapter');
-  const score = await UserScore.findOneAndUpdate(
-    { userId },
-    { $inc: { 'stats.chaptersAdded': 1 } },
-    { upsert: true, new: true }
-  );
-  await Notification.create({ userId, type: 'POINTS_EARNED', title: `+${POINTS.chapter} Puan!`, message: 'Bölüm eklediğin için puan kazandın.', icon: '⭐', meta: { points: POINTS.chapter } });
-  await checkAndAwardBadges(userId, score.stats);
-};
-
-export const onReadingMinutes = async (userId, minutes) => {
-  if (minutes <= 0) return;
-  const points = minutes * POINTS.readMinute;
-  await addPoints(userId, points, 'readMinute');
-  const score = await UserScore.findOneAndUpdate(
-    { userId },
-    { $inc: { 'stats.minutesRead': minutes } },
-    { upsert: true, new: true }
-  );
-  await Notification.create({ userId, type: 'POINTS_EARNED', title: `+${points} Puan!`, message: `${minutes} dakika okudun, puan kazandın.`, icon: '⭐', meta: { points, minutes } });
-  await checkAndAwardBadges(userId, score.stats);
-};
-
-export const onSessionEntryAdded = async (userId) => {
-  await addPoints(userId, POINTS.sessionEntry, 'sessionEntry');
-  const score = await UserScore.findOneAndUpdate(
-    { userId },
-    { $inc: { 'stats.sessionEntriesCreated': 1 } },
-    { upsert: true, new: true }
-  );
-  await Notification.create({ userId, type: 'POINTS_EARNED', title: `+${POINTS.sessionEntry} Puan!`, message: 'Oturuma katkı sağladığın için puan kazandın.', icon: '⭐', meta: { points: POINTS.sessionEntry } });
-  await checkAndAwardBadges(userId, score.stats);
-};
-
-// --- LİDERBOARD ---
-// SQL karşılığı:
-// SELECT userId, SUM(points) as total
-// FROM point_events
-// WHERE createdAt >= :periodStart        -- periyot filtresi
-// GROUP BY userId                        -- kullanıcı bazında topla
-// ORDER BY total DESC                    -- en yüksekten sırala
-// LIMIT 10                               -- ilk 10
 export const getLeaderboard = async (period = 'totalPoints') => {
   const periodStart = getPeriodStart(period);
 
   // MongoDB Aggregation — SQL'deki GROUP BY + SUM mantığı
   const pipeline = [
+    { $match: { userId: { $nin: await inactiveUserIds() } } },
     // WHERE createdAt >= periodStart
     ...(periodStart ? [{ $match: { createdAt: { $gte: periodStart } } }] : []),
 
@@ -184,7 +35,7 @@ export const getLeaderboard = async (period = 'totalPoints') => {
     },
 
     // ORDER BY points DESC
-    { $sort: { points: -1 } },
+    { $sort: { points: -1, _id: 1 } },
 
     // LIMIT 10
     { $limit: 10 },
@@ -222,6 +73,8 @@ export const getLeaderboard = async (period = 'totalPoints') => {
 // WHERE total > :userTotal
 export const getUserRank = async (userId, period = 'total') => {
   const periodStart = getPeriodStart(period);
+  const inactive = await inactiveUserIds();
+  if (inactive.some(id => String(id) === String(userId))) return { rank: null, points: 0 };
 
   // Önce kullanıcının kendi puanını bul
   const userPipeline = [
@@ -241,6 +94,7 @@ export const getUserRank = async (userId, period = 'total') => {
 
   // Kaç kişi bu kullanıcıdan fazla puana sahip?
   const rankPipeline = [
+    { $match: { userId: { $nin: inactive } } },
     ...(periodStart ? [{ $match: { createdAt: { $gte: periodStart } } }] : []),
     { $group: { _id: '$userId', points: { $sum: '$points' } } },
     { $match: { points: { $gt: userPoints } } },

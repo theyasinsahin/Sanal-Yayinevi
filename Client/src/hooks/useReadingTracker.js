@@ -1,100 +1,98 @@
-// src/hooks/useReadingTracker.js
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMutation } from '@apollo/client';
-import { ADD_READING_MINUTES } from '../graphql/mutations/score';
+import { print } from 'graphql';
+import { START_READING_SESSION, REPORT_READING_TIME } from '../graphql/mutations/score';
+import { ReadingTracker } from '../utils/readingTracker';
+import { API_URL } from '../config/api';
+import { notifyScoreChanged } from '../utils/scoreUpdates';
+const closingSessions = new Map();
 
-const IDLE_TIMEOUT = 2 * 60 * 1000;    // 2 dakika aksiyonsuzluk
-const SAVE_INTERVAL = 60 * 1000;        // Her 1 dakikada bir kaydet
-const IDLE_WARNING_AFTER = 90 * 1000;  // 1.5 dakikada uyarı göster
+async function withTimeout(operation) {
+  const abort = new AbortController();
+  const timeout = setTimeout(() => abort.abort(), 10000);
+  try { return await operation(abort.signal); }
+  finally { clearTimeout(timeout); }
+}
+const requestWithTimeout = (mutate, variables) => withTimeout(signal => mutate({ variables, context: { fetchOptions: { signal } } }));
 
-export const useReadingTracker = ({ isActive, onIdleWarning, onIdleResume }) => {
-// useReadingTracker.js içinde
-const [addReadingMinutes] = useMutation(ADD_READING_MINUTES, {
-  onCompleted: (data) => console.log("Puan eklendi:", data),
-  onError: (err) => console.error("Puan eklenemedi:", err),
-});
-  const isIdleRef = useRef(false);
-  const activeSecondsRef = useRef(0);
-  const idleTimerRef = useRef(null);
-  const saveTimerRef = useRef(null);
-  const warningTimerRef = useRef(null);
+function readingError(error) {
+  const code = error.graphQLErrors?.[0]?.extensions?.code || error.extensions?.code;
+  error.terminal = ['READING_SESSION_EXPIRED', 'READING_SESSION_REPLACED', 'BAD_USER_INPUT', 'UNAUTHENTICATED'].includes(code);
+  error.replaced = code === 'READING_SESSION_REPLACED';
+  return error;
+}
 
-  const resetIdleTimer = useCallback(() => {
-    if (isIdleRef.current) {
-      isIdleRef.current = false;
-      onIdleResume?.();
-    }
-
-    clearTimeout(idleTimerRef.current);
-    clearTimeout(warningTimerRef.current);
-
-    // 1.5 dakikada uyarı göster
-    warningTimerRef.current = setTimeout(() => {
-      onIdleWarning?.();
-    }, IDLE_WARNING_AFTER);
-
-    // 2 dakikada idle'a geç
-    idleTimerRef.current = setTimeout(() => {
-      isIdleRef.current = true;
-    }, IDLE_TIMEOUT);
-  }, [onIdleWarning, onIdleResume]);
-
-  // Aktif okuma sayacı
+export const useReadingTracker = ({ isActive, userId, bookId, chapterId, onIdleWarning, onIdleResume }) => {
+  const [startSession] = useMutation(START_READING_SESSION);
+  const [reportTime] = useMutation(REPORT_READING_TIME);
+  const [status, setStatus] = useState('inactive');
+  const callbacks = useRef({});
+  callbacks.current = { chapterId, onIdleWarning, onIdleResume };
   useEffect(() => {
-    if (!isActive) return;
-
-    const tick = setInterval(() => {
-      if (!isIdleRef.current) {
-        activeSecondsRef.current += 1;
-      }
+    if (!isActive || !userId || !bookId) { setStatus('inactive'); return undefined; }
+    let mounted = true;
+    let ready = false;
+    const controller = new ReadingTracker({ userId, bookId, chapter: () => callbacks.current.chapterId,
+      storage: { get length() { try { return localStorage.length; } catch { return 0; } }, key: i => localStorage.key(i), getItem: key => localStorage.getItem(key), setItem: (key, value) => localStorage.setItem(key, value), removeItem: key => localStorage.removeItem(key) },
+      onStatus: value => { if (mounted) setStatus(value); },
+      start: async (id, chapter) => (await requestWithTimeout(startSession, { bookId: id, chapterId: chapter })).data.startReadingSession.sessionId,
+      report: async (variables, keepalive) => {
+        try {
+          let result;
+          if (keepalive) {
+            result = await withTimeout(async signal => {
+              const response = await fetch(API_URL, { method: 'POST', keepalive: true, signal,
+                headers: { 'Content-Type': 'application/json', authorization: `Bearer ${localStorage.getItem('token') || ''}` },
+                body: JSON.stringify({ query: print(REPORT_READING_TIME), variables }),
+              });
+              if (!response.ok) throw new Error('Okuma kaydı gönderilemedi.');
+              return response.json();
+            });
+            if (result.errors?.length) throw Object.assign(new Error(result.errors[0].message), result.errors[0]);
+          } else result = await requestWithTimeout(reportTime, variables);
+          if (!result.data?.reportReadingTime) throw new Error('Okuma kaydı doğrulanamadı.');
+          if (result.data.reportReadingTime.earnedPoints) notifyScoreChanged();
+          return result.data.reportReadingTime;
+        } catch (error) { throw readingError(error); }
+      },
+    });
+    let warned = false;
+    const activity = () => {
+      controller.activity();
+      if (warned) { warned = false; callbacks.current.onIdleResume?.(); }
+    };
+    const timer = setInterval(() => {
+      const visible = document.visibilityState !== 'hidden';
+      controller.tick(visible);
+      if (visible && !warned && Date.now() - controller.lastActivity >= 90000) { warned = true; callbacks.current.onIdleWarning?.(); }
     }, 1000);
-
-    return () => clearInterval(tick);
-  }, [isActive]);
-
-  // Her dakikada bir kaydet
-  useEffect(() => {
-    if (!isActive) return;
-
-    saveTimerRef.current = setInterval(async () => {
-      const minutes = Math.floor(activeSecondsRef.current / 60);
-      if (minutes > 0) {
-        await addReadingMinutes({ variables: { minutes } });
-        activeSecondsRef.current = activeSecondsRef.current % 60;
-      }
-    }, SAVE_INTERVAL);
-
-    return () => clearInterval(saveTimerRef.current);
-  }, [isActive, addReadingMinutes]);
-
-  // Event listener'lar
-  useEffect(() => {
-    if (!isActive) return;
-
-    const events = ['scroll', 'click', 'touchstart'];
-    events.forEach(e => window.addEventListener(e, resetIdleTimer, { passive: true }));
-    resetIdleTimer();
-
+    const saver = setInterval(() => { if (ready && document.visibilityState !== 'hidden') controller.flush(); }, 15000);
+    const visibility = () => {
+      controller.tick(false);
+      if (document.visibilityState === 'hidden') controller.flush(true);
+      else { activity(); if (ready) controller.flush(); }
+    };
+    const leave = () => { controller.tick(false); controller.flush(true); };
+    const online = () => { if (ready && document.visibilityState !== 'hidden') controller.flush(); };
+    const events = ['scroll', 'click', 'touchstart', 'keydown', 'pointerdown'];
+    events.forEach(event => window.addEventListener(event, activity, { passive: true }));
+    document.addEventListener('visibilitychange', visibility);
+    window.addEventListener('pagehide', leave); window.addEventListener('online', online);
+    const starter = setTimeout(async () => {
+      await closingSessions.get(userId);
+      if (!mounted) return;
+      ready = true;
+      if (document.visibilityState !== 'hidden') controller.flush();
+    }, 0);
     return () => {
-      events.forEach(e => window.removeEventListener(e, resetIdleTimer));
-      clearTimeout(idleTimerRef.current);
-      clearTimeout(warningTimerRef.current);
-      clearInterval(saveTimerRef.current);
+      mounted = false;
+      clearTimeout(starter);
+      clearInterval(timer); clearInterval(saver);
+      events.forEach(event => window.removeEventListener(event, activity));
+      document.removeEventListener('visibilitychange', visibility);
+      window.removeEventListener('pagehide', leave); window.removeEventListener('online', online);
+      closingSessions.set(userId, controller.stop().catch(() => {}));
     };
-  }, [isActive, resetIdleTimer]);
-
-  // Sayfa kapanırken kalan süreyi kaydet
-  useEffect(() => {
-    if (!isActive) return;
-
-    const handleUnload = async () => {
-      const minutes = Math.floor(activeSecondsRef.current / 60);
-      if (minutes > 0) {
-        await addReadingMinutes({ variables: { minutes } });
-      }
-    };
-
-    window.addEventListener('beforeunload', handleUnload);
-    return () => window.removeEventListener('beforeunload', handleUnload);
-  }, [isActive, addReadingMinutes]);
+  }, [isActive, userId, bookId, startSession, reportTime]);
+  return status;
 };

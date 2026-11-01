@@ -18,6 +18,7 @@ type ScoreStats {
   booksPublished: Int
   chaptersAdded: Int
   minutesRead: Int
+  sessionEntriesCreated: Int
 }
 
 type Badge {
@@ -57,8 +58,18 @@ type Notification {
 }
 
 extend type Mutation {
-  addReadingMinutes(minutes: Int!): UserScore
+  addReadingMinutes(minutes: Int!): UserScore @deprecated(reason: "Doğrulanmış okuma oturumunu kullanın.")
+  startReadingSession(bookId: ID!, chapterId: ID!): ReadingSessionResult!
+  reportReadingTime(sessionId: String!, sequence: Int!, seconds: Int!, chapterId: ID!): ReadingTimeResult!
   markNotificationsRead: Boolean
+}
+
+type ReadingSessionResult { sessionId: String! }
+type ReadingTimeResult { sequence: Int!, acceptedSeconds: Int!, earnedPoints: Int!, score: UserScore }
+
+extend type Subscription {
+  myScoreUpdated: Boolean!
+  leaderboardUpdated: Boolean!
 }
 
 extend type Query {

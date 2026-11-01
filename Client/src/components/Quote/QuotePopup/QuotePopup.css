@@ -1,19 +1,22 @@
 /* src/components/Quote/QuotePopup/QuotePopup.css */
 .quote-popup {
-  position: absolute;
-  transform: translateX(-50%) translateY(-100%);
-  z-index: 1000;
+  position: fixed;
+  color: #f8fafc;
+  width: min(340px, calc(100vw - 24px));
+  max-height: calc(100dvh - var(--navbar-height, 0px) - 16px);
+  overflow-y: auto;
+  z-index: 999;
   background: #1a1a2e;
   border-radius: 10px;
-  padding: 8px;
+  padding: 12px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-  min-width: 160px;
+  box-sizing: border-box;
   animation: popupFadeIn 0.15s ease;
 }
 
 @keyframes popupFadeIn {
-  from { opacity: 0; transform: translateX(-50%) translateY(-90%); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(-100%); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 /* QuotePopup.css'e ekle */
@@ -50,7 +53,12 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  justify-content: space-between;
 }
+
+.quote-popup p { font-size: .82rem; line-height: 1.5; }
+.quote-popup a { color: #93c5fd; }
+.quote-popup-btn:disabled { cursor: default; opacity: .5; }
 
 .quote-popup-btn {
   display: flex;

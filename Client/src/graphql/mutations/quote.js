@@ -11,12 +11,13 @@ export const CREATE_QUOTE_MUTATION = gql`
     $chapterIndex: Int
     $location: QuoteLocationInput
     $isSpoiler: Boolean
+    $visibility: QuoteVisibility = PUBLIC
   ) {
     createQuote(
       text: $text note: $note bookId: $bookId chapterId: $chapterId
-      chapterTitle: $chapterTitle chapterIndex: $chapterIndex location: $location isSpoiler: $isSpoiler
+      chapterTitle: $chapterTitle chapterIndex: $chapterIndex location: $location isSpoiler: $isSpoiler visibility: $visibility
     ) {
-      id text note chapterTitle createdAt isSpoiler
+      id text note visibility chapterTitle createdAt isSpoiler
     }
   }
 `;
@@ -28,7 +29,7 @@ export const REPOST_QUOTE_MUTATION = gql`
       originalQuote {
         id text
         user { id username profilePicture }
-        book { id title imageUrl }
+        book { publicPath id title imageUrl }
         isSpoiler
       }
     }

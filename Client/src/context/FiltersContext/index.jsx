@@ -4,23 +4,21 @@ const FiltersContext = createContext();
 
 export const FiltersProvider = ({ children }) => {
   const [filters, setFilters] = useState({
-    // 1. GÜNCELLEME: 'genres: []' yerine 'genre' string'i kullanıyoruz.
-    // Çünkü FilterArticles.js'de tek bir kategoriye göre (filters.genre) işlem yapıyoruz.
-    genre: 'Tümü', 
-    
-    // Sıralama varsayılanı
+    classification: null,
     sortBy: 'newest',
+    funding: 'ALL',
     
     // 2. ARAMA: Arama çubuğu için gerekli alan
     search: ''
   });
 
   // Filtre güncelleme fonksiyonu
-  // Kullanımı: updateFilters('search', 'yeni değer') veya updateFilters('genre', 'Roman')
   const updateFilters = (type, value) => {
     setFilters(prev => ({
       ...prev,
-      [type]: value
+      [type]: value,
+      ...(type === 'sortBy' && value === 'closestToTarget' ? { funding: 'ACTIVE' } : {}),
+      ...(type === 'funding' && value !== 'ACTIVE' && prev.sortBy === 'closestToTarget' ? { sortBy: 'newest' } : {}),
     }));
   };
 

@@ -31,6 +31,16 @@ const AuthorSettingsSchema = new mongoose.Schema({
   preferredGenres:   [{ type: String }],
 }, { _id: false });
 
+const SessionCreationAccessSchema = new mongoose.Schema({
+  status: { type: String, enum: ['NONE', 'PENDING', 'APPROVED', 'REJECTED'], default: 'NONE' },
+  reason: { type: String, default: '', maxlength: 1000 },
+  requestedAt: { type: Date, default: null },
+  reviewedAt: { type: Date, default: null },
+  reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  reviewNote: { type: String, default: '', maxlength: 500 },
+  revision: { type: Number, default: 0, min: 0 },
+}, { _id: false });
+
 const User = new mongoose.Schema({
   username:       { type: String, required: true, unique: true },
   fullName:       { type: String, required: true },
@@ -39,7 +49,7 @@ const User = new mongoose.Schema({
   bio:            { type: String, default: '' },
   profilePicture: { type: String, default: '' },
   website:        { type: String, default: '' },
-  role:           { type: String, enum: ['USER', 'ADMIN'], default: 'USER' },
+  role:           { type: String, enum: ['USER', 'PUBLISHER', 'ADMIN'], default: 'USER' },
   isVerified:     { type: Boolean, default: false },
   isActive:       { type: Boolean, default: true },
   authVersion:    { type: Number, default: 0 },
@@ -59,6 +69,7 @@ const User = new mongoose.Schema({
   resetPasswordToken:   { type: String, default: null },
   resetPasswordExpires: { type: Date,   default: null },
   isPremium:            { type: Boolean, default: false },
+  sessionCreationAccess: { type: SessionCreationAccessSchema, default: () => ({}) },
 
   privacySettings:      { type: PrivacySettingsSchema,      default: () => ({}) },
   notificationSettings: { type: NotificationSettingsSchema, default: () => ({}) },
@@ -67,5 +78,6 @@ const User = new mongoose.Schema({
 }, { timestamps: true });
 
 User.index({ isDeleted: 1 });
+User.index({ 'sessionCreationAccess.status': 1, 'sessionCreationAccess.requestedAt': -1, _id: -1 });
 
 export default mongoose.model('User', User);

@@ -85,7 +85,7 @@ export function createChapterAutosave({ save, delay = AUTOSAVE_DELAY, maxWait = 
       const existing = records.get(chapter.id);
       if (!existing) records.set(chapter.id, { ...chapter, content: chapter.content || '', savedContent: chapter.content || '', touched: false, saving: false, error: null });
       else if (!existing.touched) Object.assign(existing, chapter, { content: chapter.content || '', savedContent: chapter.content || '' });
-      else existing.title = chapter.title;
+      else Object.assign(existing, { title: chapter.title, isHidden: chapter.isHidden, canReadContent: chapter.canReadContent, wordCount: chapter.wordCount });
     }
     // Retain an unsaved draft even if a concurrent refetch omitted its chapter.
     for (const record of records.values()) if (dirty(record) && !order.includes(record.id)) order.push(record.id);

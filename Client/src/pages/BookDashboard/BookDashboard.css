@@ -115,6 +115,8 @@
 }
 .dashboard-save-button .btn-icon { display: inline-flex; align-items: center; line-height: 0; }
 .editor-save-status { min-width: 0; }
+.editor-topbar-actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; justify-content: flex-end; flex-shrink: 0; }
+@media (max-width: 640px) { .editor-topbar { flex-wrap: wrap; } .editor-topbar-actions { width: 100%; } }
 .editor-save-status .ui-badge { white-space: normal; line-height: 1.4; }
 .quill-wrapper {
   flex: 1 1 auto;
@@ -287,3 +289,4 @@
 @media (prefers-reduced-motion: reduce) {
   .dashboard-sidebar { transition: none; }
 }
+.new-chapter-visibility { display: flex; align-items: center; gap: .5rem; margin-top: .75rem; font-size: .8rem; }

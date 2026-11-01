@@ -1,68 +1,96 @@
-import React, { useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { AddPhotoAlternate } from '@mui/icons-material';
 
 const CLOUD_NAME    = 'dw1sepw7z';
 const UPLOAD_PRESET = 'quill_preset';
 
-const cropTo2x3 = (file) => {
+export const cropImage = (file, aspectRatio = 2 / 3, maxWidth = Infinity) => {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
 
     img.onload = () => {
-      const { naturalWidth: w, naturalHeight: h } = img;
+      try {
+        const { naturalWidth: w, naturalHeight: h } = img;
+        if (!(w > 0 && h > 0 && aspectRatio > 0 && Number.isFinite(aspectRatio))) throw new Error('Görsel ölçüleri okunamadı.');
 
-      // 2:3 oranı için hedef boyutları hesapla
-      let srcX, srcY, srcW, srcH;
+        let srcX, srcY, srcW, srcH;
 
-      if (w / h > 2 / 3) {
-        // Resim çok geniş → yüksekliği baz al, genişliği kırp
-        srcH = h;
-        srcW = Math.round(h * 2 / 3);
-        srcX = Math.round((w - srcW) / 2); // ortadan kırp
-        srcY = 0;
-      } else {
-        // Resim çok uzun → genişliği baz al, yüksekliği kırp
-        srcW = w;
-        srcH = Math.round(w * 3 / 2);
-        srcX = 0;
-        srcY = Math.round((h - srcH) / 2); // ortadan kırp
-      }
+        if (w / h > aspectRatio) {
+          // Resim çok geniş → yüksekliği baz al, genişliği kırp
+          srcH = h;
+          srcW = Math.round(h * aspectRatio);
+          srcX = Math.round((w - srcW) / 2); // ortadan kırp
+          srcY = 0;
+        } else {
+          // Resim çok uzun → genişliği baz al, yüksekliği kırp
+          srcW = w;
+          srcH = Math.round(w / aspectRatio);
+          srcX = 0;
+          srcY = Math.round((h - srcH) / 2); // ortadan kırp
+        }
 
-      // Canvas'a çiz
-      const canvas = document.createElement('canvas');
-      canvas.width  = srcW;
-      canvas.height = srcH;
-      canvas.getContext('2d').drawImage(img, srcX, srcY, srcW, srcH, 0, 0, srcW, srcH);
+        // Canvas'a çiz
+        const canvas = document.createElement('canvas');
+        const scale = Math.min(1, maxWidth / srcW);
+        canvas.width  = Math.round(srcW * scale);
+        canvas.height = Math.round(srcH * scale);
+        canvas.getContext('2d').drawImage(img, srcX, srcY, srcW, srcH, 0, 0, canvas.width, canvas.height);
 
-      URL.revokeObjectURL(url);
-      canvas.toBlob((blob) => {
-        if (!blob) return reject(new Error('Canvas boş.'));
-        resolve(blob);
-      }, 'image/jpeg', 0.92);
+        URL.revokeObjectURL(url);
+        canvas.toBlob((blob) => {
+          if (!blob) return reject(new Error('Canvas boş.'));
+          resolve(blob);
+        }, 'image/jpeg', 0.92);
+      } catch (error) { URL.revokeObjectURL(url); reject(error); }
     };
 
-    img.onerror = reject;
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Görsel okunamadı.')); };
     img.src = url;
   });
 };
 
-const ImageUpload = ({ onUploadSuccess, label = 'Resim Yükle', currentImage }) => {
+const ImageUpload = ({ onUploadSuccess, label = 'Resim Yükle', currentImage, aspectRatio = 2 / 3, maxWidth = Infinity,
+  maxFileSize = Infinity, allowedTypes, accept = 'image/*', disabled = false, onLoadingChange, onError }) => {
   const [loading, setLoading]   = useState(false);
   const [preview, setPreview]   = useState(currentImage || '');
+  const inputId = useId();
+  const mounted = useRef(true);
+  const upload = useRef(null);
+  const previewUrl = useRef(null);
+  const callbacks = useRef({});
+  callbacks.current = { onUploadSuccess, onLoadingChange, onError };
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; upload.current?.abort(); if (previewUrl.current) URL.revokeObjectURL(previewUrl.current); callbacks.current.onLoadingChange?.(false); };
+  }, []);
+  useEffect(() => {
+    setPreview(currentImage || '');
+    if (previewUrl.current) { URL.revokeObjectURL(previewUrl.current); previewUrl.current = null; }
+  }, [currentImage]);
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
-    if (!file) return;
+    if (!file || loading || disabled) return;
+    if (file.size > maxFileSize || (allowedTypes && !allowedTypes.includes(file.type))) {
+      const message = 'JPEG, PNG veya WebP biçiminde, en fazla 8 MB bir görsel seçin.';
+      if (onError) onError(message); else alert(message);
+      e.target.value = ''; return;
+    }
 
     setLoading(true);
+    callbacks.current.onLoadingChange?.(true);
+    const controller = new AbortController();
+    upload.current = controller;
 
     try {
-      // 2:3 oranında kırp
-      const croppedBlob = await cropTo2x3(file);
+      const croppedBlob = await cropImage(file, aspectRatio, maxWidth);
+      if (!mounted.current || controller.signal.aborted) return;
 
       // Önizleme
-      setPreview(URL.createObjectURL(croppedBlob));
+      if (previewUrl.current) URL.revokeObjectURL(previewUrl.current);
+      previewUrl.current = URL.createObjectURL(croppedBlob);
+      setPreview(previewUrl.current);
 
       // Cloudinary'ye yükle
       const formData = new FormData();
@@ -71,27 +99,29 @@ const ImageUpload = ({ onUploadSuccess, label = 'Resim Yükle', currentImage }) 
 
       const res  = await fetch(
         `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-        { method: 'POST', body: formData }
+        { method: 'POST', body: formData, signal: controller.signal }
       );
       const data = await res.json();
 
-      if (data.secure_url) {
-        onUploadSuccess(data.secure_url);
+      if (res.ok && data.secure_url) {
+        if (mounted.current) callbacks.current.onUploadSuccess(data.secure_url);
       } else {
         throw new Error('Yükleme başarısız');
       }
     } catch (err) {
-      console.error('Resim yükleme hatası:', err);
-      alert('Resim yüklenirken hata oluştu.');
+      if (mounted.current && err.name !== 'AbortError') {
+        setPreview(currentImage || '');
+        if (callbacks.current.onError) callbacks.current.onError('Görsel yüklenemedi. Lütfen tekrar deneyin.');
+        else alert('Resim yüklenirken hata oluştu.');
+      }
     } finally {
-      setLoading(false);
-      e.target.value = '';
+      if (mounted.current) { setLoading(false); callbacks.current.onLoadingChange?.(false); e.target.value = ''; }
     }
   };
 
   return (
     <div className="image-upload-container" style={{ width: '100%', height: '100%' }}>
-      <label htmlFor="file-upload" style={{ cursor: 'pointer', display: 'block', width: '100%', height: '100%' }}>
+      <label htmlFor={inputId} style={{ cursor: disabled ? 'default' : 'pointer', display: 'block', width: '100%', height: '100%' }}>
         <div style={{
           width: '100%', height: '100%',
           border: '2px dashed #ccc', borderRadius: '10px',
@@ -114,7 +144,7 @@ const ImageUpload = ({ onUploadSuccess, label = 'Resim Yükle', currentImage }) 
           )}
         </div>
       </label>
-      <input id="file-upload" type="file" accept="image/*"
+      <input id={inputId} type="file" accept={accept} disabled={disabled || loading} aria-label={label}
              onChange={handleFileChange} style={{ display: 'none' }} />
     </div>
   );

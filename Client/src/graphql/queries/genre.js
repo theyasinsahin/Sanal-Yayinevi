@@ -5,14 +5,15 @@ export const GET_ALL_GENRES = gql`
     getAllGenres(includeInactive: $includeInactive) {
       id
       name
+      group
+      sortOrder
       isActive
       slug
       description
-      iconUrl
+
       hexColor
-      isActive
       createdAt
-      updatedAt    
+      updatedAt
     }
   }
 `;

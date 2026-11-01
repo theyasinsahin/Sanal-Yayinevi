@@ -81,10 +81,10 @@ const AccountSettings = ({ profile, onUpdate, showToast }) => {
   const passwordStrength = (pw) => {
     if (!pw) return null;
     const score = validatePassword(pw).results.filter(rule => rule.passed).length;
-    if (score <= 2) return { label: 'Zayıf',    color: '#dc2626' };
-    if (score === 3) return { label: 'Orta',     color: '#f59e0b' };
-    if (score === 4) return { label: 'İyi',      color: '#3b82f6' };
-    return             { label: 'Güçlü',   color: '#16a34a' };
+    if (score <= 2) return { label: 'Zayıf',    color: 'var(--color-danger-text)' };
+    if (score === 3) return { label: 'Orta',     color: 'var(--color-warning-text)' };
+    if (score === 4) return { label: 'İyi',      color: 'var(--color-success-text)' };
+    return             { label: 'Güçlü',   color: 'var(--color-success-text)' };
   };
   const strength = passwordStrength(passForm.newPassword);
 
@@ -95,8 +95,8 @@ const AccountSettings = ({ profile, onUpdate, showToast }) => {
         <p className="settings-section-desc">
           E-posta ve şifre bilgilerinizi buradan güncelleyebilirsiniz.
         </p>
-        <p className="settings-field-hint">
-          Google ile kaydolduysanız ve henüz şifreniz yoksa <Link to="/sifremi-unuttum">şifre sıfırlama bağlantısıyla şifre oluşturabilirsiniz</Link>.
+        <p className="ui-notice settings-account-notice">
+          Google ile kaydolduysanız ve henüz şifreniz yoksa <Link to="/sifremi-unuttum" className="ui-text-link">şifre sıfırlama bağlantısıyla şifre oluşturabilirsiniz</Link>.
         </p>
       </div>
 
@@ -184,7 +184,7 @@ const AccountSettings = ({ profile, onUpdate, showToast }) => {
             type={showPasswords ? 'text' : 'password'}
           />
           {passForm.confirmPassword && passForm.newPassword !== passForm.confirmPassword && (
-            <span className="settings-field-hint" style={{ color: '#dc2626' }}>Şifreler eşleşmiyor.</span>
+            <span className="settings-field-hint settings-field-error" role="alert">Şifreler eşleşmiyor.</span>
           )}
         </div>
 

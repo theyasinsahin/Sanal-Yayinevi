@@ -1,5 +1,7 @@
+import { WORK_CLASSIFICATION_FIELDS } from '../classification';
 // src/graphql/queries/bookFollow.js
 import { gql } from '@apollo/client';
+import { BOOK_FUNDING_FIELDS } from './book';
 
 export const IS_FOLLOWING_BOOK = gql`
   query IsFollowingBook($bookId: ID!) {
@@ -8,8 +10,12 @@ export const IS_FOLLOWING_BOOK = gql`
 `;
 
 export const GET_FOLLOWED_BOOKS = gql`
+  ${WORK_CLASSIFICATION_FIELDS}
+  ${BOOK_FUNDING_FIELDS}
   query GetFollowedBooks {
     getFollowedBooks {
+      ...BookFundingFields
+      publicPath
       id
       title
       imageUrl
@@ -20,11 +26,7 @@ export const GET_FOLLOWED_BOOKS = gql`
         username
         profilePicture
       }
-      genre {
-        name
-        slug
-        hexColor
-      }
+      ...WorkClassificationFields
       stats {
         views
         likes

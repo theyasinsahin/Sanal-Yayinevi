@@ -1,14 +1,16 @@
+import { useLiveScoreQuery } from '../../hooks/useLiveScoreQuery';
+import { profilePath } from '../../utils/publicPaths';
 import { useGetOrCreateConversation } from '../../hooks/useMessages';
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client';
 import { 
-  Person, Email, Link as LinkIcon, 
+  Person, Email,
   Book, Bookmark, 
   Edit, Save, Cancel, Close,
   Logout,
-  Verified, TrendingUp, Star, Chat, Settings
+  Verified, TrendingUp, Star, Chat, Settings, Receipt
 } from '@mui/icons-material';
 
 import { useAuth } from '../../context/AuthContext';
@@ -26,18 +28,20 @@ import { Input } from '../../components/UI/Input';
 import { Textarea } from '../../components/UI/Textarea';
 import { Toast } from '../../components/UI/Toast';
 import BookCarousel from '../../components/Books/BookCarousel';
+import PrintedReadingLibrary from '../../components/Books/PrintedReadingLibrary';
 import ImageUpload from '../../components/ImageUpload';
 
 import { FormatQuote } from '@mui/icons-material';
 import { GET_QUOTES_BY_USER } from '../../graphql/queries/quote';
-import QuoteCard from '../../components/Quote/QuoteCard';
+import ProfileQuoteGroups from '../../components/Quote/ProfileQuoteGroups';
 import UserSettings from '../../components/Settings/UserSettings';
 import UserFollowButton from '../../components/Follow/UserFollowButton';
 import RemoveFollowerButton from '../../components/Follow/RemoveFollowerButton';
+import SocialShareButton from '../../components/Sharing/SocialShareButton';
 
 import './UserProfile.css';
 
-const UserProfile = () => {
+const UserProfile = ({ resolvedId } = {}) => {
 
   const { userId } = useParams();
   const { user: authUser, logout } = useAuth();
@@ -55,7 +59,7 @@ const UserProfile = () => {
   const [followModal, setFollowModal] = useState({ show: false, type: 'followers' });
 
   // Determine target user
-  const targetId = userId || authUser?.id;
+  const targetId = resolvedId || userId || authUser?.id;
   const isMe = authUser && targetId === authUser.id;
 
   // Queries
@@ -65,11 +69,12 @@ const UserProfile = () => {
     fetchPolicy: 'network-only'
   });
 
-  const { data: quotesData } = useQuery(GET_QUOTES_BY_USER, {
+  const { data: quotesData, loading: quotesLoading, error: quotesError } = useQuery(GET_QUOTES_BY_USER, {
     variables: { userId: targetId },
     skip: !targetId,
+    fetchPolicy: 'network-only',
   });
-  const userQuotes = quotesData?.getQuotesByUser || [];
+  const userQuotes = (quotesData?.getQuotesByUser || []).filter(quote => quote.visibility !== 'PRIVATE' || isMe);
 
   const profile = data?.getUserById;
   useEffect(() => {
@@ -90,12 +95,12 @@ const UserProfile = () => {
     return () => { if (!existed) meta.remove(); else meta.setAttribute('content', previous || ''); };
   }, [profile]);
 
-  const { data: scoreData } = useQuery(GET_USER_SCORE, {
+  const { data: scoreData } = useLiveScoreQuery(GET_USER_SCORE, {
     variables: { userId: targetId },
     skip: !targetId,
   });
 
-  const { data: badgeData } = useQuery(GET_USER_BADGES, {
+  const { data: badgeData } = useLiveScoreQuery(GET_USER_BADGES, {
     variables: { userId: targetId },
     skip: !targetId,
   });
@@ -110,9 +115,10 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
 
   // Mutations
   const [updateUser, { loading: updating }] = useMutation(UPDATE_USER_MUTATION, {
-    onCompleted: () => {
+    onCompleted: updated => {
       setIsEditing(false);
       showToast('Profil başarıyla güncellendi.', 'success');
+      if (resolvedId && updated?.updateProfile) navigate(profilePath(updated.updateProfile), { replace: true });
       refetch();
     },
     onError: (err) => showToast(err.message, 'error')
@@ -339,9 +345,14 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
             </div>
 
             <div className="header-right">
+              {!isEditing && <SocialShareButton type="PROFILE" id={targetId} label="Profili paylaş" />}
               {isMe ? (
                 !isEditing && (
                   <div className="my-actions">
+                    <Link to="/funding-history" className="btn btn-outline btn-medium profile-funding-link" title="Desteklerim ve ön siparişlerim">
+                      <Receipt fontSize="small" />
+                      <span>Desteklerim</span>
+                    </Link>
                     <Button variant="outline" onClick={() => setIsEditing(true)} icon={<Edit fontSize="small"/>}>Düzenle</Button>
                     <Button variant="outline" onClick={handleLogout} icon={<Logout fontSize="small"/>}>Çıkış Yap</Button>
                   </div>
@@ -382,9 +393,13 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
 
             {canViewLibrary && (
               <button className={`tab-btn ${activeTab === 'saved' ? 'active' : ''}`} onClick={() => setActiveTab('saved')}>
-                <Bookmark /><span>Kitaplık</span>
+                <Bookmark /><span>Dijital Kitaplık</span>
               </button>
             )}
+
+            {canViewLibrary && <button className={`tab-btn ${activeTab === 'printed-read' ? 'active' : ''}`} onClick={() => setActiveTab('printed-read')}>
+              <Book /><span>Okuduğum Basılı Kitaplar</span>
+            </button>}
 
             {isMe && (
               <button className={`tab-btn ${activeTab === 'drafts' ? 'active' : ''}`} onClick={() => setActiveTab('drafts')}>
@@ -431,18 +446,21 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
               <BookCarousel books={publishedBooks} loading={loading} />
             )}
             {canViewLibrary && activeTab === 'saved' && (
-              <BookCarousel books={profile.savedBooks} loading={loading} />
+              <BookCarousel books={(profile.savedBooks || []).filter(book => book.kind !== 'PRINTED')} loading={loading} />
             )}
             {isMe && activeTab === 'drafts' && (
               <BookCarousel books={draftBooks} loading={loading} />
             )}
+            {canViewLibrary && activeTab === 'printed-read' && <PrintedReadingLibrary key={`${targetId}:${authUser?.id || 'guest'}`} userId={targetId} />}
             {canView && activeTab === 'quotes' && (
-              <div className="quotes-tab-grid">
+              <div>
+                {quotesLoading ? <p role="status">Alıntılar yükleniyor…</p> : quotesError ? <p role="alert">Alıntılar yüklenemedi.</p> : <>
                 {userQuotes.length === 0 ? (
                   <Typography variant="body" color="muted">Henüz alıntı yok.</Typography>
                 ) : (
-                  userQuotes.map(q => <QuoteCard key={q.id} quote={q} />)
+                  <ProfileQuoteGroups quotes={userQuotes} />
                 )}
+                </>}
               </div>
             )}
             {isMe && activeTab === 'followed' && (
@@ -498,7 +516,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
                       className="follow-user-item" 
                       onClick={() => {
                         closeModal();
-                        navigate(`/user/${uid}`);
+                        navigate(profilePath(typeof user === 'object' ? user : { id: uid }));
                       }}
                     >
                       <div className="follow-user-avatar">

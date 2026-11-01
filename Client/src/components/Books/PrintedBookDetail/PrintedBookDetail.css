@@ -1,0 +1,18 @@
+.printed-detail-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 3rem; margin: 2.5rem 0; }
+.printed-detail-cover img, .printed-cover-placeholder { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 3px 8px 8px 3px; border-left: 6px solid var(--sepia-dark); box-shadow: var(--shadow-paper); }
+.printed-cover-placeholder { display: grid; place-items: center; text-align: center; padding: 1.5rem; background: var(--aged-paper); overflow-wrap: anywhere; }
+.printed-detail-intro h1 { font-size: clamp(1.75rem, 4vw, 2.75rem); line-height: 1.4; margin: 1rem 0; overflow-wrap: anywhere; }
+.printed-detail-author { font-size: 1.2rem; color: var(--graphite); margin-bottom: 1.5rem; }
+.printed-metadata { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-family: var(--font-sans); }
+.printed-metadata dt { color: var(--text-muted); font-size: .75rem; }
+.printed-metadata dd { font-size: .9rem; overflow-wrap: anywhere; }
+.printed-detail-hint { margin: 1rem 0; font-size: .85rem; font-family: var(--font-sans); color: var(--text-muted); }
+.printed-actions > a.btn { text-decoration: none; }
+.printed-description { white-space: pre-wrap; overflow-wrap: anywhere; }
+.printed-quote-form { margin: 1rem 0 2rem; }
+.printed-quote-form summary, .printed-panel > summary { cursor: pointer; margin-bottom: 1rem; font-family: var(--font-sans); }
+.printed-quote-form form { margin-top: 1.5rem; }
+.printed-check { display: flex; gap: .75rem; align-items: center; margin-bottom: 1.5rem; font-family: var(--font-sans); font-size: .875rem; }
+.printed-check input { width: 18px; height: 18px; accent-color: var(--text-main); }
+.printed-quotes { display: grid; gap: 1.5rem; margin-top: 1.5rem; }
+@media (max-width: 640px) { .printed-detail-layout { grid-template-columns: 1fr; gap: 2rem; } .printed-detail-cover { width: 160px; margin: 0 auto; } }

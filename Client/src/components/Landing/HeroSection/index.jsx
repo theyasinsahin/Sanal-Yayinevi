@@ -1,70 +1,46 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { FiSearch, FiX } from 'react-icons/fi';
+import { Typography } from '../../UI/Typography';
+import { Container } from '../../UI/Container';
 import './HeroSection.css';
 
-// --- UI KIT IMPORTS ---
-import { Typography } from '../../UI/Typography';
-import { Button } from '../../UI/Button';
-import { Container } from '../../UI/Container';
-
-const HeroSection = () => {
-  const scrollToHowItWorks = () => {
-    const element = document.getElementById('how-it-works');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  return (
-    <section className="hero-section">
-      <Container maxWidth="7xl">
-        <div className="hero-wrapper">
-          
-          {/* Sol taraf: Metin ve Butonlar */}
-          <div className="hero-content">
-            <Typography variant="h1" weight="bold" className="hero-title">
-              Fikriniz Kitaplaşsın
-            </Typography>
-            
-            <Typography variant="h4" color="muted" className="hero-subtitle">
-              Kaleminizden çıkan eserlerin gerçek bir kitaba dönüşme yolculuğuna tanık olun
-            </Typography>
-            
-            <div className="hero-actions">
-              {/* Primary Button */}
-              <Link to="/create-book" style={{ textDecoration: 'none' }}>
-                <Button variant="primary" size="large">
-                  Yazmaya Başla
-                </Button>
-              </Link>
-              
-              {/* Secondary Button */}
-              <Button 
-                variant="outline" 
-                size="large" 
-                onClick={scrollToHowItWorks}
-              >
-                Nasıl Çalışır?
-              </Button>
-            </div>
-          </div>
-
-          {/* Sağ taraf: Görsel */}
-          <div className="hero-image-container">
-            <img 
-              src="/images/landing/hero-bg1.jpg" 
-              alt="Yazma süreci illüstrasyonu" 
-              className="hero-img"
-            />
-            <div className="hero-stamp">
-              1928
-            </div>
-          </div>
-
+const HeroSection = ({ search, onSearchChange }) => (
+  <section className="hero-section" aria-labelledby="home-title">
+    <Container maxWidth="7xl">
+      <div className="hero-wrapper">
+        <div className="hero-content">
+          <Typography id="home-title" variant="h1" weight="bold" className="hero-title">
+            Fikriniz Kitaplaşsın
+          </Typography>
+          <Typography variant="body" color="muted" className="hero-subtitle">
+            Kaleminizden çıkan eserlerin gerçek bir kitaba dönüşme yolculuğuna tanık olun
+          </Typography>
         </div>
-      </Container>
-    </section>
-  );
-};
+
+        <form className="hero-search" role="search" aria-label="Kitap arama" onSubmit={event => event.preventDefault()}>
+          <label htmlFor="home-search">Bir sonraki kitabını bul</label>
+          <div className="hero-search-field">
+            <FiSearch aria-hidden="true" />
+            <input
+              id="home-search"
+              name="search"
+              type="search"
+              maxLength={100}
+              placeholder="Kitap, yazar veya alıntı ara..."
+              value={search}
+              onChange={event => onSearchChange(event.target.value)}
+              aria-controls="home-books"
+            />
+            {search && (
+              <button type="button" aria-label="Aramayı temizle" onClick={() => onSearchChange('')}>
+                <FiX aria-hidden="true" />
+              </button>
+            )}
+          </div>
+        </form>
+      </div>
+    </Container>
+  </section>
+);
 
 export default HeroSection;

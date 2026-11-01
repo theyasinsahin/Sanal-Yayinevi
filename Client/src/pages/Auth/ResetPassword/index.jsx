@@ -1,7 +1,7 @@
 // src/pages/Auth/ResetPassword/index.jsx
 import React, { useState } from 'react';
 import { useMutation } from '@apollo/client';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Lock } from '@mui/icons-material';
 import { RESET_PASSWORD_MUTATION } from '../../../graphql/mutations/user';
 import { MainLayout } from '../../../components/Layout/MainLayout';
@@ -59,15 +59,15 @@ const ResetPasswordPage = () => {
             </div>
 
             {success ? (
-              <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                <Typography variant="body">
+              <div className="auth-result">
+                <Typography variant="body" className="ui-notice ui-notice--success" role="status">
                   Şifreniz güncellendi! Giriş sayfasına yönlendiriliyorsunuz...
                 </Typography>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="auth-form">
                 {error && (
-                  <div className="auth-error-box">
+                  <div className="ui-notice ui-notice--error" role="alert">
                     <Typography variant="small" color="danger">{error}</Typography>
                   </div>
                 )}

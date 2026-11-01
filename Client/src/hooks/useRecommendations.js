@@ -1,12 +1,18 @@
+import { WORK_CLASSIFICATION_FIELDS } from '../graphql/classification';
 // src/hooks/useRecommendations.js
 import { useQuery, useMutation, gql } from '@apollo/client';
 import { useAuth } from '../context/AuthContext';
+import { BOOK_FUNDING_FIELDS } from '../graphql/queries/book';
 
 const RECOMMENDATION_FIELDS = gql`
+  ${WORK_CLASSIFICATION_FIELDS}
+  ${BOOK_FUNDING_FIELDS}
   fragment RecommendationFields on RecommendationResult {
     score
     reason
     book {
+      ...BookFundingFields
+      publicPath
       id
       title
       description
@@ -14,7 +20,7 @@ const RECOMMENDATION_FIELDS = gql`
       status
       publishDate
       stats { likes views }
-      genre { id name hexColor }
+      ...WorkClassificationFields
       author { id username fullName profilePicture }
     }
   }
@@ -67,13 +73,13 @@ export const MARK_CHAPTER_AS_READ = gql`
 // Aksi halde "Giriş yapmalısınız." hatası dönüyor ve bu hata formatError.js
 // üzerinden UNAUTHENTICATED koduna çevrilip App.js'teki errorLink'i
 // tetikleyerek "Oturum süresi doldu" davranışını yanlışlıkla başlatıyordu.
-export const useRecommendations = (limit = 10, offset = 0) => {
+export const useRecommendations = (limit = 10, offset = 0, enabled = true, { fetchPolicy = 'cache-and-network' } = {}) => {
   const { user } = useAuth();
 
   const { data, loading, error, fetchMore } = useQuery(GET_RECOMMENDATIONS, {
     variables: { limit, offset },
-    fetchPolicy: 'cache-and-network',
-    skip: !user,
+    fetchPolicy,
+    skip: !user || !enabled,
   });
 
   const loadMore = () => {

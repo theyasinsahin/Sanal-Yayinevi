@@ -11,6 +11,7 @@ const CommentSchema = new mongoose.Schema({
   parentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Comment', default: null },
 
   // ── Soft-delete ──────────────────────────────────────────────────
+  adminArchiveId: { type: mongoose.Schema.Types.ObjectId, ref: 'AdminAudit' },
   isDeleted: { type: Boolean, default: false },
   deletedAt: { type: Date, default: null },
 }, { _id: true });

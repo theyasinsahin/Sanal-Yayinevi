@@ -23,11 +23,12 @@ export const filterBooks = (books, filters) => {
     });
   }
 
-  // --- 2. KATEGORİ FİLTRESİ (GENRE) ---
-  if (filters.genre && filters.genre !== 'Tümü') {
-    // book.genre veritabanında "slug" olarak mı yoksa "Display Name" olarak mı tutuluyor?
-    // Buradaki eşleşmenin birebir olduğundan emin ol.
-    filtered = filtered.filter((book) => book.genre === filters.genre);
+  for (const [key, field] of [['formats', 'format'], ['genres', 'genres'], ['tags', 'classificationTags'], ['features', 'narrativeFeatures'], ['audiences', 'targetAudience']]) {
+    const selected = filters.classification?.[key] || [];
+    if (selected.length) filtered = filtered.filter(book => {
+      const terms = Array.isArray(book[field]) ? book[field] : [book[field]].filter(Boolean);
+      return terms.some(term => selected.includes(term.slug));
+    });
   }
 
   // --- 3. SIRALAMA (SORT) ---

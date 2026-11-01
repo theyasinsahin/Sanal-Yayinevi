@@ -6,13 +6,15 @@ import { AuthorsPage, PublishedBooksPage, ContactPage, LegalPage } from './index
 import { MockedProvider } from '@apollo/client/testing';
 import { GET_AUTHORS, GET_COMMUNITY_CONFIG } from '../../graphql/queries/community';
 import { SUBSCRIBE_NEWSLETTER } from '../../graphql/mutations/community';
+import { GET_PRINTED_BOOKS } from '../../graphql/printedBooks';
 
 jest.mock('../../components/Layout/MainLayout', () => ({ MainLayout: ({ children }) => <main>{children}</main> }));
+jest.mock('../../context/AuthContext', () => ({ useAuth: () => ({ user: null }) }));
 const show = (component, mocks = []) => render(<MockedProvider mocks={mocks} addTypename={false}><MemoryRouter>{component}</MemoryRouter></MockedProvider>);
-test('printed books are clearly distinguished from digital publications', () => {
-  show(<PublishedBooksPage />);
-  expect(screen.getByText(/henüz fiziksel basımı tamamlanmış/)).toBeInTheDocument();
-  expect(screen.getByRole('link', { name: 'Kitapları keşfet' })).toHaveAttribute('href', '/feed');
+test('printed catalog shows a real empty state and offers authenticated submission', async () => {
+  show(<PublishedBooksPage />, [{ request: { query: GET_PRINTED_BOOKS, variables: { page: 1, search: '' } }, result: { data: { getPrintedBooks: { books: [], total: 0, page: 1, totalPages: 1 } } } }]);
+  expect(await screen.findByText('Raflarımız ilk eserlerini bekliyor')).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'Kitap eklemek için giriş yapın' })).toHaveAttribute('href', '/login');
 });
 test('authors load with real totals, profile links and pagination', async () => {
   const author = { id: 'abc', username: 'writer', fullName: 'Writer', bio: '', profilePicture: '', bookCount: 2, pageCount: 317 };
@@ -22,7 +24,7 @@ test('authors load with real totals, profile links and pagination', async () => 
   ]);
   expect(screen.getByRole('status')).toHaveTextContent('yükleniyor');
   expect(await screen.findByRole('heading', { name: 'Topluluğumuzdaki 25 Yazar' })).toBeInTheDocument();
-  expect(screen.getByRole('link', { name: /writer/ })).toHaveAttribute('href', '/user/abc');
+  expect(screen.getByRole('link', { name: /writer/ })).toHaveAttribute('href', '/yazar/writer');
   expect(screen.getByText('317 sayfa')).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Sonraki' }));
   expect(await screen.findByText('Sayfa 2 / 3')).toBeInTheDocument();

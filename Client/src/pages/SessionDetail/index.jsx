@@ -1,3 +1,5 @@
+import UserProfileLink from '../../components/UI/UserProfileLink';
+import { profilePath } from '../../utils/publicPaths';
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -17,6 +19,9 @@ import {
   useCloseSession,
 } from '../../hooks/useSessions';
 import './SessionDetail.css';
+import SocialShareButton from '../../components/Sharing/SocialShareButton';
+import SessionCover from '../../components/Sessions/SessionCover';
+import SessionCoverEditor from '../../components/Sessions/SessionCoverEditor';
 
 import { useLazyQuery } from '@apollo/client';
 import { VERIFY_SESSION_ACCESS_CODE } from '../../graphql/queries/session'; // query'i ekleyeceksin
@@ -129,10 +134,10 @@ const EntryCard = ({ entry, isOwn, onDelete, onLike, currentUserId, index }) => 
           )}
         </div>
         <div className="entry-card-author-info">
-          <span className="entry-card-name">
+          <UserProfileLink user={entry.user} className="entry-card-name">
             {entry.user?.fullName ?? entry.user?.username ?? 'Kullanıcı'}
             {isOwn && <span className="entry-card-own-tag">Sen</span>}
-          </span>
+          </UserProfileLink>
           <span className="entry-card-date">{formattedDate}</span>
         </div>
 
@@ -168,6 +173,8 @@ const EntryCard = ({ entry, isOwn, onDelete, onLike, currentUserId, index }) => 
       <div className="entry-card-footer">
         <button
           className={`entry-card-like-btn${isLiked ? ' entry-card-like-btn--liked' : ''}`}
+          aria-label="Yazıyı beğen"
+          aria-pressed={Boolean(isLiked)}
           onClick={() => onLike(entry.id)}
         >
           <span className="entry-card-like-icon">♥</span>
@@ -187,7 +194,8 @@ const EntryComposer = ({ onSend, sending, disabled }) => {
   const handleSubmit = async () => {
     const content = value.trim();
     if (!content || sending) return;
-    await onSend(content);
+    const sent = await onSend(content);
+    if (sent === false) return;
     setValue('');
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -237,8 +245,9 @@ const EntryComposer = ({ onSend, sending, disabled }) => {
   );
 };
 
-const SessionDetail = () => {
-  const { sessionId } = useParams();
+const SessionDetail = ({ resolvedId } = {}) => {
+  const params = useParams();
+  const sessionId = resolvedId || params.sessionId;
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
   const { showToast } = useToast();
@@ -246,6 +255,7 @@ const SessionDetail = () => {
 
   const [accessCode, setAccessCode] = useState(null);
   const [accessError, setAccessError] = useState('');
+  const [editingCover, setEditingCover] = useState(false);
 
   // Bir oturum her açıldığında (ilk girişte veya başka bir oturuma
   // geçildiğinde) sayfayı en üste al. sessionId'ye bağladık çünkü
@@ -269,6 +279,7 @@ const { session, loading: sessionLoading, error: sessionError } = useGetSession(
     try {
       await addEntry(content, accessCode);
       setAccessError('');
+      return true;
     } catch (err) {
       if (err.message?.includes('kodu')) {
         setAccessCode(null);
@@ -278,6 +289,7 @@ const { session, loading: sessionLoading, error: sessionError } = useGetSession(
         // hiçbir şey görmüyordu. Artık her zaman bir uyarı gösteriyoruz.
         showToast(err.message || 'Yazı gönderilemedi.', 'error');
       }
+      return false;
     }
   };
 
@@ -400,6 +412,11 @@ const { session, loading: sessionLoading, error: sessionError } = useGetSession(
           </button>
 
           {/* BAŞLIK BLOĞU */}
+          <SessionCover key={session.id} src={session.coverImageUrl} title={session.title} className="session-detail-cover" eager />
+          {(isCreator || currentUser?.role === 'ADMIN') && <div className="session-detail-cover-actions">
+            <Button variant="outline" size="small" onClick={() => setEditingCover(previous => !previous)}>Kapak fotoğrafını düzenle</Button>
+          </div>}
+          {editingCover && (isCreator || currentUser?.role === 'ADMIN') && <SessionCoverEditor key={session.id} session={session} onClose={() => setEditingCover(false)} />}
           <div className="session-detail-hero">
             <div className="session-detail-hero-meta">
               <Badge variant={SESSION_TYPE_VARIANT[session.type]}>
@@ -415,6 +432,7 @@ const { session, loading: sessionLoading, error: sessionError } = useGetSession(
 
             <div className="session-detail-hero-title-row">
               <h1 className="session-detail-title">{session.title}</h1>
+              {session.type === 'OPEN' && session.isActive && <SocialShareButton type="SESSION" id={session.id} label="Oturumu paylaş" />}
               {isCreator && session.isActive && (
                 <Button
                   variant="danger"
@@ -431,10 +449,7 @@ const { session, loading: sessionLoading, error: sessionError } = useGetSession(
             )}
 
             <div className="session-detail-hero-footer">
-              {/* DÜZELTME: /users/ (çoğul) route App.js'te tanımlı değil,
-                  gerçek route /user/:userId (tekil) — eskisi tıklanınca
-                  404 sayfasına düşerdi. */}
-              <Link className="session-detail-author" to={`/user/${session.createdBy?.id}`}>
+              <Link className="session-detail-author" to={profilePath(session.createdBy)}>
                 <div className="session-detail-avatar">
                   {session.createdBy?.profilePicture ? (
                     <img src={session.createdBy.profilePicture} alt="" />

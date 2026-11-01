@@ -19,6 +19,7 @@ const MESSAGE_FIELDS = gql`
       text
       chapterTitle
       book {
+        publicPath
         id
         title
         imageUrl
@@ -30,6 +31,7 @@ const MESSAGE_FIELDS = gql`
       }
     }
     attachedBook {
+      publicPath
       id
       title
       imageUrl

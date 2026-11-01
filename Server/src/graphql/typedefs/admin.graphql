@@ -1,0 +1,34 @@
+type AdminField {
+  name: String!
+  label: String!
+  type: String!
+  required: Boolean!
+  editable: Boolean!
+  enumValues: [String!]!
+  reference: String
+  sensitive: Boolean!
+  maxLength: Int
+}
+type AdminResource {
+  name: String!
+  label: String!
+  description: String!
+  fields: [AdminField!]!
+  indexes: JSON!
+  canCreate: Boolean!
+}
+type AdminReference { field: String!, resource: String!, id: ID!, title: String!, exists: Boolean! }
+type AdminRecord { id: ID!, title: String!, revision: String!, values: JSON!, references: [AdminReference!] }
+type AdminRecordPage { items: [AdminRecord!]!, total: Int!, page: Int!, totalPages: Int! }
+type AdminResourceCount { resource: String!, label: String!, total: Int!, active: Int! }
+type AdminRevenue { currency: String!, amount: Float!, count: Int! }
+type AdminOverview { counts: [AdminResourceCount!]!, pendingBooks: Int!, pendingPrintApplications: Int!, pendingClaims: Int!, pendingSessionAccess: Int!, revenue: [AdminRevenue!]!, recent: [AdminRecord!]! }
+extend type Query {
+  getAdminResources: [AdminResource!]!
+  getAdminOverview: AdminOverview!
+  getAdminRecords(resource: String!, page: Int, limit: Int, search: String, state: String, relatedField: String, relatedId: ID): AdminRecordPage!
+  getAdminRecord(resource: String!, id: ID!): AdminRecord
+}
+extend type Mutation {
+  saveAdminRecord(resource: String!, id: ID, revision: String, changes: JSON!, reason: String!): AdminRecord!
+}

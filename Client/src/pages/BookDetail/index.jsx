@@ -1,3 +1,7 @@
+import ClassificationSummary from '../../components/Books/Classification/ClassificationSummary';
+import ClassificationEditor from '../../components/Books/Classification/ClassificationEditor';
+import { useAuth } from '../../context/AuthContext';
+import { profilePath, readerPath } from '../../utils/publicPaths';
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client';
@@ -5,7 +9,6 @@ import {
   ArrowBack, 
   FavoriteBorder, 
   Favorite, 
-  Share, 
   BookmarkBorder, 
   Bookmark, 
   MenuBook, 
@@ -16,8 +19,8 @@ import {
 } from '@mui/icons-material';
 
 // --- GRAPHQL ---
-import { GET_BOOK_BY_ID } from '../../graphql/queries/book';
-import { GET_USER_BY_ID, ME_QUERY } from '../../graphql/queries/user';
+import { GET_BOOK_DETAIL } from '../../graphql/queries/book';
+import { GET_BOOK_VIEWER, ME_QUERY } from '../../graphql/queries/user';
 import { LIKE_BOOK_MUTATION, DELETE_BOOK_MUTATION } from '../../graphql/mutations/book';
 import { TOGGLE_SAVED_BOOK_MUTATION } from '../../graphql/mutations/user';
 import { CREATE_COMMENT_MUTATION } from '../../graphql/mutations/comment';
@@ -28,21 +31,25 @@ import { MainLayout } from '../../components/Layout/MainLayout';
 import { Container } from '../../components/UI/Container';
 import { Typography } from '../../components/UI/Typography';
 import { Button } from '../../components/UI/Button';
-import { Badge } from '../../components/UI/Badge';
 import { Toast } from '../../components/UI/Toast';
 import { Textarea } from '../../components/UI/Textarea';
 import BookFollowButton from '../../components/Books/BookFollowButton';
+import CatalogBackLink from '../../components/Books/CatalogBackLink';
 
 // --- COMPONENTS ---
 import CommentList from '../../components/Comments/CommentList';
-import BackersSection from '../../components/Books/BackersSection';
+import BookFundingPanel from '../../components/PrintFunding/BookFundingPanel';
+import PrintedBookDetail from '../../components/Books/PrintedBookDetail';
+import BookShareButton from '../../components/Books/BookShareButton';
 
 import './BookDetail.css';
 
-const BookDetailPage = () => {
-  const { id } = useParams();
+const BookDetailPage = ({ resolvedId } = {}) => {
+  const params = useParams();
+  const id = resolvedId || params.id;
   const navigate = useNavigate();
-  const currentUserId = localStorage.getItem('userId');
+  const { user } = useAuth();
+  const currentUserId = user?.id;
   const [commentText, setCommentText] = useState("");
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
 
@@ -51,11 +58,19 @@ const BookDetailPage = () => {
   const [optimisticLikeCount, setOptimisticLikeCount] = useState(null);
   const [imgLoaded, setImgLoaded] = useState(false);
 
+  useEffect(() => {
+    setOptimisticLiked(null);
+    setOptimisticSaved(null);
+    setOptimisticLikeCount(null);
+    setCommentText('');
+  }, [currentUserId]);
+
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   // --- QUERIES ---
-  const { data: bookData, loading: bookLoading, error: bookError } = useQuery(GET_BOOK_BY_ID, {
-    variables: { id }
+  const { data: bookData, loading: bookLoading, error: bookError, refetch: refreshBook } = useQuery(GET_BOOK_DETAIL, {
+    variables: { id },
+    fetchPolicy: 'cache-and-network',
   });
 
   const { 
@@ -70,7 +85,7 @@ const BookDetailPage = () => {
   const book = bookData ? bookData.getBookById : null;
   const rawComments = commentsData ? commentsData.getCommentsByBookId : [];
 
-  const { data: currentUserData } = useQuery(GET_USER_BY_ID, {
+  const { data: currentUserData } = useQuery(GET_BOOK_VIEWER, {
     variables: { id: currentUserId },
     skip: !currentUserId, 
   });
@@ -131,17 +146,12 @@ const BookDetailPage = () => {
     try {
       await toggleSavedBook({
         variables: { bookId: book.id },
-        refetchQueries: [{ query: GET_USER_BY_ID, variables: { id: currentUserId } }]
+        refetchQueries: [{ query: GET_BOOK_VIEWER, variables: { id: currentUserId } }]
       });
     } catch (err) { 
       setOptimisticSaved(currentlySaved);
       showToast("Kaydetme işlemi başarısız", 'error');
     }
-  };
-
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    showToast('Link kopyalandı!', 'success');
   };
 
   const handleCommentSubmit = async () => {
@@ -234,15 +244,17 @@ const BookDetailPage = () => {
     </MainLayout>
   );  
   
-  if (!book) return null;
+  if (!book) return <MainLayout><Container maxWidth="5xl"><section className="printed-panel"><Typography variant="h2">Kitap bulunamadı</Typography><p>Bu kayıt henüz yayımlanmamış veya erişime kapalı olabilir.</p><Link className="ui-text-link" to="/printed-books">Basılı kitaplara dön</Link></section></Container></MainLayout>;
+  if (book.kind === 'PRINTED') return <><PrintedBookDetail book={book} comments={rawComments} commentsLoading={commentsLoading} currentUserId={currentUserId} commentText={commentText} onCommentChange={event => setCommentText(event.target.value)} onCommentSubmit={handleCommentSubmit} commentSending={commentSending} refresh={refreshBook} /><Toast isVisible={toast.show} message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} /></>;
 
   // --- VARIABLES ---
   const author = book.author;
   const isAuthor = currentUserId && book.authorId === currentUserId;
-  const isAdmin = currentUserData?.getUserById?.role === 'ADMIN';
+  const viewer = currentUserId && currentUserData?.getUserById?.id === currentUserId ? currentUserData.getUserById : null;
+  const isAdmin = viewer?.role === 'ADMIN';
 
   const isLikedFromServer = book.likedBy && currentUserId ? book.likedBy.includes(currentUserId) : false;
-  const savedBooks = currentUserData?.getUserById?.savedBooks || [];
+  const savedBooks = viewer?.savedBooks || [];
   const isSavedFromServer = savedBooks.some(sb => (typeof sb === 'string' ? sb : sb.id) === book.id);
 
   const isLiked = optimisticLiked !== null ? optimisticLiked : isLikedFromServer;
@@ -257,9 +269,9 @@ const BookDetailPage = () => {
       <div className="book-detail-page">
         <Container maxWidth="5xl">
           
-          <Link to="/feed" className="back-link">
+          <CatalogBackLink to="/feed" className="back-link">
             <ArrowBack fontSize="small" /> Kitaplığa Dön
-          </Link>
+          </CatalogBackLink>
 
           <div className="book-detail-grid">
             
@@ -289,8 +301,8 @@ const BookDetailPage = () => {
 
               <div className="meta-info-card">
                 <div className="meta-row">
-                  <span className="meta-label">Kategori:</span>
-                  <Badge variant="neutral" className="capitalize">{book.genre?.name || 'Belirtilmemiş'}</Badge>
+                  <span className="meta-label">Biçim / Tür:</span>
+                  <ClassificationSummary book={book} compact />
                 </div>
                 <div className="meta-row">
                   <span className="meta-label">Sayfa:</span>
@@ -304,24 +316,6 @@ const BookDetailPage = () => {
                   <span className="meta-label">Beğeni:</span>
                   <span className="meta-value">{likeCount}</span>
                 </div>
-                <div className="meta-row">
-                  <span className="meta-label">Desteklenme:</span>
-                  <Badge variant="primary">{book.backerCount || 0} Kez</Badge>
-                </div>
-                <div className="meta-row">
-                  <span className="meta-label">Toplanan:</span>
-                  <Badge variant="primary">{book.currentFunding || 0} TL</Badge>
-                </div>
-
-                {/* Destekçi avatarları */}
-                {(book.backerCount > 0) && (
-                  <div className="meta-row meta-row--backers">
-                    <BackersSection
-                      bookId={book.id}
-                      backerCount={book.backerCount}
-                    />
-                  </div>
-                )}
               </div>
             </aside>
 
@@ -333,7 +327,7 @@ const BookDetailPage = () => {
                 </Typography>
                 <div className="author-link-wrapper">
                   <Typography variant="body" color="muted">Yazar:</Typography>
-                  <Link to={`/user/${book.authorId}`} className="author-link">
+                  <Link to={profilePath(book.author || { id: book.authorId })} className="author-link">
                     {displayAuthorName}
                   </Link>
                 </div>
@@ -342,7 +336,7 @@ const BookDetailPage = () => {
 
               <div className="action-toolbar">
                 <div className="primary-actions">
-                  <Link to={`/book-reader/${book.id}`} className="no-underline">
+                  <Link to={readerPath(book)} className="no-underline">
                     <Button variant="primary" size="large" icon={<MenuBook />}>
                       Kitabı Oku
                     </Button>
@@ -367,7 +361,7 @@ const BookDetailPage = () => {
                      className={isSaved ? 'text-blue-600' : ''}
                      icon={isSaved ? <Bookmark /> : <BookmarkBorder />}
                    />
-                   <Button variant="ghost" onClick={handleShare} icon={<Share />} />
+                   {book.status !== 'DRAFT' && <BookShareButton book={book} variant="ghost" />}
                 </div>
               </div>
 
@@ -398,6 +392,9 @@ const BookDetailPage = () => {
                   {book.description}
                 </Typography>
               </div>
+              <ClassificationSummary book={book} />
+              {(isAuthor || isAdmin) && <ClassificationEditor key={book.id} book={book} />}
+              <BookFundingPanel bookId={book.id} />
 
               <div className="comments-wrapper">
                 <Typography variant="h5" weight="bold" className="mb-4">

@@ -5,7 +5,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { useMutation, useQuery } from '@apollo/client';
 import BookDashboard from './index';
 import { UPDATE_BOOK_STATUS_MUTATION } from '../../graphql/mutations/book';
-import { CREATE_CHAPTER_MUTATION, UPDATE_CHAPTER_MUTATION } from '../../graphql/mutations/chapter';
+import { CREATE_CHAPTER_MUTATION, UPDATE_CHAPTER_MUTATION, SET_CHAPTER_VISIBILITY } from '../../graphql/mutations/chapter';
 
 jest.mock('@apollo/client', () => ({ ...jest.requireActual('@apollo/client'), useQuery: jest.fn(), useMutation: jest.fn() }));
 jest.mock('../../context/AuthContext', () => ({ useAuth: () => ({ user: { id: 'owner' } }) }));
@@ -24,7 +24,7 @@ const settle = async () => { await act(async () => { for (let i = 0; i < 15; i++
 const edit = value => fireEvent.change(screen.getByLabelText('Editor'), { target: { value } });
 
 describe('book editor autosave integration', () => {
-  let book, save, add, remove, status, router;
+  let book, save, add, remove, status, visibility, router;
   beforeEach(() => {
     jest.useFakeTimers();
     window.scrollTo = jest.fn();
@@ -37,15 +37,43 @@ describe('book editor autosave integration', () => {
     add = jest.fn().mockResolvedValue({ data: {} });
     remove = jest.fn().mockResolvedValue({ data: {} });
     status = jest.fn().mockResolvedValue({ data: {} });
+    visibility = jest.fn().mockImplementation(async ({ variables }) => {
+      book = { ...book, chapters: book.chapters.map(chapter => chapter.id === variables.chapterId ? { ...chapter, isHidden: variables.isHidden } : chapter) };
+      return { data: { updateChapter: { id: variables.chapterId, isHidden: variables.isHidden } } };
+    });
     useQuery.mockImplementation(() => ({ data: { getBookById: book }, loading: false }));
-    useMutation.mockImplementation(document => [document === UPDATE_CHAPTER_MUTATION ? save : document === UPDATE_BOOK_STATUS_MUTATION ? status : document === CREATE_CHAPTER_MUTATION ? add : remove, { loading: false }]);
+    useMutation.mockImplementation(document => [document === SET_CHAPTER_VISIBILITY ? visibility : document === UPDATE_CHAPTER_MUTATION ? save : document === UPDATE_BOOK_STATUS_MUTATION ? status : document === CREATE_CHAPTER_MUTATION ? add : remove, { loading: false }]);
     router = createMemoryRouter([
       { path: '/write/:bookId', element: <BookDashboard /> },
       { path: '/profile', element: <div>Profile destination</div> },
       { path: '/book-reader/:bookId', element: <div>Reader destination</div> },
+      { path: '/print/:bookId', element: <div>Print application destination</div> },
     ], { initialEntries: ['/write/book'] });
   });
   afterEach(async () => { cleanup(); await settle(); router.dispose(); jest.restoreAllMocks(); jest.useRealTimers(); });
+
+  test('hiding a chapter waits for pending text to save and preserves the editor draft', async () => {
+    const pending = deferred(); save.mockReturnValueOnce(pending.promise);
+    render(<RouterProvider router={router} />);
+    edit('private draft');
+    fireEvent.click(screen.getByRole('button', { name: 'Okuyuculardan gizle' }));
+    expect(save).toHaveBeenCalled();
+    expect(visibility).not.toHaveBeenCalled();
+    pending.resolve({ data: { updateChapter: { id: 'a', pageCount: 3 } } });
+    await settle();
+    expect(visibility).toHaveBeenCalledWith({ variables: { chapterId: 'a', isHidden: true } });
+    expect(screen.getByLabelText('Editor')).toHaveValue('private draft');
+    expect(screen.getByRole('button', { name: 'Okuyuculara aç' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  test('new chapters can be created hidden before any content is written', async () => {
+    render(<RouterProvider router={router} />);
+    fireEvent.change(screen.getByPlaceholderText('Yeni Bölüm...'), { target: { value: 'Private chapter' } });
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Yeni bölümü gizli oluştur' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Ekle' }));
+    await settle();
+    expect(add).toHaveBeenCalledWith({ variables: { bookId: 'book', title: 'Private chapter', content: '', userId: 'owner', isHidden: true } });
+  });
 
   test('first user change autosaves and the manual button retains its layout class', async () => {
     render(<RouterProvider router={router} />);
@@ -146,10 +174,12 @@ describe('book editor autosave integration', () => {
     save.mockResolvedValue({ data: { updateChapter: { pageCount: 3 } } });
   });
 
-  test('cost calculation uses the saved chapter page totals', async () => {
+  test('print application navigation flushes the final manuscript and never opens funding', async () => {
     book.status = 'COMPLETED';
     render(<RouterProvider router={router} />);
-    edit('longer text'); fireEvent.click(screen.getByRole('button', { name: 'Baskı Maliyeti Hesapla' })); await settle();
-    expect(screen.getByTestId('cost-pages')).toHaveTextContent('5');
+    edit('longer text'); fireEvent.click(screen.getByRole('button', { name: /Basım İçin Başvur/ })); await settle();
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('Print application destination')).toBeInTheDocument();
+    expect(status).not.toHaveBeenCalled();
   });
 });

@@ -20,6 +20,13 @@ import { authenticateUser } from './src/utils/auth.js';
 import formatError from './src/utils/formatError.js';
 import paymentRoutes from './src/routes/paymentRoutes.js';
 import googleAuthRoutes from './src/routes/googleAuthRoutes.js';
+import socialShareRoutes from './src/routes/socialShareRoutes.js';
+import { compressResponses, operationTiming } from './src/config/httpPerformance.js';
+import { createLoaders } from './src/graphql/loaders.js';
+import printRoutes from './src/routes/printRoutes.js';
+import { initializePrintFunding } from './src/services/print/common.js';
+import { startPrintWorker } from './src/services/print/worker.js';
+import { printSystemEnabled } from './src/services/print/paymentConfig.js';
 
 const PORT = process.env.PORT || 5000;
 
@@ -31,11 +38,13 @@ export { pubsub };
 const startServer = async () => {
   try {
     const app = express();
+    app.use(compressResponses());
 
     await connectDB();
-
-    app.use(express.json());
-    app.use(express.urlencoded({ extended: true }));
+    if (printSystemEnabled()) {
+      await initializePrintFunding();
+      await models.Notification.createIndexes();
+    }
 
     // CORS: web (localhost:3000), prod frontend (CLIENT_URL) ve mobil
     // uygulamanın (Capacitor) kullandığı origin'lere izin ver.
@@ -56,9 +65,16 @@ const startServer = async () => {
     app.use(cors({
       origin: allowedOrigins,
       credentials: true,
+      maxAge: 600,
+      exposedHeaders: ['Server-Timing'],
     }));
 
+    // Verify webhook bytes and receive private PDF uploads before JSON parsing.
+    app.use('/api/print', printRoutes);
+    app.use(express.json({ limit: '2mb' }));
+    app.use(express.urlencoded({ extended: true }));
     app.use('/api/payment', paymentRoutes);
+    app.use('/share', socialShareRoutes);
 
     // Google Identity Services'ın ux_mode="redirect" modunda POST ettiği
     // credential'ı karşılayan endpoint. Bu, tarayıcının gerçek bir sayfa
@@ -121,6 +137,7 @@ const startServer = async () => {
       cache: 'bounded',
       introspection: true,
       plugins: [
+        operationTiming,
         ApolloServerPluginDrainHttpServer({ httpServer }),
         // Apollo kapanırken WebSocket sunucusunu da temiz kapat
         {
@@ -151,12 +168,15 @@ const startServer = async () => {
             user = await authenticateUser(req, models.User);
           }
 
-          return { ...models, user, req, currentUserId: user?._id ?? null, pubsub };
+          return { ...models, user, req, currentUserId: user?._id ?? null, pubsub, loaders: createLoaders() };
         },
       })
     );
 
-    await new Promise((resolve) => httpServer.listen({ port: PORT }, resolve));
+    await new Promise((resolve) => httpServer.listen({ port: PORT, ...(process.env.BETIK_ISOLATED_PRINT_SANDBOX === 'true' ? { host: '127.0.0.1' } : {}) }, resolve));
+    // Application notifications also need delivery when funding is disabled.
+    // Maintenance only touches money/provider state if sandboxEnabled() is true.
+    startPrintWorker();
     console.log(`🚀 Server hazır: http://localhost:${PORT}`);
     console.log(`🔌 WebSocket hazır: ws://localhost:${PORT}/graphql`);
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Menu, Close, Person } from '@mui/icons-material';
 import { FiMessageCircle } from 'react-icons/fi';
 
@@ -18,6 +18,7 @@ import { useUnreadMessageCount } from '../../../hooks/useMessages';
 
 import './NavigationBar.css';
 import Logo from '../../Logo';
+import { canAccessPublisherPortal } from '../../../utils/publisher';
 
 
 
@@ -25,7 +26,6 @@ import Logo from '../../Logo';
 const NavigationBar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user } = useAuth(); 
-  const navigate  = useNavigate();
 
   // Okunmamış mesaj sayısı — sadece giriş yapılmışsa çalışır
   const unreadCount = useUnreadMessageCount();
@@ -51,72 +51,75 @@ const NavigationBar = () => {
 
           {/* --- DESKTOP MENU --- */}
           <div className="desktop-menu">
-            {/* Normal Link */}
-            <Link to="/feed" className="nav-item">
-              <Typography variant="body" weight="medium">Keşfet</Typography>
-            </Link>
+            <div className="nav-links">
+              {/* Normal Link */}
+              <Link to="/feed" className="nav-item">
+                <Typography variant="body" weight="medium">Keşfet</Typography>
+              </Link>
 
-            <Link to="/quotes" className="nav-item">
-              <Typography variant="body" weight="medium">Alıntılar</Typography>
-            </Link>
+              <Link to="/quotes" className="nav-item">
+                <Typography variant="body" weight="medium">Alıntılar</Typography>
+              </Link>
+              <Link to="/printed-books" className="nav-item">
+                <Typography variant="body" weight="medium">Basılı Kitaplar</Typography>
+              </Link>
 
-            <Link to="/leaderboard" className="nav-item">
-              <Typography variant="body" weight="medium">Lider Tablosu</Typography>
-            </Link>
+              <Link to="/leaderboard" className="nav-item">
+                <Typography variant="body" weight="medium">Lider Tablosu</Typography>
+              </Link>
 
-            <Link to="/sessions" className="nav-item">
-              <Typography variant="body" weight="medium">Oturumlar</Typography>
-            </Link>
+              <Link to="/sessions" className="nav-item">
+                <Typography variant="body" weight="medium">Oturumlar</Typography>
+              </Link>
+            </div>
+            <div className="nav-actions">
+              {canAccessPublisherPortal(user) && <Link to="/publisher" className="nav-item">Yayınevi Portalı</Link>}
+              {/* KULLANICI KONTROLÜ */}
+              {user ? (
+                <>
+                  {/* Kitap Oluştur Butonu */}
+                  <Link to="/create-book" style={{ textDecoration: 'none' }}>
+                    <Button variant="primary" size="small">
+                      Kitap Oluştur
+                    </Button>
+                  </Link>
 
-            
-            {/* KULLANICI KONTROLÜ */}
-            {user ? (
-              <>
-                {/* Kitap Oluştur Butonu */}
-                <Link to="/create-book" style={{ textDecoration: 'none' }}>
-                  <Button variant="primary" size="small">
-                    Kitap Oluştur
+                  {/* Mesaj ikonu */}
+                  <Link to="/messages" className="nav-icon-btn" title="Mesajlar" aria-label="Mesajlar">
+                    <FiMessageCircle />
+                    {unreadCount > 0 && (
+                      <span className="nav-icon-badge">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </Link>
+
+                  <NotificationBell />
+
+                  {/* Profil İkonu */}
+                  <Link to="/profile" className="profile-btn" title="Profilim">
+                    <Person />
+                  </Link>
+
+                </>
+              ) : (
+                // --- GİRİŞ YAPMAMIŞSA ---
+                <Link to="/login" style={{ textDecoration: 'none' }}>
+                  <Button variant="secondary" size="small">
+                    Giriş Yap
                   </Button>
                 </Link>
-
-                {/* Mesaj ikonu */}
-                <Link to="/messages" className="nav-icon-btn" title="Mesajlar" aria-label="Mesajlar">
-                  <FiMessageCircle />
-                  {unreadCount > 0 && (
-                    <span className="nav-icon-badge">
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </span>
-                  )}
-                </Link>
-
-                <NotificationBell />
-                
-                {/* Profil İkonu */}
-                <Link to="/profile" className="profile-btn" title="Profilim">
-                  <Person />
-                </Link>
-
-              </>
-            ) : (
-              // --- GİRİŞ YAPMAMIŞSA ---
-              <Link to="/login" style={{ textDecoration: 'none' }}>
-                <Button variant="secondary" size="small">
-                  Giriş Yap
-                </Button>
-              </Link>
-            )}
-            {/*
-              <ThemeToggle />
-            */}
-              
-
+              )}
+            </div>
           </div>
 
           {/* --- MOBILE TOGGLE --- */}
           <button 
+            type="button"
             className="mobile-toggle-btn"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Menüyü Aç/Kapat"
+            aria-expanded={isMobileMenuOpen}
           >
             {isMobileMenuOpen ? <Close /> : <Menu />}
           </button>

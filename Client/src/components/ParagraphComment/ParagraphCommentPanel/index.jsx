@@ -1,3 +1,4 @@
+import UserProfileLink from '../../UI/UserProfileLink';
 // src/components/ParagraphComment/ParagraphCommentPanel/index.jsx
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
@@ -57,7 +58,7 @@ const ParagraphCommentPanel = ({ bookId, chapterId, paragraphIndex, onClose }) =
             <span className="pcpanel-count">{comments.length}</span>
           )}
         </span>
-        <button className="pcpanel-close" onClick={onClose}>
+        <button className="pcpanel-close" aria-label="Yorumları kapat" onClick={onClose}>
           <Close fontSize="small" />
         </button>
       </div>
@@ -90,12 +91,13 @@ const ParagraphCommentPanel = ({ bookId, chapterId, paragraphIndex, onClose }) =
                   </div>
                 )}
                 <div className="pcpanel-comment-meta">
-                  <span className="pcpanel-username">@{comment.user?.username}</span>
+                  <UserProfileLink user={comment.user} className="pcpanel-username">@{comment.user?.username}</UserProfileLink>
                   <span className="pcpanel-time">{timeAgo(comment.createdAt)}</span>
                 </div>
                 {user?.id === comment.user?.id && (
                   <button 
                     className="pcpanel-delete"
+                    aria-label="Yorumu sil"
                     onClick={() => handleDelete(comment.id)}
                   >
                     <Delete fontSize="inherit" />

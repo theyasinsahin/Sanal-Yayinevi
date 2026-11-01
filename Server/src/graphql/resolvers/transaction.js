@@ -1,6 +1,6 @@
 import * as TransactionService from '../../services/transactionService.js';
-import * as BookService from '../../services/bookService.js';
-import { authenticateUser } from '../../utils/auth.js';
+import Transaction from '../../models/transaction.js';
+import { requireAdmin } from '../../utils/adminAccess.js';
 
 export default {
     Query: {
@@ -11,15 +11,14 @@ export default {
             return TransactionService.findTransactionsByUserId(user._id);
         },
 
-        getBookTransactions: async (_, { bookId }) => {
+        getBookTransactions: async (_, { bookId }, context) => {
+            await requireAdmin(context);
             // Servis üzerinden kitabın başarılı bağışlarını getir
             return TransactionService.findSuccessfulTransactionsByBookId(bookId);
         },
 
         getAllTransactions: async (_, __, context) => {
-            if (!context.user || context.user.role !== 'ADMIN') {
-                throw new Error("Yetkisiz işlem.");
-            }
+            await requireAdmin(context);
             
             return await Transaction.find({})
                 .populate('userId')   // Gönderen (User)
@@ -27,27 +26,15 @@ export default {
                 .sort({ createdAt: -1 }); // En yeniden eskiye
         },
         
-        getBookBackers: async (_, { bookId }) => {
+        getBookBackers: async (_, { bookId }, context) => {
+            if (!context.user || context.user.role !== 'ADMIN') return [];
+            await requireAdmin(context);
             return TransactionService.findBackersByBookId(bookId);
         },
     },
 
     Mutation: {
-        initializePayment: async (_, { bookId, amount }, { user, req }) => {
-            if (!user) throw new Error("Ödeme yapmak için giriş yapmalısınız.");
-
-            // 2. Kitap Kontrolü
-            const book = await BookService.findBookById(bookId);
-            if (!book) throw new Error("Kitap bulunamadı.");
-
-            // 3. IP Adresi Alımı (Iyzico zorunlu tutar)
-            // Proxy arkasındaysan (örn: Nginx, Heroku) 'x-forwarded-for' kullanılır.
-            const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-
-            // 4. Servis Çağrısı
-            // Servis bize { htmlContent, token, transactionId } dönecek
-            return await TransactionService.createPaymentForm(user, book, amount, ip);
-        }
+        initializePayment: () => TransactionService.createPaymentForm()
     },
 
     // Field Resolvers (İlişkisel Veriler)

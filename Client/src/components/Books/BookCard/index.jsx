@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import UserProfileLink from '../../UI/UserProfileLink';
+import ClassificationSummary from '../Classification/ClassificationSummary';
+import { bookPath } from '../../../utils/publicPaths';
+import React, { lazy, Suspense, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import { 
   FavoriteBorder, 
@@ -11,24 +14,30 @@ import {
   Share,
 } from '@mui/icons-material';
 
-import { GET_BOOK_BY_ID } from '../../../graphql/queries/book';
+import { GET_BOOK_CARD } from '../../../graphql/queries/book';
 import { getOptimizedImage } from '../../../utils/ImageUtils';
 import { useAuth } from '../../../context/AuthContext';
 
 import { Typography } from '../../UI/Typography';
 import { Badge } from '../../UI/Badge';
-import { ProgressBar } from '../../UI/ProgressBar';
 import ReasonBadge from '../../Recommendation/ReasonBadge';
-import ShareModal from '../../Messaging/ShareModal';
+import PrintedBookCard from '../PrintedBookCard';
 
 import './BookCard.css';
+import BookFundingProgress from './BookFundingProgress';
+
+// Share dialogs are downloaded only after the visitor opens them.
+const ShareModal = lazy(() => import('../../Messaging/ShareModal'));
+const SocialShareDialog = lazy(() => import('../../Sharing/SocialShareDialog'));
 
 const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [shareOpen, setShareOpen] = useState(false);
+  const [messageOpen, setMessageOpen] = useState(false);
 
-  const { data: bookData, loading: bookLoading, error: bookError } = useQuery(GET_BOOK_BY_ID, {
+  const { data: bookData, loading: bookLoading, error: bookError } = useQuery(GET_BOOK_CARD, {
     variables: { id: bookId },
     skip: !!bookProp || !bookId,
   });
@@ -45,6 +54,7 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
 
   const book = bookProp || bookData?.getBookById;
   if (!book) return null;
+  if (book.kind === 'PRINTED') return <PrintedBookCard book={book} />;
 
   const {
     title,
@@ -56,14 +66,12 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
     commentCount,
     author,
     status,
-    currentFunding,
-    fundingTarget,
   } = book;
 
   const displayAuthor    = author?.fullName || author?.username || 'Anonim';
   const finalCoverImage  = imageUrl
     ? getOptimizedImage(imageUrl, 300, 450)
-    : 'https://via.placeholder.com/300x450?text=Kapak+Yok';
+    : '/images/book-placeholder.svg';
   const estimatedReadTime = pageCount ? Math.ceil(pageCount / 3) : 0;
   const isTrending        = stats?.views > 1000;
 
@@ -74,7 +82,9 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
     return num.toString();
   };
 
-  const handleBookClick = () => navigate(`/book-detail/${id}`);
+  const handleBookClick = () => navigate(bookPath(book), {
+    state: { catalogReturn: ['/feed', '/printed-books'].includes(location.pathname) ? location.pathname + location.search : undefined },
+  });
 
   const handleShareClick = (e) => {
     e.stopPropagation(); // kartın navigate'ini tetikleme
@@ -91,7 +101,8 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
             alt={title}
             className="cover-image"
             loading="lazy"
-            onError={(e) => { e.target.src = 'https://via.placeholder.com/300x450?text=Gorsel+Yuklenemedi'; }}
+            width={300} height={450} decoding="async"
+            onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/book-placeholder.svg'; }}
           />
 
           <div className="meta-overlay">
@@ -112,7 +123,7 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
           {status === 'FUNDING' && (
             <div className="status-badge funding">
               <Star style={{ fontSize: 14 }} />
-              <span>Fonlanıyor</span>
+              <span>Basım bilgileri</span>
             </div>
           )}
           {status === 'PUBLISHED' && (
@@ -121,6 +132,7 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
         </div>
 
         <div className="card-content">
+          <ClassificationSummary book={book} compact />
           <Typography variant="h6" weight="bold" className="book-title" title={title}>
             {title}
           </Typography>
@@ -134,7 +146,7 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
           <div className="book-author">
             <Typography variant="caption" color="muted">Yazar:</Typography>
             <Typography variant="caption" weight="medium" color="primary">
-              {displayAuthor}
+              <UserProfileLink user={author}>{displayAuthor}</UserProfileLink>
             </Typography>
           </div>
 
@@ -152,11 +164,7 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
             </div>
           )}
 
-          {status === 'FUNDING' && (
-            <div className="funding-status">
-              <ProgressBar current={currentFunding || 0} target={fundingTarget || 1000} />
-            </div>
-          )}
+          <BookFundingProgress funding={book.fundingSummary} />
 
           <div className="card-stats">
             <div className="stat-item" title="Görüntülenme">
@@ -172,11 +180,12 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
               <span>{formatNumber(stats?.likes || 0)}</span>
             </div>
 
-            {/* Paylaş — sadece giriş yapılmışsa */}
-            {user && (
+            {/* Sosyal paylaşım ve mevcut Betik mesajlaşması */}
+            {(status !== 'DRAFT' || user) && (
               <button
                 className="stat-item book-card-share-btn"
-                title="Arkadaşa gönder"
+                title="Kitabı paylaş"
+                aria-label="Kitabı paylaş"
                 onClick={handleShareClick}
               >
                 <Share className="stat-icon" />
@@ -187,16 +196,19 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
       </div>
 
       {/* ShareModal */}
-      {shareOpen && (
+      {shareOpen && (<Suspense fallback={null}>
+        <SocialShareDialog target={{ type: 'BOOK', id }} onClose={() => setShareOpen(false)} onSendInBetik={user ? () => setMessageOpen(true) : undefined} />
+      </Suspense>)}
+      {messageOpen && (<Suspense fallback={null}>
         <ShareModal
-          isOpen={shareOpen}
-          onClose={() => setShareOpen(false)}
+          isOpen={messageOpen}
+          onClose={() => setMessageOpen(false)}
           type="BOOK"
           attachedBookId={id}
           attachedBook={book}
           currentUserId={user?.id}
         />
-      )}
+      </Suspense>)}
     </>
   );
 };

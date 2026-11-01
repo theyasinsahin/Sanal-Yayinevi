@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useSubscription, useLazyQuery } from '@apollo/client';
+import { useAuth } from '../context/AuthContext';
 import {
   GET_CONVERSATIONS,
   GET_MESSAGES,
@@ -7,7 +9,6 @@ import {
   SEND_MESSAGE,
   MARK_MESSAGES_AS_READ,
   DELETE_MESSAGE,
-  EDIT_MESSAGE,
   ON_NEW_MESSAGE,
 } from '../graphql/queries/message';
 
@@ -28,6 +29,8 @@ export const useGetConversations = () => {
 
 // --- Mesaj listesi + sayfalama ---
 export const useGetMessages = (conversationId) => {
+  const [exhausted, setExhausted] = useState(false);
+  useEffect(() => setExhausted(false), [conversationId]);
   const { data, loading, error, fetchMore } = useQuery(GET_MESSAGES, {
     variables: { conversationId, limit: MESSAGES_PER_PAGE, offset: 0 },
     skip: !conversationId,
@@ -43,7 +46,7 @@ export const useGetMessages = (conversationId) => {
         offset: currentCount,
       },
       updateQuery: (prev, { fetchMoreResult }) => {
-        if (!fetchMoreResult?.getMessages?.length) return prev;
+        if (!fetchMoreResult?.getMessages?.length) { setExhausted(true); return prev; }
         return {
           getMessages: [
             ...prev.getMessages,
@@ -62,7 +65,7 @@ export const useGetMessages = (conversationId) => {
     loading,
     error,
     loadOlderMessages,
-    hasMore: (data?.getMessages?.length ?? 0) % MESSAGES_PER_PAGE === 0
+    hasMore: !exhausted && (data?.getMessages?.length ?? 0) % MESSAGES_PER_PAGE === 0
       && (data?.getMessages?.length ?? 0) > 0,  };
 };
 
@@ -208,7 +211,10 @@ export const useDeleteMessage = (conversationId) => {
 
 // --- Okunmamış mesaj sayısı (navbar badge için) ---
 export const useUnreadMessageCount = () => {
+  const { user } = useAuth();
   const { data } = useQuery(GET_UNREAD_MESSAGE_COUNT, {
+    skip: !user,
+    skipPollAttempt: () => document.visibilityState === 'hidden',
     fetchPolicy: 'cache-and-network',
     pollInterval: 30000, // subscription dışında da 30sn'de bir yenile
   });

@@ -3,6 +3,7 @@ import { gql } from '@apollo/client';
 export const LIKE_BOOK_MUTATION = gql`
   mutation LikeBook($bookId: ID!) {
     likeBook(bookId: $bookId) {
+      publicPath
       id
       stats {
         likes
@@ -15,6 +16,7 @@ export const LIKE_BOOK_MUTATION = gql`
 export const INCREMENT_BOOK_VIEW_MUTATION = gql`
   mutation IncrementBookViews($id: ID!) {
     incrementBookViews(id: $id) {
+      publicPath
       id
       stats {
         views
@@ -33,8 +35,9 @@ export const DELETE_BOOK_MUTATION = gql`
 `;
 
 export const CREATE_BOOK_MUTATION = gql`
-    mutation CreateBook($title:String!, $genreId:ID!, $description:String!, $tags:[String], $imageUrl:String!){
-        createBook(title:$title, genreId:$genreId, description:$description, tags:$tags, imageUrl:$imageUrl){
+    mutation CreateBook($title:String!, $classification:ClassificationInput!, $description:String!, $imageUrl:String!){
+        createBook(title:$title, classification:$classification, description:$description, imageUrl:$imageUrl){
+          publicPath
             id,
             title,
             description,
@@ -62,6 +65,7 @@ export const UPDATE_BOOK_STATUS_MUTATION = gql`
       fundingTarget: $fundingTarget
       printConfig: $printConfig
     ) {
+      publicPath
       id
       title
       status

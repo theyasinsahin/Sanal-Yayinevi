@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import ClassificationFields, { emptyClassification, classificationError, classificationInput } from '../../components/Books/Classification/ClassificationFields';
+import { bookPath } from '../../utils/publicPaths';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMutation, useQuery } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import { 
-  Add, Subject, Category, Title, Tag, Close 
+  Add, Subject, Title
 } from '@mui/icons-material';
 
 // --- DATA & GRAPHQL ---
 import { CREATE_BOOK_MUTATION } from '../../graphql/mutations/book';
-import { GET_ALL_GENRES } from '../../graphql/queries/genre'; // YENİ EKLENDİ
 
 // --- UI KIT IMPORTS ---
 import { MainLayout } from '../../components/Layout/MainLayout';
@@ -16,8 +17,6 @@ import { Typography } from '../../components/UI/Typography';
 import { Button } from '../../components/UI/Button';
 import { Input } from '../../components/UI/Input';
 import { Textarea } from '../../components/UI/Textarea';
-import { Select } from '../../components/UI/Select';
-import { Badge } from '../../components/UI/Badge';  
 import ImageUpload from '../../components/ImageUpload';
 
 import './CreateBook.css';
@@ -25,32 +24,19 @@ import './CreateBook.css';
 const CreateBookPage = () => {
   const navigate = useNavigate();
   
-  // Türleri Veritabanından Çek
-  const { data: genreData, loading: genresLoading } = useQuery(GET_ALL_GENRES);
   const [createBook, { loading: creating }] = useMutation(CREATE_BOOK_MUTATION);  
 
   // --- STATE ---
   const [bookData, setBookData] = useState({
     title: '',
-    genreId: '', // Varsayılanı useEffect ile dolduracağız
     imageUrl: '',
     description: '',
-    tags: [],
     // Eğer pageCount tutacaksan state'e eklemelisin:
     // pageCount: 0 
   });
   
-  const [inputTag, setInputTag] = useState('');
+  const [classification, setClassification] = useState(emptyClassification);
   const [errors, setErrors] = useState({});
-
-  // Türler yüklendiğinde varsayılan olarak ilk türü seçili yap
-  useEffect(() => {
-    if (genreData?.getAllGenres?.length > 0) {
-      setBookData(prev => 
-        prev.genreId ? prev : { ...prev, genreId: genreData.getAllGenres[0].id }
-      );
-    }
-  }, [genreData]);
 
   // --- HANDLERS ---
   const handleInputChange = (e) => {
@@ -64,26 +50,6 @@ const CreateBookPage = () => {
     if (errors.imageUrl) setErrors(prev => ({ ...prev, imageUrl: null }));
   };
 
-  // --- TAG YÖNETİMİ ---
-  const handleAddTag = () => {
-    const tag = inputTag.trim();
-    if (tag && !bookData.tags.includes(tag)) {
-      setBookData(prev => ({ ...prev, tags: [...prev.tags, tag] }));      
-      setInputTag('');
-    }
-  };
-
-  const handleRemoveTag = (tagToRemove) => {
-    setBookData(prev => ({ ...prev, tags: prev.tags.filter(tag => tag !== tagToRemove) }));   
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddTag();
-    }
-  };
-
   // --- SUBMIT ---
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -92,8 +58,9 @@ const CreateBookPage = () => {
     if (!bookData.title.trim()) newErrors.title = "Kitap başlığı zorunludur.";
     if (!bookData.description.trim()) newErrors.description = "Açıklama zorunludur.";
     if (!bookData.imageUrl) newErrors.imageUrl = "Kapak resmi yüklemek zorunludur.";
-    if (!bookData.genreId) newErrors.genreId = "Tür seçmek zorunludur.";
 
+    const invalid = classificationError(classification);
+    if (invalid) newErrors.classification = invalid;
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -102,26 +69,19 @@ const CreateBookPage = () => {
     try {
       const variables = {
         title: bookData.title,
-        genreId: String(bookData.genreId), // ← tip güvencesi
+        classification: classificationInput(classification),
         description: bookData.description,
-        tags: bookData.tags,
         imageUrl: bookData.imageUrl,
       };
 
       const response = await createBook({ variables });
-      navigate(`/book-detail/${response.data.createBook.id}`);
+      navigate(bookPath(response.data.createBook));
 
     } catch (error) {
       console.error("Hata:", error);
       setErrors({ submit: error.message });
     }
   };
-
-  // Dinamik Select Opsiyonlarını Hazırla
-  const genreOptions = genreData?.getAllGenres?.map(cat => ({
-    label: cat.name,
-    value: cat.id
-  })) || [];
 
   return (
     <MainLayout>
@@ -176,53 +136,8 @@ const CreateBookPage = () => {
                   required
                 />
 
-                <div className="form-row-2">
-                    <div className="input-container">
-                      <Select
-                          label="Tür"
-                          name="genreId"
-                          value={bookData.genreId}
-                          onChange={handleInputChange}
-                          options={genreOptions}
-                          icon={<Category fontSize="small" />}
-                          disabled={genresLoading} // Veri yüklenirken disable et
-                      />
-                      {errors.genre && <Typography variant="caption" color="danger">{errors.genre}</Typography>}
-                    </div>
-                </div>
-
-                {/* ... Etiketler kısmı (Senin yazdığınla aynı) ... */}
-                <div className="input-wrapper">
-                  <label className="input-label"><Tag fontSize="small" className="mr-1"/> Etiketler</label>
-                  <div className="tags-input-container">
-                    <Input 
-                      name="tagInput"
-                      placeholder="Etiket yazıp Enter'a basın"
-                      value={inputTag}
-                      onChange={(e) => setInputTag(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      className="mb-0" 
-                    />
-                    <Button type="button" variant="secondary" onClick={handleAddTag} size="medium">
-                      Ekle
-                    </Button>
-                  </div>
-                  
-                  {bookData.tags.length > 0 && (
-                    <div className="tags-list">
-                      {bookData.tags.map((tag, index) => (
-                        <Badge key={index} variant="primary">
-                          {tag}
-                          <Close 
-                            fontSize="inherit"
-                            style={{ cursor: 'pointer', marginLeft: '4px', opacity: 0.7 }}
-                            onClick={() => handleRemoveTag(tag)}
-                          />
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <ClassificationFields value={classification} onChange={setClassification} disabled={creating} />
+                {errors.classification && <p role="alert">{errors.classification}</p>}
 
                 <Textarea
                     label="Açıklama"

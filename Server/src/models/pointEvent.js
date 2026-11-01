@@ -9,9 +9,11 @@ const PointEventSchema = new mongoose.Schema({
   },
   points: { type: Number, required: true },
   action: { type: String, required: true },
+  sourceId: String,
 }, { timestamps: true }); // createdAt otomatik — tarih filtresi burada
 
 // Liderboard sorgusu için compound index
 PointEventSchema.index({ createdAt: -1, userId: 1 });
+PointEventSchema.index({ userId: 1, action: 1, sourceId: 1 }, { unique: true, partialFilterExpression: { sourceId: { $type: 'string' } } });
 
 export default mongoose.model('PointEvent', PointEventSchema);

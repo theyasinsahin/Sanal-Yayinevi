@@ -1,108 +1,69 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@apollo/client';
-import { GET_BOOKS } from '../../../graphql/queries/book';
-
-// --- UI KIT IMPORTS ---
+import { useBookFeed } from '../../../hooks/useBookFeed';
 import { Typography } from '../../UI/Typography';
 import { Button } from '../../UI/Button';
 import { Container } from '../../UI/Container';
-
-// --- BUSINESS COMPONENTS ---
-import BookCard from '../../Books/BookCard'; 
-
+import BookCard from '../../Books/BookCard';
 import './FeaturedBooks.css';
 
-// Grid artık daha dar kartlarla daha fazla sütuna sığdığı için (bkz.
-// FeaturedBooks.css) 3 yerine 6 kitap gösteriyoruz; aksi halde geniş
-// ekranlarda grid'in kullanmadığı boş alan kalırdı. Tek bir yerden
-// değiştirilebilsin diye sabit olarak tanımlandı.
-const FEATURED_BOOK_COUNT = 4;
+const BOOKS_PER_PAGE = 10;
 
-const FeaturedBooks = () => {
-  const { loading, error, data } = useQuery(GET_BOOKS);
-
-  // Loading durumu için UI Kit kullanımı
-  // Loading durumu — skeleton kartlar göster
-if (loading) return (
-  <section className="featured-books-section">
-    <Container maxWidth="6xl">
-      <div className="section-header">
-        <Typography variant="h2" weight="bold" color="default">
-          Öne Çıkan Yazılar
-        </Typography>
-        <Link to="/feed" style={{ textDecoration: 'none' }}>
-          <Button variant="outline" size="small">
-            Tümünü Gör
-          </Button>
-        </Link>
-      </div>
-      <div className="books-grid">
-        {Array.from({ length: FEATURED_BOOK_COUNT }).map((_, i) => (
-          <BookCard key={`skeleton-${i}`} skeleton />
-        ))}
-      </div>
-    </Container>
-  </section>
-);
-
-  // Hata durumu için UI Kit kullanımı
- if (error) return (
-  <section className="featured-books-section">
-    <Container maxWidth="6xl">
-      <div className="section-header">
-        <Typography variant="h2" weight="bold" color="default">
-          Öne Çıkan Yazılar
-        </Typography>
-        <Link to="/feed" style={{ textDecoration: 'none' }}>
-          <Button variant="outline" size="small">Tümünü Gör</Button>
-        </Link>
-      </div>
-      <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-        <Typography variant="h5" weight="bold" color="default">
-          İçerikler şu an yüklenemiyor
-        </Typography>
-        <Typography variant="body" color="muted" style={{ marginTop: '0.5rem' }}>
-          Bağlantınızı kontrol edip tekrar deneyin.
-        </Typography>
-        <div style={{ marginTop: '1.5rem' }}>
-          <Button variant="outline" onClick={() => window.location.reload()}>
-            Yenile
-          </Button>
-        </div>
-      </div>
-    </Container>
-  </section>
-);
-
-  const featuredBooks = data ? data.getAllBooks.slice(0, FEATURED_BOOK_COUNT) : [];
+const FeaturedBooks = ({ search = '', onClearSearch }) => {
+  const { books, loading, searchPending, error, refetch, loadMore, loadingMore, moreError, hasNextPage } = useBookFeed(
+    { search, sortBy: 'popular' }, true, { limit: BOOKS_PER_PAGE }
+  );
+  const term = search.trim();
+  const isLoading = loading || searchPending;
 
   return (
-    <section className="featured-books-section">
-      <Container maxWidth="6xl">
-        {/* Header Kısmı */}
-        <div className="section-header">
-          <Typography variant="h2" weight="bold" color="default">
-            Öne Çıkan Yazılar
-          </Typography>
-
-          {/* Link içine Button bileşenimizi koyuyoruz */}
-          <Link to="/feed" style={{ textDecoration: 'none' }}>
-            <Button variant="outline" size="small">
-              Tümünü Gör
-            </Button>
-          </Link>
+    <section id="home-books" className="featured-books-section" aria-labelledby="home-books-title" aria-busy={isLoading}>
+      <Container maxWidth="7xl">
+        <div className="featured-books-header">
+          <div>
+            <Typography id="home-books-title" variant="h2" weight="bold">
+              {term ? 'Arama Sonuçları' : 'En Popüler Kitaplar'}
+            </Typography>
+            <Typography variant="body" color="muted" className="featured-books-description" role="status">
+              {isLoading ? 'Kitaplar yükleniyor…' : error ? 'Kitaplar şu an yüklenemiyor.' : term
+                ? `${books.length}${hasNextPage ? '+' : ''} kitap listeleniyor.`
+                : 'Okurların en çok beğendiği kitapları keşfedin.'}
+            </Typography>
+          </div>
+          <Link to="/feed" className="featured-books-all">Tüm Kitapları Gör →</Link>
         </div>
 
-        {/* Grid Kısmı */}
-        <div className="books-grid">
-          {featuredBooks.map((book) => (
-            <BookCard
-              key={book.id}
-              book={book}
-            />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="featured-books-grid">
+            {Array.from({ length: BOOKS_PER_PAGE }, (_, index) => <BookCard key={index} skeleton />)}
+          </div>
+        ) : error ? (
+          <div className="featured-books-message" role="alert">
+            <Typography variant="body" color="muted">Bağlantınızı kontrol edip tekrar deneyin.</Typography>
+            <Button variant="outline" onClick={() => refetch()}>Yeniden Dene</Button>
+          </div>
+        ) : books.length ? (
+          <>
+            <div className="featured-books-grid">
+              {books.map(book => <BookCard key={book.id} book={book} />)}
+            </div>
+            {moreError && <p role="alert">Diğer kitaplar yüklenemedi. Tekrar deneyin.</p>}
+            {hasNextPage && (
+              <div className="featured-books-more">
+                <Button variant="outline" disabled={loadingMore} onClick={loadMore}>
+                  {loadingMore ? 'Yükleniyor…' : 'Daha Fazla Kitap Göster'}
+                </Button>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="featured-books-message">
+            <Typography variant="body" color="muted">
+              {term ? 'Aramanızla eşleşen kitap bulunamadı. Farklı bir kitap veya yazar adı deneyin.' : 'Henüz yayımlanmış kitap bulunmuyor.'}
+            </Typography>
+            {term && <Button variant="outline" onClick={onClearSearch}>Popüler Kitaplara Dön</Button>}
+          </div>
+        )}
       </Container>
     </section>
   );

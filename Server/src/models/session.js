@@ -2,6 +2,8 @@
 import mongoose from 'mongoose';
 
 const SessionSchema = new mongoose.Schema({
+  urlSlug: { type: String, unique: true, sparse: true },
+  coverImageUrl: { type: String, default: '', maxlength: 2048 },
   title: {
     type: String,
     required: true,

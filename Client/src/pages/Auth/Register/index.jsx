@@ -122,7 +122,7 @@ const RegisterPage = () => {
             
             <div className="auth-header">
               <div className="auth-icon-circle">
-                <HowToReg fontSize="large" style={{ color: '#8b4513' }} />
+                <HowToReg fontSize="large" />
               </div>
               <Typography variant="h3" weight="bold" className="text-center mb-2">
                 {step === 1 ? "Yeni Hesap Oluştur" : "E-postanı Doğrula"}
@@ -136,7 +136,7 @@ const RegisterPage = () => {
 
             {/* HATA MESAJLARI (Backend Custom Error VEYA GraphQL Network Error) */}
             {(codeError || regError || customError) && (
-              <div className="auth-error-box">
+              <div className="ui-notice ui-notice--error" role="alert">
                 <Typography variant="small" color="danger">
                   {customError || codeError?.message || regError?.message || "Bir sorun oluştu."}
                 </Typography>
@@ -145,9 +145,9 @@ const RegisterPage = () => {
 
             {/* BAŞARI MESAJI */}
             {customSuccess && (
-              <div className="auth-success-box">
-                <Typography variant="body" className="success-text">
-                  🎉 {customSuccess} Yönlendiriliyorsunuz...
+              <div className="ui-notice ui-notice--success" role="status">
+                <Typography variant="body">
+                  {customSuccess} Yönlendiriliyorsunuz...
                 </Typography>
               </div>
             )}
@@ -227,12 +227,13 @@ const RegisterPage = () => {
                   <input 
                     type="checkbox" 
                     id="terms" 
+                    className="terms-checkbox"
                     checked={termsAccepted} 
                     onChange={(e) => setTermsAccepted(e.target.checked)} 
                     required 
                   />
                   <label htmlFor="terms" className="terms-label">
-                    <Link to="/kullanim-kosullari" className="link">Kullanım Koşulları</Link>'nı kabul ediyorum.
+                    <Link to="/kullanim-kosullari" className="ui-text-link">Kullanım Koşulları</Link>'nı kabul ediyorum.
                   </label>
                 </div>
 
@@ -272,12 +273,12 @@ const RegisterPage = () => {
                   Kayıt İşlemini Tamamla
                 </Button>
                 <Button 
-                  variant="text" 
+                  variant="ghost"
                   onClick={() => {
                     setStep(1);
                     setCustomError(''); // Geri dönerken hataları temizle
                   }} 
-                  className="w-full mt-2" 
+                  className="w-full auth-secondary-action"
                   disabled={regLoading || customSuccess !== ''}
                 >
                   Bilgileri Düzenle
@@ -287,7 +288,7 @@ const RegisterPage = () => {
 
             <div className="auth-footer">
               <Typography variant="body" color="muted">
-                Zaten hesabın var mı? <Link to="/login" className="register-link">Giriş Yap</Link>
+                Zaten hesabın var mı? <Link to="/login" className="ui-text-link">Giriş Yap</Link>
               </Typography>
             </div>
           </div>

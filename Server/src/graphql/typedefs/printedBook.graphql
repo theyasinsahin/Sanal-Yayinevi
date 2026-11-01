@@ -1,0 +1,65 @@
+enum BookReviewStatus { PENDING APPROVED REJECTED }
+
+extend type Book {
+  kind: String!
+  isbn: String
+  printedAuthor: String
+  publisher: String
+  publicationYear: Int
+  publicationStatus: BookReviewStatus
+  purchaseUrl: String
+  publicationEvidenceUrl: String
+  reviewNote: String
+  submittedBy: User
+  canEditContent: Boolean!
+  myClaim: BookClaim
+}
+
+type BookClaim {
+  id: ID!
+  book: Book
+  claimant: User
+  evidence: String!
+  evidenceUrl: String!
+  status: BookReviewStatus!
+  reviewNote: String!
+  createdAt: DateTime!
+}
+
+type PrintedBookPage { books: [Book!]!, total: Int!, page: Int!, totalPages: Int! }
+type IsbnLookup {
+  isbn: String!
+  found: Boolean!
+  title: String
+  printedAuthor: String
+  publisher: String
+  imageUrl: String
+  pageCount: Int
+  publicationYear: Int
+}
+input PrintedBookInput {
+  classification: ClassificationInput!
+  isbn: String
+  title: String!
+  printedAuthor: String!
+  publisher: String!
+  publicationYear: Int!
+  pageCount: Int!
+  description: String!
+  imageUrl: String
+  purchaseUrl: String
+  publicationEvidenceUrl: String!
+}
+extend type Query {
+  getPrintedBooks(page: Int = 1, search: String = "", classification: ClassificationFilter): PrintedBookPage!
+  lookupPrintedBook(isbn: String!): IsbnLookup!
+  getMyPrintedSubmissions: [Book!]!
+  getPrintedBookReviews: [Book!]!
+  getBookClaimReviews: [BookClaim!]!
+}
+extend type Mutation {
+  submitPrintedBook(input: PrintedBookInput!): Book!
+  reviewPrintedBook(bookId: ID!, approve: Boolean!, note: String): Book!
+  requestBookClaim(bookId: ID!, evidence: String!, evidenceUrl: String): BookClaim!
+  reviewBookClaim(claimId: ID!, approve: Boolean!, note: String): BookClaim!
+}

@@ -6,6 +6,11 @@ const ToastContext = createContext(null);
 
 let idCounter = 0;
 
+function ToastItem({ toast, onRemove }) {
+  const close = useCallback(() => onRemove(toast.id), [onRemove, toast.id]);
+  return <Toast message={toast.message} type={toast.type} isVisible={true} duration={toast.duration} onClose={close} />;
+}
+
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
 
@@ -28,14 +33,7 @@ export const ToastProvider = ({ children }) => {
           her toast burada sırayla kardeş eleman olarak render ediliyor. */}
       <div className="toast-stack">
         {toasts.map((t) => (
-          <Toast
-            key={t.id}
-            message={t.message}
-            type={t.type}
-            isVisible={true}
-            duration={t.duration}
-            onClose={() => removeToast(t.id)}
-          />
+          <ToastItem key={t.id} toast={t} onRemove={removeToast} />
         ))}
       </div>
     </ToastContext.Provider>

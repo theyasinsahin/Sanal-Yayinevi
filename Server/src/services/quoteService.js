@@ -1,3 +1,4 @@
+import { hiddenChapterIds } from '../utils/chapterAccess.js';
 // src/services/quoteService.js
 import { notifyUser } from './notificationService.js';
 import User from '../models/user.js';
@@ -6,10 +7,13 @@ import { inactiveUserIds } from '../utils/activeUsers.js';
 import Quote from '../models/quote.js';
 import QuoteComment from '../models/quoteComment.js';
 import Book from '../models/book.js';
+import Chapter from '../models/chapter.js';
+import { isPrintedBook } from '../utils/printedBooks.js';
 import * as ScoreService from './scoreService.js';
+import { publicQuoteFilter, quoteVisibilityFilter, requireQuote } from '../utils/quoteAccess.js';
 
 // Metni normalize et: başını/sonunu temizle, noktalama kaldır, küçük harfe çevir
-const normalizeText = (text) => {
+export const normalizeText = (text) => {
   return text
     .trim()
     .toLowerCase()
@@ -21,50 +25,69 @@ const normalizeText = (text) => {
 const populateQuote = (query) => {
   return query
     .populate('userId', 'username fullName profilePicture')
-    .populate('bookId', 'title imageUrl')
+    .populate('bookId', 'title imageUrl kind authorId publicationStatus printedAuthor publisher publicationYear isbn')
     .populate({
       path: 'originalQuoteId',
+      match: { isDeleted: { $ne: true }, ...publicQuoteFilter() },
       populate: [
         { path: 'userId', select: 'username fullName profilePicture' },
-        { path: 'bookId', select: 'title imageUrl' },
+        { path: 'bookId', select: 'title imageUrl kind authorId publicationStatus printedAuthor publisher publicationYear isbn' },
       ]
     });
 };
 
-export const checkQuoteExists = async (text, bookId) => {
+function duplicateFilter(normalizedText, bookId, userId, visibility) {
+  return { normalizedText, bookId, isRepost: false, isDeleted: { $ne: true },
+    ...(visibility === 'PRIVATE' ? { visibility: 'PRIVATE', userId } : publicQuoteFilter()) };
+}
+
+export const checkQuoteExists = async (text, bookId, viewer, visibility = 'PUBLIC') => {
+  const userId = viewer?._id || viewer?.id;
+  if (visibility === 'PRIVATE' && !userId) return { exists: false, quote: null };
   const normalized = normalizeText(text);
   const existing = await populateQuote(
-    Quote.findOne({ normalizedText: normalized, bookId, isRepost: false })
+    Quote.findOne({ chapterId: { $nin: await hiddenChapterIds() }, ...duplicateFilter(normalized, bookId, userId, visibility), userId: visibility === 'PRIVATE' ? userId : { $nin: await inactiveUserIds() } })
   );
   return { exists: !!existing, quote: existing || null };
 };
 
 export const createQuote = async (userId, data) => {
+  const visibility = data.visibility ?? 'PUBLIC';
+  if (!['PUBLIC', 'PRIVATE'].includes(visibility)) throw new Error('Geçerli bir alıntı görünürlüğü seçin.');
+  const book = await Book.findOne({ _id: data.bookId, isDeleted: false });
+  if (!book) throw new Error('Kitap bulunamadı.');
+  const chapterExists = data.chapterId && await Chapter.exists({ _id: data.chapterId, bookId: book._id, isDeleted: false, isHidden: { $ne: true } });
+  if (isPrintedBook(book)) {
+    if (book.publicationStatus !== 'APPROVED') throw new Error('Kitap henüz kataloğa alınmadı.');
+    if (!data.text || data.text.trim().length < 10 || data.text.length > 1000) throw new Error('Alıntı 10–1000 karakter olmalıdır.');
+    if (data.note && data.note.length > 1000) throw new Error('Alıntı notu en fazla 1000 karakter olabilir.');
+    if (data.chapterId && !chapterExists) throw new Error('Bu kitaba ait bir bölüm seçin.');
+    if ((!data.chapterId || data.pageNumber != null) && (!Number.isInteger(data.pageNumber) || data.pageNumber < 1 || data.pageNumber > book.pageCount)) throw new Error('Kitaptaki geçerli bir sayfa numarasını girin.');
+    if (!data.chapterId) data = { ...data, chapterTitle: '', chapterIndex: undefined, location: undefined };
+  } else {
+    if (!chapterExists) throw new Error('Bu kitaba ait bir bölüm seçin.');
+  }
   const normalized = normalizeText(data.text);
   
   // Çakışma kontrolü
-  const existing = await Quote.findOne({ 
-    normalizedText: normalized, 
-    bookId: data.bookId,
-    isRepost: false 
-  });
+  const existing = await Quote.findOne(duplicateFilter(normalized, data.bookId, userId, visibility));
   if (existing) throw new Error('QUOTE_EXISTS:' + existing._id.toString());
 
   const quote = new Quote({ 
     userId, 
     ...data,
+    visibility,
     normalizedText: normalized,
   });
   const saved = await quote.save();
 
-  await ScoreService.onQuoteCreated(userId);
+  if (visibility === 'PUBLIC') await ScoreService.onQuoteCreated(userId, saved._id);
 
   return await populateQuote(Quote.findById(saved._id));
 };
 
 export const repostQuote = async (userId, originalQuoteId, repostComment, isSpoiler) => {
-  const original = await Quote.findById(originalQuoteId);
-  if (!original) throw new Error('Orijinal alıntı bulunamadı.');
+  const original = await requireQuote(originalQuoteId, { _id: userId }, { publicOnly: true });
 
   // Aynı kullanıcı zaten repost etmiş mi?
   if (original.repostedBy.includes(userId)) {
@@ -77,8 +100,10 @@ export const repostQuote = async (userId, originalQuoteId, repostComment, isSpoi
     normalizedText: original.normalizedText,
     note: original.note,
     userId,
+    visibility: 'PUBLIC',
     bookId: original.bookId,
     chapterId: original.chapterId,
+    pageNumber: original.pageNumber,
     chapterTitle: original.chapterTitle,
     chapterIndex: original.chapterIndex,
     location: original.location,
@@ -90,7 +115,7 @@ export const repostQuote = async (userId, originalQuoteId, repostComment, isSpoi
   
   await repost.save();
 
-  await ScoreService.onRepostCreated(userId);
+  await ScoreService.onRepostCreated(userId, originalQuoteId);
 
   // Orijinal alıntıya repostlayanı ekle
   await Quote.findByIdAndUpdate(originalQuoteId, {
@@ -102,14 +127,13 @@ export const repostQuote = async (userId, originalQuoteId, repostComment, isSpoi
 
 export const getQuotesByUser = async (userId, viewer) => {
   if (!canViewProfile(await User.findById(userId), viewer)) return [];
-  return await populateQuote(
-    Quote.find({ userId, isDeleted: false }).sort({ createdAt: -1 })
-  );
+  const quotes = await populateQuote(Quote.find({ userId, isDeleted: false, chapterId: { $nin: await hiddenChapterIds() }, $and: [quoteVisibilityFilter(viewer)] }).sort({ createdAt: -1 }));
+  return quotes.filter(quote => !quote.isRepost || quote.originalQuoteId);
 };
 
-export const getQuotesByBook = async (bookId) => {
+export const getQuotesByBook = async (bookId, viewer) => {
   return await populateQuote(
-    Quote.find({ bookId, isRepost: false, isDeleted: { $ne: true }, userId: { $nin: await inactiveUserIds() } }).sort({ createdAt: -1 })
+    Quote.find({ bookId, chapterId: { $nin: await hiddenChapterIds() }, isRepost: false, isDeleted: { $ne: true }, userId: { $nin: await inactiveUserIds() }, $and: [quoteVisibilityFilter(viewer)] }).sort({ createdAt: -1 })
   );
 };
 
@@ -120,7 +144,7 @@ export const getQuotesFeed = async (limit = 20, offset = 0, sortBy = 'popular') 
     : { createdAt: -1 };
 
   const results = await Quote.aggregate([
-    { $match: { isRepost: false, isDeleted: { $ne: true }, userId: { $nin: await inactiveUserIds() } } },
+    { $match: { chapterId: { $nin: await hiddenChapterIds() }, isRepost: false, isDeleted: { $ne: true }, userId: { $nin: await inactiveUserIds() }, ...publicQuoteFilter() } },
     { $addFields: { likesCount: { $size: { $ifNull: ['$likedBy', []] } } } },
     { $sort: sortOption },
     { $skip: offset },
@@ -178,6 +202,8 @@ export const searchQuotes = async (query, limit = 20, offset = 0) => {
   const bookIds = matchingBooks.map(b => b._id);
 
   const results = await Quote.find({
+    chapterId: { $nin: await hiddenChapterIds() },
+    $and: [publicQuoteFilter()],
     isDeleted: { $ne: true }, userId: { $nin: await inactiveUserIds() },
     $or: [
       { text: { $regex: query, $options: 'i' } },
@@ -216,8 +242,7 @@ export const deleteQuote = async (id, userId) => {
 };
 
 export const toggleQuoteLike = async (id, userId) => {
-  const quote = await Quote.findById(id);
-  if (!quote) throw new Error('Alıntı bulunamadı.');
+  const quote = await requireQuote(id, { _id: userId }, { publicOnly: true });
   const alreadyLiked = quote.likedBy.includes(userId);
   alreadyLiked ? quote.likedBy.pull(userId) : quote.likedBy.push(userId);
   await quote.save();
@@ -230,13 +255,15 @@ export const toggleQuoteLike = async (id, userId) => {
 
 // --- YORUM FONKSİYONLARI ---
 export const addQuoteComment = async (userId, quoteId, content) => {
+  await requireQuote(quoteId, { _id: userId }, { publicOnly: true });
   const comment = new QuoteComment({ userId, quoteId, content });
   const saved = await comment.save();
   return await QuoteComment.findById(saved._id)
     .populate('userId', 'username fullName profilePicture');
 };
 
-export const getQuoteComments = async (quoteId) => {
+export const getQuoteComments = async (quoteId, viewer) => {
+  await requireQuote(quoteId, viewer);
   return await QuoteComment.find({ quoteId, isDeleted: { $ne: true }, userId: { $nin: await inactiveUserIds() } })
     .populate('userId', 'username fullName profilePicture')
     .sort({ createdAt: -1 });
@@ -245,6 +272,7 @@ export const getQuoteComments = async (quoteId) => {
 export const deleteQuoteComment = async (id, userId) => {
   const comment = await QuoteComment.findById(id);
   if (!comment) throw new Error('Yorum bulunamadı.');
+  await requireQuote(comment.quoteId, { _id: userId });
   if (comment.userId.toString() !== userId.toString()) throw new Error('Yetkisiz işlem.');
   await QuoteComment.findByIdAndDelete(id);
   return { code: 200, message: 'Yorum silindi.' };
@@ -253,6 +281,7 @@ export const deleteQuoteComment = async (id, userId) => {
 export const toggleQuoteCommentLike = async (id, userId) => {
   const comment = await QuoteComment.findById(id);
   if (!comment) throw new Error('Yorum bulunamadı.');
+  await requireQuote(comment.quoteId, { _id: userId }, { publicOnly: true });
   const alreadyLiked = comment.likedBy.includes(userId);
   alreadyLiked ? comment.likedBy.pull(userId) : comment.likedBy.push(userId);
   await comment.save();

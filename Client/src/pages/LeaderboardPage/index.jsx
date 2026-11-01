@@ -1,6 +1,10 @@
+import { useLiveScoreQuery } from '../../hooks/useLiveScoreQuery';
+import { profilePath } from '../../utils/publicPaths';
 // src/pages/LeaderboardPage/index.jsx
 import React, { useState } from 'react';
-import { useQuery } from '@apollo/client';
+import { useSubscription } from '@apollo/client';
+import { LEADERBOARD_UPDATED } from '../../components/Score/ScoreUpdates';
+import { notifyScoreChanged } from '../../utils/scoreUpdates';
 import { EmojiEvents, Person } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { GET_LEADERBOARD, GET_USER_RANK } from '../../graphql/queries/score';
@@ -51,14 +55,15 @@ const SafeAvatar = ({ src, alt, className, placeholderClassName, placeholderSize
 
 const LeaderboardPage = () => {
   const { user } = useAuth();
+  useSubscription(LEADERBOARD_UPDATED, { onData: notifyScoreChanged });
   const [period, setPeriod] = useState('total');
 
-  const { data, loading } = useQuery(GET_LEADERBOARD, {
+  const { data, loading } = useLiveScoreQuery(GET_LEADERBOARD, {
     variables: { period },
     fetchPolicy: 'network-only',
   });
 
-  const { data: rankData } = useQuery(GET_USER_RANK, {
+  const { data: rankData } = useLiveScoreQuery(GET_USER_RANK, {
     variables: { userId: user?.id, period },
     skip: !user,
   });
@@ -103,7 +108,7 @@ const LeaderboardPage = () => {
                     className={`podium-item ${style.className} ${actualRank === 1 ? 'podium-first' : ''}`}
                   >
                     <span className="podium-medal">{style.icon}</span>
-                    <Link to={`/user/${entry.user?.id}`}>
+                    <Link to={profilePath(entry.user)}>
                       {/* ── FIX: referrerPolicy + onError ── */}
                       <SafeAvatar
                         src={entry.user?.profilePicture}
@@ -113,7 +118,7 @@ const LeaderboardPage = () => {
                         placeholderSize="medium"
                       />
                     </Link>
-                    <Link to={`/user/${entry.user?.id}`} className="podium-username">
+                    <Link to={profilePath(entry.user)} className="podium-username">
                       @{entry.user?.username}
                     </Link>
                     <span className="podium-points">{displayPoints(entry.points)} puan</span>
@@ -141,7 +146,7 @@ const LeaderboardPage = () => {
                     <span className="leaderboard-rank">
                       {style ? style.icon : `#${entry.rank}`}
                     </span>
-                    <Link to={`/user/${entry.user?.id}`} className="leaderboard-user">
+                    <Link to={profilePath(entry.user)} className="leaderboard-user">
                       {/* ── FIX: referrerPolicy + onError ── */}
                       <SafeAvatar
                         src={entry.user?.profilePicture}

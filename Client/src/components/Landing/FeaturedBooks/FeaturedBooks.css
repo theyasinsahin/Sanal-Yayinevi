@@ -1,198 +1,83 @@
 .featured-books-section {
-  padding: 5rem 0;
+  padding: 1.75rem 0 3rem;
   background-color: var(--paper-white);
-  position: relative;
 }
 
-/* Subtle paper grain */
-.featured-books-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  opacity: 0.08;
-  pointer-events: none;
-  background-image: 
-    repeating-linear-gradient(
-      0deg,
-      transparent 0px,
-      transparent 2px,
-      rgba(26, 26, 26, 0.03) 2px,
-      rgba(26, 26, 26, 0.03) 4px
-    );
-}
-
-/* Decorative top border - torn paper effect */
-.featured-books-section::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 8px;
-  background-image: url("data:image/svg+xml,%3Csvg width='100' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,4 Q2,0 4,4 T8,4 T12,4 T16,4 T20,4 T24,4 T28,4 T32,4 T36,4 T40,4 T44,4 T48,4 T52,4 T56,4 T60,4 T64,4 T68,4 T72,4 T76,4 T80,4 T84,4 T88,4 T92,4 T96,4 T100,4' fill='%23fafaf8' stroke='none'/%3E%3C/svg%3E");
-  background-repeat: repeat-x;
-  background-size: 100px 8px;
-}
-
-/* Section Header */
-.section-header {
+.featured-books-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 3rem;
-  padding-bottom: 1.5rem;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
   border-bottom: 2px solid var(--fog);
-  position: relative;
-  z-index: 1;
 }
 
-/* Decorative corner brackets */
-.section-header::before,
-.section-header::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  width: 60px;
-  height: 2px;
-  background-color: var(--ink-black);
+.featured-books-header h2 {
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
 }
 
-.section-header::before {
-  left: 0;
+.featured-books-description {
+  margin-top: 0.375rem;
 }
 
-.section-header::after {
-  right: 0;
-}
-
-.section-header h2 {
-  font-family: var(--font-serif);
-  font-size: 2.5rem;
-  font-weight: 700;
+.featured-books-all {
+  flex-shrink: 0;
   color: var(--ink-black);
-  position: relative;
-  text-shadow: 1px 1px 0 rgba(26, 26, 26, 0.05);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-underline-offset: 4px;
 }
 
-/* Ornamental flourish before title */
-.section-header h2::before {
-  content: '◆';
-  margin-right: 0.75rem;
-  opacity: 0.3;
-  font-size: 1.5rem;
-}
-
-/* Grid Structure */
-.books-grid {
+.featured-books-grid {
   display: grid;
-  /* 300px -> 220px ve gap 2.5rem -> 1.5rem: BookGrid ile tutarlı bir
-     yoğunluk. Bölüm artık daha fazla kitap (bkz. jsx) gösterdiği için
-     bu genişlikte gerçekten birden fazla satır/sütun kullanılıyor. */
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1.5rem;
-  position: relative;
-  z-index: 1;
 }
 
-/* Card entrance animations - staggered */
-.books-grid > * {
-  animation: cardFadeIn 0.8s ease-out backwards;
+.featured-books-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 3rem 1rem;
+  text-align: center;
 }
 
-.books-grid > *:nth-child(1) { animation-delay: 0.1s; }
-.books-grid > *:nth-child(2) { animation-delay: 0.2s; }
-.books-grid > *:nth-child(3) { animation-delay: 0.3s; }
-.books-grid > *:nth-child(4) { animation-delay: 0.4s; }
-.books-grid > *:nth-child(5) { animation-delay: 0.5s; }
-.books-grid > *:nth-child(6) { animation-delay: 0.6s; }
+.featured-books-more {
+  margin-top: 2rem;
+  text-align: center;
+}
 
-@keyframes cardFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+@media (max-width: 960px) {
+  .featured-books-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
   }
 }
 
-/* Decorative quote marks scattered */
-.featured-books-section .quote-decoration {
-  position: absolute;
-  font-size: 8rem;
-  color: var(--fog);
-  opacity: 0.3;
-  font-family: var(--font-serif);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.featured-books-section .quote-decoration:nth-of-type(1) {
-  top: 10%;
-  left: 5%;
-  transform: rotate(-15deg);
-}
-
-.featured-books-section .quote-decoration:nth-of-type(2) {
-  bottom: 15%;
-  right: 8%;
-  transform: rotate(15deg);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .featured-books-section {
-    padding: 4rem 0;
+    padding-top: 1.25rem;
   }
 
-  .section-header {
+  .featured-books-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
-    margin-bottom: 2rem;
+    gap: 0.75rem;
   }
 
-  .section-header h2 {
-    font-size: 2rem;
-  }
-
-  .section-header::after {
-    display: none;
-  }
-}
-
-/* Mobil: eskiden burada grid tek sütuna (1fr) düşüyor ve tek kart
-   ekranı devasa şekilde kaplıyordu (bkz. ekran görüntüsü). BookGrid'de
-   olduğu gibi 2 sütuna geçiyoruz — kart boyutu makul kalıyor, kart
-   içeriği de BookCard.css'teki container query'ler sayesinde bu
-   genişlikte otomatik sıkışmadan uyum sağlıyor. */
-@media (max-width: 640px) {
-  .books-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .featured-books-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.85rem;
   }
-
-  .section-header h2 {
-    font-size: 1.75rem;
-  }
-
-  .section-header h2::before {
-    font-size: 1.25rem;
-  }
 }
 
-/* Çok dar ekranlarda (küçük telefonlar) tek sütuna düş, ama kartı
-   ekranın tamamına değil ortalanmış makul bir genişliğe sınırla —
-   BookGrid.css'teki aynı davranışla tutarlı. */
 @media (max-width: 360px) {
-  .books-grid {
-    grid-template-columns: 1fr;
+  .featured-books-grid {
+    grid-template-columns: minmax(0, 1fr);
     max-width: 260px;
     margin: 0 auto;
-    gap: 1rem;
   }
 }

@@ -19,6 +19,7 @@ export const GET_LEADERBOARD = gql`
 export const GET_USER_SCORE = gql`
   query GetUserScore($userId: ID!) {
     getUserScore(userId: $userId) {
+      id
       totalPoints
       dailyPoints
       weeklyPoints
@@ -30,6 +31,7 @@ export const GET_USER_SCORE = gql`
         booksPublished
         chaptersAdded
         minutesRead
+        sessionEntriesCreated
       }
     }
   }
@@ -64,6 +66,7 @@ export const GET_NOTIFICATIONS = gql`
     getNotifications {
       id
       type
+      meta
       title
       message
       icon

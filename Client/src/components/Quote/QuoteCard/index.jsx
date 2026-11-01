@@ -1,3 +1,4 @@
+import { bookPath, profilePath } from '../../../utils/publicPaths';
 // src/components/Quote/QuoteCard/index.jsx
 import React, { useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
@@ -18,12 +19,14 @@ import { useAuth } from '../../../context/AuthContext';
 import './QuoteCard.css';
 
 import ShareModal from '../../Messaging/ShareModal';
+import SocialShareDialog from '../../Sharing/SocialShareDialog';
 import { IosShare } from '@mui/icons-material';
 
 // useAuth zaten import edilmiş, değişiklik yok
 
-const QuoteCard = ({ quote }) => {
+const QuoteCard = ({ quote, showBookSource = true }) => {
   const { user } = useAuth();
+  const isPrivate = quote.visibility === 'PRIVATE' || quote.originalQuote?.visibility === 'PRIVATE';
 
   // --- Like state ---
   const isLikedFromServer = user ? (quote.likedBy || []).includes(user.id) : false;
@@ -43,6 +46,7 @@ const QuoteCard = ({ quote }) => {
   const [commentText, setCommentText] = useState('');
 
   const [shareOpen, setShareOpen] = useState(false);
+  const [messageOpen, setMessageOpen] = useState(false);
 
   // QuoteCard'da state ekle:
   const [spoilerRevealed, setSpoilerRevealed] = useState(false);
@@ -66,7 +70,7 @@ const QuoteCard = ({ quote }) => {
   // --- Yorumları çek (sadece açıkken) ---
   const { data: commentsData, refetch: refetchComments } = useQuery(GET_QUOTE_COMMENTS, {
     variables: { quoteId: quote.id },
-    skip: !showComments,
+    skip: !showComments || isPrivate,
   });
   const comments = commentsData?.getQuoteComments || [];
 
@@ -162,15 +166,17 @@ const QuoteCard = ({ quote }) => {
   // Repost ise orijinal alıntıyı göster
   const displayQuote = quote.isRepost && quote.originalQuote ? quote.originalQuote : quote;
   const displayUser = quote.user;
+  if (isPrivate && (quote.isRepost || user?.id !== quote.user?.id)) return null;
 
   return (
     <div className="quote-card">
+      {isPrivate && <span className="quote-private-badge">Özel · Sadece ben</span>}
 
       {/* Repost header — bu kişi repostladı */}
       {quote.isRepost && (
         <div className="quote-card-repost-header">
           <Repeat fontSize="small" />
-          <Link to={`/user/${displayUser?.id}`} className="quote-card-repost-user">
+          <Link to={profilePath(displayUser)} className="quote-card-repost-user">
             @{displayUser?.username}
           </Link>
           <span>yeniden paylaştı</span>
@@ -210,15 +216,15 @@ const QuoteCard = ({ quote }) => {
       {quote.isRepost && quote.originalQuote?.user && (
         <div className="quote-card-original-user">
           <span>Orijinal alıntı:</span>
-          <Link to={`/user/${quote.originalQuote.user.id}`}>
+          <Link to={profilePath(quote.originalQuote.user)}>
             @{quote.originalQuote.user.username}
           </Link>
         </div>
       )}
 
       {/* Kaynak */}
-      {displayQuote.book && (
-        <Link to={`/book-detail/${displayQuote.book.id}`} className="quote-card-source">
+      {showBookSource && displayQuote.book && (
+        <Link to={bookPath(displayQuote.book)} className="quote-card-source">
           {displayQuote.book.imageUrl && (
             <img src={displayQuote.book.imageUrl} alt={displayQuote.book.title} className="quote-card-book-cover" />
           )}
@@ -227,13 +233,15 @@ const QuoteCard = ({ quote }) => {
             {displayQuote.chapterTitle && (
               <span className="quote-card-chapter">{displayQuote.chapterTitle}</span>
             )}
+            {displayQuote.pageNumber && <span className="quote-card-chapter">Sayfa {displayQuote.pageNumber}</span>}
           </div>
         </Link>
       )}
 
       {/* Footer */}
+      {!showBookSource && (displayQuote.chapterTitle || displayQuote.pageNumber) && <p className="quote-card-chapter">{displayQuote.chapterTitle}{displayQuote.pageNumber ? ` · Sayfa ${displayQuote.pageNumber}` : ''}</p>}
       <div className="quote-card-footer">
-        <Link to={`/user/${displayUser?.id}`} className="quote-card-user">
+        <Link to={profilePath(displayUser)} className="quote-card-user">
           {displayUser?.profilePicture ? (
             <img src={displayUser.profilePicture} alt={displayUser.username} className="quote-card-avatar" />
           ) : (
@@ -244,6 +252,7 @@ const QuoteCard = ({ quote }) => {
 
         <div className="quote-card-actions">
           <span className="quote-card-time">{timeAgo(quote.createdAt)}</span>
+          {!isPrivate && <>
 
           {/* Yorum */}
           <button
@@ -275,21 +284,21 @@ const QuoteCard = ({ quote }) => {
             <span>{likeCount}</span>
           </button>
 
-          {/* Paylaş, sadece giriş yapılmışsa */}
-          {user && (
+          {/* Herkese açık alıntının sosyal paylaşımı */}
             <button
               className="quote-card-action-btn"
-              title="Arkadaşa gönder"
+              title="Alıntıyı paylaş"
+              aria-label="Alıntıyı paylaş"
               onClick={() => setShareOpen(true)}
             >
               <IosShare fontSize="small" />
             </button>
-          )}
+          </>}
         </div>
       </div>
 
       {/* Repost input */}
-      {showRepostInput && !repostDone && (
+      {!isPrivate && showRepostInput && !repostDone && (
         <div className="quote-card-repost-input">
           <textarea
             className="quote-card-textarea"
@@ -318,7 +327,7 @@ const QuoteCard = ({ quote }) => {
       )}
 
       {/* Yorumlar */}
-      {showComments && (
+      {!isPrivate && showComments && (
         <div className="quote-card-comments">
           
           {/* Yorum input */}
@@ -353,7 +362,7 @@ const QuoteCard = ({ quote }) => {
                   ) : (
                     <div className="quote-card-comment-avatar-placeholder"><Person fontSize="inherit" /></div>
                   )}
-                  <Link to={`/user/${comment.user?.id}`} className="quote-card-comment-username">
+                  <Link to={profilePath(comment.user)} className="quote-card-comment-username">
                     @{comment.user?.username}
                   </Link>
                   <span className="quote-card-comment-time">{timeAgo(comment.createdAt)}</span>
@@ -374,10 +383,13 @@ const QuoteCard = ({ quote }) => {
       )}
 
       {/* ShareModal */}
-      {shareOpen && (
+      {!isPrivate && shareOpen && (
+        <SocialShareDialog target={{ type: 'QUOTE', id: displayQuote.id }} onClose={() => setShareOpen(false)} onSendInBetik={user ? () => setMessageOpen(true) : undefined} />
+      )}
+      {!isPrivate && messageOpen && (
         <ShareModal
-          isOpen={shareOpen}
-          onClose={() => setShareOpen(false)}
+          isOpen={messageOpen}
+          onClose={() => setMessageOpen(false)}
           type="QUOTE"
           attachedQuoteId={displayQuote.id}
           attachedQuote={displayQuote}

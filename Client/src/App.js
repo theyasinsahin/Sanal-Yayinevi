@@ -1,5 +1,7 @@
-import React from 'react';
-import { AuthorsPage, PublishedBooksPage, AboutPage, ContactPage, LegalPage, NewsletterPage } from './pages/Community';
+import PublicContentRoute from './components/Route/PublicContentRoute';
+import ScoreUpdates from './components/Score/ScoreUpdates';
+import React, { lazy } from 'react';
+import PageBoundary from './components/Route/PageBoundary';
 import {
   ApolloClient,
   InMemoryCache,
@@ -10,8 +12,7 @@ import {
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions"; 
 import { createClient } from "graphql-ws";                         
 import { getMainDefinition } from "@apollo/client/utilities";      
-import { onError } from "@apollo/client/link/error";
-import { setContext } from "@apollo/client/link/context";
+import { createAuthLink } from './utils/authLink';
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from "react-router-dom";
 
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -23,40 +24,55 @@ import ScrollToTop from './components/ScrollToTop';
 import InstallPrompt from './components/InstallPrompt';
 
 import LandingPage from "./pages/Landing";
-import FeedPage from "./pages/Feed";
-import BookDetailPage from "./pages/BookDetail";
-import BookReader from "./pages/BookReader";
-import CreateBookPage from "./pages/CreateBookPage";
-import BookDashboard from "./pages/BookDashboard";
-import UserProfilePage from "./pages/UserProfilePage";
-import LoginPage from "./pages/Auth/Login";
-import RegisterPage from "./pages/Auth/Register";
-import GoogleCallback from "./pages/Auth/GoogleCallback";
-import DonationPage from "./pages/DonationPage";
-import PaymentSuccess from "./pages/PaymentResult/PaymentSuccess";
-import PaymentFailure from "./pages/PaymentResult/PaymentFailure";
-import ForgotPasswordPage from './pages/Auth/ForgotPassword';
-import ResetPasswordPage from './pages/Auth/ResetPassword';
-import QuotesPage from './pages/QuotesPage';
-import LeaderboardPage from './pages/LeaderboardPage';
-import MessagesPage from './pages/MessagesPage';
-import SessionsPage  from './pages/SessionsPage';
-import SessionDetail from './pages/SessionDetail';
-import NotFoundPage from './pages/NotFoundPage';
 
-import AdminDashboard from './pages/Admin/Dashboard';
-import AdminUsers from './pages/Admin/Users';
-import AdminBooks from './pages/Admin/Books';
 import AdminRoute from './components/Route/AdminRoute';
-import AdminTransactions from './pages/Admin/Transactions';
+import PublisherRoute from './components/Route/PublisherRoute';
 
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { ME_QUERY } from './graphql/queries/user';
 
 import { ReadingPreferencesProvider } from './context/ReadingPreferencesContext';
 
 
 import { API_URL, WS_URL } from './config/api';
+
+const AuthorsPage = lazy(() => import('./pages/Community').then(module => ({ default: module.AuthorsPage })));
+const AboutPage = lazy(() => import('./pages/Community').then(module => ({ default: module.AboutPage })));
+const ContactPage = lazy(() => import('./pages/Community').then(module => ({ default: module.ContactPage })));
+const LegalPage = lazy(() => import('./pages/Community').then(module => ({ default: module.LegalPage })));
+const NewsletterPage = lazy(() => import('./pages/Community').then(module => ({ default: module.NewsletterPage })));
+const PrintedBooksPage = lazy(() => import('./pages/PrintedBooks'));
+const FeedPage = lazy(() => import('./pages/Feed'));
+const BookDetailPage = lazy(() => import('./pages/BookDetail'));
+const BookReader = lazy(() => import('./pages/BookReader'));
+const CreateBookPage = lazy(() => import('./pages/CreateBookPage'));
+const BookDashboard = lazy(() => import('./pages/BookDashboard'));
+const UserProfilePage = lazy(() => import('./pages/UserProfilePage'));
+const LoginPage = lazy(() => import('./pages/Auth/Login'));
+const RegisterPage = lazy(() => import('./pages/Auth/Register'));
+const GoogleCallback = lazy(() => import('./pages/Auth/GoogleCallback'));
+const DonationPage = lazy(() => import('./pages/DonationPage'));
+const PrintApplicationPage = lazy(() => import('./pages/PrintApplication'));
+const FundingHistoryPage = lazy(() => import('./pages/FundingHistory'));
+const PublisherPortal = lazy(() => import('./pages/PublisherPortal'));
+const AdminPrintFundingPage = lazy(() => import('./pages/Admin/PrintFunding'));
+const PaymentSuccess = lazy(() => import('./pages/PaymentResult/PaymentSuccess'));
+const PaymentFailure = lazy(() => import('./pages/PaymentResult/PaymentFailure'));
+const ForgotPasswordPage = lazy(() => import('./pages/Auth/ForgotPassword'));
+const ResetPasswordPage = lazy(() => import('./pages/Auth/ResetPassword'));
+const QuotesPage = lazy(() => import('./pages/QuotesPage'));
+const QuoteDetail = lazy(() => import('./pages/QuoteDetail'));
+const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
+const MessagesPage = lazy(() => import('./pages/MessagesPage'));
+const SessionsPage = lazy(() => import('./pages/SessionsPage'));
+const SessionDetail = lazy(() => import('./pages/SessionDetail'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const AdminDashboard = lazy(() => import('./pages/Admin/Dashboard'));
+const AdminUsers = lazy(() => import('./pages/Admin/Users'));
+const AdminBooks = lazy(() => import('./pages/Admin/Books'));
+const AdminPrintedBooks = lazy(() => import('./pages/Admin/PrintedBooks'));
+const AdminTransactions = lazy(() => import('./pages/Admin/Transactions'));
+const AdminData = lazy(() => import('./pages/Admin/Data'));
+const AdminSessionAccess = lazy(() => import('./pages/Admin/SessionAccess'));
 
 // --- APOLLO SETUP ---
 
@@ -64,34 +80,8 @@ const httpLink = createHttpLink({
   uri: API_URL,
 });
 
-const authLink = setContext((_, { headers }) => {
-  const token = localStorage.getItem("token");
-  return {
-    headers: {
-      ...headers,
-      authorization: token ? `Bearer ${token}` : "",
-    },
-  };
-});
-
-const errorLink = onError(({ graphQLErrors, networkError }) => {
-  if (graphQLErrors) {
-    graphQLErrors.forEach(({ message, extensions }) => {
-      if (
-        message.includes("jwt expired") ||
-        (extensions && extensions.code === "UNAUTHENTICATED")
-      ) {
-        console.log("Oturum süresi doldu, çıkış yapılıyor...");
-        localStorage.removeItem("token");
-        localStorage.removeItem("userId");
-      }
-    });
-  }
-});
-
 // WebSocket link — sadece subscription operasyonları buradan geçer
-const wsLink = new GraphQLWsLink(
-  createClient({
+const wsClient = createClient({
     url: WS_URL,
     connectionParams: () => ({
       authorization: localStorage.getItem("token")
@@ -100,8 +90,9 @@ const wsLink = new GraphQLWsLink(
     }),
     shouldRetry: () => !!localStorage.getItem("token"),
     retryAttempts: 5,
-  })
-);
+  });
+const wsLink = new GraphQLWsLink(wsClient);
+const reconnectSubscriptions = () => wsClient.terminate();
 
 // Subscription → wsLink, diğerleri → mevcut HTTP zinciri
 const splitLink = split(
@@ -113,12 +104,12 @@ const splitLink = split(
     );
   },
   wsLink,
-  errorLink.concat(authLink).concat(httpLink)
+  httpLink
 );
 
 const client = new ApolloClient({
-  link: splitLink,
-  cache: new InMemoryCache(),
+  link: createAuthLink().concat(splitLink),
+  cache: new InMemoryCache({ typePolicies: { AdminRecord: { keyFields: false } } }),
 });
 
 // --- LAYOUT ---
@@ -150,7 +141,8 @@ const ProtectedRoute = ({ children }) => {
 const RootLayout = () => (
   <>
     <ScrollToTop />
-    <Outlet />
+    <ScoreUpdates reconnect={reconnectSubscriptions} />
+    <PageBoundary><Outlet /></PageBoundary>
     {/* Mobilde "Ana ekrana ekle" banner'ı — tüm sayfalarda tek yerden */}
     <InstallPrompt />
   </>
@@ -164,14 +156,19 @@ const router = createBrowserRouter([
       { path: "/", element: <LandingPage /> },
       { path: "/feed", element: <FeedPage /> },
       { path: "/authors", element: <AuthorsPage /> },
-      { path: "/published-books", element: <PublishedBooksPage /> },
+      { path: "/printed-books", element: <PrintedBooksPage /> },
       { path: "/about", element: <AboutPage /> },
       { path: "/contact", element: <ContactPage /> },
       { path: "/terms", element: <LegalPage kind="terms" /> },
       { path: "/privacy", element: <LegalPage kind="privacy" /> },
       { path: "/newsletter", element: <NewsletterPage /> },
-      { path: "/book-detail/:id", element: <Layout><BookDetailPage /></Layout> },
-      { path: "/book-reader/:bookId", element: <Layout><BookReader /></Layout> },
+      { path: "/yazar/:username", element: <PublicContentRoute type="PROFILE"><UserProfilePage /></PublicContentRoute> },
+      { path: "/kitap/:slug", element: <PublicContentRoute type="BOOK"><BookDetailPage /></PublicContentRoute> },
+      { path: "/kitap/:slug/oku", element: <Layout><PublicContentRoute type="BOOK" reader><BookReader /></PublicContentRoute></Layout> },
+      { path: "/kitap/:slug/bolum/:chapterSlug", element: <Layout><PublicContentRoute type="BOOK" reader><BookReader /></PublicContentRoute></Layout> },
+      { path: "/oturum/:slug", element: <PublicContentRoute type="SESSION"><SessionDetail /></PublicContentRoute> },
+      { path: "/book-detail/:id", element: <PublicContentRoute type="BOOK" legacy><BookDetailPage /></PublicContentRoute> },
+      { path: "/book-reader/:bookId", element: <Layout><PublicContentRoute type="BOOK" legacy reader><BookReader /></PublicContentRoute></Layout> },
 
       { path: "/create-book",
         element: <ProtectedRoute><CreateBookPage /></ProtectedRoute>
@@ -179,11 +176,14 @@ const router = createBrowserRouter([
       { path: "/dashboard/:bookId",
         element: <ProtectedRoute><BookDashboard /></ProtectedRoute>
       },
+      { path: '/print/:bookId', element: <ProtectedRoute><PrintApplicationPage /></ProtectedRoute> },
+      { path: '/funding-history', element: <ProtectedRoute><FundingHistoryPage /></ProtectedRoute> },
+      { path: '/publisher', element: <PublisherRoute><PublisherPortal /></PublisherRoute> },
       { path: "/profile",
         element: <ProtectedRoute><UserProfilePage /></ProtectedRoute>
       },
 
-      { path: "/user/:userId", element: <UserProfilePage /> },
+      { path: "/user/:userId", element: <PublicContentRoute type="PROFILE" legacy><UserProfilePage /></PublicContentRoute> },
       { path: "/login", element: <LoginPage /> },
       { path: "/register", element: <RegisterPage /> },
       // Google'ın redirect akışında (ux_mode="redirect") backend
@@ -193,10 +193,11 @@ const router = createBrowserRouter([
       { path: "/sifremi-unuttum", element: <ForgotPasswordPage /> },
       { path: "/forgot-password", element: <Navigate to="/sifremi-unuttum" replace /> },
       { path: "/reset-password/:token", element: <ResetPasswordPage /> },
-      { path: "/donate/:bookId", element: <DonationPage /> },
-      { path: "/payment/success", element: <PaymentSuccess /> },
+      { path: "/donate/:bookId", element: <ProtectedRoute><DonationPage /></ProtectedRoute> },
+      { path: "/payment/success", element: <ProtectedRoute><PaymentSuccess /></ProtectedRoute> },
       { path: "/payment/failure", element: <PaymentFailure /> },
       { path: "/quotes", element: <QuotesPage /> },
+      { path: '/quotes/:quoteId', element: <QuoteDetail /> },
       { path: "/leaderboard", element: <LeaderboardPage /> },
 
       // Messages — ProtectedRoute ile sar, giriş yapılmamışsa login'e yönlendir
@@ -208,17 +209,24 @@ const router = createBrowserRouter([
       },
 
       { path: "/sessions", element: <SessionsPage /> },
-      { path: "/sessions/:sessionId", element: <SessionDetail /> },
+      { path: "/sessions/:sessionId", element: <PublicContentRoute type="SESSION" legacy><SessionDetail /></PublicContentRoute> },
 
       { path: "/admin",
         element: <AdminRoute><AdminDashboard /></AdminRoute>
       },
+      { path: '/admin/genres', element: <AdminRoute><AdminData resource="Genre" /></AdminRoute> },
+      { path: '/admin/data', element: <AdminRoute><AdminData /></AdminRoute> },
+      { path: '/admin/data/:resource', element: <AdminRoute><AdminData /></AdminRoute> },
+      { path: '/admin/schemas', element: <AdminRoute><AdminData schema /></AdminRoute> },
       { path: "/admin/users",
         element: <AdminRoute><AdminUsers /></AdminRoute>
       },
       { path: "/admin/books",
         element: <AdminRoute><AdminBooks /></AdminRoute>
       },
+      { path: '/admin/printed-books', element: <AdminRoute><AdminPrintedBooks /></AdminRoute> },
+      { path: '/admin/print-funding', element: <AdminRoute><AdminPrintFundingPage /></AdminRoute> },
+      { path: '/admin/session-access', element: <AdminRoute><AdminSessionAccess /></AdminRoute> },
       { path: "/admin/transactions",
         element: <AdminRoute><AdminTransactions /></AdminRoute>
       },

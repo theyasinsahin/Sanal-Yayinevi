@@ -1,0 +1,60 @@
+"Kuruş cinsinden güvenli tam sayı; ondalık ve güvensiz sayılar reddedilir."
+scalar MinorAmount
+
+type PrintOverview { bookId: ID!, digitalStatus: String!, writingStatus: String!, interestCount: Int!, interested: Boolean!, campaign: FundingCampaign }
+type PrintTariff { id: ID!, version: String!, label: String!, environment: String!, configuration: JSON!, policy: JSON! }
+type BookPrintVersion { classificationReview: JSON, id: ID!, bookId: ID!, title: String!, authorName: String!, wordCount: Int!, estimatedPages: Int!, contentHash: String!, specification: JSON!, declarations: JSON!, chapters: [PrintVersionChapter!]!, createdAt: DateTime! }
+type PrintVersionChapter { sourceId: ID!, title: String!, content: String! }
+type PrintApplication { id: ID!, bookId: ID!, authorId: ID!, revision: Int!, state: String!, version: BookPrintVersion!, estimate: JSON!, verifiedQuote: JSON, approvedTargetMinor: MinorAmount!, approvedUnitPriceMinor: MinorAmount!, reviewNote: String!, createdAt: DateTime!, updatedAt: DateTime!, tariffId: ID! }
+type PrintAudit { id: ID!, actorId: ID, action: String!, from: String, to: String, reason: String, metadata: JSON, createdAt: DateTime! }
+type FundingCampaign { id: ID!, bookId: ID!, authorId: ID!, applicationId: ID!, versionId: ID!, title: String!, environment: String!, state: String!, outcome: String, targetMinor: MinorAmount!, acceptedMinor: MinorAmount!, reservedMinor: MinorAmount!, availableMinor: MinorAmount!, unitPriceMinor: MinorAmount!, printRun: Int!, soldQuantity: Int!, reservedQuantity: Int!, supporterCount: Int!, progressPercent: Float!, startsAt: DateTime!, endsAt: DateTime!, productionState: String!, previousProductionState: String, productionRevision: Int!, financeIssue: String!, policy: JSON!, updates: [PrintCampaignUpdate!]! }
+type PrintCampaignUpdate { id: ID!, state: String, message: String!, createdAt: DateTime! }
+type FundingPayment { id: ID!, campaignId: ID!, bookId: ID!, provider: String!, checkoutUrl: String, amountMinor: MinorAmount!, donationMinor: MinorAmount!, orderMinor: MinorAmount!, quantity: Int!, currency: String!, state: String!, allocated: Boolean!, captured: Boolean!, issue: String!, createdAt: DateTime!, reservation: PrintPaymentReservation, order: PrintPreOrder, refund: FundingRefund }
+type PrintPaymentReservation { state: String!, expiresAt: DateTime! }
+type PrintPreOrder { id: ID!, paymentId: ID!, campaignId: ID!, quantity: Int!, unitPriceMinor: MinorAmount!, totalMinor: MinorAmount!, state: String!, previousState: String, revision: Int!, carrier: String, trackingNumber: String, shippingAddress: JSON, createdAt: DateTime! }
+type FundingRefund { id: ID!, paymentId: ID!, amountMinor: MinorAmount!, reason: String!, state: String!, attempts: Int!, lastError: String, retryAt: DateTime, providerRefundId: String }
+input PrintCheckoutInput { campaignId: ID!, idempotencyKey: String!, quantity: Int = 0, donationMinor: MinorAmount = 0, shippingAddress: JSON }
+input SavePrintApplicationInput { bookId: ID!, tariffId: ID!, revision: Int, specification: JSON!, declarations: JSON! }
+input ReviewPrintApplicationInput { applicationId: ID!, revision: Int!, decision: String!, reason: String!, quote: JSON }
+input OpenPrintCampaignInput { applicationId: ID!, revision: Int!, days: Int }
+input PrintProductionInput { campaignId: ID!, revision: Int!, state: String!, message: String! }
+input PrintOrderUpdateInput { orderId: ID!, revision: Int!, state: String!, carrier: String, trackingNumber: String, reason: String! }
+extend type Book { digitalStatus: String!, writingStatus: String! }
+extend type Query {
+  printPaymentMode: String!
+  printOverview(bookId: ID!): PrintOverview!
+  printTariffs: [PrintTariff!]!
+  myPrintApplications(page: Int = 1): [PrintApplication!]!
+  myPrintApplicationForBook(bookId: ID!): PrintApplication
+  adminPrintApplications(page: Int = 1): [PrintApplication!]!
+  printApplication(id: ID!): PrintApplication!
+  printApplicationHistory(id: ID!): [PrintAudit!]!
+  printApplicationVersions(id: ID!): [BookPrintVersion!]!
+  myFundingCampaigns(page: Int = 1): [FundingCampaign!]!
+  adminFundingCampaigns(page: Int = 1): [FundingCampaign!]!
+  myFundingPayments(page: Int = 1): [FundingPayment!]!
+  myFundingPayment(id: ID!): FundingPayment
+  myPrintOrders(page: Int = 1): [PrintPreOrder!]!
+  adminFundingPayments(campaignId: ID, page: Int = 1): [FundingPayment!]!
+  adminPrintOrders(campaignId: ID, page: Int = 1): [PrintPreOrder!]!
+  adminFundingRefunds(page: Int = 1): [FundingRefund!]!
+  printCampaignAudit(campaignId: ID!): [PrintAudit!]!
+}
+extend type Mutation {
+  createPrintTariff(input: JSON!): PrintTariff!
+  savePrintApplication(input: SavePrintApplicationInput!): PrintApplication!
+  submitPrintApplication(applicationId: ID!, revision: Int!): PrintApplication!
+  cancelPrintApplication(applicationId: ID!, revision: Int!, reason: String!): PrintApplication!
+  reviewPrintApplication(input: ReviewPrintApplicationInput!): PrintApplication!
+  openFundingCampaign(input: OpenPrintCampaignInput!): FundingCampaign!
+  closeFundingCampaign(campaignId: ID!, reason: String!): FundingCampaign!
+  setPrintInterest(bookId: ID!, interested: Boolean!): Boolean!
+  startPrintCheckout(input: PrintCheckoutInput!): FundingPayment!
+  simulatePrintPayment(paymentId: ID!, outcome: String!): FundingPayment!
+  cancelPrintPayment(paymentId: ID!): FundingPayment!
+  requestPrintRefund(paymentId: ID!, reason: String!): FundingPayment!
+  retryPrintRefund(refundId: ID!): FundingRefund!
+  updatePrintProduction(input: PrintProductionInput!): FundingCampaign!
+  updatePrintOrder(input: PrintOrderUpdateInput!): PrintPreOrder!
+  runPrintMaintenance: JSON!
+}

@@ -1,3 +1,5 @@
+import ClassificationEditor from '../../components/Books/Classification/ClassificationEditor';
+import { bookPath, readerPath } from '../../utils/publicPaths';
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, Link, useNavigate, useBlocker } from 'react-router-dom';
 import ReactQuill from 'react-quill';
@@ -17,9 +19,10 @@ import {
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_BOOK_BY_ID } from '../../graphql/queries/book'; 
 import { UPDATE_BOOK_STATUS_MUTATION } from '../../graphql/mutations/book';
-import { CREATE_CHAPTER_MUTATION, UPDATE_CHAPTER_MUTATION, DELETE_CHAPTER_MUTATION } from '../../graphql/mutations/chapter';
+import { CREATE_CHAPTER_MUTATION, UPDATE_CHAPTER_MUTATION, DELETE_CHAPTER_MUTATION, SET_CHAPTER_VISIBILITY } from '../../graphql/mutations/chapter';
 import { parseContentToPages } from '../../utils/htmlPageSplitter';
 import useChapterAutosave from '../../hooks/useChapterAutosave';
+import SocialShareButton from '../../components/Sharing/SocialShareButton';
 
 // --- UI KIT ---
 import { Button } from '../../components/UI/Button';
@@ -27,7 +30,6 @@ import { Typography } from '../../components/UI/Typography';
 import { Input } from '../../components/UI/Input';
 import { Toast } from '../../components/UI/Toast';
 import { Badge } from '../../components/UI/Badge';
-import { CostCalculatorModal } from '../../components/Books/CostCalculatorModal';
 
 import { useAuth } from '../../context/AuthContext';
 import './BookDashboard.css';
@@ -58,6 +60,9 @@ const BookDashboard = () => {
   });
   
   const [saveChapterContent] = useMutation(UPDATE_CHAPTER_MUTATION);
+  const [setChapterVisibility] = useMutation(SET_CHAPTER_VISIBILITY, {
+    refetchQueries: [{ query: GET_BOOK_BY_ID, variables: { id: bookId } }], awaitRefetchQueries: true,
+  });
   const [deleteChapterMutation] = useMutation(DELETE_CHAPTER_MUTATION);
 
   const persistChapter = useCallback(async ({ chapterId, content, title }) => {
@@ -71,8 +76,8 @@ const BookDashboard = () => {
   // --- STATE ---
   const [book, setBook] = useState(null);
   const [newChapterTitle, setNewChapterTitle] = useState('');
+  const [newChapterHidden, setNewChapterHidden] = useState(false);
   const [notification, setNotification] = useState({ isVisible: false, message: '', type: '' });
-  const [showCostModal, setShowCostModal] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const dashboardRef = useRef(null);
@@ -158,7 +163,7 @@ const BookDashboard = () => {
   
   // 1. Taslak <-> Yayında Geçişi
   const togglePublish = async () => {
-     const newStatus = book.status === 'DRAFT' ? 'WRITING' : 'DRAFT';
+     const newStatus = (book.digitalStatus || (book.status === 'DRAFT' ? 'DRAFT' : 'PUBLISHED')) === 'DRAFT' ? 'WRITING' : 'DRAFT';
      if(window.confirm(newStatus === 'WRITING' ? "Kitap herkese görünür olacak. Onaylıyor musunuz?" : "Kitap yayından kaldırılıp taslağa çekilecek.")) {
         await runAfterSaving(() => updateStatus({ variables: { bookId, status: newStatus } }));
      }
@@ -202,7 +207,7 @@ const BookDashboard = () => {
   const addNewChapter = async () => {
     if (!newChapterTitle.trim() || !bookId) return;
     await runAfterSaving(async () => {
-      await addChapter({ variables: { bookId, title: newChapterTitle.trim(), content: '', userId: user?.id } });
+      await addChapter({ variables: { bookId, title: newChapterTitle.trim(), content: '', userId: user?.id, ...(newChapterHidden ? { isHidden: true } : {}) } });
       setNewChapterTitle('');
     });
   };
@@ -217,17 +222,25 @@ const BookDashboard = () => {
     });
   };
 
+  const toggleChapterVisibility = async () => {
+    const chapter = chapters.find(item => item.id === selectedChapter);
+    if (!chapter) return;
+    await runAfterSaving(async () => {
+      await setChapterVisibility({ variables: { chapterId: chapter.id, isHidden: !chapter.isHidden } });
+    });
+  };
+
   const saveChapter = async () => {
     try { await manager.flush(); showNotification('Kaydedildi!', 'success'); }
     catch { showNotification('Değişiklikler kaydedilemedi. Yeniden deneyin.', 'error'); }
   };
-  const savedPageCount = chapters.reduce((sum, chapter) => sum + (chapter.pageCount || 0), 0);
   const saveMessages = { saved: 'Kaydedildi', saving: 'Kaydediliyor…', pending: 'Otomatik kayıt bekleniyor…', error: 'Kaydedilemedi — Kaydet ile tekrar deneyin.' };
 
   // --- RENDER ---
   if (bookLoading) return <div className="p-8 text-center">Yükleniyor...</div>;
   if (bookError) return <div className="p-8 text-center text-red-600">Hata: {bookError.message}</div>;
   if (!book) return <div className="p-8 text-center">Kitap yükleniyor…</div>;
+  if (book.kind === 'PRINTED' && !book.canEditContent) return <div className="ui-notice" role="status">Bu kitaba içerik eklemek için yazar hak talebinizin onaylanması gerekir. <Link className="ui-text-link" to={bookPath(book)}>Kitaba dön</Link></div>;
 
   return (
     <div className="dashboard-container" ref={dashboardRef}>
@@ -266,7 +279,8 @@ const BookDashboard = () => {
 
         {/* Aksiyon Butonları */}
         <div className="sidebar-actions">
-           <Link to={`/book-reader/${bookId}`} className="w-full no-underline">
+           <ClassificationEditor key={book.id} book={book} />
+           <Link to={readerPath(book)} className="w-full no-underline">
               <Button variant="outline" size="small" className="w-full" icon={<Visibility fontSize="small"/>}>
                 Okuyucu Modu
               </Button>
@@ -297,6 +311,7 @@ const BookDashboard = () => {
             <Button variant="secondary" size="small" onClick={addNewChapter} disabled={editorLocked} className="w-full">
                <Add fontSize="small" /> Ekle
             </Button>
+            <label className="new-chapter-visibility"><input type="checkbox" checked={newChapterHidden} disabled={editorLocked} onChange={event => setNewChapterHidden(event.target.checked)} /> Yeni bölümü gizli oluştur</label>
           </div>
 
           <div className="chapter-list-scroll">
@@ -308,7 +323,7 @@ const BookDashboard = () => {
               >
                 <div className="chapter-row-content">
                   <FolderOpen fontSize="small" className="folder-icon" />
-                  <span className="chapter-title-text">{chapter.title}</span>
+                  <span className="chapter-title-text">{chapter.title}{chapter.isHidden && <small> · Gizli</small>}</span>
                 </div>
                 <button 
                   className="delete-btn"
@@ -323,7 +338,7 @@ const BookDashboard = () => {
           </div>
         </div>
 
-        <div className="status-management-panel p-4 border-t mt-4">
+        {book.kind !== 'PRINTED' && <div className="status-management-panel p-4 border-t mt-4">
              <Typography variant="h6" className="mb-2">Yayın Durumu</Typography>
              
              <div className="mb-4">
@@ -338,7 +353,7 @@ const BookDashboard = () => {
 
              <div className="flex flex-col gap-2">
                 {/* DRAFT / WRITING DÖNGÜSÜ */}
-                {(book?.status === 'DRAFT' || book?.status === 'WRITING') && (
+                {book && (
                     <Button 
                       variant={book.status === 'DRAFT' ? 'success' : 'danger'} 
                       size="small" 
@@ -363,18 +378,18 @@ const BookDashboard = () => {
                 )}
 
                 {/* COMPLETED -> FUNDING (Hesaplama) */}
-                {book?.status === 'COMPLETED' && (
+                {(book?.writingStatus === 'COMPLETED' || ['COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'].includes(book?.status)) && (
                     <Button 
                       variant="warning" 
                       size="small" 
-                      onClick={() => runAfterSaving(() => setShowCostModal(true))}
+                      onClick={() => runAfterSaving(() => navigate(`/print/${bookId}`))}
                       className="w-full"
                     >
-                       Baskı Maliyeti Hesapla
+                       Basım İçin Başvur / Başvurumu Gör
                     </Button>
                 )}
              </div>
-          </div>
+          </div>}
       </aside>
 
       {/* --- EDITOR AREA --- */}
@@ -403,9 +418,12 @@ const BookDashboard = () => {
                   <Badge variant={saveStatus === 'saved' ? 'success' : saveStatus === 'error' ? 'danger' : 'warning'}>{saveMessages[saveStatus]}</Badge>
                 </span>
               </div>
-              <Button 
-                variant="primary" 
-                onClick={saveChapter} 
+              <div className="editor-topbar-actions">
+                <Button type="button" variant="outline" disabled={editorLocked} aria-pressed={chapters.find(c => c.id === selectedChapter)?.isHidden === true} onClick={toggleChapterVisibility}>
+                  {chapters.find(c => c.id === selectedChapter)?.isHidden ? 'Okuyuculara aç' : 'Okuyuculardan gizle'}
+                </Button>
+                {book.status !== 'DRAFT' && !chapters.find(c => c.id === selectedChapter)?.isHidden && <SocialShareButton type="CHAPTER" id={selectedChapter} label="Bölümü paylaş" beforeOpen={() => manager.flush()} disabled={editorLocked} />}
+              <Button variant="primary" onClick={saveChapter}
                 className="dashboard-save-button"
                 aria-label="Bölümü kaydet"
                 aria-busy={saveStatus === 'saving'}
@@ -414,6 +432,7 @@ const BookDashboard = () => {
               >
                 Kaydet
               </Button>
+              </div>
             </header>
 
             <div className="quill-wrapper">
@@ -443,27 +462,6 @@ const BookDashboard = () => {
           </div>
         )}
       </main>
-
-      {/* MODAL: BASKI MALİYETİ HESAPLAMA */}
-       {showCostModal && (
-          <CostCalculatorModal 
-             book={{ ...book, pageCount: savedPageCount }}
-             pageCount={savedPageCount}
-             onClose={() => setShowCostModal(false)}
-             onConfirm={async (data) => runAfterSaving(async () => {
-                 await updateStatus({ 
-                     variables: { 
-                        bookId, 
-                        status: 'FUNDING',
-                        fundingTarget: data.totalCost,
-                        printConfig: data.config
-                     } 
-                 });
-                 setShowCostModal(false);
-                 alert("Kitap fonlamaya açıldı!");
-             })}
-          />
-       )}
 
       <Toast 
         isVisible={notification.isVisible}

@@ -2,16 +2,22 @@
 .DS_Store
 .env
 *.log
+.print-sandbox/
 
 # React (Client)
 Client/node_modules/
 Client/build/
+Client/playwright-report/
+Client/test-results/
 Client/.env
 
 # Node.js (Server)
 Server/node_modules/
 Server/dist/
+Server/coverage/
 Server/.env
+Server/.env.print.local
+Server/classification-report-*.json
 
 todolist.txt
 AGENT.md

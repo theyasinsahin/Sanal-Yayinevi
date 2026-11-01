@@ -10,6 +10,7 @@ import {
   FormatQuote,
   EmojiEvents,
   Forum,
+  MenuBook,
 } from '@mui/icons-material';
 import { FiMessageCircle } from 'react-icons/fi';
 
@@ -23,6 +24,7 @@ import { Button } from '../../UI/Button';
 import NotificationBell from '../../Notification/NotificationBell';
 
 import './MobileMenu.css';
+import { canAccessPublisherPortal } from '../../../utils/publisher';
 
 const MobileMenu = ({ isOpen, onClose }) => {
   const { user, logout } = useAuth();
@@ -62,6 +64,10 @@ const MobileMenu = ({ isOpen, onClose }) => {
             <FormatQuote className="mobile-icon" />
             <Typography variant="body" weight="medium">Alıntılar</Typography>
           </Link>
+          <Link to="/printed-books" className="mobile-nav-item" onClick={onClose}>
+            <MenuBook className="mobile-icon" />
+            <Typography variant="body" weight="medium">Basılı Kitaplar</Typography>
+          </Link>
 
           <Link to="/leaderboard" className="mobile-nav-item" onClick={onClose}>
             <EmojiEvents className="mobile-icon" />
@@ -82,6 +88,11 @@ const MobileMenu = ({ isOpen, onClose }) => {
                 <Person className="mobile-icon" />
                 <Typography variant="body" weight="medium">Profilim</Typography>
               </Link>
+
+              {canAccessPublisherPortal(user) && <Link to="/publisher" className="mobile-nav-item" onClick={onClose}>
+                <MenuBook className="mobile-icon" />
+                <Typography variant="body" weight="medium">Yayınevi Portalı</Typography>
+              </Link>}
 
               <Link to="/create-book" className="mobile-nav-item" onClick={onClose}>
                 <Create className="mobile-icon" />

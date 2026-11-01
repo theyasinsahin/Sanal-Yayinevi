@@ -1,0 +1,50 @@
+/* Shared text links and notices use the same paper/ink palette as the UI kit. */
+.ui-text-link {
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  text-decoration-line: underline;
+  text-decoration-color: var(--sepia-dark);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  overflow-wrap: anywhere;
+}
+
+.ui-text-link:visited { color: var(--text-main); }
+.ui-text-link:hover { color: var(--graphite); text-decoration-color: currentColor; }
+.ui-text-link:focus-visible {
+  outline: 2px solid var(--text-main);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+.ui-notice {
+  padding: 1rem 1.125rem;
+  background: var(--sepia-light);
+  color: var(--graphite);
+  border: 1px solid var(--sepia-medium);
+  border-left: 3px solid var(--sepia-dark);
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.ui-notice > :last-child { margin-bottom: 0; }
+.ui-notice .typography { color: inherit; font-family: inherit; font-size: inherit; line-height: inherit; }
+.ui-notice--error {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
+  border-color: var(--color-danger-border);
+}
+.ui-notice--success {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  border-color: var(--color-success-border);
+}
+.ui-notice--warning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  border-color: var(--color-warning-border);
+}

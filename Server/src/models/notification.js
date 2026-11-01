@@ -5,7 +5,7 @@ const NotificationSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   type: { 
     type: String, 
-    enum: ['POINTS_EARNED', 'BADGE_EARNED', 'FUNDING_RECEIVED', 'NEW_CHAPTER', 'BOOK_LIKED', 'COMMENT_RECEIVED', 'FOLLOW_REQUEST', 'FOLLOW_REQUEST_ACCEPTED', 'NEW_FOLLOWER', 'QUOTE_LIKED', 'SESSION_MENTION', 'SESSION_REPLY'],
+    enum: ['PRINT_UPDATE', 'BOOK_REVIEW', 'POINTS_EARNED', 'BADGE_EARNED', 'FUNDING_RECEIVED', 'NEW_CHAPTER', 'BOOK_LIKED', 'COMMENT_RECEIVED', 'FOLLOW_REQUEST', 'FOLLOW_REQUEST_ACCEPTED', 'NEW_FOLLOWER', 'QUOTE_LIKED', 'SESSION_MENTION', 'SESSION_REPLY'],
     required: true 
   },
   title: { type: String, required: true },
@@ -13,6 +13,9 @@ const NotificationSchema = new mongoose.Schema({
   icon: { type: String, default: '🏅' },
   isRead: { type: Boolean, default: false },
   meta: { type: mongoose.Schema.Types.Mixed, default: {} },
+  dedupKey: String,
 }, { timestamps: true });
+
+NotificationSchema.index({ dedupKey: 1 }, { unique: true, partialFilterExpression: { dedupKey: { $type: 'string' } } });
 
 export default mongoose.model('Notification', NotificationSchema);

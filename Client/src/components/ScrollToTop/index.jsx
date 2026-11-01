@@ -1,33 +1,63 @@
-// src/components/ScrollToTop/index.jsx
-//
-// Uygulama genelinde çalışan tek bir "scroll to top" bileşeni.
-// react-router'ın URL'sini (pathname) izler; her route değişiminde
-// sayfayı en üste kaydırır. Bunu tek tek her sayfaya (FeedPage,
-// SessionDetail, vb.) useEffect eklemek yerine, App.js'te SADECE BİR
-// KEZ <ScrollToTop /> olarak kullanmanız yeterli — Router'ın hemen
-// içine, Routes ile aynı seviyeye koyun (render ettiği bir şey yok,
-// null döner).
-//
-// Kullanım (App.js içinde):
-//
-//   <BrowserRouter>
-//     <ScrollToTop />
-//     <Routes>
-//       ...
-//     </Routes>
-//   </BrowserRouter>
+import { useLayoutEffect, useRef } from 'react';
+import { useLocation, useNavigationType } from 'react-router-dom';
 
-import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+const catalogPaths = new Set(['/feed', '/printed-books']);
 
-const ScrollToTop = () => {
-  const { pathname } = useLocation();
+export default function ScrollToTop() {
+  const location = useLocation();
+  const navigationType = useNavigationType();
+  const positions = useRef(new Map());
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+  useLayoutEffect(() => {
+    const previous = window.history.scrollRestoration;
+    window.history.scrollRestoration = 'manual';
+    return () => { window.history.scrollRestoration = previous; };
+  }, []);
+
+  useLayoutEffect(() => {
+    const saved = positions.current.get(location.key);
+    const target = navigationType === 'POP' && catalogPaths.has(location.pathname) ? saved : null;
+    let restoring = Boolean(target);
+    let observer;
+    let timeout;
+    const stopRestoring = () => {
+      restoring = false;
+      observer?.disconnect();
+      clearTimeout(timeout);
+    };
+    const remember = () => {
+      if (restoring || !catalogPaths.has(location.pathname)) return;
+      positions.current.set(location.key, { x: window.scrollX, y: window.scrollY });
+      if (positions.current.size > 100) positions.current.delete(positions.current.keys().next().value);
+    };
+    const restore = () => {
+      if (!restoring) return;
+      window.scrollTo({ left: target.x, top: target.y, behavior: 'instant' });
+      if (document.documentElement.scrollHeight - window.innerHeight >= target.y) stopRestoring();
+    };
+    if (target) {
+      // Wait for lazy routes and query results to make the list tall enough.
+      observer = new ResizeObserver(restore);
+      observer.observe(document.body);
+      timeout = setTimeout(stopRestoring, 10000);
+      restore();
+    } else {
+      window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
+      remember();
+    }
+    window.addEventListener('scroll', remember, { passive: true });
+    // User input takes precedence over pending restoration.
+    window.addEventListener('wheel', stopRestoring, { passive: true });
+    window.addEventListener('touchstart', stopRestoring, { passive: true });
+    window.addEventListener('keydown', stopRestoring);
+    return () => {
+      stopRestoring();
+      window.removeEventListener('scroll', remember);
+      window.removeEventListener('wheel', stopRestoring);
+      window.removeEventListener('touchstart', stopRestoring);
+      window.removeEventListener('keydown', stopRestoring);
+    };
+  }, [location.key, location.pathname, navigationType]);
 
   return null;
-};
-
-export default ScrollToTop;
+}

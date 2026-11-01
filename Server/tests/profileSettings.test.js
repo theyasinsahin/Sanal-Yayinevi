@@ -105,7 +105,7 @@ test.each(['bookLike', 'bookComment', 'quoteLike'])('%s suppresses real event no
 });
 
 test('session mentions and replies respect their separate preferences', async () => {
-  const owner = await createUser('owner', { isPremium: true, notificationSettings: { mentionInSession: false, sessionReply: false } });
+  const owner = await createUser('owner', { sessionCreationAccess: { status: 'APPROVED' }, notificationSettings: { mentionInSession: false, sessionReply: false } });
   const actor = await createUser('actor');
   const session = await sessions.createSession(owner._id, { title: 'Oturum', type: 'OPEN' });
   await sessions.addSessionEntry(actor._id, session._id, '@owner merhaba');
@@ -121,10 +121,10 @@ test('session mentions and replies respect their separate preferences', async ()
 test('author genre settings and discovery onboarding update the same recommendation preferences', async () => {
   const user = await createUser('reader');
   const author = await createUser('writer');
-  const genre = await Genre.create({ name: 'Bilim Kurgu', slug: 'bilim-kurgu', isActive: true });
+  const genre = await Genre.create({ name: 'Bilim Kurgu', slug: 'bilim-kurgu', isActive: true, group: 'FICTION', classificationVersion: 1 });
   await users.updateAuthorSettings(user._id, { preferredGenres: [genre.name], weeklyWordGoal: 100 });
   expect((await recommendations.getUserPreference(user._id)).preferredGenres[0].name).toBe(genre.name);
-  const book = await Book.create({ title: 'Önerilen', authorId: author._id, genreId: genre._id, status: 'WRITING' });
+  const book = await Book.create({ title: 'Önerilen', authorId: author._id, genreIds: [genre._id], status: 'WRITING' });
   expect((await recommendations.getRecommendations(user._id))[0]).toMatchObject({ reason: 'ONBOARDING_GENRE', book: { id: String(book._id) } });
   await recommendations.saveUserPreference(user._id, []);
   expect((await User.findById(user._id)).authorSettings.preferredGenres).toHaveLength(0);
@@ -206,7 +206,7 @@ test('message subscriptions deliver real events and reject non-participants', as
 });
 
 test('session subscriptions use the installed PubSub API and deliver new entries', async () => {
-  const owner = await createUser('owner', { isPremium: true });
+  const owner = await createUser('owner', { sessionCreationAccess: { status: 'APPROVED' } });
   const actor = await createUser('actor');
   const session = await sessions.createSession(owner._id, { title: 'Canlı oturum', type: 'OPEN' });
   const stream = await subscribe({ schema,

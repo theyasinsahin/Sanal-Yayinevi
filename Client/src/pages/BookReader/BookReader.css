@@ -164,6 +164,8 @@
 
 /* Checkbox */
 .chapter-checkbox {
+  padding: 0;
+  background: transparent;
   width: 20px;
   height: 20px;
   min-width: 20px;
@@ -181,6 +183,8 @@
 .chapter-checkbox:hover {
   border-color: var(--ink-black);
 }
+
+.chapter-checkbox:disabled { opacity: .45; cursor: not-allowed; }
 
 .chapter-checkbox.checked {
   background-color: var(--ink-black);
@@ -279,6 +283,7 @@
 }
 
 /* Title Page */
+.chapter-header > .btn { margin-top: 1rem; }
 .title-page-section {
   min-height: 100vh;
   display: flex;

@@ -22,6 +22,7 @@ type ReadingProgress {
   userId: ID!
   bookId: Book!
   completedChapters: [ID!]!
+  lastChapterId: ID
   lastReadAt: String!
   isCompleted: Boolean!
 }
@@ -34,6 +35,7 @@ type UserPreference {
 }
 
 extend type Mutation {
+  saveReadingProgress(bookId: ID!, chapterId: ID!, completedChapterIds: [ID!]!): ReadingProgress!
   markChapterAsRead(bookId: ID!, chapterId: ID!): ReadingProgress!
   saveUserPreference(genreIds: [ID!]!): UserPreference!
 }

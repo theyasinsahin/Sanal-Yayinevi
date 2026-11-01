@@ -1,7 +1,7 @@
+import { profilePath } from '../../utils/publicPaths';
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Person from '@mui/icons-material/Person';
-import MenuBook from '@mui/icons-material/MenuBook';
 import AutoStories from '@mui/icons-material/AutoStories';
 import EditNote from '@mui/icons-material/EditNote';
 import Forum from '@mui/icons-material/Forum';
@@ -29,7 +29,7 @@ function Discover() { return <div className="community-cta"><Link to="/feed">Kit
 
 function AuthorCard({ author }) {
   const [broken, setBroken] = useState(false);
-  return <Link to={`/user/${author.id}`} className="community-card">
+  return <Link to={profilePath(author)} className="community-card">
     {author.profilePicture && !broken ? <img loading="lazy" className="community-avatar" src={author.profilePicture} alt="" onError={() => setBroken(true)} /> : <Person className="community-avatar" aria-hidden="true" />}
     <h2>{author.fullName || author.username}</h2><p>@{author.username}</p>{author.bio && <p className="community-bio">{author.bio}</p>}<strong>{author.bookCount} kitap</strong><p>{author.pageCount} sayfa</p>
   </Link>;
@@ -42,19 +42,12 @@ export function AuthorsPage() {
   const authors = data?.getAuthors;
   return <Page title={authors ? `Topluluğumuzdaki ${authors.total} Yazar` : 'Yazarlar'} description="Hikâyeleriyle Betik’e hayat veren yazarlarla tanışın. Yazarların herkese açık kitapları bu listede sayılır.">
     {loading && <p role="status">Yazarlar yükleniyor…</p>}
-    {error && <div role="alert"><p>{error.message}</p><Button onClick={() => refetch()}>Tekrar dene</Button></div>}
+    {error && <div className="ui-notice ui-notice--error" role="alert"><p>{error.message}</p><Button onClick={() => refetch()}>Tekrar dene</Button></div>}
     {authors && <>{authors.authors.length ? <div className="community-grid">{authors.authors.map(author => <AuthorCard key={author.id} author={author} />)}</div> : <div className="community-empty"><EditNote aria-hidden="true" /><h2>Bu sayfada henüz bir yazar yok</h2><p>Herkese açık kitaplarını paylaşan yazarlar burada yer alacak.</p><Discover /></div>}
     <nav className="community-pagination" aria-label="Yazar sayfaları"><Button disabled={page <= 1} onClick={() => setParams({ page: String(page - 1) })}>Önceki</Button><span>Sayfa {page} / {authors.totalPages}</span><Button disabled={page >= authors.totalPages} onClick={() => setParams({ page: String(page + 1) })}>Sonraki</Button></nav></>}
   </Page>;
 }
-export function PublishedBooksPage() {
-  return <Page title="Basılan Eserler" description="Ekranda başlayan hikâyelerin, bir gün kitaplığınızda yer bulmasını istiyoruz."><PrintedBooks books={[]} /></Page>;
-}
-// Only feed this component records independently verified as physically printed.
-export function PrintedBooks({ books }) {
-  if (books.length) return <div className="community-grid">{books.map(book => <Link className="community-card" key={book.id} to={`/book-detail/${book.id}`}><h2>{book.title}</h2><p>Fiziksel basımı tamamlandı</p></Link>)}</div>;
-  return <div className="community-empty"><MenuBook aria-hidden="true" /><h2>İlk basılı hikâyemize doğru</h2><p>Betik’te henüz fiziksel basımı tamamlanmış bir eser bulunmuyor. Dijital olarak yayımlanan kitaplar bu listeden ayrı tutulur.</p><p>Hedefimiz, yazarların okurlarıyla kurduğu bağı büyütmek ve okur desteğiyle eserlerin basılı kitaba dönüşmesine alan açmak. Siz de bugün bir hikâyeyi keşfederek bu yolculuğa katılabilirsiniz.</p><Discover /></div>;
-}
+export { default as PublishedBooksPage } from '../PrintedBooks';
 export function AboutPage() {
   return <Page title="Her hikâye bir okurla büyür" description="Betik, yazma cesaretini okuma merakıyla buluşturan sosyal bir yazarlık ve yayıncılık platformudur.">
     <div className="community-grid">{[
@@ -84,13 +77,13 @@ export function ContactPage() {
     <label>Konu<input name="subject" required minLength={3} maxLength={150} /></label>
     <label>Mesaj<textarea name="message" required minLength={10} maxLength={5000} /></label>
     <div hidden><label>Web sitesi<input name="website" autoComplete="off" tabIndex={-1} /></label></div>
-    <p>Adınız, e-posta adresiniz ve mesajınız talebinizi yanıtlamak için e-posta hizmeti aracılığıyla iletilir. Lütfen mesajınıza hassas kişisel bilgi eklemeyin. <Link to="/privacy">Gizlilik taslağını okuyun.</Link></p>
-    <Button type="submit" isLoading={busy}>Mesajı gönder</Button>{result && <p role={result.error ? 'alert' : 'status'}>{result.message}</p>}
-  </form><aside><h2>Bize ulaşın</h2>{config?.email ? <p><a href={`mailto:${config.email}`}>{config.email}</a></p> : <p>İletişim e-posta adresi henüz yayımlanmadı.</p>}{config?.phone ? <p><a href={`tel:${config.phone.replace(/[^+\d]/g, '')}`}>{config.phone}</a></p> : <p>Telefon bilgisi henüz yayımlanmadı.</p>}<p>Doğrulanmış sosyal medya hesaplarımıza sayfanın altından ulaşabilirsiniz.</p></aside></div></Page>;
+    <p>Adınız, e-posta adresiniz ve mesajınız talebinizi yanıtlamak için e-posta hizmeti aracılığıyla iletilir. Lütfen mesajınıza hassas kişisel bilgi eklemeyin. <Link to="/privacy" className="ui-text-link">Gizlilik taslağını okuyun.</Link></p>
+    <Button type="submit" isLoading={busy}>Mesajı gönder</Button>{result && <p className={`ui-notice ui-notice--${result.error ? 'error' : 'success'}`} role={result.error ? 'alert' : 'status'}>{result.message}</p>}
+  </form><aside><h2>Bize ulaşın</h2>{config?.email ? <p><a className="ui-text-link" href={`mailto:${config.email}`}>{config.email}</a></p> : <p>İletişim e-posta adresi henüz yayımlanmadı.</p>}{config?.phone ? <p><a className="ui-text-link" href={`tel:${config.phone.replace(/[^+\d]/g, '')}`}>{config.phone}</a></p> : <p>Telefon bilgisi henüz yayımlanmadı.</p>}<p>Doğrulanmış sosyal medya hesaplarımıza sayfanın altından ulaşabilirsiniz.</p></aside></div></Page>;
 }
 export function LegalPage({ kind }) {
   const document = legalDocuments[kind];
-  return <Page document title={document.title} description="Hukuki incelemeye sunulacak başlangıç taslağı · 23 Ekim 2026"><p className="community-draft">Bu metin taslaktır. Veri sorumlusu, başvuru kanalları ve işleyişe ilişkin eksik bilgiler tamamlanıp hukuki inceleme yapılmadan nihai politika olarak değerlendirilmemelidir.</p><nav aria-label="İçindekiler">{document.sections.map(([title], index) => <a key={title} href={`#section-${index}`}>{title}</a>)}</nav>{document.sections.map(([title, body], index) => <section id={`section-${index}`} key={title}><h2>{title}</h2><p>{body}</p></section>)}<Link to="/contact">İletişime geçin</Link></Page>;
+  return <Page document title={document.title} description="Hukuki incelemeye sunulacak başlangıç taslağı · 23 Ekim 2026"><p className="ui-notice ui-notice--warning">Bu metin taslaktır. Veri sorumlusu, başvuru kanalları ve işleyişe ilişkin eksik bilgiler tamamlanıp hukuki inceleme yapılmadan nihai politika olarak değerlendirilmemelidir.</p><nav aria-label="İçindekiler">{document.sections.map(([title], index) => <a className="ui-text-link" key={title} href={`#section-${index}`}>{title}</a>)}</nav>{document.sections.map(([title, body], index) => <section id={`section-${index}`} key={title}><h2>{title}</h2><p>{body}</p></section>)}<Link to="/contact" className="ui-text-link">İletişime geçin</Link></Page>;
 }
 export function NewsletterPage() {
   const [manageNewsletter] = useMutation(MANAGE_NEWSLETTER);
@@ -98,5 +91,5 @@ export function NewsletterPage() {
   const action = params.get('action'); const token = params.get('token');
   const valid = ['confirm', 'unsubscribe'].includes(action) && /^[a-f0-9]{64}$/.test(token || '');
   async function manage() { setBusy(true); try { const response = await manageNewsletter({ variables: { token, action } }); setResult(response.data.manageNewsletter.message); } catch (error) { setResult(error.message); } finally { setBusy(false); } }
-  return <Page title="Bülten aboneliğiniz" description="Abonelik tercihinizi yönetin."><div className="community-empty">{valid ? <><p>{action === 'confirm' ? 'Betik bültenini almak için e-posta adresinizi doğrulayın.' : 'Betik bülten aboneliğinizi iptal edebilirsiniz.'}</p><Button isLoading={busy} onClick={manage}>{action === 'confirm' ? 'Aboneliğimi doğrula' : 'Abonelikten çık'}</Button></> : <p>Geçersiz bağlantı. Size gönderilen e-postadaki bağlantıyı kullanın.</p>}{result && <p role="status">{result}</p>}</div></Page>;
+  return <Page title="Bülten aboneliğiniz" description="Abonelik tercihinizi yönetin."><div className="community-empty">{valid ? <><p>{action === 'confirm' ? 'Betik bültenini almak için e-posta adresinizi doğrulayın.' : 'Betik bülten aboneliğinizi iptal edebilirsiniz.'}</p><Button isLoading={busy} onClick={manage}>{action === 'confirm' ? 'Aboneliğimi doğrula' : 'Abonelikten çık'}</Button></> : <p>Geçersiz bağlantı. Size gönderilen e-postadaki bağlantıyı kullanın.</p>}{result && <p className="ui-notice" role="status">{result}</p>}</div></Page>;
 }

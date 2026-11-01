@@ -4,6 +4,7 @@ import { canReceiveMessage } from '../utils/profileAccess.js';
 import Message from '../models/message.js';
 import Conversation from '../models/conversation.js';
 import { pubsub } from '../config/pubsub.js';
+import { getPublicQuote } from './socialShareService.js';
 
 const NEW_MESSAGE = 'NEW_MESSAGE';
 
@@ -88,6 +89,8 @@ export const sendMessage = async (senderId, { conversationId, content, type = 'T
   for (const recipientId of conversation.participants) {
     if (String(recipientId) !== String(senderId)) await assertMessagePermission(recipientId, senderId);
   }
+  if (attachedQuoteId) await getPublicQuote(attachedQuoteId);
+  if (type === 'QUOTE' && !attachedQuoteId) throw new Error('Paylaşılacak herkese açık alıntıyı seçin.');
   const message = new Message({
     conversationId,
     senderId,

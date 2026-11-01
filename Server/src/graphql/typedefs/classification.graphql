@@ -1,0 +1,46 @@
+type ClassificationTerm {
+  id: ID!
+  kind: String!
+  slug: String!
+  name: String!
+  description: String!
+  isActive: Boolean!
+}
+type ClassificationOptions {
+  formats: [ClassificationTerm!]!
+  genres: [Genre!]!
+  narrativeFeatures: [ClassificationTerm!]!
+  targetAudiences: [ClassificationTerm!]!
+  contentWarnings: [ClassificationTerm!]!
+}
+input ClassificationInput {
+  formatId: ID!
+  genreIds: [ID!]!
+  tags: [String!]
+  narrativeFeatureIds: [ID!]
+  targetAudienceId: ID
+  contentWarningIds: [ID!]
+}
+input ClassificationFilter {
+  formats: [String!]
+  genres: [String!]
+  tags: [String!]
+  features: [String!]
+  audiences: [String!]
+}
+extend type Query {
+  getClassificationOptions: ClassificationOptions!
+  searchClassificationTags(search: String): [ClassificationTerm!]!
+}
+extend type Book {
+  format: ClassificationTerm
+  genres: [Genre!]!
+  classificationTags: [ClassificationTerm!]!
+  narrativeFeatures: [ClassificationTerm!]!
+  targetAudience: ClassificationTerm
+  contentWarnings: [ClassificationTerm!]!
+  classificationStatus: String!
+}
+extend type Mutation {
+  updateBookClassification(bookId: ID!, classification: ClassificationInput!): Book!
+}
