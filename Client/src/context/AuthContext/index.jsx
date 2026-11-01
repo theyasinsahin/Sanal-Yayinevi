@@ -52,7 +52,10 @@ export const AuthProvider = ({ children }) => {
           invalidateSession(session.token);
           return;
         }
-        updateUser(session);
+        // Privileged navigation uses the current server role, never a stored role.
+        const next = { ...session, role: data.me.role || 'USER' };
+        localStorage.setItem('user', JSON.stringify({ ...next, token: undefined }));
+        updateUser(next);
       } catch (error) {
         if (isAuthenticationError(error)) invalidateSession(session.token);
         // A temporary network/server error does not invalidate an existing login.

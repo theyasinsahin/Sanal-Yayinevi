@@ -21,7 +21,7 @@ const book = (id, title) => ({
   __typename: 'Book', format: null, genres: [], classificationTags: [], narrativeFeatures: [], targetAudience: null, contentWarnings: [], classificationStatus: 'NEEDS_REVIEW', id, publicPath: `/kitap/${id}`, title, description: '', imageUrl: '', pageCount: 10,
   status: 'WRITING', kind: 'DIGITAL', publishDate: null, printedAuthor: null, publisher: null,
   publicationYear: null, isbn: null, author: null, classification: null,
-  stats: { __typename: 'BookStats', likes: 0, views: 0 }, commentCount: 0, currentFunding: 0, fundingTarget: 0, backerCount: 0,
+  stats: { __typename: 'BookStats', likes: 0, views: 0 }, commentCount: 0, currentFunding: 0, fundingTarget: 0, backerCount: 0, fundingSummary: null,
 });
 const quotedBook = book('quoted', 'Kıyıda Bir Sabah');
 const otherBook = book('other', 'Başka Bir Kitap');

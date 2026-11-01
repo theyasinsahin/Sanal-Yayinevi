@@ -24,6 +24,7 @@ import { Button } from '../../UI/Button';
 import NotificationBell from '../../Notification/NotificationBell';
 
 import './MobileMenu.css';
+import { canAccessPublisherPortal } from '../../../utils/publisher';
 
 const MobileMenu = ({ isOpen, onClose }) => {
   const { user, logout } = useAuth();
@@ -87,6 +88,11 @@ const MobileMenu = ({ isOpen, onClose }) => {
                 <Person className="mobile-icon" />
                 <Typography variant="body" weight="medium">Profilim</Typography>
               </Link>
+
+              {canAccessPublisherPortal(user) && <Link to="/publisher" className="mobile-nav-item" onClick={onClose}>
+                <MenuBook className="mobile-icon" />
+                <Typography variant="body" weight="medium">Yayınevi Portalı</Typography>
+              </Link>}
 
               <Link to="/create-book" className="mobile-nav-item" onClick={onClose}>
                 <Create className="mobile-icon" />

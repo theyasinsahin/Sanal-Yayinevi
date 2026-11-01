@@ -1,6 +1,7 @@
-enum BookSort { NEWEST OLDEST UPDATED POPULAR }
+enum BookSort { NEWEST OLDEST UPDATED POPULAR CLOSEST_TO_TARGET }
+enum BookFundingFilter { ALL ACTIVE FUNDED }
 type BookFeedPage { books: [Book!]!, endCursor: String, hasNextPage: Boolean! }
 extend type Query {
-  getBookFeed(limit: Int, after: String, sort: BookSort, classification: ClassificationFilter, search: String): BookFeedPage!
+  getBookFeed(limit: Int, after: String, sort: BookSort, classification: ClassificationFilter, search: String, funding: BookFundingFilter): BookFeedPage!
   getReadingChapter(bookId: ID!, chapterId: ID!): Chapter
 }

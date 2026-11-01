@@ -17,7 +17,7 @@ const book = (id, title, likes, views = 0, author = null) => ({
   __typename: 'Book', format: null, genres: [], classificationTags: [], narrativeFeatures: [], targetAudience: null, contentWarnings: [], classificationStatus: 'NEEDS_REVIEW', id, publicPath: `/kitap/${id}`, title, description: '', imageUrl: '', pageCount: 10,
   status: 'WRITING', kind: 'DIGITAL', publishDate: null, printedAuthor: null, publisher: null,
   publicationYear: null, isbn: null, author, classification: null,
-  stats: { __typename: 'BookStats', likes, views }, commentCount: 0, currentFunding: 0, fundingTarget: 0, backerCount: 0,
+  stats: { __typename: 'BookStats', likes, views }, commentCount: 0, currentFunding: 0, fundingTarget: 0, backerCount: 0, fundingSummary: null,
 });
 const books = [
   book('popular', 'En Sevilen Roman', 12, 100),

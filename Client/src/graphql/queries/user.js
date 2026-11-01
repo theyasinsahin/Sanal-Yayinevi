@@ -1,5 +1,6 @@
 import { WORK_CLASSIFICATION_FIELDS } from '../classification';
 import { gql } from '@apollo/client';
+import { BOOK_FUNDING_FIELDS } from './book';
 
 export const GET_BOOK_VIEWER = gql`
   query GetBookViewer($id: ID!) {
@@ -9,6 +10,7 @@ export const GET_BOOK_VIEWER = gql`
 
 export const GET_USER_BY_ID = gql`
   ${WORK_CLASSIFICATION_FIELDS}
+  ${BOOK_FUNDING_FIELDS}
     query GetUserById($id:ID!){
         getUserById(id: $id){
           followStatus
@@ -26,6 +28,7 @@ export const GET_USER_BY_ID = gql`
           fullName,
           email,
           savedBooks {
+            ...BookFundingFields
             publicPath
             kind printedAuthor publisher publicationYear isbn
             status
@@ -49,6 +52,7 @@ export const GET_USER_BY_ID = gql`
           },
           role,
           usersBooks {
+            ...BookFundingFields
             publicPath
             kind printedAuthor publisher publicationYear isbn
             status
@@ -93,6 +97,7 @@ export const ME_QUERY = gql`
     me {
       id
       email
+      role
     }
   }
 `;

@@ -24,6 +24,7 @@ import ReasonBadge from '../../Recommendation/ReasonBadge';
 import PrintedBookCard from '../PrintedBookCard';
 
 import './BookCard.css';
+import BookFundingProgress from './BookFundingProgress';
 
 // Share dialogs are downloaded only after the visitor opens them.
 const ShareModal = lazy(() => import('../../Messaging/ShareModal'));
@@ -162,6 +163,8 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
               </Typography>
             </div>
           )}
+
+          <BookFundingProgress funding={book.fundingSummary} />
 
           <div className="card-stats">
             <div className="stat-item" title="Görüntülenme">

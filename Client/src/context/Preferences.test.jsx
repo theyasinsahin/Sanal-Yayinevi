@@ -31,7 +31,7 @@ test('catalog filter updates keep previous search and classification selections'
   const { result } = renderHook(useFilters, { wrapper: FiltersProvider });
   act(() => { result.current.updateFilters('search', 'forest'); result.current.updateFilters('classification', { genres: ['gizem'] }); });
   act(() => result.current.updateFilters('sortBy', 'popular'));
-  expect(result.current.filters).toEqual({ search: 'forest', classification: { genres: ['gizem'] }, sortBy: 'popular' });
+  expect(result.current.filters).toEqual({ search: 'forest', classification: { genres: ['gizem'] }, sortBy: 'popular', funding: 'ALL' });
 });
 test('notifications coexist and each disappears on its own timer', () => {
   jest.useFakeTimers();

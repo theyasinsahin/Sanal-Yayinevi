@@ -2,13 +2,16 @@ import { WORK_CLASSIFICATION_FIELDS } from '../graphql/classification';
 // src/hooks/useRecommendations.js
 import { useQuery, useMutation, gql } from '@apollo/client';
 import { useAuth } from '../context/AuthContext';
+import { BOOK_FUNDING_FIELDS } from '../graphql/queries/book';
 
 const RECOMMENDATION_FIELDS = gql`
   ${WORK_CLASSIFICATION_FIELDS}
+  ${BOOK_FUNDING_FIELDS}
   fragment RecommendationFields on RecommendationResult {
     score
     reason
     book {
+      ...BookFundingFields
       publicPath
       id
       title

@@ -7,6 +7,7 @@ import Book from '../models/book.js';
 import Chapter from '../models/chapter.js';
 import Quote from '../models/quote.js';
 import { inactiveUserIds } from '../utils/activeUsers.js';
+import { latestBookCampaigns } from '../services/bookFundingService.js';
 
 export function createLoaders() {
   let inactive;
@@ -20,6 +21,7 @@ export function createLoaders() {
     return ids.map(id => map.get(recordId(id)) || null);
   }, { cacheKeyFn: recordId, maxBatchSize: 100 });
   return {
+    bookCampaigns: new DataLoader(latestBookCampaigns, { cacheKeyFn: recordId, maxBatchSize: 100 }),
     users: byId(User), books: byId(Book), chapters: byId(Chapter), quotes: byId(Quote), genres: byId(Genre), classificationTerms: byId(ClassificationTerm), inactiveIds,
     commentCounts: new DataLoader(async ids => {
       const counts = await Comment.aggregate([

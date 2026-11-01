@@ -8,7 +8,7 @@ import { useBookFeed } from './useBookFeed';
 const card = id => ({ __typename: 'Book', format: null, genres: [], classificationTags: [], narrativeFeatures: [], targetAudience: null, contentWarnings: [], classificationStatus: 'NEEDS_REVIEW', id, publicPath: `/kitap/${id}`, title: id, description: '', imageUrl: '', pageCount: 0,
   publishDate: null, status: 'WRITING', kind: 'DIGITAL', printedAuthor: null, publisher: null,
   publicationYear: null, isbn: null, author: null, classification: null, stats: { __typename: 'BookStats', views: 0, likes: 0 },
-  commentCount: 0, currentFunding: 0, fundingTarget: 0, backerCount: 0 });
+  commentCount: 0, currentFunding: 0, fundingTarget: 0, backerCount: 0, fundingSummary: null });
 const filters = { classification: null, sortBy: 'newest', search: '' };
 const variables = { limit: 24, sort: 'NEWEST', classification: null, search: null };
 const result = (ids, endCursor, hasNextPage) => ({ data: { getBookFeed: { __typename: 'BookFeedPage', books: ids.map(card), endCursor, hasNextPage } } });
@@ -86,4 +86,27 @@ test('returning to discovery retains books loaded with load more and the paginat
   expect(returned.result.current.books.map(book => book.id)).toEqual(['first', 'second']);
   expect(returned.result.current.loading).toBe(false);
   expect(returned.result.current.hasNextPage).toBe(true);
+});
+
+test('funding filters and closest sort are sent with the same search and pagination cursor', async () => {
+  const selected = { ...filters, sortBy: 'closestToTarget', search: 'İpek', classification: { genres: ['roman'] } };
+  const requested = { ...variables, sort: 'CLOSEST_TO_TARGET', funding: 'ACTIVE', search: 'İpek', classification: { genres: ['roman'] } };
+  const hook = renderHook(() => useBookFeed(selected), { wrapper: wrapper([
+    { request: { query: GET_BOOK_FEED, variables: requested }, result: result(['near'], 'near-cursor', true) },
+    { request: { query: GET_BOOK_FEED, variables: { ...requested, after: 'near-cursor' } }, result: result(['far'], null, false) },
+  ]) });
+  await waitFor(() => expect(hook.result.current.books[0]?.id).toBe('near'));
+  await act(async () => { await hook.result.current.loadMore(); });
+  await waitFor(() => expect(hook.result.current.books.map(book => book.id)).toEqual(['near', 'far']));
+});
+
+test('changing from active campaigns to funded books starts a separate result set', async () => {
+  const hook = renderHook(({ funding }) => useBookFeed({ ...filters, funding }), { initialProps: { funding: 'ACTIVE' }, wrapper: wrapper([
+    { request: { query: GET_BOOK_FEED, variables: { ...variables, funding: 'ACTIVE' } }, result: result(['active'], 'cursor', true) },
+    { request: { query: GET_BOOK_FEED, variables: { ...variables, funding: 'FUNDED' } }, result: result(['funded'], null, false) },
+  ]) });
+  await waitFor(() => expect(hook.result.current.books[0]?.id).toBe('active'));
+  hook.rerender({ funding: 'FUNDED' });
+  await waitFor(() => expect(hook.result.current.books.map(book => book.id)).toEqual(['funded']));
+  expect(hook.result.current.hasNextPage).toBe(false);
 });

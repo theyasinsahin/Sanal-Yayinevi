@@ -14,4 +14,10 @@ test('format and topic filters use separate stable codes from the API', async ()
   expect(updateFilters).toHaveBeenCalledWith('classification', { formats: ['roman'] });
   fireEvent.change(screen.getAllByRole('combobox')[1], { target: { value: 'fantastik' } });
   expect(updateFilters).toHaveBeenCalledWith('classification', { genres: ['fantastik'] });
+  fireEvent.click(screen.getByRole('radio', { name: 'Desteği açık kitaplar' }));
+  expect(updateFilters).toHaveBeenCalledWith('funding', 'ACTIVE');
+  fireEvent.click(screen.getByRole('radio', { name: 'Hedefini tamamlayan kitaplar' }));
+  expect(updateFilters).toHaveBeenCalledWith('funding', 'FUNDED');
+  fireEvent.click(screen.getByRole('radio', { name: 'Hedefe en yakın' }));
+  expect(updateFilters).toHaveBeenCalledWith('sortBy', 'closestToTarget');
 });

@@ -2,8 +2,17 @@ import { WORK_CLASSIFICATION_FIELDS } from '../classification';
 import { gql } from '@apollo/client';
 import { PRINTED_BOOK_FIELDS } from '../printedBooks';
 
+export const BOOK_FUNDING_FIELDS = gql`
+  fragment BookFundingFields on Book {
+    fundingSummary {
+      id state environment targetMinor acceptedMinor remainingMinor progressPercent isOpen goalReached endsAt
+    }
+  }
+`;
+
 export const BOOK_CARD_FIELDS = gql`
   ${WORK_CLASSIFICATION_FIELDS}
+  ${BOOK_FUNDING_FIELDS}
   fragment BookCardFields on Book {
     id publicPath title description imageUrl pageCount publishDate status
     kind printedAuthor publisher publicationYear isbn
@@ -11,13 +20,14 @@ export const BOOK_CARD_FIELDS = gql`
     ...WorkClassificationFields
     stats { views likes }
     commentCount currentFunding fundingTarget backerCount
+    ...BookFundingFields
   }
 `;
 
 export const GET_BOOK_FEED = gql`
   ${BOOK_CARD_FIELDS}
-  query GetBookFeed($limit: Int, $after: String, $sort: BookSort, $classification: ClassificationFilter, $search: String) {
-    getBookFeed(limit: $limit, after: $after, sort: $sort, classification: $classification, search: $search) {
+  query GetBookFeed($limit: Int, $after: String, $sort: BookSort, $classification: ClassificationFilter, $search: String, $funding: BookFundingFilter) {
+    getBookFeed(limit: $limit, after: $after, sort: $sort, classification: $classification, search: $search, funding: $funding) {
       books { ...BookCardFields }
       endCursor hasNextPage
     }
@@ -43,8 +53,10 @@ export const GET_BOOK_DETAIL = gql`
 
 export const GET_BOOKS = gql`
   ${WORK_CLASSIFICATION_FIELDS}
+  ${BOOK_FUNDING_FIELDS}
   query GetAllBooks{
     getAllBooks{
+      ...BookFundingFields
       publicPath
         id,
         title,

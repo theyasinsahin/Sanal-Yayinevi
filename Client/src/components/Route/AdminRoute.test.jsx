@@ -19,7 +19,7 @@ test('admin content remains hidden while the session is being checked', () => {
   expect(screen.queryByText('Herkese açık ana sayfa')).not.toBeInTheDocument();
 });
 
-test.each([null, { id: 'reader', role: 'USER' }])('guests and ordinary users cannot enter the admin route: %j', async user => {
+test.each([null, { id: 'reader', role: 'USER' }, { id: 'publisher', role: 'PUBLISHER' }])('guests and non-admin users cannot enter the admin route: %j', async user => {
   useAuth.mockReturnValue({ user, loading: false }); render(tree());
   expect(await screen.findByText('Herkese açık ana sayfa')).toBeInTheDocument();
   expect(screen.queryByText('Yönetici içeriği')).not.toBeInTheDocument();
