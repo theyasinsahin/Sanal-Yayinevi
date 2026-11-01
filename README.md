@@ -46,7 +46,7 @@ Yazarlar eserlerini dijital olarak yayımlayabilir; tamamlanan eserler için ayr
 
 Mevcut ana koleksiyonlar korunur:
 
-1.  **Users:** Kullanıcı rolleri (`ADMIN`, `USER`), kayıtlı kitaplar, takipçiler.
+1.  **Users:** Kullanıcı rolleri (`ADMIN`, `PUBLISHER`, `USER`), kayıtlı kitaplar, takipçiler. Yayınevi sahipleri için [portal ve yetki açıklamaları](docs/publisher-portal.md).
 2.  **Books:** `digitalStatus` ve `writingStatus` ayrıdır. Eski `status`, `printConfig`, `fundingTarget` ve `currentFunding` alanları geçmiş/uyumluluk için korunur; yeni finansın kaynağı değildir.
 3.  **Transactions:** Geçmiş TL cinsinden ödeme kayıtları; yeni sandbox muhasebesine otomatik aktarılmaz.
 4.  **Chapters & Comments:** Kitap içeriği ve etkileşimler.
@@ -84,5 +84,7 @@ npm.cmd --prefix Client start
 ```
 
 Testler: [test kılavuzu](docs/testing.md). Basım sisteminin doğrulama sonuçları ve canlı kullanım eksikleri: [sonuç raporu](docs/print-funding-report.md).
+
+Kitap kartlarında destek tutarları ve Keşfet'teki hedefe yakın/tamamlanmış kampanya listeleri: [kullanım ve teknik açıklamalar](docs/book-funding-discovery.md).
 
 Betik © 2026 - Tüm Hakları Saklıdır.

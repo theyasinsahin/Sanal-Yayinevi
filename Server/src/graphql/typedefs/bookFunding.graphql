@@ -1,0 +1,15 @@
+"Kitap kartları için herkese açık kampanya özeti. Tutarlar kuruştur."
+type BookFundingSummary {
+  id: ID!
+  state: String!
+  environment: String!
+  targetMinor: MinorAmount!
+  acceptedMinor: MinorAmount!
+  remainingMinor: MinorAmount!
+  progressPercent: Float!
+  isOpen: Boolean!
+  goalReached: Boolean!
+  endsAt: DateTime!
+}
+
+extend type Book { fundingSummary: BookFundingSummary }

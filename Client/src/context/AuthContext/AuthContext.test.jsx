@@ -16,6 +16,7 @@ function store(value = token(), id = 'reader') {
 function Probe() {
   const { user, loading, login, ensureSession } = useAuth();
   return <><span>{loading ? 'checking' : user?.id || 'guest'}</span>
+    <span data-testid="current-role">{user?.role || ''}</span>
     {user && <button>Kitap oluştur</button>}
     <button onClick={() => login(token(3600, 'other'), 'other')}>login other</button>
     <button onClick={() => ensureSession()}>check action</button></>;
@@ -90,6 +91,17 @@ test('temporary network errors preserve a previously verified login', async () =
   fireEvent.focus(window); await flush();
   expect(screen.getByText('reader')).toBeInTheDocument();
   expect(localStorage.getItem('token')).toBe(value);
+});
+
+test('stored privilege claims are replaced by the role confirmed by the server', async () => {
+  store(); localStorage.setItem('user', JSON.stringify({ id: 'reader', role: 'ADMIN' }));
+  client.query.mockResolvedValue({ data: { me: { id: 'reader', role: 'PUBLISHER' } } });
+  show(); await flush();
+  expect(screen.getByTestId('current-role')).toHaveTextContent('PUBLISHER');
+  expect(JSON.parse(localStorage.getItem('user')).role).toBe('PUBLISHER');
+  client.query.mockResolvedValue({ data: { me: { id: 'reader', role: 'USER' } } });
+  fireEvent.focus(window); await flush();
+  expect(screen.getByTestId('current-role')).toHaveTextContent('USER');
 });
 
 test('an unavailable server does not cause validation on every local check', async () => {

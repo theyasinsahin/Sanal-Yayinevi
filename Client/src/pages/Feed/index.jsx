@@ -106,6 +106,8 @@ const PreferenceBox = ({ preference, onEdit }) => {
 // --- ANA SAYFA ---
 const FeedPage = () => {
   const { filters } = useFilters();
+  const catalogTitle = filters.sortBy === 'closestToTarget' ? 'Hedefe en yakın kitaplar' :
+    filters.funding === 'FUNDED' ? 'Hedefini tamamlayan kitaplar' : filters.funding === 'ACTIVE' ? 'Desteği açık kitaplar' : 'Keşfet';
   const { user } = useAuth();
   const [params, setParams] = useSearchParams();
   const activeTab = params.get('tab') === 'for-you' ? 'for-you' : 'all';
@@ -137,7 +139,7 @@ const FeedPage = () => {
               </aside>
               <main className="feed-main-content">
                 <div className="feed-header">
-                  <Typography variant="h4" weight="bold">Keşfet</Typography>
+                  <Typography variant="h4" weight="bold">{catalogTitle}</Typography>
                   <Typography variant="body" color="muted">Yükleniyor...</Typography>
                 </div>
                 <BookGrid loading={true} skeletonCount={9} />
@@ -236,7 +238,7 @@ const FeedPage = () => {
               {activeTab === 'all' && (
                 <>
                   <div className="feed-header">
-                    <Typography variant="h4" weight="bold">Keşfet</Typography>
+                    <Typography variant="h4" weight="bold">{catalogTitle}</Typography>
                     <Typography variant="body" color="muted">
                       {filteredBooks.length} kitap listeleniyor
                     </Typography>

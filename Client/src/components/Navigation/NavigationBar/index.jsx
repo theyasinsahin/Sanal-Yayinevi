@@ -18,6 +18,7 @@ import { useUnreadMessageCount } from '../../../hooks/useMessages';
 
 import './NavigationBar.css';
 import Logo from '../../Logo';
+import { canAccessPublisherPortal } from '../../../utils/publisher';
 
 
 
@@ -72,6 +73,7 @@ const NavigationBar = () => {
               </Link>
             </div>
             <div className="nav-actions">
+              {canAccessPublisherPortal(user) && <Link to="/publisher" className="nav-item">Yayınevi Portalı</Link>}
               {/* KULLANICI KONTROLÜ */}
               {user ? (
                 <>

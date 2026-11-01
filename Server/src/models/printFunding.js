@@ -33,6 +33,7 @@ const campaign = new Schema({ bookId: ref('Book'), authorId: ref('User'), applic
 campaign.index({ authorId: 1 }, { unique: true, partialFilterExpression: { activeLock: true } });
 campaign.index({ bookId: 1 }, { unique: true, partialFilterExpression: { activeLock: true } });
 campaign.index({ state: 1, endsAt: 1 });
+campaign.index({ bookId: 1, createdAt: -1, _id: -1 });
 export const FundingCampaign = model('FundingCampaign', campaign);
 
 const payment = new Schema({ userId: ref('User'), campaignId: ref('FundingCampaign'), bookId: ref('Book'), idempotencyKey: { type: String, required: true, maxlength: 100 }, requestHash: { type: String, required: true }, provider: { type: String, enum: ['SANDBOX', 'IYZICO_SANDBOX'], default: 'SANDBOX' }, providerId: String, currency: { type: String, enum: ['TRY'], default: 'TRY' }, amountMinor: integer(), donationMinor: integer(), orderMinor: integer(), quantity: integer(), state: { type: String, enum: ['CREATED', 'PENDING', 'FAILED', 'CANCELLED', 'CAPTURED', 'REFUND_PENDING', 'REFUNDED'], default: 'CREATED' }, allocated: { type: Boolean, default: false }, captured: { type: Boolean, default: false }, capturedAt: Date, reconciledAt: Date, issue: { type: String, default: '' } }, options);

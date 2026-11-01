@@ -6,6 +6,7 @@ export const FiltersProvider = ({ children }) => {
   const [filters, setFilters] = useState({
     classification: null,
     sortBy: 'newest',
+    funding: 'ALL',
     
     // 2. ARAMA: Arama çubuğu için gerekli alan
     search: ''
@@ -15,7 +16,9 @@ export const FiltersProvider = ({ children }) => {
   const updateFilters = (type, value) => {
     setFilters(prev => ({
       ...prev,
-      [type]: value
+      [type]: value,
+      ...(type === 'sortBy' && value === 'closestToTarget' ? { funding: 'ACTIVE' } : {}),
+      ...(type === 'funding' && value !== 'ACTIVE' && prev.sortBy === 'closestToTarget' ? { sortBy: 'newest' } : {}),
     }));
   };
 

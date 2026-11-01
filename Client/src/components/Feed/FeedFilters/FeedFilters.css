@@ -107,3 +107,4 @@
 .sort-option input[type="radio"]:checked::before {
   transform: scale(1);
 }
+.funding-sort-hint { color: var(--text-muted); font-size: .8rem; line-height: 1.5; margin-top: 12px; }

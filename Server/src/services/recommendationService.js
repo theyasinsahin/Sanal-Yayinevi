@@ -107,7 +107,7 @@ export const getRecommendations = async (userId, { limit = 10, offset = 0 } = {}
     isDeleted: false,
     authorId: { $ne: userId, $nin: await inactiveUserIds() },                // kullanıcının kendi kitaplarını önerme
   })
-  .select('_id urlSlug title authorId formatId genreIds tagIds narrativeFeatureIds targetAudienceId contentWarningIds classificationStatus imageUrl stats likedBy createdAt status description publishDate');
+  .select('_id urlSlug title authorId formatId genreIds tagIds narrativeFeatureIds targetAudienceId contentWarningIds classificationStatus imageUrl stats likedBy createdAt status digitalStatus isDeleted kind description publishDate');
 
   // 8. Her adaya skor hesapla
   const reasonGenres = [likedBooks, savedBooks, commentedBooks, quotedBooks].map(books => buildGenreWeightMap(books, 1));

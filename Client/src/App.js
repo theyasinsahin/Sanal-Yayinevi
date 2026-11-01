@@ -26,6 +26,7 @@ import InstallPrompt from './components/InstallPrompt';
 import LandingPage from "./pages/Landing";
 
 import AdminRoute from './components/Route/AdminRoute';
+import PublisherRoute from './components/Route/PublisherRoute';
 
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
@@ -52,6 +53,7 @@ const GoogleCallback = lazy(() => import('./pages/Auth/GoogleCallback'));
 const DonationPage = lazy(() => import('./pages/DonationPage'));
 const PrintApplicationPage = lazy(() => import('./pages/PrintApplication'));
 const FundingHistoryPage = lazy(() => import('./pages/FundingHistory'));
+const PublisherPortal = lazy(() => import('./pages/PublisherPortal'));
 const AdminPrintFundingPage = lazy(() => import('./pages/Admin/PrintFunding'));
 const PaymentSuccess = lazy(() => import('./pages/PaymentResult/PaymentSuccess'));
 const PaymentFailure = lazy(() => import('./pages/PaymentResult/PaymentFailure'));
@@ -176,6 +178,7 @@ const router = createBrowserRouter([
       },
       { path: '/print/:bookId', element: <ProtectedRoute><PrintApplicationPage /></ProtectedRoute> },
       { path: '/funding-history', element: <ProtectedRoute><FundingHistoryPage /></ProtectedRoute> },
+      { path: '/publisher', element: <PublisherRoute><PublisherPortal /></PublisherRoute> },
       { path: "/profile",
         element: <ProtectedRoute><UserProfilePage /></ProtectedRoute>
       },

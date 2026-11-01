@@ -49,7 +49,7 @@ const User = new mongoose.Schema({
   bio:            { type: String, default: '' },
   profilePicture: { type: String, default: '' },
   website:        { type: String, default: '' },
-  role:           { type: String, enum: ['USER', 'ADMIN'], default: 'USER' },
+  role:           { type: String, enum: ['USER', 'PUBLISHER', 'ADMIN'], default: 'USER' },
   isVerified:     { type: Boolean, default: false },
   isActive:       { type: Boolean, default: true },
   authVersion:    { type: Number, default: 0 },

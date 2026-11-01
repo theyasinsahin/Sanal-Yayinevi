@@ -43,6 +43,19 @@ test('funding history is absent from both desktop and mobile navigation for sign
   expect(screen.queryAllByRole('link', { name: /Desteklerim/ })).toHaveLength(0);
 });
 
+test.each(['PUBLISHER', 'ADMIN'])('%s sees portal navigation in both desktop and mobile menus', async role => {
+  store(); client.query.mockResolvedValue({ data: { me: { id: 'reader', role } } });
+  show(); await flush();
+  const links = screen.getAllByRole('link', { name: 'Yayınevi Portalı' });
+  expect(links).toHaveLength(2);
+  links.forEach(link => expect(link).toHaveAttribute('href', '/publisher'));
+});
+
+test('members do not see portal navigation', async () => {
+  store(); show(); await flush();
+  expect(screen.queryByRole('link', { name: 'Yayınevi Portalı' })).not.toBeInTheDocument();
+});
+
 test('removing credentials updates both real navigation menus without a page reload', async () => {
   store(); show(); await flush();
   expect(screen.getAllByRole('link', { name: 'Kitap Oluştur' })).toHaveLength(2);

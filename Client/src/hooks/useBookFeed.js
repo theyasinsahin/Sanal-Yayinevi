@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_BOOK_FEED } from '../graphql/queries/book';
 
-const sorts = { newest: 'NEWEST', oldest: 'OLDEST', popular: 'POPULAR', lastUpdated: 'UPDATED' };
+const sorts = { newest: 'NEWEST', oldest: 'OLDEST', popular: 'POPULAR', lastUpdated: 'UPDATED', closestToTarget: 'CLOSEST_TO_TARGET' };
 
 export function useBookFeed(filters, enabled = true, { limit = 24 } = {}) {
   const requestedSearch = (filters.search || '').trim().slice(0, 100);
@@ -14,8 +14,10 @@ export function useBookFeed(filters, enabled = true, { limit = 24 } = {}) {
     const timer = setTimeout(() => setSearch((filters.search || '').trim().slice(0, 100)), 250);
     return () => clearTimeout(timer);
   }, [filters.search]);
+  const funding = filters.sortBy === 'closestToTarget' ? 'ACTIVE' : filters.funding || 'ALL';
   const variables = { limit, sort: sorts[filters.sortBy] || 'NEWEST',
-    classification: filters.classification || null, search: search || null };
+    classification: filters.classification || null, search: search || null,
+    ...(funding !== 'ALL' ? { funding } : {}) };
   const key = JSON.stringify(variables);
   const activeKey = useRef(key);
   activeKey.current = key;
@@ -23,6 +25,7 @@ export function useBookFeed(filters, enabled = true, { limit = 24 } = {}) {
   const { data, loading, error, fetchMore, refetch } = useQuery(GET_BOOK_FEED, {
     variables,
     skip: !enabled,
+    fetchPolicy: funding === 'ALL' ? 'cache-first' : 'network-only',
   });
   const page = data?.getBookFeed;
   const loadMore = async () => {

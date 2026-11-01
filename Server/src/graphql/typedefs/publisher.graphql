@@ -1,0 +1,36 @@
+enum PublisherFundingFilter { ALL HAS_CAMPAIGN ACTIVE SUCCEEDED }
+
+"Yayınevi portalına özel, salt okunur kampanya özeti. Tutarlar kuruştur."
+type PublisherCampaignSummary {
+  id: ID!
+  state: String!
+  environment: String!
+  targetMinor: MinorAmount!
+  acceptedMinor: MinorAmount!
+  supporterCount: Int!
+  endsAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type PublisherBookSummary {
+  id: ID!
+  urlSlug: String
+  title: String!
+  imageUrl: String!
+  authorName: String!
+  writingStatus: String!
+  publishDate: DateTime
+  campaign: PublisherCampaignSummary
+}
+
+type PublisherCatalogPage {
+  items: [PublisherBookSummary!]!
+  total: Int!
+  page: Int!
+  totalPages: Int!
+  refreshedAt: DateTime!
+}
+
+extend type Query {
+  publisherCatalog(page: Int = 1, limit: Int = 20, search: String = "", funding: PublisherFundingFilter = ALL): PublisherCatalogPage!
+}

@@ -7,6 +7,7 @@ import { isPrintedBook } from '../../utils/printedBooks.js';
 import { getLoaders, selectedFields } from '../loaders.js';
 import { updateDigitalStatus } from '../../services/print/applicationService.js';
 import { onBookPublished } from '../../services/scoreAwards.js';
+import { fundingSummary, isPublishedDigitalBook } from '../../services/bookFundingService.js';
 
 export default {
   Query: {
@@ -97,6 +98,14 @@ export default {
 
   // Field Resolvers
   Book: {
+    fundingSummary: async (parent, _, context) => {
+      if (!isPublishedDigitalBook(parent) || !parent.authorId) return null;
+      const loaders = getLoaders(context);
+      if (!await loaders.users.load(parent.authorId)) return null;
+      const campaign = Object.hasOwn(parent, '_fundingCampaign') ? parent._fundingCampaign :
+        await loaders.bookCampaigns.load(parent.id || parent._id);
+      return fundingSummary(campaign);
+    },
     comments: async (parent, args, { Comment }) => {
         // Hata önlemek için try-catch
         try {
