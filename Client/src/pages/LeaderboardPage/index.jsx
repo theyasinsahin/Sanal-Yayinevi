@@ -79,7 +79,7 @@ const LeaderboardPage = () => {
 
           <div className="leaderboard-header">
             <EmojiEvents style={{ fontSize: '2.5rem', color: '#f59e0b' }} />
-            <Typography variant="h3" weight="bold">Lider Tablosu</Typography>
+            <Typography variant="h3" weight="bold">Aktiflik Tablosu</Typography>
             <Typography variant="body" color="muted">En çok puan kazanan okuyucular</Typography>
 
             {/* Period tabs */}

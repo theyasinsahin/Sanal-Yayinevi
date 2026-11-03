@@ -112,6 +112,7 @@ type User {
 # ─── Mutation'lar ─────────────────────────────────────────────────
 
 extend type Mutation {
+  logout: Status!
   # Mevcut mutation'lar (değişmedi)
   googleAuth(token: String!): AuthPayload!
   forgotPassword(email: String!): Status!
@@ -157,7 +158,7 @@ extend type Query {
   getUserById(id: ID!): User
   getUserByUsername(username: String!): User
   getUserByEmail(email: String!): User
-  getAllUsers: [User!]
+  getAllUsers(limit: Int, offset: Int): [User!]
   me: User
   getFollowingByUserId(id: ID!): [User]
   getFollowersByUserId(id: ID!): [User]

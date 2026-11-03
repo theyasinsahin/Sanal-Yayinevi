@@ -34,6 +34,12 @@
 
 /* Konuşma satırı */
 .conv-item {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -50,6 +56,11 @@
 .conv-item:hover {
   background: var(--color-background-secondary);
 }
+.conv-item:focus-visible { outline: 2px solid #1D9E75; outline-offset: -2px; }
+.conv-item:disabled { cursor: wait; opacity: .7; }
+.conv-section-title { padding: .75rem 1rem .25rem; margin: 0; font-size: 13px; }
+.conv-list-feedback { padding: .5rem 1rem; font-size: 13px; }
+.conv-load-more { display: block; margin: .75rem auto; border: 0; background: transparent; color: var(--color-text-info); cursor: pointer; font: inherit; }
 
 .conv-item--active {
   background: var(--color-background-secondary);

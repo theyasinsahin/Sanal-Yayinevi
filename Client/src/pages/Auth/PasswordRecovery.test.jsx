@@ -36,6 +36,13 @@ test('password recovery keeps the form usable when the server fails', async () =
   expect(screen.getByRole('textbox')).toHaveValue('reader@example.test');
   expect(screen.getByRole('button', { name: 'Sıfırlama Bağlantısı Gönder' })).toBeEnabled();
 });
+test('password recovery does not display success for a rejected status payload', async () => {
+  show(<ForgotPassword />, [{ request: { query: FORGOT_PASSWORD_MUTATION, variables: { email: 'reader@example.test' } }, result: { data: { forgotPassword: { code: 400, message: 'Try again', __typename: 'Status' } } } }]);
+  fireEvent.change(screen.getByLabelText(/^E-Posta Adresi/), { target: { value: 'reader@example.test' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Sıfırlama Bağlantısı Gönder' }));
+  expect(await screen.findByRole('alert')).toHaveTextContent('Bağlantı gönderilemedi');
+  expect(screen.queryByRole('status')).not.toBeInTheDocument();
+});
 
 test.each([['weak', 'weak', 'gereken koşulları sağlamıyor'], ['GoodPass1!', 'OtherPass1!', 'eşleşmiyor']])('reset validates passwords before sending a request: %s', (password, confirm, error) => {
   show(<ResetPassword />);
@@ -61,4 +68,10 @@ test('expired reset tokens show the server error and preserve the form for corre
   fillReset('GoodPass1!');
   expect(await screen.findByRole('alert')).toHaveTextContent('Reset token expired');
   expect(screen.getByRole('button', { name: 'Şifremi Güncelle' })).toBeEnabled();
+});
+test('password reset does not display success for a rejected status payload', async () => {
+  show(<ResetPassword />, [{ request: { query: RESET_PASSWORD_MUTATION, variables: { token: 'reset-token', newPassword: 'GoodPass1!' } }, result: { data: { resetPassword: { code: 400, message: 'Geçersiz bağlantı', __typename: 'Status' } } } }]);
+  fillReset('GoodPass1!');
+  expect(await screen.findByRole('alert')).toHaveTextContent('Geçersiz bağlantı');
+  expect(screen.queryByRole('status')).not.toBeInTheDocument();
 });

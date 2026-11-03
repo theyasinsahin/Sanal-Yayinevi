@@ -1,10 +1,11 @@
 import React, { createContext, useState, useContext, useCallback, useEffect, useRef } from 'react';
-import { useApolloClient } from '@apollo/client';
+import { gql, useApolloClient } from '@apollo/client';
 import { ME_QUERY } from '../../graphql/queries/user';
 import { AUTH_SESSION_CHANGED, clearSession, invalidateSession, readSession, tokenExpiresAt } from '../../utils/authSession';
 import { isAuthenticationError } from '../../utils/authLink';
 
 const AuthContext = createContext();
+const LOGOUT = gql`mutation Logout { logout { code message } }`;
 
 export const AuthProvider = ({ children }) => {
   const client = useApolloClient();
@@ -120,9 +121,10 @@ export const AuthProvider = ({ children }) => {
     window.dispatchEvent(new Event(AUTH_SESSION_CHANGED));
   };
 
-  const logout = () => {
-    clearSession();
-    window.location.href = '/login';
+  const logout = async () => {
+    try { await client.mutate?.({ mutation: LOGOUT }); }
+    catch { /* Local sign-out remains available when the server is unreachable. */ }
+    finally { clearSession(); window.location.href = '/login'; }
   };
 
   const ensureSession = () => {

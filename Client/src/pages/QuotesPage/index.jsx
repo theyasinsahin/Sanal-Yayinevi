@@ -20,6 +20,7 @@ const QuotesPage = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const searchDebounceRef = useRef(null);
+  const loadingMore = useRef(false);
 
   const [searchQuotesFn] = useLazyQuery(SEARCH_QUOTES);
 
@@ -64,7 +65,8 @@ const QuotesPage = () => {
   };
 
   const loadMore = useCallback(async () => {
-    if (loading || !hasMore) return;
+    if (loading || !hasMore || loadingMore.current) return;
+    loadingMore.current = true;
 
     try {
       const { data: moreData } = await fetchMore({
@@ -88,10 +90,11 @@ const QuotesPage = () => {
       setHasMore(incoming.length === LIMIT);
     } catch (error) {
       console.error("Daha fazla veri yüklenirken hata oluştu:", error);
-    }
+    } finally { loadingMore.current = false; }
   }, [loading, hasMore, offset, sortBy, fetchMore]);
 
   useEffect(() => {
+    if (loading || offset === 0 || !hasMore) return;
     const observer = new IntersectionObserver(
       (entries) => { 
         if (entries[0].isIntersecting && !searchQuery.trim()) {
@@ -102,7 +105,7 @@ const QuotesPage = () => {
     );
     if (loaderRef.current) observer.observe(loaderRef.current);
     return () => observer.disconnect();
-  }, [loadMore, searchQuery]);
+  }, [loadMore, searchQuery, loading, offset, hasMore]);
 
   const displayedQuotes = searchQuery.trim() ? searchResults : quotes;
 

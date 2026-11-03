@@ -64,8 +64,8 @@ export const GET_SESSION = gql`
 
 export const GET_SESSION_ENTRIES = gql`
   ${ENTRY_FIELDS}
-  query GetSessionEntries($sessionId: ID!, $limit: Int, $offset: Int) {
-    getSessionEntries(sessionId: $sessionId, limit: $limit, offset: $offset) {
+  query GetSessionEntries($sessionId: ID!, $limit: Int, $offset: Int, $accessCode: String) {
+    getSessionEntries(sessionId: $sessionId, limit: $limit, offset: $offset, accessCode: $accessCode) {
       ...EntryFields
     }
   }
@@ -106,8 +106,8 @@ export const DELETE_SESSION_ENTRY = gql`
 
 export const TOGGLE_SESSION_ENTRY_LIKE = gql`
   ${ENTRY_FIELDS}
-  mutation ToggleSessionEntryLike($entryId: ID!) {
-    toggleSessionEntryLike(entryId: $entryId) {
+  mutation ToggleSessionEntryLike($entryId: ID!, $accessCode: String) {
+    toggleSessionEntryLike(entryId: $entryId, accessCode: $accessCode) {
       ...EntryFields
     }
   }
@@ -122,8 +122,8 @@ export const CLOSE_SESSION = gql`
 // --- SUBSCRIPTIONS ---
 export const ON_NEW_SESSION_ENTRY = gql`
   ${ENTRY_FIELDS}
-  subscription OnNewSessionEntry($sessionId: ID!) {
-    onNewSessionEntry(sessionId: $sessionId) {
+  subscription OnNewSessionEntry($sessionId: ID!, $accessCode: String) {
+    onNewSessionEntry(sessionId: $sessionId, accessCode: $accessCode) {
       ...EntryFields
     }
   }

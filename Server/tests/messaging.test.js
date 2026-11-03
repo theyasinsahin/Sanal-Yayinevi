@@ -22,6 +22,38 @@ beforeEach(async () => {
 const run = (source, variableValues = {}, user = sender) => graphql({ schema, source, variableValues, contextValue: { user, User, Book } });
 const send = (content = 'Hello') => service.sendMessage(sender.id, { conversationId: conversation.id, content });
 
+test('recipient search includes eligible follows without conversations and respects privacy and account status', async () => {
+  const people = await User.create([
+    { username: 'closed', privacySettings: { allowMessages: 'none' } },
+    { username: 'followers', privacySettings: { allowMessages: 'followers' }, followers: [sender.id] },
+    { username: 'unapproved', privacySettings: { allowMessages: 'followers' } },
+    { username: 'inactive', isActive: false }, { username: 'deleted', isDeleted: true },
+  ].map(person => ({ fullName: person.username, email: `${person.username}@test.com`, password: 'hash', ...person })));
+  await User.updateOne({ _id: sender.id }, { following: [recipient.id, outsider.id, ...people.map(person => person.id)] });
+  const result = await run('{getMessageRecipients{id username}}');
+  expect(result.errors).toBeUndefined();
+  expect(result.data.getMessageRecipients.map(person => person.username).sort()).toEqual(['followers', 'outsider', 'recipient']);
+  expect(await Conversation.countDocuments()).toBe(1);
+  expect(await Message.countDocuments()).toBe(0);
+  expect((await run('{getMessageRecipients{id}}', {}, null)).errors).toBeDefined();
+  await User.updateOne({ _id: sender.id }, { following: [] });
+  expect(await service.getMessageRecipients(sender.id)).toEqual([]);
+});
+
+test('recipient search matches names literally and paginates all eligible follows', async () => {
+  await User.updateOne({ _id: sender.id }, { following: [recipient.id, outsider.id] });
+  await User.updateOne({ _id: outsider.id }, { fullName: 'Reader .*' });
+  expect((await service.getMessageRecipients(sender.id, { search: '.*' })).map(person => person.id)).toEqual([outsider.id]);
+  expect((await service.getMessageRecipients(sender.id, { search: 'RECIP' })).map(person => person.id)).toEqual([recipient.id]);
+  await User.updateOne({ _id: outsider.id }, { fullName: 'İsmail Işık' });
+  expect((await service.getMessageRecipients(sender.id, { search: 'ismail' })).map(person => person.id)).toEqual([outsider.id]);
+  const first = await service.getMessageRecipients(sender.id, { limit: 1 });
+  const second = await service.getMessageRecipients(sender.id, { limit: 1, offset: 1 });
+  expect(new Set([...first, ...second].map(person => person.id)).size).toBe(2);
+  await expect(service.getMessageRecipients(sender.id, { search: 'x'.repeat(121) })).rejects.toThrow('120');
+  await expect(service.getMessageRecipients(sender.id, { limit: 101 })).rejects.toThrow();
+});
+
 test('a direct conversation is reused in both directions and scoped to its participants', async () => {
   expect((await service.getOrCreateConversation(recipient.id, sender.id)).id).toBe(conversation.id);
   expect(await Conversation.countDocuments()).toBe(1);

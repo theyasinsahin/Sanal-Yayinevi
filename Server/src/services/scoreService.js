@@ -2,6 +2,7 @@ import { pendingFollowRequestCount } from './followService.js';
 import UserScore from '../models/userScore.js';
 import PointEvent from '../models/pointEvent.js';
 import Notification from '../models/notification.js';
+import { resolvePrintNotificationTargets } from './notificationService.js';
 import mongoose from 'mongoose';
 import { inactiveUserIds } from '../utils/activeUsers.js';
 export { awardPoints, initializeScores, onQuoteCreated, onCommentCreated, onRepostCreated, onBookPublished, onChapterAdded, onSessionEntryAdded } from './scoreAwards.js';
@@ -115,9 +116,10 @@ export const getUserScore = async (userId) => {
 };
 
 export const getNotifications = async (userId) => {
-  return await Notification.find({ userId, type: { $ne: 'FOLLOW_REQUEST' } })
+  const notifications = await Notification.find({ userId, type: { $ne: 'FOLLOW_REQUEST' } })
     .sort({ createdAt: -1 })
     .limit(20);
+  return resolvePrintNotificationTargets(notifications);
 };
 
 export const markNotificationsRead = async (userId) => {

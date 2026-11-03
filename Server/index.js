@@ -3,14 +3,16 @@ import './src/config/environment.js';
 import http from 'http';
 import express from 'express';
 import cors from 'cors';
-import bodyParser from 'body-parser';
-import { expressMiddleware } from '@apollo/server/express4';
+import { expressMiddleware } from '@as-integrations/express4';
 import { ApolloServer } from '@apollo/server';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/use/ws';
 import { pubsub } from './src/config/pubsub.js';
-import jwt from 'jsonwebtoken';
+import { configureHttpSecurity, allowedOrigins as getAllowedOrigins, requestShield, httpError, websocketAddress } from './src/security/httpSecurity.js';
+import { graphqlSecurityPlugin, queryBudgetRule } from './src/security/graphqlSecurity.js';
+import { websocketOptions } from './src/security/websocketSecurity.js';
+import SecurityRateBucket from './src/models/securityRateBucket.js';
 
 // Bizim Oluşturduğumuz Modüller
 import connectDB from './src/config/db.js';
@@ -38,9 +40,13 @@ export { pubsub };
 const startServer = async () => {
   try {
     const app = express();
+    if (process.env.NODE_ENV === 'production' && (!process.env.JWT_SECRET || Buffer.byteLength(process.env.JWT_SECRET) < 32 || !process.env.CLIENT_URL)) throw new Error('Üretim oturum/origin yapılandırması eksik.');
+    configureHttpSecurity(app);
+    app.use(requestShield());
     app.use(compressResponses());
 
     await connectDB();
+    await SecurityRateBucket.createIndexes();
     if (printSystemEnabled()) {
       await initializePrintFunding();
       await models.Notification.createIndexes();
@@ -52,18 +58,10 @@ const startServer = async () => {
     // "http://localhost" (port'suz) oluyor — varsayılan https şemasında ise
     // "https://localhost" veya "capacitor://localhost" olabiliyor. Hangi
     // ayarla test edersen et diye üçünü de baştan ekliyoruz.
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost',
-      'capacitor://localhost',
-      'https://localhost',
-    ];
-    if (process.env.CLIENT_URL) {
-      allowedOrigins.push(process.env.CLIENT_URL);
-    }
+    const allowedOrigins = getAllowedOrigins();
 
     app.use(cors({
-      origin: allowedOrigins,
+      origin: (origin, callback) => callback(null, !origin || allowedOrigins.has(origin)),
       credentials: true,
       maxAge: 600,
       exposedHeaders: ['Server-Timing'],
@@ -71,8 +69,8 @@ const startServer = async () => {
 
     // Verify webhook bytes and receive private PDF uploads before JSON parsing.
     app.use('/api/print', printRoutes);
-    app.use(express.json({ limit: '2mb' }));
-    app.use(express.urlencoded({ extended: true }));
+    app.use(express.json({ limit: '2mb', inflate: false }));
+    app.use(express.urlencoded({ extended: false, limit: '16kb', parameterLimit: 20, inflate: false }));
     app.use('/api/payment', paymentRoutes);
     app.use('/share', socialShareRoutes);
 
@@ -102,32 +100,19 @@ const startServer = async () => {
     const wsServer = new WebSocketServer({
       server: httpServer,
       path: '/graphql',
+      maxPayload: 65536,
+      perMessageDeflate: false,
+      verifyClient: info => {
+        info.req.ip = websocketAddress(app, info.req);
+        return (!info.origin || allowedOrigins.has(info.origin)) && [...wsServer.clients].filter(client => client.betikIp === info.req.ip).length < 20;
+      },
     });
+    wsServer.on('connection', (socket, req) => { socket.betikIp = req.ip || req.socket.remoteAddress; });
 
     // 6. graphql-ws'i schema'ya bağla
     // useServer'ın döndürdüğü serverCleanup, Apollo kapanırken WS'i de temiz kapatır
     const serverCleanup = useServer(
-      {
-        schema,
-        context: async (ctx) => {
-          // WebSocket bağlantısında JWT doğrula
-          // HTTP context'inden farklı olarak burada req yok,
-          // token connectionParams üzerinden gelir
-          try {
-            const token = ctx.connectionParams?.authorization?.replace('Bearer ', '');
-            if (token) {
-              const decoded = jwt.verify(token, process.env.JWT_SECRET);
-              const user = await models.User.findOne({ _id: decoded.userId, isDeleted: false, isActive: { $ne: false } });
-              if (!user || (decoded.version ?? 0) !== (user.authVersion ?? 0)) throw new Error('Oturumunuz geçersiz.');
-              return { ...models, user, currentUserId: user?._id ?? null };
-            }
-          } catch {
-            // Geçersiz token — subscription bağlantısını kopar
-            throw new Error('Geçersiz token.');
-          }
-          return { ...models };
-        },
-      },
+      websocketOptions(schema, models),
       wsServer
     );
 
@@ -135,8 +120,15 @@ const startServer = async () => {
     const server = new ApolloServer({
       schema,
       cache: 'bounded',
-      introspection: true,
+      introspection: process.env.NODE_ENV !== 'production',
+      csrfPrevention: true,
+      allowBatchedHttpRequests: false,
+      includeStacktraceInErrorResponses: false,
+      hideSchemaDetailsFromClientErrors: process.env.NODE_ENV === 'production',
+      parseOptions: { maxTokens: 10000 },
+      validationRules: [queryBudgetRule],
       plugins: [
+        graphqlSecurityPlugin,
         operationTiming,
         ApolloServerPluginDrainHttpServer({ httpServer }),
         // Apollo kapanırken WebSocket sunucusunu da temiz kapat
@@ -158,7 +150,6 @@ const startServer = async () => {
     // 8. Apollo HTTP middleware — mevcut context yapın korundu
     app.use(
       '/',
-      bodyParser.json({ limit: '50mb' }),
       expressMiddleware(server, {
         context: async ({ req }) => {
           const authHeader = req.headers.authorization;
@@ -172,6 +163,11 @@ const startServer = async () => {
         },
       })
     );
+    app.use(httpError);
+    httpServer.requestTimeout = 30000;
+    httpServer.headersTimeout = 15000;
+    httpServer.keepAliveTimeout = 5000;
+    httpServer.maxRequestsPerSocket = 1000;
 
     await new Promise((resolve) => httpServer.listen({ port: PORT, ...(process.env.BETIK_ISOLATED_PRINT_SANDBOX === 'true' ? { host: '127.0.0.1' } : {}) }, resolve));
     // Application notifications also need delivery when funding is disabled.
@@ -181,7 +177,8 @@ const startServer = async () => {
     console.log(`🔌 WebSocket hazır: ws://localhost:${PORT}/graphql`);
 
   } catch (e) {
-    console.error('Server başlatılamadı:', e);
+    console.error('Server başlatılamadı. Yapılandırma ve servis erişimini kontrol edin.');
+    process.exitCode = 1;
   }
 };
 

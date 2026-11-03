@@ -1,0 +1,139 @@
+{
+  "date": "2026-11-01",
+  "runtime": "v22.14.0",
+  "runs": [
+    {
+      "file": "security-client-baseline.log",
+      "suites": "1 failed, 72 passed, 73 total",
+      "tests": "1 failed, 496 passed, 497 total",
+      "time": "258.183 s, estimated 314 s",
+      "note": "Başlangıç, regresyon veya ara/odaklı koşu; toplamlar birbirine eklenmez"
+    },
+    {
+      "file": "security-client-final.log",
+      "suites": "2 failed, 72 passed, 74 total",
+      "tests": "2 failed, 504 passed, 506 total",
+      "time": "323.649 s",
+      "note": "Başlangıç, regresyon veya ara/odaklı koşu; toplamlar birbirine eklenmez"
+    },
+    {
+      "file": "security-client-recheck.log",
+      "suites": "3 passed, 3 total",
+      "tests": "19 passed, 19 total",
+      "time": "7.278 s, estimated 14 s",
+      "note": "Başlangıç, regresyon veya ara/odaklı koşu; toplamlar birbirine eklenmez"
+    },
+    {
+      "file": "security-client-release-check.log",
+      "suites": "74 passed, 74 total",
+      "tests": "507 passed, 507 total",
+      "time": "377.844 s",
+      "note": "Son tam koşu"
+    },
+    {
+      "file": "security-client-targeted.log",
+      "suites": "1 failed, 3 passed, 4 total",
+      "tests": "1 failed, 28 passed, 29 total",
+      "time": "13.662 s",
+      "note": "Başlangıç, regresyon veya ara/odaklı koşu; toplamlar birbirine eklenmez"
+    },
+    {
+      "file": "security-client-verified.log",
+      "suites": "74 passed, 74 total",
+      "tests": "506 passed, 506 total",
+      "time": "382.182 s",
+      "note": "Başlangıç, regresyon veya ara/odaklı koşu; toplamlar birbirine eklenmez"
+    },
+    {
+      "file": "security-controls.log",
+      "suites": "1 failed, 1 total",
+      "tests": "1 failed, 15 passed, 16 total",
+      "time": "12.262 s, estimated 20 s",
+      "note": "Başlangıç, regresyon veya ara/odaklı koşu; toplamlar birbirine eklenmez"
+    },
+    {
+      "file": "security-final-access.log",
+      "suites": "9 passed, 9 total",
+      "tests": "77 passed, 77 total",
+      "time": "113.858 s",
+      "note": "Başlangıç, regresyon veya ara/odaklı koşu; toplamlar birbirine eklenmez"
+    },
+    {
+      "file": "security-final-session-check.log",
+      "suites": "7 passed, 7 total",
+      "tests": "98 passed, 98 total",
+      "time": "93.543 s, estimated 103 s",
+      "note": "Başlangıç, regresyon veya ara/odaklı koşu; toplamlar birbirine eklenmez"
+    },
+    {
+      "file": "security-http-final.log",
+      "suites": "2 passed, 2 total",
+      "tests": "17 passed, 17 total",
+      "time": "25.479 s",
+      "note": "Başlangıç, regresyon veya ara/odaklı koşu; toplamlar birbirine eklenmez"
+    },
+    {
+      "file": "security-regression-after.log",
+      "suites": "1 passed, 1 total",
+      "tests": "8 passed, 8 total",
+      "time": "13.915 s",
+      "note": "Başlangıç, regresyon veya ara/odaklı koşu; toplamlar birbirine eklenmez"
+    },
+    {
+      "file": "security-regression-before.log",
+      "suites": "1 failed, 1 total",
+      "tests": "8 failed, 8 total",
+      "time": "11.249 s",
+      "note": "Başlangıç, regresyon veya ara/odaklı koşu; toplamlar birbirine eklenmez"
+    },
+    {
+      "file": "security-server-baseline.log",
+      "suites": "40 passed, 40 total",
+      "tests": "652 passed, 652 total",
+      "time": "438.789 s, estimated 579 s",
+      "note": "Başlangıç, regresyon veya ara/odaklı koşu; toplamlar birbirine eklenmez"
+    },
+    {
+      "file": "security-server-final.log",
+      "suites": "7 failed, 35 passed, 42 total",
+      "tests": "4 failed, 660 passed, 664 total",
+      "time": "540.964 s",
+      "note": "Başlangıç, regresyon veya ara/odaklı koşu; toplamlar birbirine eklenmez"
+    },
+    {
+      "file": "security-server-recheck.log",
+      "suites": "1 failed, 6 passed, 7 total",
+      "tests": "79 passed, 79 total",
+      "time": "58.58 s, estimated 73 s",
+      "note": "Başlangıç, regresyon veya ara/odaklı koşu; toplamlar birbirine eklenmez"
+    },
+    {
+      "file": "security-server-release-check.log",
+      "suites": "43 passed, 43 total",
+      "tests": "695 passed, 695 total",
+      "time": "631.772 s, estimated 648 s",
+      "note": "Son tam koşu"
+    },
+    {
+      "file": "security-server-verified.log",
+      "suites": "2 failed, 41 passed, 43 total",
+      "tests": "1 failed, 686 passed, 687 total",
+      "time": "657.224 s",
+      "note": "Başlangıç, regresyon veya ara/odaklı koşu; toplamlar birbirine eklenmez"
+    },
+    {
+      "file": "security-targeted.log",
+      "suites": "6 passed, 6 total",
+      "tests": "52 passed, 52 total",
+      "time": "34.869 s, estimated 38 s",
+      "note": "Başlangıç, regresyon veya ara/odaklı koşu; toplamlar birbirine eklenmez"
+    },
+    {
+      "file": "security-unpublish-before.log",
+      "suites": "1 failed, 1 total",
+      "tests": "1 failed, 16 skipped, 17 total",
+      "time": "11.27 s",
+      "note": "Başlangıç, regresyon veya ara/odaklı koşu; toplamlar birbirine eklenmez"
+    }
+  ]
+}

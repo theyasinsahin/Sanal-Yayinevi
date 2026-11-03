@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Typography } from '../../UI/Typography';
-import { useGetConversations } from '../../../hooks/useMessages';
+import { useGetConversations, useGetOrCreateConversation, useMessageRecipients } from '../../../hooks/useMessages';
 import { useAuth } from '../../../context/AuthContext';
 import './ConversationList.css';
 import {Input} from '../../UI/Input';
@@ -13,6 +13,12 @@ const getInitials = (user) => {
 
 const getOtherParticipant = (conversation, currentUserId) => {
   return conversation.participants?.find((p) => p.id !== currentUserId) ?? null;
+};
+
+const matchesSearch = (person, search) => {
+  const normalize = value => (value || '').toLocaleLowerCase('tr-TR').replace(/ı/g, 'i');
+  const term = normalize(search.trim());
+  return normalize(person?.fullName).includes(term) || normalize(person?.username).includes(term);
 };
 
 const formatTime = (dateStr) => {
@@ -44,23 +50,36 @@ const getLastMessagePreview = (lastMessage, currentUserId) => {
 
 const ConversationList = ({ activeConversationId, onSelect }) => {
   const [search, setSearch] = useState('');
-  const { conversations, loading, error } = useGetConversations();
+  const [recipientSearch, setRecipientSearch] = useState('');
+  const [startError, setStartError] = useState('');
+  const [openingId, setOpeningId] = useState(null);
+  useEffect(() => {
+    const timer = setTimeout(() => setRecipientSearch(search.trim()), 250);
+    return () => clearTimeout(timer);
+  }, [search]);
+  const { conversations, loading, error, refetch: refetchConversations } = useGetConversations();
+  const { recipients, loading: recipientsLoading, error: recipientsError, hasMore, loadMore, refetch } = useMessageRecipients(recipientSearch);
+  const { getOrCreateConversation, loading: starting } = useGetOrCreateConversation();
 
-  // currentUser'ı kendi auth yapına göre değiştir
-  // Redux kullanmıyorsan context veya localStorage'dan alabilirsin
   const { user } = useAuth();
   const currentUser = user?.user || user; // AuthContext'te user nesnesi farklı yapıda olabilir, buna göre uyarlayın
   const currentUserId = currentUser?.id ?? currentUser?._id;
 
   const filtered = conversations.filter((conv) => {
-    if (!search.trim()) return true;
-    const other = getOtherParticipant(conv, currentUserId);
-    const q = search.toLowerCase();
-    return (
-      other?.fullName?.toLowerCase().includes(q) ||
-      other?.username?.toLowerCase().includes(q)
-    );
+    return matchesSearch(getOtherParticipant(conv, currentUserId), search);
   });
+  const newRecipients = recipients.filter(person => matchesSearch(person, search) && !conversations.some(conv => getOtherParticipant(conv, currentUserId)?.id === person.id));
+  const openRecipient = async person => {
+    if (starting || openingId) return;
+    setStartError(''); setOpeningId(person.id);
+    try {
+      const conversation = await getOrCreateConversation(person.id);
+      if (!conversation) throw new Error('Konuşma açılamadı.');
+      refetchConversations().catch(() => {});
+      onSelect(conversation.id);
+    } catch (err) { setStartError(err.message || 'Konuşma açılamadı. Tekrar deneyin.'); }
+    finally { setOpeningId(null); }
+  };
 
   return (
     <div className="conv-list">
@@ -73,7 +92,10 @@ const ConversationList = ({ activeConversationId, onSelect }) => {
       {/* Arama */}
       <div className="conv-list-search">
         <Input
-          placeholder="Ara..."
+          name="message-recipient-search"
+          placeholder="Konuşmalarda ve takip ettiklerinde ara..."
+          aria-label="Mesaj göndereceğin kişiyi ara"
+          maxLength={120}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -103,10 +125,10 @@ const ConversationList = ({ activeConversationId, onSelect }) => {
           </div>
         )}
 
-        {!loading && !error && filtered.length === 0 && (
+        {!loading && !error && !recipientsLoading && recipientSearch === search.trim() && !recipientsError && filtered.length === 0 && newRecipients.length === 0 && (
           <div className="conv-list-empty">
             <Typography variant="caption" color="muted">
-              {search ? 'Sonuç bulunamadı.' : 'Henüz hiç konuşman yok.'}
+              {search ? 'Sonuç bulunamadı.' : 'Henüz konuşman veya mesaj kabul eden bir takibin yok.'}
             </Typography>
           </div>
         )}
@@ -119,10 +141,11 @@ const ConversationList = ({ activeConversationId, onSelect }) => {
           const timeStr    = formatTime(conv.lastMessage?.createdAt ?? conv.updatedAt);
 
           return (
-            <div
+            <button type="button"
               key={conv.id}
               className={`conv-item${isActive ? ' conv-item--active' : ''}`}
               onClick={() => onSelect(conv.id)}
+              aria-current={isActive ? 'page' : undefined}
             >
               {/* Avatar */}
               <div className="conv-item-avatar">
@@ -153,9 +176,25 @@ const ConversationList = ({ activeConversationId, onSelect }) => {
                   )}
                 </div>
               </div>
-            </div>
+            </button>
           );
         })}
+        <section aria-label="Mesaj kabul eden takip ettiklerin">
+          <h3 className="conv-section-title">Takip ettiklerin</h3>
+          {(recipientsLoading || recipientSearch !== search.trim()) && <p className="conv-list-feedback" role="status">Kişiler yükleniyor...</p>}
+          {recipientsError && <p className="conv-list-feedback" role="alert">Kişiler yüklenemedi. <button type="button" className="ui-text-link" onClick={() => refetch().catch(() => {})}>Tekrar dene</button></p>}
+          {startError && <p className="conv-list-feedback" role="alert">{startError}</p>}
+          {newRecipients.map(person => <button type="button" className="conv-item" key={person.id}
+            disabled={starting || Boolean(openingId)} onClick={() => openRecipient(person)}>
+            <span className="conv-item-avatar">{person.profilePicture ? <img src={person.profilePicture} alt="" /> : getInitials(person)}</span>
+            <span className="conv-item-content">
+              <span className="conv-item-name">{person.fullName || person.username}</span>
+              <span className="conv-item-preview">{openingId === person.id ? 'Konuşma açılıyor...' : `@${person.username} · Mesaj gönder`}</span>
+            </span>
+          </button>)}
+          {hasMore && <button type="button" className="conv-load-more" disabled={recipientsLoading}
+            onClick={() => loadMore().catch(() => setStartError('Diğer kişiler yüklenemedi. Tekrar deneyin.'))}>Daha fazla kişi göster</button>}
+        </section>
       </div>
     </div>
   );

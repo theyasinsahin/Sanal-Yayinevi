@@ -70,6 +70,14 @@ const CONVERSATION_FIELDS = gql`
 `;
 
 // --- QUERIES ---
+export const GET_MESSAGE_RECIPIENTS = gql`
+  query GetMessageRecipients($search: String, $limit: Int, $offset: Int) {
+    getMessageRecipients(search: $search, limit: $limit, offset: $offset) {
+      id username fullName profilePicture
+    }
+  }
+`;
+
 export const GET_CONVERSATIONS = gql`
   ${CONVERSATION_FIELDS}
   query GetConversations {

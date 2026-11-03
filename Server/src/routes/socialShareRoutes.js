@@ -11,7 +11,7 @@ router.get('/:type/:id', async (req, res) => {
     const item = await getSocialShare(req.params.type.toUpperCase(), req.params.id);
     const origin = shareWebOrigin(req.query.webOrigin);
     const destination = new URL(item.path, origin).href;
-    const protocol = req.get('x-forwarded-proto')?.split(',')[0].trim() === 'https' ? 'https' : req.protocol;
+    const protocol = req.protocol;
     const preview = new URL(`/share/${item.type.toLowerCase()}/${encodeURIComponent(item.shareKey)}`, `${protocol}://${req.get('host')}`);
     preview.searchParams.set('webOrigin', origin);
     const image = new URL(item.type === 'SESSION' ? item.imagePath : '/social-share/link-preview.jpg', origin).href;

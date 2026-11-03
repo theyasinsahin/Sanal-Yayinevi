@@ -2,6 +2,7 @@ import * as MessageService from '../../services/messageService.js';
 import { withFilter } from 'graphql-subscriptions';
 import { pubsub } from '../../config/pubsub.js';
 import { getPublicQuote } from '../../services/socialShareService.js';
+import { findBookById } from '../../services/bookService.js';
 
 const NEW_MESSAGE = 'NEW_MESSAGE';
 
@@ -60,6 +61,10 @@ const serializeConversation = (conv, currentUserId) => {
 
 export default {
   Query: {
+    getMessageRecipients: async (_, args, { user }) => {
+      if (!user) throw new Error('Giriş yapmalısınız.');
+      return MessageService.getMessageRecipients(user._id, args);
+    },
     getConversations: async (_, __, { user }) => {
       if (!user) throw new Error('Giriş yapmalısınız.');
       const convs = await MessageService.getUserConversations(user._id);
@@ -192,21 +197,12 @@ export default {
   }
 },
 
-    attachedBook: async (parent, _, { Book }) => {
+    attachedBook: async (parent, _, { user }) => {
       const bid = parent.attachedBookId;
       if (!bid) return null;
 
-      if (typeof bid === 'object' && bid._id) {
-        // Silinmiş bir kitap populate edilmiş olsa bile gösterme
-        if (bid.isDeleted) return null;
-        const book = typeof bid.toObject === 'function' ? bid.toObject() : bid;
-        return { ...book, id: book._id?.toString() };
-      }
-
       try {
-        const book = await Book.findOne({ _id: bid._id ?? bid, isDeleted: false })
-          .populate('authorId', 'username fullName profilePicture');
-        return book;
+        return await findBookById(bid._id ?? bid, { viewer: user, enforceVisibility: true });
       } catch {
         return null;
       }

@@ -53,6 +53,8 @@ const User = new mongoose.Schema({
   isVerified:     { type: Boolean, default: false },
   isActive:       { type: Boolean, default: true },
   authVersion:    { type: Number, default: 0 },
+  loginBlocked:   { type: Boolean, default: false },
+  googleSubject:  { type: String },
 
   // ── Soft-delete ──────────────────────────────────────────────────
   isDeleted:  { type: Boolean, default: false },

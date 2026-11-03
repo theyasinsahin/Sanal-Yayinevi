@@ -4,6 +4,7 @@ import Comment from '../models/comment.js';
 import Book from '../models/book.js';
 import * as ScoreService from './scoreService.js';
 import { visiblePrintedFilter } from '../utils/printedBooks.js';
+import { paginate } from '../security/pagination.js';
 
 // --- OKUMA İŞLEMLERİ ---
 // Varsayılan olarak silinmiş (isDeleted: true) yorumlar hariç tutulur.
@@ -21,8 +22,8 @@ export const findCommentsByUserId = async (userId) => {
   return await Comment.find({ userId, isDeleted: false }).sort({ date: -1 });
 };
 
-export const findAllComments = async () => {
-  return await Comment.find({ isDeleted: false, userId: { $nin: await inactiveUserIds() } }).sort({ date: -1 });
+export const findAllComments = async (options = {}) => {
+  return await paginate(Comment.find({ isDeleted: false, userId: { $nin: await inactiveUserIds() } }).sort({ date: -1, _id: -1 }), options);
 };
 
 // Bir yoruma gelen yanıtları bulmak için (Nested Comments)

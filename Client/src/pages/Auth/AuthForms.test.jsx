@@ -58,6 +58,16 @@ test('a rejected registration code request stays on the account form with the se
   expect(await screen.findByRole('alert')).toHaveTextContent('Username is taken');
   expect(screen.getByLabelText(/^Kullanıcı Adı/)).toHaveValue('reader');
 });
+test('a failed email delivery keeps registration details and permits a successful retry', async () => {
+  const message = 'E-posta şu anda gönderilemiyor. Lütfen biraz sonra tekrar deneyin.';
+  show(<Register />, [codeMock(400, message), codeMock()]); fillRegistration();
+  fireEvent.click(screen.getByRole('button', { name: 'Doğrulama Kodu Gönder' }));
+  expect(await screen.findByRole('alert')).toHaveTextContent(message);
+  expect(screen.getByLabelText(/^E-Posta/)).toHaveValue(fields.email);
+  fireEvent.click(screen.getByRole('button', { name: 'Doğrulama Kodu Gönder' }));
+  expect(await screen.findByLabelText(/^Doğrulama Kodu/)).toHaveAttribute('autocomplete', 'one-time-code');
+  expect(screen.getByRole('button', { name: /Kodu yeniden gönder/ })).toBeDisabled();
+});
 test('registration sends email verification first, then submits account data together with the entered code', async () => {
   const register = jest.fn(() => ({ data: { register: { __typename: 'Status', code: 400, message: 'Verification expired' } } }));
   show(<Register />, [codeMock(), { request: { query: REGISTER, variables: { ...fields, code: '123456' } }, result: register }]);

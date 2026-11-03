@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
@@ -27,8 +27,10 @@ import '../AuthPages.css';
 import { MainLayout } from '../../../components/Layout/MainLayout';
 
 import { GOOGLE_LOGIN_URI } from '../../../config/api';
+import { googleLoginNonce } from '../../../utils/googleLoginNonce';
 
 const RegisterPage = () => {
+  const [googleNonce] = useState(googleLoginNonce);
   const navigate = useNavigate();
   
   // --- STATE'LER ---
@@ -46,6 +48,12 @@ const RegisterPage = () => {
   // Backend'den dönen özel { code, message } yanıtlarını tutmak için
   const [customError, setCustomError] = useState('');
   const [customSuccess, setCustomSuccess] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+  useEffect(() => {
+    if (!resendCooldown) return undefined;
+    const timer = setTimeout(() => setResendCooldown(value => value - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
 
   // --- MUTATION'LAR ---
   const [sendCode, { loading: codeLoading, error: codeError }] = useMutation(SEND_REGISTRATION_CODE);
@@ -78,14 +86,15 @@ const RegisterPage = () => {
 
       // Backend 200 (başarılı) döndüyse 2. adıma geç
       if (result.code === 200) {
-        setStep(2); 
+        setStep(2);
+        setResendCooldown(60);
       } else {
         // Backend 400 (hata) döndüyse mesajı ekrana yazdır
         setCustomError(result.message);
       }
     } catch (err) {
       // GraphQL isteği hiç gidemezse (örn. internet kopukluğu)
-      setCustomError("Sunucuya ulaşılamıyor: " + err.message);
+      setCustomError(err.networkError ? 'Sunucuya ulaşılamadı. Bağlantınızı kontrol edip yeniden deneyin.' : err.message);
     }
   };
 
@@ -110,8 +119,18 @@ const RegisterPage = () => {
         setCustomError(result.message);
       }
     } catch (err) {
-      setCustomError("Sunucuya ulaşılamıyor: " + err.message);
+      setCustomError(err.networkError ? 'Sunucuya ulaşılamadı. Bağlantınızı kontrol edip yeniden deneyin.' : err.message);
     }
+  };
+
+  const resendCode = async () => {
+    setCustomError('');
+    try {
+      const { data } = await sendCode({ variables: { email: formData.email, username: formData.username } });
+      if (data?.sendRegistrationCode?.code !== 200) throw new Error(data?.sendRegistrationCode?.message || 'Kod gönderilemedi.');
+      setVerificationCode('');
+      setResendCooldown(60);
+    } catch (error) { setCustomError(error.networkError ? 'Sunucuya ulaşılamadı. Lütfen yeniden deneyin.' : error.message); }
   };
 
   return (
@@ -171,6 +190,7 @@ const RegisterPage = () => {
                       kaldırır). useOneTap kaldırıldı — o da iframe/postMessage
                       tabanlı olduğu için aynı türde sorunlara açıktı. */}
                   <GoogleLogin locale="tr"
+                      nonce={googleNonce}
                       ux_mode="redirect"
                       login_uri={GOOGLE_LOGIN_URI}
                       onError={() => setCustomError("Google penceresi açılamadı veya iptal edildi.")}
@@ -260,7 +280,11 @@ const RegisterPage = () => {
                   onChange={(e) => setVerificationCode(e.target.value)}
                   icon={<VpnKey fontSize="small" />}
                   required
-                  disabled={regLoading || customSuccess !== ''} // Başarıdan sonra formu kilitle
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  pattern="[0-9]{6}"
+                  maxLength={6}
+                  disabled={regLoading || codeLoading || customSuccess !== ''}
                 />
                 <Button 
                   type="submit" 
@@ -268,9 +292,14 @@ const RegisterPage = () => {
                   size="large" 
                   isLoading={regLoading} 
                   className="w-full"
-                  disabled={customSuccess !== ''}
+                  disabled={codeLoading || customSuccess !== ''}
                 >
                   Kayıt İşlemini Tamamla
+                </Button>
+                <Typography variant="small" color="muted">Kod 10 dakika geçerlidir. E-postanız gelmediyse spam klasörünü de kontrol edin.</Typography>
+                <Button type="button" variant="outline" onClick={resendCode} isLoading={codeLoading}
+                  disabled={regLoading || resendCooldown > 0 || customSuccess !== ''}>
+                  {resendCooldown > 0 ? `Kodu yeniden gönder (${resendCooldown} sn)` : 'Kodu yeniden gönder'}
                 </Button>
                 <Button 
                   variant="ghost"
@@ -279,7 +308,7 @@ const RegisterPage = () => {
                     setCustomError(''); // Geri dönerken hataları temizle
                   }} 
                   className="w-full auth-secondary-action"
-                  disabled={regLoading || customSuccess !== ''}
+                  disabled={regLoading || codeLoading || customSuccess !== ''}
                 >
                   Bilgileri Düzenle
                 </Button>

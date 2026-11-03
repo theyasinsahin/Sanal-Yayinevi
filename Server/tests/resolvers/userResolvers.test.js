@@ -1,7 +1,8 @@
 import { jest } from '@jest/globals';
+import { fileURLToPath } from 'node:url';
 
 // --- MOCKS ---
-jest.unstable_mockModule('../../src/utils/auth.js', () => ({
+jest.unstable_mockModule(fileURLToPath(new URL('../../src/utils/auth.js', import.meta.url)), () => ({
     authenticateUser: jest.fn()
 }));
 

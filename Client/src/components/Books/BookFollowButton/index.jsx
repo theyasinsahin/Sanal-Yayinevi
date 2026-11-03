@@ -39,13 +39,13 @@ const BookFollowButton = ({ bookId }) => {
       className={`book-follow-btn ${isFollowing ? 'following' : ''}`}
       onClick={handleToggle}
       disabled={loading}
-      title={isFollowing ? 'Takibi bırak' : 'Takip et — yeni bölümlerde bildirim al'}
+      title={isFollowing ? 'Kitabı takip etmeyi bırak' : 'Kitabı takip et — yeni bölümlerde bildirim al'}
     >
       {isFollowing 
         ? <Notifications fontSize="small" /> 
         : <NotificationsOutlined fontSize="small" />
       }
-      <span>{isFollowing ? 'Takiptesin' : 'Takip Et'}</span>
+      <span>{isFollowing ? 'Kitabı Takip Ediyorsun' : 'Kitabı Takip Et'}</span>
     </button>
   );
 };

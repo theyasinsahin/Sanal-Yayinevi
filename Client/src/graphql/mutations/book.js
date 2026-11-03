@@ -69,6 +69,8 @@ export const UPDATE_BOOK_STATUS_MUTATION = gql`
       id
       title
       status
+      digitalStatus
+      writingStatus
       fundingTarget
       currentFunding
       backerCount

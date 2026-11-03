@@ -1,11 +1,28 @@
 // src/services/messageService.js
 import User from '../models/user.js';
+import { literalSearch } from '../security/search.js';
+import { paginate } from '../security/pagination.js';
+
 import { canReceiveMessage } from '../utils/profileAccess.js';
 import Message from '../models/message.js';
 import Conversation from '../models/conversation.js';
 import { pubsub } from '../config/pubsub.js';
 import { getPublicQuote } from './socialShareService.js';
 
+export const getMessageRecipients = async (userId, { search = '', limit = 30, offset = 0 } = {}) => {
+  const term = literalSearch(search ?? '').replace(/[iıİI]/g, '[iıİI]');
+  const sender = await User.findOne({ _id: userId, isDeleted: false, isActive: { $ne: false } }).select('following');
+  if (!sender) throw new Error('Giriş yapmalısınız.');
+  const filter = {
+    _id: { $in: sender.following, $ne: sender._id }, isDeleted: false, isActive: { $ne: false },
+    $or: [
+      { 'privacySettings.allowMessages': { $nin: ['none', 'followers'] } },
+      { 'privacySettings.allowMessages': 'followers', followers: userId },
+    ],
+    ...(term ? { $and: [{ $or: [{ username: { $regex: term, $options: 'i' } }, { fullName: { $regex: term, $options: 'i' } }] }] } : {}),
+  };
+  return paginate(User.find(filter).sort({ fullName: 1, _id: 1 }), { limit, offset });
+};
 const NEW_MESSAGE = 'NEW_MESSAGE';
 
 async function assertMessagePermission(recipientId, senderId) {

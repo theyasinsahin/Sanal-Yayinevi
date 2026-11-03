@@ -12,7 +12,7 @@ import { campaignCatalogMatch, latestCampaignLookup } from './bookFundingService
 const SORTS = { NEWEST: ['publishDate', -1], OLDEST: ['publishDate', 1], UPDATED: ['updatedAt', -1], POPULAR: ['stats.likes', -1], CLOSEST_TO_TARGET: ['_fundingRemaining', 1] };
 const PUBLIC_STATUSES = ['WRITING', 'COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'];
 const escape = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const fields = 'urlSlug title description authorId formatId genreIds tagIds narrativeFeatureIds targetAudienceId contentWarningIds classificationStatus imageUrl pageCount publishDate stats createdAt updatedAt status digitalStatus writingStatus backerCount fundingTarget currentFunding kind printedAuthor publisher publicationYear isbn';
+const fields = 'urlSlug title description authorId formatId genreIds tagIds narrativeFeatureIds targetAudienceId contentWarningIds classificationStatus imageUrl pageCount publishDate stats createdAt updatedAt status digitalStatus writingStatus backerCount fundingTarget currentFunding kind printedAuthor publisher publicationYear isbn isDeleted';
 const canonical = value => Array.isArray(value) ? value.map(canonical) : value && typeof value === 'object' ? Object.fromEntries(Object.keys(value).sort().map(key => [key, canonical(value[key])])) : value;
 
 export async function getBookFeed({ limit = 24, after, sort = 'NEWEST', classification, search, funding = 'ALL' } = {}) {

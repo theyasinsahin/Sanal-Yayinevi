@@ -39,7 +39,8 @@ const ResetPasswordPage = () => {
     }
 
     try {
-      await resetPassword({ variables: { token, newPassword } });
+      const { data } = await resetPassword({ variables: { token, newPassword } });
+      if (data?.resetPassword?.code !== 200) throw new Error(data?.resetPassword?.message || 'Şifre güncellenemedi. Lütfen tekrar deneyin.');
       setSuccess(true);
       setTimeout(() => navigate('/login'), 3000);
     } catch (err) {
@@ -80,6 +81,7 @@ const ResetPasswordPage = () => {
                   onChange={(e) => setNewPassword(e.target.value)}
                   icon={<Lock fontSize="small" />}
                   required
+                  disabled={loading}
                 />
                 <Input
                   label="Şifre Tekrar"
@@ -90,6 +92,7 @@ const ResetPasswordPage = () => {
                   onChange={(e) => setConfirm(e.target.value)}
                   icon={<Lock fontSize="small" />}
                   required
+                  disabled={loading}
                 />
                 <PasswordStrengthIndicator password={newPassword} />
 

@@ -22,6 +22,7 @@ export default function QuotePopup({ bookId, chapterId, chapterTitle, chapterInd
   const [checkFailed, setCheckFailed] = useState(false);
   const [saved, setSaved] = useState(false);
   const popupRef = useRef(null), generation = useRef(0), closeTimer = useRef(null);
+  const lastSelection = useRef(null);
   const [checkQuote] = useLazyQuery(CHECK_QUOTE_EXISTS, { fetchPolicy: 'network-only' });
   const [createQuote, { loading: creating }] = useMutation(CREATE_QUOTE_MUTATION, { update: invalidateQuoteLists });
   const [repostQuote, { loading: reposting }] = useMutation(REPOST_QUOTE_MUTATION, { update: invalidateQuoteLists });
@@ -38,21 +39,50 @@ export default function QuotePopup({ bookId, chapterId, chapterTitle, chapterInd
   }
 
   useEffect(() => {
+    let selectionTimer;
     const selectText = event => {
-      if (popupRef.current?.contains(event.target)) return;
+      if (popupRef.current?.contains(event?.target) || popupRef.current?.contains(document.activeElement)) return;
       const selection = window.getSelection(), text = selection?.toString().trim();
-      if (!text || text.length < 10 || !selection.rangeCount) { generation.current++; setPopup({ visible: false }); return; }
-      const range = selection.getRangeAt(0), rect = range.getBoundingClientRect();
+      if (!text || text.length < 10 || !selection.rangeCount) return;
+      const range = selection.getRangeAt(0);
+      const elementFor = node => node?.nodeType === Node.ELEMENT_NODE ? node : node?.parentElement;
+      const source = elementFor(range.startContainer)?.closest('[data-quote-source]');
+      const end = elementFor(range.endContainer);
+      const excluded = 'button, input, textarea, [role="dialog"], .paragraph-action-row, .pcpanel';
+      if (!source || !end || !source.contains(end) || elementFor(range.startContainer)?.closest(excluded) || end.closest(excluded)) return;
+      const previous = lastSelection.current;
+      if (previous?.text === text && previous.start === range.startContainer && previous.end === range.endContainer && previous.startOffset === range.startOffset && previous.endOffset === range.endOffset) return;
+      lastSelection.current = { text, start: range.startContainer, end: range.endContainer, startOffset: range.startOffset, endOffset: range.endOffset };
+      const rect = range.getBoundingClientRect();
       clearTimeout(closeTimer.current); setSaved(false); setNote(''); setSpoiler(false);
       setPopup({ visible: true, text, x: rect.left + rect.width / 2, y: rect.top, bottom: rect.bottom ?? rect.top + 20,
+        source: source.dataset.chapterId ? { chapterId: source.dataset.chapterId, chapterTitle: source.dataset.chapterTitle, chapterIndex: Number(source.dataset.chapterIndex) } : { chapterId, chapterTitle, chapterIndex },
         location: { startOffset: range.startOffset, endOffset: range.endOffset } });
-      check(text, visibility);
+      if (text.length > 1000) {
+        generation.current++; setChecking(false); setExisting(null); setCheckFailed(true);
+        setError('En fazla 1000 karakter seçebilirsiniz. Seçimi kısaltın.');
+      } else check(text, visibility);
     };
+    const scheduleSelection = event => {
+      if (popupRef.current?.contains(event.target) || popupRef.current?.contains(document.activeElement)) return;
+      clearTimeout(selectionTimer);
+      selectionTimer = setTimeout(() => selectText(event), 350);
+    };
+    const escape = event => { if (event.key === 'Escape') close(); };
     document.addEventListener('mouseup', selectText);
-    return () => document.removeEventListener('mouseup', selectText);
+    document.addEventListener('touchend', scheduleSelection, { passive: true });
+    document.addEventListener('selectionchange', scheduleSelection);
+    document.addEventListener('keydown', escape);
+    return () => {
+      clearTimeout(selectionTimer);
+      document.removeEventListener('mouseup', selectText);
+      document.removeEventListener('touchend', scheduleSelection);
+      document.removeEventListener('selectionchange', scheduleSelection);
+      document.removeEventListener('keydown', escape);
+    };
     // Selection checks are scoped by the current book and visibility.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bookId, visibility, checkQuote]);
+  }, [bookId, chapterId, chapterTitle, chapterIndex, visibility, checkQuote]);
   useEffect(() => () => { generation.current++; clearTimeout(closeTimer.current); }, []);
   useLayoutEffect(() => {
     const element = popupRef.current;
@@ -65,31 +95,35 @@ export default function QuotePopup({ bookId, chapterId, chapterTitle, chapterInd
         : window.innerHeight;
       element.style.maxHeight = `${Math.max(0, viewportBottom - topBoundary - 8)}px`;
       const { width, height } = element.getBoundingClientRect();
-      const left = Math.max(8, Math.min(popup.x - width / 2, window.innerWidth - width - 8));
+      const viewportLeft = window.visualViewport?.offsetLeft || 0;
+      const viewportWidth = window.visualViewport?.width || window.innerWidth;
+      const left = Math.max(viewportLeft + 8, Math.min(popup.x - width / 2, viewportLeft + viewportWidth - width - 8));
       const above = popup.y - height - 10;
-      const top = above >= topBoundary ? above : Math.max(topBoundary, Math.min(popup.bottom + 10, viewportBottom - height - 8));
+      const top = window.innerWidth <= 768 ? Math.max(topBoundary, viewportBottom - height - 8) : above >= topBoundary ? above : Math.max(topBoundary, Math.min(popup.bottom + 10, viewportBottom - height - 8));
       element.style.left = `${left}px`; element.style.top = `${top}px`;
     };
     position();
     window.addEventListener('resize', position);
     window.visualViewport?.addEventListener('resize', position);
+    window.visualViewport?.addEventListener('scroll', position);
     const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(position) : null;
     if (navbar) observer?.observe(navbar);
     return () => {
       window.removeEventListener('resize', position);
       window.visualViewport?.removeEventListener('resize', position);
+      window.visualViewport?.removeEventListener('scroll', position);
       observer?.disconnect();
     };
   });
 
   function close() {
-    generation.current++; clearTimeout(closeTimer.current); setPopup({ visible: false }); window.getSelection()?.removeAllRanges();
+    generation.current++; lastSelection.current = null; clearTimeout(closeTimer.current); setPopup({ visible: false }); window.getSelection()?.removeAllRanges();
   }
   async function save() {
     setError('');
     try {
       if (existing && visibility === 'PUBLIC') await repostQuote({ variables: { originalQuoteId: existing.id, repostComment: note.trim() || null, isSpoiler: spoiler } });
-      else await createQuote({ variables: { text: popup.text, note: note.trim() || null, bookId, chapterId, chapterTitle, chapterIndex,
+      else await createQuote({ variables: { text: popup.text, note: note.trim() || null, bookId, ...popup.source,
         location: popup.location, isSpoiler: spoiler, visibility } });
       setSaved(true); closeTimer.current = setTimeout(close, 1200);
     } catch (failure) { setError(failure.message.includes('QUOTE_EXISTS:') ? 'Bu alıntı seçtiğiniz görünürlükle zaten kaydedilmiş.' : failure.message); }
@@ -99,13 +133,14 @@ export default function QuotePopup({ bookId, chapterId, chapterTitle, chapterInd
   const duplicateOwned = existing && (visibility === 'PRIVATE' || existing.user?.id === user?.id);
   const reposted = existing?.repostedBy?.includes(user?.id);
   const busy = creating || reposting;
-  return <div ref={popupRef} className="quote-popup" style={{ left: `${popup.x}px`, top: `${popup.y}px` }} role="dialog" aria-label="Alıntı kaydet">
+  return <div ref={popupRef} className="quote-popup" style={{ left: `${popup.x}px`, top: `${popup.y}px` }} role="dialog" aria-label="Alıntı kaydet" aria-describedby="reader-quote-selection">
     <div className="quote-popup-actions"><strong>Alıntı kaydet</strong><button type="button" className="quote-popup-btn ghost" onClick={close} aria-label="Alıntı penceresini kapat"><Close fontSize="small" /></button></div>
     {saved ? <div className="quote-popup-saved" role="status"><Check fontSize="small" />{visibility === 'PRIVATE' ? 'Özel alıntı kaydedildi!' : 'Alıntı kaydedildi!'}</div> : <>
-      <QuoteVisibility value={visibility} disabled={busy} id="reader-quote-visibility" onChange={value => { setVisibility(value); check(popup.text, value); }} />
+      <blockquote id="reader-quote-selection" className="quote-selection-preview">{popup.text}</blockquote>
+      <QuoteVisibility value={visibility} disabled={busy || popup.text.length > 1000} id="reader-quote-visibility" onChange={value => { setVisibility(value); check(popup.text, value); }} />
       {checking && <p role="status">Alıntı kontrol ediliyor…</p>}
       {error && <p role="alert">{error}</p>}
-      {checkFailed && <button type="button" className="quote-popup-btn" onClick={() => check(popup.text, visibility)}>Yeniden kontrol et</button>}
+      {checkFailed && popup.text.length <= 1000 && <button type="button" className="quote-popup-btn" onClick={() => check(popup.text, visibility)}>Yeniden kontrol et</button>}
       {duplicateOwned || reposted ? <p>Bu alıntı zaten kayıtlı. <Link to="/profile">Profilimdeki alıntılar</Link></p> : <>
         {existing && <p className="quote-popup-existing-info"><Repeat fontSize="small" /> Bu alıntı <UserProfileLink user={existing.user}>@{existing.user?.username}</UserProfileLink> tarafından paylaşılmış. Yeniden paylaşabilir veya “Sadece ben” seçerek özel kaydedebilirsin.</p>}
         <textarea className="quote-note-input" aria-label={existing ? 'Yeniden paylaşım notu' : 'Alıntı notu'} placeholder="Not ekle... (isteğe bağlı)" value={note} onChange={event => setNote(event.target.value)} rows={2} disabled={busy} />

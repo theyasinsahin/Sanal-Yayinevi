@@ -5,6 +5,7 @@ import { ChatBubbleOutline, Bookmark, BookmarkBorder } from '@mui/icons-material
 import { GET_PARAGRAPH_COMMENT_COUNTS } from '../../../graphql/queries/paragraphComment';
 import ParagraphCommentPanel from '../ParagraphCommentPanel';
 import './ParagraphRenderer.css';
+import { cleanRichText } from '../../../utils/richText';
 
 const ParagraphRenderer = ({ 
   content, 
@@ -35,7 +36,7 @@ const ParagraphRenderer = ({
   const segments = useMemo(() => {
     if (!content) return [];
     const parser = new DOMParser();
-    const doc = parser.parseFromString(content, 'text/html');
+    const doc = parser.parseFromString(cleanRichText(content), 'text/html');
     const nodes = Array.from(doc.body.childNodes);
     let paragraphIndex = 0;
     return nodes.map((node) => {
@@ -67,16 +68,6 @@ const ParagraphRenderer = ({
     }
   }, [openPanelIndex]);
 
-  const handleTouch = useCallback((e, index) => {
-    if (openPanelIndex !== index) {
-      const el = blockRefs.current[index];
-      if (el) {
-        const twoLines = parseFloat(getComputedStyle(el).lineHeight || '28') * 2;
-        window.scrollBy({ top: twoLines, behavior: 'smooth' });
-      }
-    }
-  }, [openPanelIndex]);
-
   useEffect(() => {
     if (!Number.isInteger(restoreParagraphIndex) || restoreParagraphIndex < 0) return undefined;
     const key = `${chapterId}:${restoreParagraphIndex}`;
@@ -92,7 +83,7 @@ const ParagraphRenderer = ({
   }, [chapterId, restoreParagraphIndex, segments]);
 
   return (
-    <div className="paragraph-renderer">
+    <div className="paragraph-renderer" data-quote-source="">
       {segments.map((segment, i) => {
         if (segment.type === 'other') {
           return (
@@ -111,7 +102,6 @@ const ParagraphRenderer = ({
             ref={(el) => { blockRefs.current[segment.index] = el; }}
             tabIndex={0}
             onKeyDown={(e) => handleKeyDown(e, segment.index)}
-            onTouchEnd={(e) => handleTouch(e, segment.index)}
           >
             {/* Ayraç göstergesi */}
             {isBookmarked && (
@@ -127,13 +117,7 @@ const ParagraphRenderer = ({
               dangerouslySetInnerHTML={{ __html: segment.html }}
             />
 
-            {/*
-              Aksiyon satırı — ayraç + yorum.
-              onTouchEnd burada durduruluyor (stopPropagation), çünkü
-              üstteki paragraph-block'un kendi onTouchEnd'i "dokununca
-              aşağı kaydır" özelliğini tetikliyor. Bu satır olmadan,
-              yorum/ayraç ikonuna dokunma da o kaydırmayı tetikliyordu.
-            */}
+            {/* Ayraç ve yorum işlemleri metin seçiminden ayrı tutulur. */}
             <div
               className="paragraph-action-row"
               onTouchEnd={(e) => e.stopPropagation()}
@@ -165,12 +149,6 @@ const ParagraphRenderer = ({
               </button>
             </div>
 
-            {/*
-              Yorum paneli — kendi onTouchEnd'inde de stopPropagation var
-              (ParagraphCommentPanel/index.jsx içinde), böylece panel
-              içindeki dokunmalar (kapat, sil, textarea, gönder) da
-              paragrafı kaydırmaz.
-            */}
             {isOpen && (
               <ParagraphCommentPanel
                 bookId={bookId}

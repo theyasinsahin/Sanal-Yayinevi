@@ -3,7 +3,7 @@ import ClassificationEditor from '../../components/Books/Classification/Classifi
 import { useAuth } from '../../context/AuthContext';
 import { profilePath, readerPath } from '../../utils/publicPaths';
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client';
 import { 
   ArrowBack, 
@@ -21,7 +21,7 @@ import {
 // --- GRAPHQL ---
 import { GET_BOOK_DETAIL } from '../../graphql/queries/book';
 import { GET_BOOK_VIEWER, ME_QUERY } from '../../graphql/queries/user';
-import { LIKE_BOOK_MUTATION, DELETE_BOOK_MUTATION } from '../../graphql/mutations/book';
+import { LIKE_BOOK_MUTATION, DELETE_BOOK_MUTATION, UPDATE_BOOK_STATUS_MUTATION } from '../../graphql/mutations/book';
 import { TOGGLE_SAVED_BOOK_MUTATION } from '../../graphql/mutations/user';
 import { CREATE_COMMENT_MUTATION } from '../../graphql/mutations/comment';
 import { GET_COMMENTS_BY_BOOK_ID } from '../../graphql/queries/comment';
@@ -48,6 +48,7 @@ const BookDetailPage = ({ resolvedId } = {}) => {
   const params = useParams();
   const id = resolvedId || params.id;
   const navigate = useNavigate();
+  const { hash } = useLocation();
   const { user } = useAuth();
   const currentUserId = user?.id;
   const [commentText, setCommentText] = useState("");
@@ -83,6 +84,10 @@ const BookDetailPage = ({ resolvedId } = {}) => {
   });
 
   const book = bookData ? bookData.getBookById : null;
+  const hasContent = book?.chapters?.some(chapter => chapter.wordCount > 0);
+  useEffect(() => {
+    if (book && hash === '#comments') document.getElementById('comments')?.scrollIntoView?.({ block: 'start' });
+  }, [book, hash]);
   const rawComments = commentsData ? commentsData.getCommentsByBookId : [];
 
   const { data: currentUserData } = useQuery(GET_BOOK_VIEWER, {
@@ -98,6 +103,10 @@ const BookDetailPage = ({ resolvedId } = {}) => {
   });
 
   const [likeBook] = useMutation(LIKE_BOOK_MUTATION);
+  const [publishBook, { loading: publishing }] = useMutation(UPDATE_BOOK_STATUS_MUTATION, {
+    refetchQueries: [{ query: GET_BOOK_DETAIL, variables: { id } }],
+    awaitRefetchQueries: true,
+  });
   const [toggleSavedBook] = useMutation(TOGGLE_SAVED_BOOK_MUTATION);
   
   const [createComment, { loading: commentSending }] = useMutation(CREATE_COMMENT_MUTATION, {
@@ -121,6 +130,26 @@ const BookDetailPage = ({ resolvedId } = {}) => {
     if (window.confirm("Bu kitabı kalıcı olarak silmek istediğinize emin misiniz?")) {
        await deleteBook({ variables: { id } });
     }
+  };
+
+  const handlePublish = async () => {
+    if (!hasContent) { showToast('Yayınlamak için en az bir bölüme metin ekleyin.', 'error'); return; }
+    if (!window.confirm('Kitap herkese görünür olacak. Onaylıyor musunuz?')) return;
+    try {
+      await publishBook({ variables: { bookId: book.id, status: 'WRITING' } });
+      showToast('Kitabınız yayınlandı ve okuyuculara açıldı.', 'success');
+    } catch (error) {
+      showToast(error.message || 'Kitap yayınlanamadı. Lütfen tekrar deneyin.', 'error');
+    }
+  };
+
+  const handlePublicationStatus = async status => {
+    const drafting = status === 'DRAFT';
+    if (!window.confirm(drafting ? 'Kitap yayından kaldırılıp taslağa çekilecek. Onaylıyor musunuz?' : 'Kitabın yazım aşamasını bitirdiniz mi?')) return;
+    try {
+      await publishBook({ variables: { bookId: book.id, status } });
+      showToast(drafting ? 'Kitabınız taslağa çekildi.' : 'Kitabınızın yazımı tamamlandı.', 'success');
+    } catch (error) { showToast(error.message || 'Yayın durumu değiştirilemedi. Lütfen tekrar deneyin.', 'error'); }
   };
 
   const handleLike = async () => {
@@ -250,6 +279,8 @@ const BookDetailPage = ({ resolvedId } = {}) => {
   // --- VARIABLES ---
   const author = book.author;
   const isAuthor = currentUserId && book.authorId === currentUserId;
+  const isDraft = (book.digitalStatus || (book.status === 'DRAFT' ? 'DRAFT' : 'PUBLISHED')) === 'DRAFT';
+  const isCompleted = book.writingStatus ? book.writingStatus === 'COMPLETED' : ['COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'].includes(book.status);
   const viewer = currentUserId && currentUserData?.getUserById?.id === currentUserId ? currentUserData.getUserById : null;
   const isAdmin = viewer?.role === 'ADMIN';
 
@@ -365,6 +396,16 @@ const BookDetailPage = ({ resolvedId } = {}) => {
                 </div>
               </div>
 
+              {isAuthor && !isDraft && <section className="book-publication-actions" aria-label="Yayın yönetimi">
+                <div><strong>{isCompleted ? 'Kitabınızın yazımı tamamlandı' : 'Kitabınız okuyuculara açık'}</strong>
+                  <p>{isCompleted ? 'Destek fonu için basım başvurusu oluşturabilir veya başvurunuzu takip edebilirsiniz.' : 'Yazımı tamamlayabilir veya kitabınızı yeniden taslağa çekebilirsiniz.'}</p>
+                </div>
+                <div className="book-publication-buttons">
+                  <Button variant="danger" size="small" onClick={() => handlePublicationStatus('DRAFT')} disabled={deleting} isLoading={publishing}>Taslağa Çek</Button>
+                  {isCompleted ? <Link to={`/print/${book.id}`} className="no-underline"><Button variant="primary" size="small" disabled={deleting || publishing}>Destek Fonu İçin Başvur / Başvurumu Gör</Button></Link>
+                    : <Button variant="primary" size="small" onClick={() => handlePublicationStatus('COMPLETED')} disabled={deleting || !hasContent} isLoading={publishing}>Yazımı Tamamla</Button>}
+                </div>
+              </section>}
               {(isAuthor || isAdmin) && (
                 <div className="admin-actions">
                    {isAuthor && (
@@ -374,11 +415,18 @@ const BookDetailPage = ({ resolvedId } = {}) => {
                        </Button>
                      </Link>
                    )}
+                   {isAuthor && (book.digitalStatus || (book.status === 'DRAFT' ? 'DRAFT' : 'PUBLISHED')) === 'DRAFT' && (
+                     <Button variant="primary" size="small" onClick={handlePublish} isLoading={publishing} disabled={deleting || !hasContent}>
+                       Yayınla (Görünür Yap)
+                     </Button>
+                   )}
+                   {isAuthor && book.status === 'DRAFT' && !hasContent && <p role="status">Yayınlamak için en az bir bölüme metin ekleyin.</p>}
                    <Button 
                      variant="danger" 
                      size="small" 
                      onClick={handleDelete} 
                      isLoading={deleting}
+                     disabled={publishing}
                      icon={<Delete fontSize="small"/>}
                    >
                      Sil
@@ -396,7 +444,7 @@ const BookDetailPage = ({ resolvedId } = {}) => {
               {(isAuthor || isAdmin) && <ClassificationEditor key={book.id} book={book} />}
               <BookFundingPanel bookId={book.id} />
 
-              <div className="comments-wrapper">
+              <div className="comments-wrapper" id="comments">
                 <Typography variant="h5" weight="bold" className="mb-4">
                   Yorumlar ({rawComments.length})                
                 </Typography>

@@ -1,0 +1,89 @@
+.personal-fox-anchor {
+  --fox-space: 64px;
+  position: relative;
+  padding-inline-end: var(--fox-space);
+}
+.personal-fox-slot {
+  position: absolute;
+  inset-inline-end: 4px;
+  bottom: -3px;
+  width: 50px;
+  height: 48px;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  z-index: 1;
+}
+.personal-fox-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform: rotate(-5deg);
+  filter: drop-shadow(0 2px 1px rgb(84 48 22 / 9%));
+}
+.personal-fox-slot--plane { width: 64px; height: 48px; }
+.personal-fox-slot--plane .personal-fox-image { transform: rotate(-9deg); }
+.personal-fox-anchor--welcome { --fox-space: 100px; }
+.personal-fox-anchor--welcome .personal-fox-slot { width: 88px; height: 66px; bottom: 0; }
+.personal-fox-anchor--discovery .personal-fox-slot { inset-inline-end: 0; transform: translateY(5px); }
+.personal-fox-anchor--portrait .personal-fox-image { transform: rotate(5deg); }
+.personal-fox-anchor--bookmark .personal-fox-slot { bottom: -6px; }
+.personal-fox-anchor--conversation .personal-fox-image { transform: rotate(7deg); }
+.personal-fox-anchor--journey .personal-fox-slot { transform: translateY(-4px); }
+.personal-fox-anchor--postcard .personal-fox-slot { bottom: 0; }
+.personal-fox-anchor--writer { --fox-space: 34px; }
+.personal-fox-anchor--writer .personal-fox-slot { width: 30px; height: 34px; bottom: 0; inset-inline-end: 0; }
+.personal-fox-anchor--reader { --fox-space: 44px; }
+.personal-fox-anchor--reader .personal-fox-slot { width: 42px; height: 31px; bottom: -5px; }
+.personal-fox-anchor--messages { --fox-space: 62px; }
+.personal-fox-anchor--messages .personal-fox-slot { width: 48px; height: 36px; bottom: 8px; inset-inline-end: 10px; }
+.personal-fox-anchor--farewell { --fox-space: 72px; }
+.personal-fox-anchor--farewell .personal-fox-slot { top: -12px; bottom: auto; width: 64px; height: 56px; opacity: .9; }
+.personal-fox-anchor--farewell .personal-fox-image { transform: rotate(8deg); }
+.personal-fox-flight-anchor { position: relative; }
+.personal-fox-peek-anchor { position: relative; }
+.personal-fox-peek-anchor > .personal-fox-slot--profile-peek {
+  inset-inline-end: -88px;
+  top: 82px;
+  bottom: auto;
+  width: 160px;
+  height: 112px;
+  clip-path: inset(0 0 0 74px);
+}
+.personal-fox-slot--profile-peek .personal-fox-image {
+  width: 160px;
+  height: 182px;
+  transform-origin: 50% 35%;
+  transform: rotate(22deg);
+}
+@media (max-width: 1399px) {
+  .personal-fox-slot--profile-peek { display: none; }
+}
+.personal-fox-flight-anchor > .personal-fox-slot--profile-flight {
+  inset-inline-end: calc(100% + 24px);
+  top: 56px;
+  bottom: auto;
+  height: auto;
+  aspect-ratio: 4 / 3;
+}
+@media (max-width: 1099px) {
+  .personal-fox-slot--profile-flight { display: none; }
+}
+@media (max-width: 600px) {
+  .personal-fox-anchor { --fox-space: 64px; }
+  .personal-fox-slot { width: 50px; height: 52px; }
+  .personal-fox-slot--plane { width: 64px; height: 48px; }
+  .personal-fox-anchor--welcome { --fox-space: 66px; }
+  .personal-fox-anchor--welcome .personal-fox-slot { width: 60px; height: 45px; }
+  .personal-fox-anchor--writer { --fox-space: 28px; }
+  .personal-fox-anchor--writer .personal-fox-slot { width: 26px; height: 30px; }
+  .personal-fox-anchor--reader { --fox-space: 40px; }
+  .personal-fox-anchor--messages { --fox-space: 54px; }
+  .personal-fox-anchor--farewell { --fox-space: 72px; }
+  .personal-fox-anchor--farewell .personal-fox-slot { width: 64px; height: 56px; top: -5px; }
+}
+@media print {
+  .personal-fox-slot { display: none; }
+  .personal-fox-anchor { padding-inline-end: 0; }
+}

@@ -4,6 +4,7 @@ import { once } from 'node:events';
 
 const authenticate = jest.fn();
 jest.unstable_mockModule('../src/services/userService.js', () => ({ authenticateWithGoogleCredential: authenticate }));
+jest.unstable_mockModule('../src/security/rateLimit.js', () => ({ consumeRate: jest.fn() }));
 const { default: googleRoutes } = await import('../src/routes/googleAuthRoutes.js');
 const { default: paymentRoutes } = await import('../src/routes/paymentRoutes.js');
 let server, baseUrl;
@@ -26,7 +27,7 @@ afterAll(async () => {
 });
 beforeEach(() => authenticate.mockReset());
 afterEach(() => jest.restoreAllMocks());
-const post = (path, values = {}) => fetch(`${baseUrl}${path}`, { method: 'POST', redirect: 'manual', body: new URLSearchParams(values) });
+const post = (path, values = {}, csrf = 'synthetic-google-csrf-token') => fetch(`${baseUrl}${path}`, { method: 'POST', redirect: 'manual', headers: csrf ? { cookie: `g_csrf_token=${csrf}` } : {}, body: new URLSearchParams({ g_csrf_token: 'synthetic-google-csrf-token', ...values }) });
 
 test('a missing Google credential returns to login without invoking authentication', async () => {
   const result = await post('/auth/google/callback');
@@ -38,14 +39,22 @@ test('a verified callback forwards only the allowed public session fields', asyn
   authenticate.mockResolvedValue({ token: 'test-jwt', user: { _id: 'user', username: 'reader', fullName: 'Türkçe + İsim', email: 'reader@test.com', role: 'USER', isPremium: false, profilePicture: '', password: 'secret-hash', passwordResetToken: 'private-reset-token' } });
   const result = await post('/auth/google/callback', { credential: 'verified-credential' });
   expect(result.status).toBe(302);
-  expect(authenticate).toHaveBeenCalledWith('verified-credential');
+  expect(authenticate).toHaveBeenCalledWith('verified-credential', { requireNonce: true });
   const location = new URL(result.headers.get('location'));
   expect(location.pathname).toBe('/auth/callback');
-  expect(location.searchParams.get('token')).toBe('test-jwt');
-  const user = JSON.parse(location.searchParams.get('user'));
+  expect(location.search).toBe('');
+  const params = new URLSearchParams(location.hash.slice(1));
+  expect(params.get('token')).toBe('test-jwt');
+  const user = JSON.parse(params.get('user'));
   expect(user).toMatchObject({ id: 'user', fullName: 'Türkçe + İsim', role: 'USER' });
   expect(user.password).toBeUndefined();
   expect(user.passwordResetToken).toBeUndefined();
+});
+
+test.each([undefined, '', 'wrong-csrf-token'])('Google callback rejects absent/mismatched double-submit cookies (%s)', async csrf => {
+  const result = await post('/auth/google/callback', { credential: 'attacker-credential' }, csrf || null);
+  expect(result.status).toBe(403);
+  expect(authenticate).not.toHaveBeenCalled();
 });
 test.each(['Google rejected', 'ACCOUNT_DELETED'])('Google authentication failure %s redirects safely', async message => {
   jest.spyOn(console, 'error').mockImplementation(() => {});

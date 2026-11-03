@@ -9,9 +9,20 @@ import { pubsub } from '../config/pubsub.js';
 
 import * as ScoreService from './scoreService.js';
 import { normalizeSessionCover } from '../utils/sessionCover.js';
+import { checkRate, consumeRate } from '../security/rateLimit.js';
 
 const NEW_SESSION_ENTRY = 'NEW_SESSION_ENTRY';
 const ENTRIES_PER_PAGE = 30;
+
+async function validSessionCode(session, accessCode, userId, context) {
+  const req = context?.req || context?.socketRequest;
+  const identities = req ? [`ip:${req.ip || req.socket?.remoteAddress || 'unknown'}`, ...(userId ? [`user:${userId}`] : [])] : [];
+  const scope = `private-session-code:${session.id}`, windowMs = 15 * 60000;
+  for (const identity of identities) await checkRate(scope, identity, 10, windowMs);
+  const valid = typeof accessCode === 'string' && accessCode.length <= 72 && session.accessCode && await bcrypt.compare(accessCode.trim(), session.accessCode);
+  if (!valid) for (const identity of identities) await consumeRate(scope, identity, 10, windowMs);
+  return Boolean(valid);
+}
 
 // --- YARDIMCI: Kullanıcı erişim kontrolü ---
 const checkAccess = async (session, userId) => {
@@ -139,7 +150,7 @@ export const closeSession = async (sessionId, userId) => {
 
 // --- SESSION ENTRY ---
 
-export const addSessionEntry = async (userId, sessionId, content, accessCode = null) => {
+export const addSessionEntry = async (userId, sessionId, content, accessCode = null, context) => {
   const session = await Session.findOne({ _id: sessionId, isDeleted: false, createdBy: { $nin: await inactiveUserIds() } });
   if (!session) throw new Error('Oturum bulunamadı.');
   if (!session.isActive) throw new Error('Bu oturum kapatılmış.');
@@ -147,7 +158,7 @@ export const addSessionEntry = async (userId, sessionId, content, accessCode = n
   // PRIVATE tipinde accessCode ile doğrulama
   if (session.type === 'PRIVATE') {
     if (!accessCode) throw new Error('Erişim kodu gereklidir.');
-    const isValid = await bcrypt.compare(accessCode, session.accessCode);
+    const isValid = await validSessionCode(session, accessCode, userId, context);
     if (!isValid) throw new Error('Erişim kodu hatalı.');
   } else {
     await checkAccess(session, userId);
@@ -200,7 +211,21 @@ export const addSessionEntry = async (userId, sessionId, content, accessCode = n
   return populated;
 };
 
-export const getSessionEntries = async (sessionId, limit, offset, userId) => {
+export const getSessionEntries = async (sessionId, limit, offset, userId, accessCode, context) => {
+  return readSessionEntries(sessionId, limit, offset, userId, accessCode, context);
+};
+
+export async function requireSessionRead(sessionId, userId, accessCode, context) {
+  const session = await getSessionById(sessionId, userId);
+  if (!session) throw new Error('Oturum bulunamadı.');
+  if (session.type === 'PRIVATE' && String(session.createdBy._id || session.createdBy) !== String(userId)) {
+    if (!await validSessionCode(session, accessCode, userId, context)) throw new Error('Özel oturum için geçerli erişim kodu gereklidir.');
+  }
+  return session;
+}
+
+export const readSessionEntries = async (sessionId, limit = 30, offset = 0, userId, accessCode, context) => {
+  await requireSessionRead(sessionId, userId, accessCode, context);
   const session = await Session.findOne({ _id: sessionId, isDeleted: false, createdBy: { $nin: await inactiveUserIds() } });
   if (!session) throw new Error('Oturum bulunamadı.');
 
@@ -254,9 +279,10 @@ export const deleteSessionEntry = async (entryId, userId) => {
   return true;
 };
 
-export const toggleSessionEntryLike = async (entryId, userId) => {
+export const toggleSessionEntryLike = async (entryId, userId, accessCode, context) => {
   const entry = await SessionEntry.findOne({ _id: entryId, isDeleted: false });
   if (!entry) throw new Error('Yazı bulunamadı.');
+  await requireSessionRead(entry.sessionId, userId, accessCode, context);
 
   const alreadyLiked = entry.likedBy
     .map(id => id.toString())
@@ -271,13 +297,13 @@ export const toggleSessionEntryLike = async (entryId, userId) => {
   return populateEntry(SessionEntry.findById(entryId));
 };
 
-export const verifySessionAccessCode = async (sessionId, accessCode) => {
+export const verifySessionAccessCode = async (sessionId, accessCode, context) => {
   const session = await Session.findOne({ _id: sessionId, isDeleted: false, createdBy: { $nin: await inactiveUserIds() } });
 
   if (!session) throw new Error('Oturum bulunamadı.');
   if (session.type !== 'PRIVATE') return true;
   if (!session.accessCode) return false;
-  return bcrypt.compare(accessCode?.trim(), session.accessCode);
+  return validSessionCode(session, accessCode, context?.user?._id, context);
 };
 
 // --- HESAP SİLME CASCADE'İ İÇİN YARDIMCI FONKSİYONLAR ---

@@ -65,7 +65,7 @@ const NavigationBar = () => {
               </Link>
 
               <Link to="/leaderboard" className="nav-item">
-                <Typography variant="body" weight="medium">Lider Tablosu</Typography>
+                <Typography variant="body" weight="medium">Aktiflik Tablosu</Typography>
               </Link>
 
               <Link to="/sessions" className="nav-item">

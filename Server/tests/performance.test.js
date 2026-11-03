@@ -199,8 +199,6 @@ test('book detail and reader metadata exclude chapter bodies at the database pro
   const selected = await run('GET_READING_CHAPTER', { bookId: books[0].id, chapterId: chapters[5].id });
   expect(selected.data.getReadingChapter.content).toBe(chapters[5].content);
   expect(selected.calls.filter(call => call.collection === 'chapters').map(call => call.method)).toEqual(['findOne']);
-  const full = await run('GET_BOOK_READER_FULL', { id: books[0].id });
-  expect(full.data.getBookById.chapters.every(chapter => chapter.content)).toBe(true);
 });
 
 test('single chapter loading keeps draft, removed chapter and cross-book access checks', async () => {

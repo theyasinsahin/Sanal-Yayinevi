@@ -1,0 +1,17 @@
+{
+  "files": 19,
+  "errors": 0,
+  "warnings": 2,
+  "details": [
+    {
+      "file": "/Client/src/pages/Auth/Login/index.jsx",
+      "errors": 0,
+      "warnings": 1
+    },
+    {
+      "file": "/Client/src/pages/QuotesPage/index.jsx",
+      "errors": 0,
+      "warnings": 1
+    }
+  ]
+}
