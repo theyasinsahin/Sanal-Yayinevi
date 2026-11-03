@@ -42,6 +42,7 @@
     "test:ci": "react-scripts test --watchAll=false --runInBand --watchman=false",
     "test:coverage": "npm run test:ci -- --coverage --coverageReporters=text-summary --coverageReporters=html --coverageReporters=json-summary",
     "test:e2e": "playwright test",
+    "test:google-callback-build": "node scripts/checkGoogleCallback.cjs",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

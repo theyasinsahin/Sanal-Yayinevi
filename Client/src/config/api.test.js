@@ -44,6 +44,19 @@ test('a same-origin Google callback can proxy to Render without changing GraphQL
   });
 });
 
+test.each([undefined, 'https://sanal-yayinevi.onrender.com/auth/google/callback', 'https://old-preview.vercel.app/auth/google/callback'])('Vercel uses the actual website callback despite a missing or stale build value (%s)', configured => {
+  expect(createApiConfig('https://sanal-yayinevi.onrender.com', undefined, configured, 'https://sanal-yayinevi-pi.vercel.app')).toEqual({
+    API_URL: 'https://sanal-yayinevi.onrender.com',
+    WS_URL: 'wss://sanal-yayinevi.onrender.com/graphql',
+    GOOGLE_LOGIN_URI: 'https://sanal-yayinevi-pi.vercel.app/auth/google/callback',
+  });
+});
+
+test.each(['http://localhost:3000', 'capacitor://localhost', 'null', 'https://vercel.app.example.test'])('other runtimes retain their explicit callback (%s)', origin => {
+  const explicit = 'https://custom.example.test/auth/google/callback';
+  expect(createApiConfig('http://localhost:5000', undefined, explicit, origin).GOOGLE_LOGIN_URI).toBe(explicit);
+});
+
 test.each([['login', LoginPage], ['registration', RegisterPage]])('%s sends Google credentials to the configured API, rather than a fixed live host', (_, Page) => {
   render(<MockedProvider><MemoryRouter><Page /></MemoryRouter></MockedProvider>);
   const expected = createApiConfig(process.env.REACT_APP_API_URL || undefined, process.env.REACT_APP_WS_URL, process.env.REACT_APP_GOOGLE_LOGIN_URI).GOOGLE_LOGIN_URI;
