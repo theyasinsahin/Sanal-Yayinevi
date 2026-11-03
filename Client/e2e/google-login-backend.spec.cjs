@@ -93,3 +93,43 @@ test('Google form callback stays logged in with real HTTP, WebSocket and ephemer
   expect(failures).toEqual([]);
   expect(await page.evaluate(() => Boolean(localStorage.getItem('token')))).toBe(true);
 });
+
+test('same-origin auth proxy preserves the CSRF cookie that a different-host callback cannot receive', async ({ page, context }) => {
+  await page.route('**/*', route => {
+    const url = new URL(route.request().url());
+    return ['127.0.0.1', 'localhost'].includes(url.hostname) && ['3100', '5001'].includes(url.port) ? route.continue() : route.abort();
+  });
+  await page.goto('/login');
+  const nonce = await page.evaluate(() => JSON.parse(sessionStorage.getItem('betik:google-login-nonce')).nonce);
+  const csrf = 'synthetic-frontend-only-google-csrf';
+  await context.addCookies([{ name: 'g_csrf_token', value: csrf, url: 'http://127.0.0.1:3100' }]);
+  const submit = action => page.evaluate(({ action, nonce, csrf }) => {
+    const form = document.createElement('form'); form.method = 'POST'; form.action = action;
+    for (const [name, value] of Object.entries({ credential: `synthetic-google:${nonce}`, g_csrf_token: csrf })) {
+      const input = document.createElement('input'); input.name = name; input.value = value; form.append(input);
+    }
+    document.body.append(form); form.submit();
+  }, { action, nonce, csrf });
+
+  const rejected = page.waitForResponse(response => response.url() === 'http://localhost:5001/auth/google/callback');
+  await submit('http://localhost:5001/auth/google/callback');
+  expect((await rejected).status()).toBe(403);
+  await expect(page.locator('body')).toContainText('GOOGLE_CSRF_FAILED');
+
+  await page.goto('/login');
+  let forwardedCookie;
+  await page.route('http://127.0.0.1:3100/auth/google/callback', async route => {
+    const headers = await route.request().allHeaders();
+    forwardedCookie = headers.cookie;
+    const response = await route.fetch({ url: 'http://localhost:5001/auth/google/callback',
+      headers: { 'content-type': headers['content-type'], ...(headers.cookie ? { cookie: headers.cookie } : {}) },
+      maxRedirects: 0,
+    });
+    await route.fulfill({ response });
+  });
+  await submit('http://127.0.0.1:3100/auth/google/callback');
+  await expect(page).toHaveURL(/\/profile$/);
+  await expect(page.getByRole('heading', { name: 'Google Tarayıcı Okuru', exact: true })).toBeVisible();
+  expect(forwardedCookie).toContain(`g_csrf_token=${csrf}`);
+  expect(await page.evaluate(() => Boolean(localStorage.getItem('token')))).toBe(true);
+});

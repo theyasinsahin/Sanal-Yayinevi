@@ -89,4 +89,6 @@ Kitap kartlarında destek tutarları ve Keşfet'teki hedefe yakın/tamamlanmış
 
 Kitap yazma/yayınlama, mobil editör, bildirim ve mesaj araması düzenlemeleri: [akış raporu](docs/book-authoring-reader-report.md). Son toplu kontroller ve dal güncellemesi: [3 Kasım teslim kaydı](docs/release-readiness-2026-11-03.md).
 
+Vercel frontend / Render backend ile Google girişinde `GOOGLE_CSRF_FAILED` için [aynı-origin callback kurulumu](docs/google-login-production-fix.md).
+
 Betik © 2026 - Tüm Hakları Saklıdır.
