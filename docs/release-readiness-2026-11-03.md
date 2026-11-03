@@ -7,7 +7,8 @@ Bu teslim; güvenlik güçlendirmelerini, Google giriş/profil sorgusu ve hesap 
 ## Dal güncellemesi
 
 - `origin` referansları fetch ile yenilendi.
-- Uzak `develop` ucu: `ee4ec4d`. Bu birleştirme commit'inin dosya ağacı yerel geçmişteki `efd8df2` ile aynı; yereldeki iki mevcut commit korunarak aktif dala alınacak.
+- Uzak `develop` ucu: `ee4ec4d`. Bu birleştirme commit'inin dosya ağacı yerel geçmişteki `efd8df2` ile aynı; yereldeki iki mevcut commit korunarak aktif dala alındı. Kodda ek bir çatışma veya değişiklik oluşmadı.
+- Yerel `develop` referansı da commit kaybetmeden `origin/develop` ucuna ilerletildi.
 - `main` dalına commit, merge veya push yapılmıyor. Uzak sunucuya değişiklik gönderilmiyor.
 
 ## Yapılandırma
