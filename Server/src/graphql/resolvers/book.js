@@ -11,7 +11,7 @@ import { fundingSummary, isPublishedDigitalBook } from '../../services/bookFundi
 
 export default {
   Query: {
-    getBookById: async (_, { id }, { user }) => BookService.findBookById(id, { viewer: user }),
+    getBookById: async (_, { id }, { user }) => BookService.findBookById(id, { viewer: user, enforceVisibility: true }),
 
     getBooksByAuthorId: async (_, { authorId }, { user }) => {
       const profile = await UserService.findUserById(authorId);
@@ -21,7 +21,7 @@ export default {
     },
 
 
-    getAllBooks: async () => BookService.findAllBooks(),
+    getAllBooks: async (_, args) => BookService.findAllBooks(args),
 
     getBookByTitle: async (_, { title }) => BookService.findBookByTitle(title),
 

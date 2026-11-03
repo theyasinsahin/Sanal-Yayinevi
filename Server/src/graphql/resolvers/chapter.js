@@ -5,26 +5,33 @@ import { chapterWordCount } from '../../utils/chapterLength.js';
 import * as BookService from '../../services/bookService.js';
 import * as BookFollowService from '../../services/bookFollowService.js';
 import { assertContentAccess } from '../../utils/printedBooks.js';
+import { cleanRichText } from '../../security/richText.js';
+import { canReadBook } from '../../utils/bookAccess.js';
+
+async function visibleChapters(chapters, context = {}) {
+  const books = await getLoaders(context).books.loadMany(chapters.map(chapter => chapter.bookId));
+  return chapters.filter((chapter, index) => canReadBook(books[index], context.user));
+}
 
 
 export default {
   Query: {
-    getChaptersByBookId: async (_, { bookId }) => {
-      return ChapterService.findChaptersByBookId(bookId);
+    getChaptersByBookId: async (_, { bookId }, context) => {
+      return visibleChapters(await ChapterService.findChaptersByBookId(bookId), context);
     },
 
-    getChapterById: async (_, { id }) => {
+    getChapterById: async (_, { id }, context) => {
       const chapter = await ChapterService.findChapterById(id);
       if (!chapter) throw new Error("Bölüm bulunamadı.");
-      return chapter;
+      return (await visibleChapters([chapter], context))[0] || null;
     },
 
-    getAllChapters: async () => {
-      return ChapterService.findAllChapters();
+    getAllChapters: async (_, args, context) => {
+      return visibleChapters(await ChapterService.findAllChapters(args), context);
     },
 
-    getChaptersByAuthorId: async (_, { authorId }) => {
-      return ChapterService.findChaptersByAuthorId(authorId);
+    getChaptersByAuthorId: async (_, { authorId }, context) => {
+      return visibleChapters(await ChapterService.findChaptersByAuthorId(authorId), context);
     }
   },
 
@@ -50,7 +57,7 @@ export default {
   });
 
   // Takipçilere bildirim gönder — await etmiyoruz, kullanıcıyı bekletmesin
-  BookFollowService.notifyBookFollowers(bookId, title, book.title)
+  BookFollowService.notifyBookFollowers(bookId, title, book.title, chapter.id)
     .catch(err => console.error('Bildirim gönderilemedi:', err));
 
   return chapter;
@@ -97,7 +104,7 @@ export default {
   Chapter: {
     isHidden: chapter => chapter.isHidden === true,
     canReadContent: chapterReadable,
-    content: async (chapter, args, context) => await chapterReadable(chapter, args, context) ? chapter.content || '' : '',
+    content: async (chapter, args, context) => await chapterReadable(chapter, args, context) ? cleanRichText(chapter.content) : '',
     wordCount: chapter => Number.isInteger(chapter.wordCount) ? chapter.wordCount : typeof chapter.content === 'string' ? chapterWordCount(chapter.content) : null,
   }
 };

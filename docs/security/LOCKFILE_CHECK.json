@@ -1,0 +1,18 @@
+[
+  {
+    "directory": "Server",
+    "packages": 695,
+    "origins": [
+      "https://registry.npmjs.org"
+    ],
+    "missingIntegrity": 0
+  },
+  {
+    "directory": "Client",
+    "packages": 1656,
+    "origins": [
+      "https://registry.npmjs.org"
+    ],
+    "missingIntegrity": 0
+  }
+]

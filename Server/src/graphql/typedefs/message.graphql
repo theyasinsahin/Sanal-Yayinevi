@@ -42,6 +42,7 @@ extend type Mutation {
 }
 
 extend type Query {
+  getMessageRecipients(search: String, limit: Int, offset: Int): [User!]!
   getConversations: [Conversation!]!
   getConversation(conversationId: ID!): Conversation
   getMessages(conversationId: ID!, limit: Int, offset: Int): [Message!]!

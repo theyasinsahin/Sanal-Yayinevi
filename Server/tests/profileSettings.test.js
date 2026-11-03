@@ -167,7 +167,7 @@ test('account deletion closes the account and hides authored content without har
   expect((await User.findById(user._id)).isDeleted).toBe(true);
   expect((await Book.findById(book._id)).isDeleted).toBe(true);
   expect((await Comment.findById(comment._id)).isDeleted).toBe(true);
-  await expect(users.loginUser(user.email, 'ValidPass1!')).rejects.toThrow('silinmiş');
+  await expect(users.loginUser(user.email, 'ValidPass1!')).rejects.toThrow('Giriş bilgileri geçersiz');
 });
 
 test('email and password changes validate credentials and report SMTP failure honestly', async () => {
@@ -221,9 +221,10 @@ test('session subscriptions use the installed PubSub API and deliver new entries
 });
 
 test('Google sign-in reactivates a deactivated account', async () => {
+  process.env.GOOGLE_CLIENT_ID = 'synthetic-google-client';
   const owner = await createUser('google', { isActive: false });
   const verification = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken').mockResolvedValue({
-    getPayload: () => ({ email: owner.email, name: owner.fullName }),
+    getPayload: () => ({ email: owner.email, name: owner.fullName, sub: 'synthetic-google-subject', email_verified: true, hd: 'example.test' }),
   });
   try {
     const result = await users.authenticateWithGoogleCredential('mock-google-credential');

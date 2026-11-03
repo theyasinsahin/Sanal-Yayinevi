@@ -5,6 +5,16 @@ import { canViewProfile, canViewLibrary, canViewFollowList, sameUser, canReceive
 import { weeklyWords } from '../../services/writingService.js';
 import { getAdminRecord, saveAdminRecord } from '../../services/adminService.js';
 
+const accountMessages = new Set([
+  'E-posta şu anda gönderilemiyor. Lütfen biraz sonra tekrar deneyin.',
+  'E-posta veya kullanıcı adı zaten kullanımda.', 'Geçersiz veya süresi dolmuş doğrulama kodu.',
+  'Geçerli bir e-posta girin.', 'Kullanıcı adı 3–50 harf, rakam, nokta, tire veya alt çizgiden oluşmalı.',
+  'Ad soyad 2–120 karakter olmalı.', 'Şifre UTF-8 biçiminde en fazla 72 bayt olabilir.',
+  'Şifre en az 8 karakter olmalıdır.', 'Şifre en az 1 büyük harf içermelidir.',
+  'Şifre en az 1 küçük harf içermelidir.', 'Şifre en az 1 rakam içermelidir.', 'Şifre en az 1 özel karakter içermelidir.',
+]);
+const accountMessage = error => error.code === 11000 ? 'E-posta veya kullanıcı adı zaten kullanımda.' : accountMessages.has(error.message) ? error.message : 'İşlem tamamlanamadı. Lütfen daha sonra tekrar deneyin.';
+
 async function profileFor(parent, context) {
   context.profileAccessCache ??= new Map();
   const id = String(parent._id ?? parent.id);
@@ -21,7 +31,7 @@ export default {
     
     getUserByEmail: async (_, { email }, { user }) => user && (user.email === email || user.role === 'ADMIN') ? UserService.findUserByEmail(email) : null,
     
-    getAllUsers: async () => UserService.getAllUsers(),
+    getAllUsers: async (_, args) => UserService.getAllUsers(args),
 
     me: async (_, __, { user }) => { // User modelini context'ten veya service'den alabilirsin
       if (!user) throw new Error("Giriş yapmalısınız.");
@@ -51,6 +61,11 @@ export default {
   },
 
   Mutation: {
+    logout: async (_, __, { user, User }) => {
+      if (!user) throw new Error('Giriş yapmalısınız.');
+      await User.updateOne({ _id: user._id }, { $inc: { authVersion: 1 } });
+      return { code: 200, message: 'Oturumlar sonlandırıldı.' };
+    },
 
     forgotPassword: async (_, { email }) => {
       return UserService.forgotPassword(email);
@@ -68,8 +83,8 @@ export default {
         try {
             return await UserService.sendRegistrationCode(email, username);
         } catch (e) {
-            console.error("SEND CODE ERROR =>", e); // <--- SERVER'DA GÖRMEK İÇİN BUNU EKLE
-            return { code: 400, message: e.message };
+            console.error('REGISTRATION_CODE_FAILED');
+            return { code: 400, message: accountMessage(e) };
         }
     },
 
@@ -77,8 +92,8 @@ export default {
         try {
             return await UserService.registerUser(args);
         } catch (e) {
-            console.error("REGISTER ERROR =>", e); // <--- SERVER'DA GÖRMEK İÇİN BUNU EKLE
-            return { code: 400, message: e.message };
+            console.error('REGISTRATION_FAILED');
+            return { code: 400, message: accountMessage(e) };
         }
     },
 

@@ -5,15 +5,15 @@ import { Link, useLocation } from 'react-router-dom';
 import { Badge } from '../../UI/Badge';
 import './PrintedBookCard.css';
 
-export default function PrintedBookCard({ book }) {
+export default function PrintedBookCard({ book, coverOnly = false }) {
   const location = useLocation();
   const catalogReturn = ['/feed', '/printed-books'].includes(location.pathname) ? location.pathname + location.search : undefined;
   const [failedUrl, setFailedUrl] = useState(null);
-  return <Link to={bookPath(book)} state={{ catalogReturn }} className="printed-book-card">
+  return <Link to={bookPath(book)} state={{ catalogReturn }} className={`printed-book-card${coverOnly ? ' printed-book-card--cover-only' : ''}`} aria-label={coverOnly ? [book.title, book.printedAuthor].filter(Boolean).join(' — ') : undefined} title={coverOnly ? book.title : undefined}>
     <div className="printed-book-cover">
       {book.imageUrl && failedUrl !== book.imageUrl ? <img src={book.imageUrl} alt={`${book.title} kapağı`} loading="lazy" onError={() => setFailedUrl(book.imageUrl)} /> : <span>{book.title}</span>}
     </div>
-    <div className="printed-book-card-body">
+    {!coverOnly && <div className="printed-book-card-body">
       <Badge variant="neutral">Basılı eser</Badge>
       <h2>{book.title}</h2>
       <ClassificationSummary book={book} compact />
@@ -21,6 +21,6 @@ export default function PrintedBookCard({ book }) {
       <p>{book.publisher} · {book.publicationYear}</p>
       <p>{book.pageCount} sayfa{book.isbn ? ` · ISBN ${book.isbn}` : ''}</p>
       <span className="ui-text-link">Kitabı incele</span>
-    </div>
+    </div>}
   </Link>;
 }

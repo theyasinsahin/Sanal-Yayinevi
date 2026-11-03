@@ -48,17 +48,17 @@ extend type Mutation {
     accessCode: String
   ): SessionEntry!
   deleteSessionEntry(entryId: ID!): Boolean!
-  toggleSessionEntryLike(entryId: ID!): SessionEntry!
+  toggleSessionEntryLike(entryId: ID!, accessCode: String): SessionEntry!
   closeSession(sessionId: ID!): Boolean!
 }
 
 extend type Query {
   getSessions(limit: Int, offset: Int): [Session!]!
   getSession(sessionId: ID!): Session
-  getSessionEntries(sessionId: ID!, limit: Int, offset: Int): [SessionEntry!]!
+  getSessionEntries(sessionId: ID!, limit: Int, offset: Int, accessCode: String): [SessionEntry!]!
   verifySessionAccessCode(sessionId: ID!, accessCode: String!): Boolean!
 }
 
 extend type Subscription {
-  onNewSessionEntry(sessionId: ID!): SessionEntry!
+  onNewSessionEntry(sessionId: ID!, accessCode: String): SessionEntry!
 }

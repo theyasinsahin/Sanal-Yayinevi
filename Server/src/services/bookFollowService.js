@@ -42,7 +42,7 @@ export const getFollowedBooks = async (userId) => {
 };
 
 // Chapter eklendiğinde takipçilere bildirim gönder
-export const notifyBookFollowers = async (bookId, chapterTitle, bookTitle) => {
+export const notifyBookFollowers = async (bookId, chapterTitle, bookTitle, chapterId) => {
   // Bu kitabı takip eden tüm kullanıcıları bul
   const followers = await User.find({ followedBooks: bookId }).select('_id');
   if (!followers.length) return;
@@ -54,7 +54,7 @@ export const notifyBookFollowers = async (bookId, chapterTitle, bookTitle) => {
     title: `${bookTitle} — Yeni Bölüm!`,
     message: `"${chapterTitle}" bölümü eklendi.`,
     icon: '📖',
-    meta: { bookId, chapterTitle },
+    meta: { bookId, chapterTitle, ...(chapterId ? { chapterId } : {}) },
   }));
 
   await Notification.insertMany(notifications);

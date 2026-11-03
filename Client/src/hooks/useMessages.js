@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useSubscription, useLazyQuery } from '@apollo/client';
 import { useAuth } from '../context/AuthContext';
 import {
   GET_CONVERSATIONS,
+  GET_MESSAGE_RECIPIENTS,
   GET_MESSAGES,
   GET_OR_CREATE_CONVERSATION,
   GET_UNREAD_MESSAGE_COUNT,
@@ -14,9 +15,37 @@ import {
 
 const MESSAGES_PER_PAGE = 20;
 
+export const useMessageRecipients = search => {
+  const { user } = useAuth();
+  const [exhausted, setExhausted] = useState(false);
+  const currentSearch = useRef(search);
+  currentSearch.current = search;
+  useEffect(() => setExhausted(false), [search, user?.id]);
+  const { data, loading, error, fetchMore, refetch } = useQuery(GET_MESSAGE_RECIPIENTS, {
+    variables: { search, limit: 30, offset: 0 }, skip: !user,
+    fetchPolicy: 'network-only', notifyOnNetworkStatusChange: true,
+  });
+  const recipients = data?.getMessageRecipients || [];
+  const loadMore = async () => {
+    let receivedCount;
+    await fetchMore({
+      variables: { offset: recipients.length },
+      updateQuery: (previous, { fetchMoreResult }) => {
+        const page = fetchMoreResult?.getMessageRecipients || [];
+        receivedCount = page.length;
+        return { getMessageRecipients: [...previous.getMessageRecipients, ...page]
+          .filter((person, index, people) => people.findIndex(item => item.id === person.id) === index),
+        };
+      },
+    });
+    if (currentSearch.current === search && receivedCount !== undefined) setExhausted(receivedCount < 30);
+  };
+  return { recipients, loading, error, refetch, loadMore, hasMore: recipients.length > 0 && recipients.length % 30 === 0 && !exhausted };
+};
+
 // --- Konuşma listesi ---
 export const useGetConversations = () => {
-  const { data, loading, error } = useQuery(GET_CONVERSATIONS, {
+  const { data, loading, error, refetch } = useQuery(GET_CONVERSATIONS, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -24,6 +53,7 @@ export const useGetConversations = () => {
     conversations: data?.getConversations ?? [],
     loading,
     error,
+    refetch,
   };
 };
 
@@ -229,7 +259,8 @@ export const useGetOrCreateConversation = () => {
   });
 
   const getOrCreateConversation = async (recipientId) => {
-    const { data } = await getOrCreate({ variables: { recipientId } });
+    const { data, error } = await getOrCreate({ variables: { recipientId } });
+    if (error) throw error;
     return data?.getOrCreateConversation ?? null;
   };
 

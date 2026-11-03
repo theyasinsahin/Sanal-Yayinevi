@@ -54,7 +54,7 @@ test('infinite scrolling deduplicates overlapping pages and stops after a short 
   expect(await screen.findByText('quote0')).toBeInTheDocument();
   // Wait for the observer associated with the loaded page, rather than firing
   // the initial observer while its callback still captures loading=true.
-  await waitFor(() => expect(observers.length).toBeGreaterThan(1));
+  await waitFor(() => expect(observers.some(observer => observer.observe.mock.calls.length && !observer.disconnect.mock.calls.length)).toBe(true));
   await act(async () => { observers.at(-1).callback([{ isIntersecting: true }]); });
   expect(await screen.findByText('last')).toBeInTheDocument();
   expect(screen.getAllByText('quote19')).toHaveLength(1);

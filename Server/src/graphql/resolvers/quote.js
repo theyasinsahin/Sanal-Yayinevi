@@ -2,10 +2,12 @@
 import * as QuoteService from '../../services/quoteService.js';
 import { getLoaders } from '../loaders.js';
 import { canReadQuote } from '../../utils/quoteAccess.js';
+import { canReadBook } from '../../utils/bookAccess.js';
 
 const visibleText = field => async (quote, _, context) => {
   const chapter = quote.chapterId ? await getLoaders(context).chapters.load(quote.chapterId) : null;
-  return chapter?.isHidden || !canReadQuote(quote, context.user) ? '' : quote[field] || '';
+  const book = quote.bookId ? await getLoaders(context).books.load(quote.bookId._id || quote.bookId) : null;
+  return chapter?.isHidden || !canReadQuote(quote, context.user) || !canReadBook(book, context.user) ? '' : quote[field] || '';
 };
 
 export default {

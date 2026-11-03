@@ -19,8 +19,10 @@ import '../AuthPages.css';
 import { MainLayout } from '../../../components/Layout/MainLayout';
 
 import { GOOGLE_LOGIN_URI } from '../../../config/api';
+import { googleLoginNonce } from '../../../utils/googleLoginNonce';
 
 const LoginPage = () => {
+  const [googleNonce] = useState(googleLoginNonce);
   const navigate = useNavigate();
   const { login } = useAuth();
   const { user } = useAuth();
@@ -108,6 +110,7 @@ const LoginPage = () => {
               sonuç URL üzerinden GoogleCallback sayfasında işlenir. */}
           <div className="google-auth-wrapper">
             <GoogleLogin locale="tr"
+              nonce={googleNonce}
               ux_mode="redirect"
               login_uri={GOOGLE_LOGIN_URI}
               onError={() => setCustomError("Google penceresi açılamadı veya iptal edildi.")}

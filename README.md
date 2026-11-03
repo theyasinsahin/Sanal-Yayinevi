@@ -61,7 +61,7 @@ Projeyi yerel ortamınızda çalıştırmak için aşağıdaki adımları izleyi
 
 ### Gereksinimler
 
-- Node.js 22 (bu geliştirmede test edilen sürüm: 22.14.0)
+- Node.js 22.15.0 veya üstü desteklenen, güvenlik yamaları uygulanmış bir Node.js sürümü
 - MongoDB replica set veya mongos; tek düğümlü standalone finansal transaction desteklemez.
 
 ### Kurulum
@@ -83,8 +83,10 @@ npm.cmd --prefix Server start
 npm.cmd --prefix Client start
 ```
 
-Testler: [test kılavuzu](docs/testing.md). Basım sisteminin doğrulama sonuçları ve canlı kullanım eksikleri: [sonuç raporu](docs/print-funding-report.md).
+Testler: [test kılavuzu](docs/testing.md). Basım sisteminin doğrulama sonuçları ve canlı kullanım eksikleri: [sonuç raporu](docs/print-funding-report.md). Kaynak güvenlik denetimi, kalan riskler ve canlı ön koşulları: [güvenlik raporu](docs/security/SECURITY_AUDIT_TR.md), [test sonuçları](docs/security/SECURITY_TEST_RESULTS_TR.md), [operasyon kılavuzu](docs/security/SECURITY_OPERATIONS_TR.md).
 
 Kitap kartlarında destek tutarları ve Keşfet'teki hedefe yakın/tamamlanmış kampanya listeleri: [kullanım ve teknik açıklamalar](docs/book-funding-discovery.md).
+
+Kitap yazma/yayınlama, mobil editör, bildirim ve mesaj araması düzenlemeleri: [akış raporu](docs/book-authoring-reader-report.md). Son toplu kontroller ve dal güncellemesi: [3 Kasım teslim kaydı](docs/release-readiness-2026-11-03.md).
 
 Betik © 2026 - Tüm Hakları Saklıdır.

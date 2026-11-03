@@ -11,10 +11,13 @@
 // olması gerekir.
 import express from 'express';
 import * as UserService from '../services/userService.js';
+import { timingSafeEqual } from 'node:crypto';
+import { consumeRate } from '../security/rateLimit.js';
 
 const router = express.Router();
 
 router.post('/callback', async (req, res) => {
+  res.set({ 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' });
   const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
 
   try {
@@ -24,7 +27,12 @@ router.post('/callback', async (req, res) => {
       return res.redirect(`${clientUrl}/login?error=google_no_credential`);
     }
 
-    const { token, user } = await UserService.authenticateWithGoogleCredential(credential);
+    const cookies = String(req.headers.cookie || '').split(';').map(value => value.trim()).filter(value => value.startsWith('g_csrf_token=')).map(value => value.slice('g_csrf_token='.length));
+    const csrf = req.body?.g_csrf_token;
+    if (cookies.length !== 1 || typeof csrf !== 'string' || csrf.length < 16 || csrf.length > 512 || Buffer.byteLength(cookies[0]) !== Buffer.byteLength(csrf) || !timingSafeEqual(Buffer.from(cookies[0]), Buffer.from(csrf))) return res.status(403).json({ error: 'GOOGLE_CSRF_FAILED' });
+    if (typeof credential !== 'string' || credential.length > 8192) return res.status(400).json({ error: 'BAD_REQUEST' });
+    await consumeRate('google-callback', req.ip || req.socket.remoteAddress, 20, 15 * 60000);
+    const { token, user, loginNonce } = await UserService.authenticateWithGoogleCredential(credential, { requireNonce: true });
 
     // Frontend'e göndereceğimiz kullanıcı verisini daralt (parola vb. hassas alanlar hariç)
     const userPayload = {
@@ -41,9 +49,9 @@ router.post('/callback', async (req, res) => {
 
     // Frontend'deki /auth/callback route'una yönlendir; o sayfa
     // token'ı okuyup AuthContext.login() ile localStorage'a yazacak.
-    return res.redirect(`${clientUrl}/auth/callback?token=${token}&user=${encodedUser}`);
+    return res.redirect(`${clientUrl}/auth/callback#token=${encodeURIComponent(token)}&user=${encodedUser}&nonce=${encodeURIComponent(loginNonce)}`);
   } catch (err) {
-    console.error('Google callback hatası:', err.message);
+    console.error('GOOGLE_CALLBACK_FAILED');
     return res.redirect(`${clientUrl}/login?error=google_auth_failed`);
   }
 });

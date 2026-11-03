@@ -1,6 +1,7 @@
 // src/pages/Auth/GoogleCallback/index.jsx
 import React, { useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { consumeGoogleLoginNonce } from '../../../utils/googleLoginNonce';
 import { useAuth } from '../../../context/AuthContext';
 import { Typography } from '../../../components/UI/Typography';
 import { MainLayout } from '../../../components/Layout/MainLayout';
@@ -11,7 +12,7 @@ import { MainLayout } from '../../../components/Layout/MainLayout';
 // (localStorage + user state) aktar, sonra temiz bir sayfaya geç.
 const GoogleCallback = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const location = useLocation();
   const { login } = useAuth();
   const handled = useRef(false); // StrictMode / çift render'da iki kez çalışmasın
 
@@ -19,10 +20,15 @@ const GoogleCallback = () => {
     if (handled.current) return;
     handled.current = true;
 
+    const searchParams = new URLSearchParams(location.hash.slice(1));
     const token = searchParams.get('token');
     const userParam = searchParams.get('user');
 
-    if (!token || !userParam) {
+    // Bind the verified Google nonce to the initiating tab; arbitrary callback
+    // links cannot sign a victim into an attacker's account.
+    const validNonce = consumeGoogleLoginNonce(searchParams.get('nonce'));
+    window.history.replaceState(null, '', window.location.pathname);
+    if (!token || !userParam || !validNonce) {
       navigate('/login?error=google_auth_failed', { replace: true });
       return;
     }
@@ -30,13 +36,14 @@ const GoogleCallback = () => {
     try {
       // URLSearchParams zaten decode ediyor, ekstra decodeURIComponent gerekmiyor
       const userData = JSON.parse(userParam);
+      if (typeof userData.id !== 'string' || !userData.id) throw new Error('Invalid session');
       login(token, userData.id, userData);
       navigate('/profile', { replace: true });
     } catch (err) {
-      console.error('Google callback parse hatası:', err);
+      console.error('Google giriş yanıtı işlenemedi.');
       navigate('/login?error=google_auth_failed', { replace: true });
     }
-  }, [searchParams, login, navigate]);
+  }, [location.hash, login, navigate]);
 
   return (
     <MainLayout>

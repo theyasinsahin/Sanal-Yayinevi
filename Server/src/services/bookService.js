@@ -9,31 +9,35 @@ import * as ChapterService from './chapterService.js';
 import * as CommentService from './commentService.js';
 import { isPrintedBook, visiblePrintedFilter, digitalBookFilter } from '../utils/printedBooks.js';
 import { FundingCampaign } from '../models/printFunding.js';
+import { canReadBook } from '../utils/bookAccess.js';
+import { literalSearch } from '../security/search.js';
+import { paginate } from '../security/pagination.js';
 
 // ── Okuma İşlemleri ──────────────────────────────────────────────
 // Varsayılan olarak tüm okuma fonksiyonları silinmiş (isDeleted: true)
 // kitapları hariç tutar. Admin panelinde silinenleri de görmek gerekirse
 // includeDeleted: true geçilebilir.
 
-export const findBookById = async (id, { includeDeleted = false, viewer } = {}) => {
+export const findBookById = async (id, { includeDeleted = false, viewer, enforceVisibility = false } = {}) => {
   const query = { _id: id };
   if (!includeDeleted) query.isDeleted = false;
   // Printed editions remain catalog records even without a Betik author account.
   const book = await Book.findOne(query);
   if (!book || includeDeleted) return book;
+  if (enforceVisibility && !canReadBook(book, viewer)) return null;
   if (isPrintedBook(book)) {
     return book.publicationStatus === 'APPROVED' || viewer?.role === 'ADMIN' || (viewer && String(book.submittedBy) === String(viewer._id || viewer.id)) ? book : null;
   }
   return (await inactiveUserIds()).some(userId => String(userId) === String(book.authorId)) ? null : book;
 };
 
-export const findAllBooks = async () => {
-  return await Book.find({
+export const findAllBooks = async (options = {}) => {
+  return await paginate(Book.find({
     ...digitalBookFilter,
     isDeleted: false,
     authorId: { $nin: await inactiveUserIds() },
     status: { $in: ['WRITING', 'COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'] }
-  }).sort({ createdAt: -1 });
+  }).sort({ createdAt: -1, _id: -1 }), options);
 };
 
 // authorId'ye göre kitapları getir
@@ -47,10 +51,11 @@ export const findBookByTitle = async (title) => {
 };
 
 export const searchBooksInDb = async (query) => {
+  query = literalSearch(query);
   const matchingUsers = await User.find({
     fullName: { $regex: query, $options: 'i' },
     isDeleted: false,
-  }).select('_id');
+  }).select('_id').limit(100);
 
   const matchingUserIds = matchingUsers.map(u => u._id);
 
@@ -64,7 +69,7 @@ export const searchBooksInDb = async (query) => {
       { description: { $regex: query, $options: 'i' } },
       { authorId: { $in: matchingUserIds } }
     ]
-  });
+  }).limit(100);
 };
 
 export const createBook = async (bookData, userId) => {

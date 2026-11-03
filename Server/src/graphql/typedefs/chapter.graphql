@@ -3,7 +3,7 @@
 extend type Query {
   getChaptersByBookId(bookId: ID!): [Chapter!]
   getChapterById(id: ID!): Chapter
-  getAllChapters: [Chapter!]
+  getAllChapters(limit: Int, offset: Int): [Chapter!]
   # Yazarın tüm bölümlerini çekmek nadir bir senaryodur ama kalabilir
   getChaptersByAuthorId(authorId: ID!): [Chapter!]
 }

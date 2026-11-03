@@ -71,7 +71,7 @@ const MobileMenu = ({ isOpen, onClose }) => {
 
           <Link to="/leaderboard" className="mobile-nav-item" onClick={onClose}>
             <EmojiEvents className="mobile-icon" />
-            <Typography variant="body" weight="medium">Lider Tablosu</Typography>
+            <Typography variant="body" weight="medium">Aktiflik Tablosu</Typography>
           </Link>
 
           <Link to="/sessions" className="mobile-nav-item" onClick={onClose}>

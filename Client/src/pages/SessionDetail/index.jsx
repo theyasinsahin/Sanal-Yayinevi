@@ -264,16 +264,18 @@ const SessionDetail = ({ resolvedId } = {}) => {
   // uygulansın istiyoruz.
   useEffect(() => {
     window.scrollTo(0, 0);
+    setAccessCode(null);
   }, [sessionId]);
 
 const { session, loading: sessionLoading, error: sessionError } = useGetSession(sessionId);
-  const { entries, loading: entriesLoading } = useGetSessionEntries(sessionId);
-  const { addEntry, loading: sending }        = useAddSessionEntry(sessionId);
-  const { deleteEntry }                       = useDeleteSessionEntry(sessionId);
+  const canReadEntries = Boolean(session && (session.type !== 'PRIVATE' || accessCode || String(session.createdBy?.id) === String(currentUserId)));
+  const { entries, loading: entriesLoading } = useGetSessionEntries(sessionId, accessCode, canReadEntries);
+  const { addEntry, loading: sending }        = useAddSessionEntry(sessionId, accessCode);
+  const { deleteEntry }                       = useDeleteSessionEntry(sessionId, accessCode);
   const { toggleLike }                        = useToggleSessionEntryLike();
   const { closeSession }                      = useCloseSession();
 
-  useNewSessionEntrySubscription(sessionId);
+  useNewSessionEntrySubscription(sessionId, accessCode, canReadEntries);
 
   const handleSend = async (content) => {
     try {
@@ -302,7 +304,7 @@ const { session, loading: sessionLoading, error: sessionError } = useGetSession(
       return;
     }
     try {
-      await toggleLike(entryId);
+      await toggleLike(entryId, accessCode);
     } catch (err) {
       showToast(err.message || 'Beğeni işlemi başarısız oldu.', 'error');
     }

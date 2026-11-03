@@ -22,6 +22,7 @@ import { ToastProvider } from './context/ToastContext';
 import NavigationBar from "./components/Navigation/NavigationBar";
 import ScrollToTop from './components/ScrollToTop';
 import InstallPrompt from './components/InstallPrompt';
+import PersonalFoxes from './components/PersonalFoxes';
 
 import LandingPage from "./pages/Landing";
 
@@ -143,6 +144,7 @@ const RootLayout = () => (
     <ScrollToTop />
     <ScoreUpdates reconnect={reconnectSubscriptions} />
     <PageBoundary><Outlet /></PageBoundary>
+    <PersonalFoxes />
     {/* Mobilde "Ana ekrana ekle" banner'ı — tüm sayfalarda tek yerden */}
     <InstallPrompt />
   </>

@@ -56,6 +56,7 @@ describe('book editor autosave integration', () => {
     const pending = deferred(); save.mockReturnValueOnce(pending.promise);
     render(<RouterProvider router={router} />);
     edit('private draft');
+    fireEvent.click(screen.getByLabelText('Bölüm işlemleri'));
     fireEvent.click(screen.getByRole('button', { name: 'Okuyuculardan gizle' }));
     expect(save).toHaveBeenCalled();
     expect(visibility).not.toHaveBeenCalled();
@@ -63,6 +64,7 @@ describe('book editor autosave integration', () => {
     await settle();
     expect(visibility).toHaveBeenCalledWith({ variables: { chapterId: 'a', isHidden: true } });
     expect(screen.getByLabelText('Editor')).toHaveValue('private draft');
+    fireEvent.click(screen.getByLabelText('Bölüm işlemleri'));
     expect(screen.getByRole('button', { name: 'Okuyuculara aç' })).toHaveAttribute('aria-pressed', 'true');
   });
 
@@ -122,6 +124,28 @@ describe('book editor autosave integration', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Kaydedildi');
   });
 
+  test('published books show drafting and completion actions in the main publication bar', async () => {
+    book.status = 'WRITING';
+    render(<RouterProvider router={router} />);
+    const bar = screen.getByRole('region', { name: 'Yayın yönetimi' });
+    expect(bar).toContainElement(screen.getByRole('button', { name: 'Taslağa Çek' }));
+    expect(bar).toContainElement(screen.getByRole('button', { name: 'Yazımı Tamamla' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Yazımı Tamamla' }));
+    await settle();
+    expect(status).toHaveBeenCalledWith({ variables: { bookId: 'book', status: 'COMPLETED' } });
+  });
+
+  test.each([[[]], [[{ id: 'a', title: 'Empty', content: '<p>&nbsp;<br></p>' }]]])('empty books cannot be published and editing text enables publication', async chapters => {
+    book.chapters = chapters;
+    render(<RouterProvider router={router} />);
+    expect(screen.getByRole('button', { name: /Yayınla/ })).toBeDisabled();
+    expect(screen.getByText('Yayınlamak için en az bir bölüme metin ekleyin.')).toBeInTheDocument();
+    if (chapters.length) {
+      edit('<p>Bir hikâye.</p>');
+      expect(screen.getByRole('button', { name: /Yayınla/ })).toBeEnabled();
+    }
+  });
+
   test('publishing happens only after the current chapter is saved', async () => {
     const pending = deferred(); save.mockReturnValueOnce(pending.promise);
     render(<RouterProvider router={router} />);
@@ -177,7 +201,8 @@ describe('book editor autosave integration', () => {
   test('print application navigation flushes the final manuscript and never opens funding', async () => {
     book.status = 'COMPLETED';
     render(<RouterProvider router={router} />);
-    edit('longer text'); fireEvent.click(screen.getByRole('button', { name: /Basım İçin Başvur/ })); await settle();
+    expect(screen.getByRole('region', { name: 'Yayın yönetimi' })).toContainElement(screen.getByRole('button', { name: /Destek Fonu İçin Başvur/ }));
+    edit('longer text'); fireEvent.click(screen.getByRole('button', { name: /Destek Fonu İçin Başvur/ })); await settle();
     expect(save).toHaveBeenCalledTimes(1);
     expect(screen.getByText('Print application destination')).toBeInTheDocument();
     expect(status).not.toHaveBeenCalled();

@@ -205,6 +205,7 @@ export async function saveAdminRecord(context, { resource: name, id, revision, c
         if (record.isDeleted && updates.isDeleted !== false) throw fail('Bu hesabı düzenlemek için önce arşivden çıkarın.');
         if (String(actor._id) === String(record._id) && ((updates.role && updates.role !== 'ADMIN') || updates.isActive === false || updates.isDeleted === true)) throw fail('Kendi yönetici yetkinizi veya aktif oturumunuzu kaldıramazsınız.');
         if (updates.isDeleted === true) updates.isActive = false;
+        if ('isActive' in updates) record.loginBlocked = updates.isActive === false;
         if ('username' in updates && !/^[\p{L}\p{N}_-]{3,30}$/u.test(updates.username)) throw fail('Kullanıcı adı 3–30 harf, rakam, alt çizgi veya kısa çizgiden oluşmalı.');
         for (const key of ['username', 'email']) if (updates[key]) {
           if (key === 'email') {

@@ -10,6 +10,7 @@ import { GET_COMMENTS_BY_BOOK_ID } from '../../graphql/queries/comment';
 import { GET_BOOK_VIEWER } from '../../graphql/queries/user';
 import { GET_QUOTES_BY_BOOK } from '../../graphql/queries/quote';
 import { GET_SOCIAL_SHARE } from '../../graphql/socialShare';
+import { UPDATE_BOOK_STATUS_MUTATION } from '../../graphql/mutations/book';
 
 jest.mock('@apollo/client', () => ({ ...jest.requireActual('@apollo/client'), useQuery: jest.fn(), useMutation: jest.fn() }));
 jest.mock('../../context/AuthContext', () => ({ useAuth: jest.fn() }));
@@ -53,6 +54,59 @@ test('a readable book address queries comments and content with the resolved ID'
   expect(useQuery).toHaveBeenCalledWith(GET_BOOK_DETAIL, expect.objectContaining({ variables: { id: 'book-1' } }));
   expect(useQuery).toHaveBeenCalledWith(GET_COMMENTS_BY_BOOK_ID, expect.objectContaining({ variables: { bookId: 'book-1' } }));
   expect(screen.getByRole('link', { name: 'Yazar' })).toHaveAttribute('href', '/yazar/author');
+});
+
+test('the draft author can publish beside the writing and delete actions', async () => {
+  book = { ...baseBook, status: 'DRAFT', digitalStatus: 'DRAFT', chapters: [{ id: 'chapter', title: 'Bölüm', wordCount: 5 }] };
+  useAuth.mockReturnValue({ user: { id: 'author' } });
+  const publish = jest.fn().mockImplementation(async () => { book = { ...book, status: 'WRITING', digitalStatus: 'PUBLISHED' }; return { data: { updateBookStatus: book } }; });
+  useMutation.mockImplementation(document => [document === UPDATE_BOOK_STATUS_MUTATION ? publish : jest.fn(), { loading: false }]);
+  jest.spyOn(window, 'confirm').mockReturnValue(true);
+  show();
+  const button = screen.getByRole('button', { name: 'Yayınla (Görünür Yap)' });
+  const actions = button.closest('.admin-actions');
+  expect(actions).toContainElement(screen.getByRole('link', { name: 'Yazmaya Devam Et' }));
+  expect(actions).toContainElement(screen.getByRole('button', { name: 'Sil' }));
+  fireEvent.click(button);
+  await waitFor(() => expect(publish).toHaveBeenCalledWith({ variables: { bookId: 'book-1', status: 'WRITING' } }));
+  expect(await screen.findByText('Kitabınız yayınlandı ve okuyuculara açıldı.')).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Yayınla (Görünür Yap)' })).not.toBeInTheDocument();
+  window.confirm.mockRestore();
+});
+
+test('a visitor cannot see author publication controls on a draft', () => {
+  book = { ...baseBook, status: 'DRAFT' };
+  show();
+  expect(screen.queryByRole('button', { name: 'Yayınla (Görünür Yap)' })).not.toBeInTheDocument();
+});
+
+test('an author cannot publish a book with no chapter content', () => {
+  useAuth.mockReturnValue({ user: { id: 'author' } });
+  book = { ...baseBook, status: 'DRAFT', chapters: [{ id: 'empty', title: 'Boş bölüm', wordCount: 0 }] };
+  show();
+  expect(screen.getByRole('button', { name: 'Yayınla (Görünür Yap)' })).toBeDisabled();
+  expect(screen.getByText('Yayınlamak için en az bir bölüme metin ekleyin.')).toBeInTheDocument();
+});
+
+test.each([['Taslağa Çek', 'DRAFT'], ['Yazımı Tamamla', 'COMPLETED']])('published book detail exposes %s and sends the intended status', async (label, status) => {
+  useAuth.mockReturnValue({ user: { id: 'author' } });
+  book = { ...baseBook, chapters: [{ id: 'chapter', title: 'Bölüm', wordCount: 5 }] };
+  const updateStatus = jest.fn().mockResolvedValue({ data: {} });
+  useMutation.mockImplementation(document => [document === UPDATE_BOOK_STATUS_MUTATION ? updateStatus : jest.fn(), { loading: false }]);
+  const confirm = jest.spyOn(window, 'confirm').mockReturnValue(true);
+  show();
+  expect(screen.getByRole('region', { name: 'Yayın yönetimi' })).toContainElement(screen.getByRole('button', { name: label }));
+  fireEvent.click(screen.getByRole('button', { name: label }));
+  await waitFor(() => expect(updateStatus).toHaveBeenCalledWith({ variables: { bookId: book.id, status } }));
+  confirm.mockRestore();
+});
+
+test('completed books prominently link their author to the support-fund application', () => {
+  useAuth.mockReturnValue({ user: { id: 'author' } });
+  book = { ...baseBook, status: 'COMPLETED', writingStatus: 'COMPLETED' };
+  show();
+  expect(screen.getByRole('region', { name: 'Yayın yönetimi' })).toContainElement(screen.getByRole('link', { name: /Destek Fonu İçin Başvur/ }));
+  expect(screen.getByRole('link', { name: /Destek Fonu İçin Başvur/ })).toHaveAttribute('href', '/print/book-1');
 });
 
 test.each(['DIGITAL', 'PRINTED'])('%s book detail opens social/story options without copying a link on click', async kind => {

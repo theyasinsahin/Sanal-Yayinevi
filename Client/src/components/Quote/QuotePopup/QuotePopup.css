@@ -13,6 +13,13 @@
   box-sizing: border-box;
   animation: popupFadeIn 0.15s ease;
 }
+.quote-selection-preview { margin: .75rem 0; padding: .5rem .75rem; border-left: 3px solid #93c5fd; background: rgba(255,255,255,.06); font-size: .85rem; line-height: 1.5; max-height: 6rem; overflow-y: auto; overflow-wrap: anywhere; }
+@media (max-width: 768px) {
+  .quote-popup { width: calc(100vw - 16px); border-radius: 16px; padding: 1rem; }
+  .quote-popup-btn { min-height: 44px; }
+  .quote-popup textarea, .quote-popup select { font-size: 16px; }
+  .quote-popup::after { display: none; }
+}
 
 @keyframes popupFadeIn {
   from { opacity: 0; }

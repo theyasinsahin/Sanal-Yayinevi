@@ -67,7 +67,7 @@ export async function resolvePublicRoute({ type, reference, legacy = false, chap
   }
   if (type === 'BOOK') {
     const match = await Book.findOne(legacy ? { _id: reference } : { urlSlug: reference }).exec();
-    record = match && await findBookById(match.id, { viewer });
+    record = match && await findBookById(match.id, { viewer, enforceVisibility: true });
     if (!record) return null;
     const path = await bookPath(record);
     if (!chapter) return { id: record.id, path };

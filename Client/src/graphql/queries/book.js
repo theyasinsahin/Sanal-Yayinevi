@@ -213,12 +213,6 @@ export const GET_READING_CHAPTER = gql`
   }
 `;
 
-export const GET_BOOK_READER_FULL = gql`
-  query GetBookReaderFull($id: ID!) {
-    getBookById(id: $id) { id chapters { id title content isHidden canReadContent wordCount pageCount } }
-  }
-`;
-
 export const GET_BOOK_BACKERS = gql`
   query GetBookBackers($bookId: ID!) {
     getBookBackers(bookId: $bookId) {

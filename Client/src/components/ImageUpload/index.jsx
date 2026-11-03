@@ -12,6 +12,7 @@ export const cropImage = (file, aspectRatio = 2 / 3, maxWidth = Infinity) => {
     img.onload = () => {
       try {
         const { naturalWidth: w, naturalHeight: h } = img;
+        if (w * h > 40000000 || w > 12000 || h > 12000) throw new Error('Görsel çözünürlüğü çok yüksek.');
         if (!(w > 0 && h > 0 && aspectRatio > 0 && Number.isFinite(aspectRatio))) throw new Error('Görsel ölçüleri okunamadı.');
 
         let srcX, srcY, srcW, srcH;
@@ -51,7 +52,7 @@ export const cropImage = (file, aspectRatio = 2 / 3, maxWidth = Infinity) => {
 };
 
 const ImageUpload = ({ onUploadSuccess, label = 'Resim Yükle', currentImage, aspectRatio = 2 / 3, maxWidth = Infinity,
-  maxFileSize = Infinity, allowedTypes, accept = 'image/*', disabled = false, onLoadingChange, onError }) => {
+  maxFileSize = 8 * 1024 * 1024, allowedTypes = ['image/jpeg', 'image/png', 'image/webp'], accept = 'image/jpeg,image/png,image/webp', disabled = false, onLoadingChange, onError }) => {
   const [loading, setLoading]   = useState(false);
   const [preview, setPreview]   = useState(currentImage || '');
   const inputId = useId();

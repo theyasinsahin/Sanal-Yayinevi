@@ -13,7 +13,7 @@ test('dashboard shows real aggregate counts, review queues and separately format
   } } } }]}><MemoryRouter><Overview /></MemoryRouter></MockedProvider>);
   expect(await screen.findByText('45')).toBeInTheDocument();
   expect(screen.getByRole('link', { name: '1 basım başvurusu' })).toHaveAttribute('href', '/admin/print-funding');
-  expect(screen.getByRole('link', { name: /3 basılı kitap katalog başvurusu/ })).toHaveAttribute('href', '/admin/printed-books');
+  expect(screen.getByRole('link', { name: /3 basılı kitap katalog isteği/ })).toHaveAttribute('href', '/admin/printed-books');
   expect(screen.getByRole('link', { name: /4 oturum oluşturma izni/ })).toHaveAttribute('href', '/admin/session-access');
   expect(screen.getByText(/₺100,00/)).toBeInTheDocument();
   expect(screen.getByText(/\$20,00/)).toBeInTheDocument();

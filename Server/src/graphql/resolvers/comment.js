@@ -19,8 +19,8 @@ export default {
       return CommentService.findCommentsByUserId(userId);
     },
 
-    getAllComments: async () => {
-      return CommentService.findAllComments();
+    getAllComments: async (_, args) => {
+      return CommentService.findAllComments(args);
     }
   },
 

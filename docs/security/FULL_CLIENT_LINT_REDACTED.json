@@ -1,0 +1,77 @@
+{
+  "errors": 36,
+  "warnings": 13,
+  "filesWithErrors": [
+    {
+      "file": "Client/src/components/Route/PublicContentRoute.test.jsx",
+      "errors": 1,
+      "rules": [
+        "testing-library/no-node-access"
+      ]
+    },
+    {
+      "file": "Client/src/hooks/useBookFeed.test.jsx",
+      "errors": 8,
+      "rules": [
+        "testing-library/render-result-naming-convention"
+      ]
+    },
+    {
+      "file": "Client/src/hooks/useLiveScoreQuery.test.js",
+      "errors": 2,
+      "rules": [
+        "testing-library/render-result-naming-convention"
+      ]
+    },
+    {
+      "file": "Client/src/hooks/useReaderProgress.test.js",
+      "errors": 4,
+      "rules": [
+        "testing-library/render-result-naming-convention"
+      ]
+    },
+    {
+      "file": "Client/src/hooks/useReadingTracker.test.js",
+      "errors": 6,
+      "rules": [
+        "testing-library/render-result-naming-convention"
+      ]
+    },
+    {
+      "file": "Client/src/pages/BookReader/BookReader.test.jsx",
+      "errors": 8,
+      "rules": [
+        "testing-library/no-node-access"
+      ]
+    },
+    {
+      "file": "Client/src/pages/Feed/BookSearch.test.jsx",
+      "errors": 2,
+      "rules": [
+        "testing-library/no-unnecessary-act"
+      ]
+    },
+    {
+      "file": "Client/src/pages/Landing/Landing.test.jsx",
+      "errors": 2,
+      "rules": [
+        "testing-library/no-unnecessary-act"
+      ]
+    },
+    {
+      "file": "Client/src/pages/PrintedBooks/PrintedBooks.test.jsx",
+      "errors": 2,
+      "rules": [
+        "jest/no-conditional-expect",
+        "testing-library/no-node-access"
+      ]
+    },
+    {
+      "file": "Client/src/pages/SessionsPage/SessionsPage.test.jsx",
+      "errors": 1,
+      "rules": [
+        "testing-library/no-node-access"
+      ]
+    }
+  ]
+}

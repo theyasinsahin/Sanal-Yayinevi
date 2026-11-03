@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import User from '../../models/user.js';
 import Notification from '../../models/notification.js';
+import { resolvePrintNotificationTargets } from '../notificationService.js';
 import { FundingCampaign, FundingPayment, FundingRefund, PaymentReservation, PrintOutbox, CampaignSupporter } from '../../models/printFunding.js';
 import { sandboxEnabled, getPaymentProvider } from './paymentProvider.js';
 import { reconcilePayment, processRefund } from './paymentService.js';
@@ -10,7 +11,8 @@ async function deliver(outbox, userId) {
   const user = await User.findOne({ _id: userId, isDeleted: false, isActive: { $ne: false } }).select('notificationSettings').lean().exec();
   if (!user || user.notificationSettings?.offerUpdate === false) return;
   const dedupKey = `print:${outbox.key}:${userId}`;
-  try { await Notification.updateOne({ dedupKey }, { $setOnInsert: { dedupKey, userId, type: 'PRINT_UPDATE', title: outbox.title, message: outbox.message, icon: '📖', meta: { campaignId: outbox.campaignId, environment: 'SANDBOX' } } }, { upsert: true }); }
+  const [notification] = await resolvePrintNotificationTargets([{ dedupKey, userId, type: 'PRINT_UPDATE', title: outbox.title, message: outbox.message, icon: '📖', meta: { campaignId: outbox.campaignId, environment: 'SANDBOX' } }]);
+  try { await Notification.updateOne({ dedupKey }, { $setOnInsert: notification }, { upsert: true }); }
   catch (error) { if (error.code !== 11000) throw error; }
 }
 export async function drainPrintOutbox() {

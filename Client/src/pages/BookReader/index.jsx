@@ -1,25 +1,22 @@
 import HiddenChapterNotice from '../../components/Books/HiddenChapterNotice';
 import { isChapterLocked, chapterLengthLabel } from '../../utils/chapterVisibility';
 import { bookPath } from '../../utils/publicPaths';
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client';
 import { 
   ArrowBack, 
   Check,
-  AutoStories,
   ChevronLeft,
   ChevronRight
 } from '@mui/icons-material';
 
-import { GET_BOOK_READER_DATA, GET_READING_CHAPTER, GET_BOOK_READER_FULL } from '../../graphql/queries/book';
+import { GET_BOOK_READER_DATA, GET_READING_CHAPTER } from '../../graphql/queries/book';
 import { INCREMENT_BOOK_VIEW_MUTATION } from '../../graphql/mutations/book';
 import { GET_BOOKMARK } from '../../graphql/queries/bookmark';
 import { SET_BOOKMARK, REMOVE_BOOKMARK } from '../../graphql/mutations/bookmark';
 
 
-import { parseContentToPages } from '../../utils/htmlPageSplitter';
-import { Button } from '../../components/UI/Button';
 
 import ParagraphRenderer from '../../components/ParagraphComment/ParagraphRenderer';
 
@@ -43,14 +40,40 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
 
   const [showIdleWarning, setShowIdleWarning] = useState(false);
   const [bookmarkActionError, setBookmarkActionError] = useState('');
+  const [isCompact, setIsCompact] = useState(() => window.innerWidth <= 1100);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const sidebarRef = useRef(null);
+  const menuButtonRef = useRef(null);
+  const [quoteHelpOpen, setQuoteHelpOpen] = useState(true);
 
-  const [readingMode, setReadingMode] = useState('chapter');
-  const [currentPage, setCurrentPage] = useState(0);
-  const [isFlipping, setIsFlipping] = useState(false);
+  useEffect(() => {
+    const resize = () => setIsCompact(window.innerWidth <= 1100);
+    window.addEventListener('resize', resize);
+    return () => window.removeEventListener('resize', resize);
+  }, []);
+  useEffect(() => {
+    if (!sidebarOpen || !isCompact) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    const menuButton = menuButtonRef.current;
+    document.body.style.overflow = 'hidden';
+    sidebarRef.current?.querySelector('button')?.focus();
+    const keydown = event => {
+      if (event.key === 'Escape') setSidebarOpen(false);
+      if (event.key !== 'Tab') return;
+      const controls = [...(sidebarRef.current?.querySelectorAll('button:not(:disabled)') || [])];
+      const first = controls[0], last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    document.addEventListener('keydown', keydown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', keydown);
+      menuButton?.focus({ preventScroll: true });
+    };
+  }, [sidebarOpen, isCompact]);
+
   const [scrollProgress, setScrollProgress] = useState(0);
-  const flipTimer = useRef(null);
-  const positionBookPages = useRef(false);
-  useEffect(() => () => clearTimeout(flipTimer.current), []);
 
   const [incrementBookViews] = useMutation(INCREMENT_BOOK_VIEW_MUTATION);
   const viewCounted = useRef(false);
@@ -108,20 +131,16 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
   const {
     ready: progressReady, currentChapterIndex, completedChapters,
     setCurrentChapterIndex, setCompletedChapters, restoreParagraphIndex,
-    missingSharedChapter, syncError: progressSyncError, retry: retryProgress, clearParagraphRestore,
+    missingSharedChapter, syncError: progressSyncError, retry: retryProgress,
   } = useReaderProgress({ bookId, userId: user?.id, chapters, bookLoading,
     bookmark, bookmarkLoading, bookmarkError, refetchBookmark, requestedChapterId });
   const chapterBookmark = bookmark?.chapterId === chapters[currentChapterIndex]?.id ? bookmark : null;
   const chapterId = chapters[currentChapterIndex]?.id;
   const { data: chapterData, loading: chapterLoading, error: chapterError, refetch: refetchChapter } = useQuery(GET_READING_CHAPTER, {
-    variables: { bookId, chapterId }, skip: !progressReady || !chapterId || readingMode !== 'chapter',
+    variables: { bookId, chapterId }, skip: !progressReady || !chapterId,
     fetchPolicy: 'no-cache',
   });
-  const { data: fullData, loading: fullLoading, error: fullError, refetch: refetchFull } = useQuery(GET_BOOK_READER_FULL, {
-    variables: { id: bookId }, skip: !progressReady || readingMode !== 'book', fetchPolicy: 'no-cache',
-  });
-  const fullChapters = fullData?.getBookById?.chapters;
-  const loadedChapter = readingMode === 'book' ? fullChapters?.find(chapter => chapter.id === chapterId) : chapterData?.getReadingChapter;
+  const loadedChapter = chapterData?.getReadingChapter;
   const chapterReady = Boolean(chapterId && loadedChapter?.id === chapterId);
   // Apollo may retain the previous variables' result while a new chapter loads.
   const locked = isChapterLocked(chapters[currentChapterIndex]) || (loadedChapter?.id === chapterId && isChapterLocked(loadedChapter));
@@ -134,8 +153,6 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
     onIdleWarning: () => setShowIdleWarning(true),
     onIdleResume: () => setShowIdleWarning(false),
   });
-
-  const authorName = book?.author?.fullName || book?.author?.username || 'Bilinmeyen Yazar';
 
   // KOPYALAMAYA KARŞI KORUMA (DRM)
   useEffect(() => {
@@ -170,43 +187,19 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
     };
   }, [book, bookId]); // Kitap verisi veya ID değiştiğinde güncellenmesi için
 
-  // Bölüm değişince sayfayı en üste al
   useEffect(() => {
-    if (readingMode === 'chapter') {
-      window.scrollTo({ top: 0, behavior: 'auto' });
-    }
-  }, [currentChapterIndex, readingMode]);
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [currentChapterIndex]);
 
-  // Scroll progress (chapter mode)
   useEffect(() => {
-    if (readingMode === 'chapter') {
-      const handleScroll = () => {
-        const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-        const scrollPosition = window.scrollY;
-        if (totalHeight > 0) {
-          setScrollProgress(Math.min((scrollPosition / totalHeight) * 100, 100));
-        }
-      };
-      window.addEventListener('scroll', handleScroll);
-      handleScroll();
-      return () => window.removeEventListener('scroll', handleScroll);
-    } else {
-      setScrollProgress(0);
-    }
-  }, [readingMode, currentChapterIndex]); // currentChapterIndex değişince de sıfırla
-
-  const pages = useMemo(() => {
-    if (readingMode !== 'book' || !book || !fullChapters?.length) return [];
-    return [{ type: 'title_page', bookTitle: book.title, author: authorName, genre: [book.format?.name, ...(book.genres || []).map(item => item.name)].filter(Boolean).join(' / ') },
-      ...fullChapters.flatMap(chapter => isChapterLocked(chapter) ? [{ type: 'hidden_chapter', chapter, chapterId: chapter.id }] : parseContentToPages(chapter.content, chapter.title)
-        .map(page => ({ ...page, chapterId: chapter.id })))];
-  }, [book, fullChapters, authorName, readingMode]);
-  useEffect(() => {
-    if (positionBookPages.current && pages.length) {
-      setCurrentPage(Math.max(0, pages.findIndex(page => page.chapterId === chapterId)));
-      positionBookPages.current = false;
-    }
-  }, [pages, chapterId]);
+    const handleScroll = () => {
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      setScrollProgress(totalHeight > 0 ? Math.min((window.scrollY / totalHeight) * 100, 100) : 0);
+    };
+    window.addEventListener('scroll', handleScroll);
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [currentChapterIndex]);
 
   const toggleChapterCompletion = (index) => {
     if (isChapterLocked(chapters[index])) return;
@@ -217,80 +210,8 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
 
   const goToChapter = (index) => {
     if (index < 0 || index >= chapters.length) return;
-    clearTimeout(flipTimer.current);
-    setIsFlipping(false);
+    setSidebarOpen(false);
     setCurrentChapterIndex(index);
-    if (readingMode === 'book') {
-      const pageIndex = pages.findIndex(page => page.chapterId === chapters[index].id);
-      if (pageIndex >= 0) setCurrentPage(pageIndex);
-    }
-  };
-
-  const changePage = useCallback((direction) => {
-    if (isFlipping) return;
-    const increment = 2;
-    let newPage = currentPage;
-    if (direction === 'next' && currentPage < pages.length - increment) {
-      newPage = currentPage + increment;
-    } else if (direction === 'prev' && currentPage > 0) {
-      newPage = Math.max(0, currentPage - increment);
-    } else {
-      return;
-    }
-    setIsFlipping(true);
-    flipTimer.current = setTimeout(() => {
-      setCurrentPage(newPage);
-      const visibleChapter = pages[newPage]?.chapterId || pages[newPage + 1]?.chapterId;
-      const index = chapters.findIndex(chapter => chapter.id === visibleChapter);
-      if (index >= 0) setCurrentChapterIndex(index);
-      setIsFlipping(false);
-    }, 400);
-  }, [isFlipping, currentPage, pages, chapters, setCurrentChapterIndex]);
-
-  // Keyboard navigation for book mode
-  useEffect(() => {
-    if (readingMode === 'book') {
-      const handleKeyPress = (e) => {
-        if (e.key === 'ArrowLeft') changePage('prev');
-        if (e.key === 'ArrowRight') changePage('next');
-      };
-      window.addEventListener('keydown', handleKeyPress);
-      return () => window.removeEventListener('keydown', handleKeyPress);
-    }
-  }, [readingMode, changePage]);
-
-
-  const renderPageContent = (pageData) => {
-    if (!pageData) return null;
-    if (pageData.type === 'hidden_chapter') return <div className="page-inner"><h2>{pageData.chapter.title}</h2><HiddenChapterNotice chapter={pageData.chapter} bookId={bookId} /></div>;
-    if (pageData.type === 'title_page') {
-      return (
-        <div className="page-inner title-page-content">
-          <div className="ornament-top">❦</div>
-          <h1>{pageData.bookTitle}</h1>
-          <div className="author-info">
-            <div className="Yazar:">Yazar:</div>
-            <div className="name">{pageData.author}</div>
-          </div>
-          <div className="genre">{pageData.genre}</div>
-          <div className="ornament-bottom">❦</div>
-        </div>
-      );
-    }
-    return (
-      <div className="page-inner">
-        {pageData.isChapterStart && (
-          <div className="chapter-start-header">
-            <h2>{pageData.title}</h2>
-            <div className="separator">❦</div>
-          </div>
-        )}
-        <div 
-          className="content-text"
-          dangerouslySetInnerHTML={{ __html: pageData.content }}
-        />
-      </div>
-    );
   };
 
   const progressPercentage = chapters.length > 0 
@@ -316,17 +237,20 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
   return (
     <div className="book-reader">
 
-      {readingMode === 'chapter' && (
         <div className="reading-progress-container">
           <div 
             className="reading-progress-fill" 
             style={{ width: `${scrollProgress}%` }}
           />
         </div>
-      )}
       
       {/* CHAPTERS SIDEBAR */}
-      <div className="chapters-sidebar">
+      {isCompact && sidebarOpen && <div className="reader-sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
+      <aside ref={sidebarRef} id="reader-chapters" className={`chapters-sidebar ${sidebarOpen ? 'is-open' : ''}`}
+        role={isCompact ? 'dialog' : undefined} aria-modal={isCompact && sidebarOpen ? 'true' : undefined}
+        aria-label="Kitap bölümleri" aria-hidden={isCompact && !sidebarOpen ? true : undefined}
+        {...(isCompact && !sidebarOpen ? { inert: '' } : {})}>
+        {isCompact && <button type="button" className="reader-sidebar-close" onClick={() => setSidebarOpen(false)}>Bölümleri kapat ×</button>}
         <div className="sidebar-header">
           
           <button
@@ -354,7 +278,6 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
             <div
               key={chapter.id || index}
               className={`chapter-item ${currentChapterIndex === index ? 'active' : ''} ${completedChapters.includes(index) ? 'completed' : ''}`}
-              onClick={() => goToChapter(index)}
             >
               <button type="button"
                 className={`chapter-checkbox ${completedChapters.includes(index) ? 'checked' : ''}`}
@@ -367,17 +290,19 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
               >
                 {completedChapters.includes(index) && <Check />}
               </button>
-              <div className="chapter-info">
+              <button type="button" className="chapter-info" onClick={() => goToChapter(index)} aria-current={currentChapterIndex === index ? 'location' : undefined}>
                 <div className="chapter-number">Bölüm {index + 1}</div>
                 <div className="chapter-title">{chapter.title}</div>
                 <span className="chapter-length">{chapterLengthLabel(chapter)}</span>
-                {chapter.isHidden && <span className="chapter-visibility-label">Okuyuculara kapal?</span>}
-              </div>
+                {chapter.isHidden && <span className="chapter-visibility-label">Okuyuculara kapalı</span>}
+              </button>
             </div>
           ))}
         </div>
-      </div>
+      </aside>
 
+      {/* READING AREA */}
+      <div className="reading-area" {...(isCompact && sidebarOpen ? { inert: '' } : {})}>
       {bookmarkActionError && <p className="ui-notice" role="alert">{bookmarkActionError}</p>}
       {progressSyncError && <p className="ui-notice" role="status">
         Okuma ilerlemesi eşitlenemedi. Bu cihazdaki kayıt korunuyor. <button className="ui-text-link" onClick={() => retryProgress().catch(() => {})}>Tekrar dene</button>
@@ -392,11 +317,10 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
         </div>
       )}
 
-      {/* READING AREA */}
-      <div className="reading-area">
-        
         {/* Floating Controls */}
         <div className="reader-controls">
+          {isCompact && <button ref={menuButtonRef} type="button" className="reader-chapters-toggle" aria-controls="reader-chapters"
+            aria-expanded={sidebarOpen} onClick={() => setSidebarOpen(true)}>Bölümler ({chapters.length})</button>}
           <button
             className="control-btn"
             onClick={() => navigate(bookPath(book || { id: bookId }))}
@@ -404,36 +328,25 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
           >
             <ArrowBack />
           </button>
-          <button
-            className={`control-btn ${readingMode === 'book' ? 'active' : ''}`}
-            onClick={() => {
-              clearTimeout(flipTimer.current);
-              setIsFlipping(false);
-              clearParagraphRestore();
-              if (readingMode === 'chapter') {
-                positionBookPages.current = true;
-                setReadingMode('book');
-              } else setReadingMode('chapter');
-            }}
-            title="Kitap görünümü"
-          >
-            <AutoStories />
-          </button>
+          <button type="button" className="reader-quote-help-toggle" aria-expanded={quoteHelpOpen} aria-controls="reader-quote-help" onClick={() => setQuoteHelpOpen(value => !value)}>Alıntı nasıl eklenir?</button>
         </div>
+
+        {quoteHelpOpen && <aside id="reader-quote-help" className="reader-quote-help" aria-label="Alıntı ekleme ipucu">
+          <div><strong>Beğendiğiniz satırları saklayın</strong>
+            <p>Bilgisayarda metni fareyle seçin. Telefonda bir kelimeye basılı tutup seçim tutamaçlarını sürükleyin. 10–1000 karakter seçtiğinizde alıntı penceresi açılır; not ve görünürlük seçerek kaydedebilirsiniz.</p>
+            {!user && <p>Alıntı kaydetmek için giriş yapmalısınız.</p>}
+          </div>
+          <button type="button" aria-label="Alıntı ipucunu kapat" onClick={() => setQuoteHelpOpen(false)}>×</button>
+        </aside>}
+        {user && !currentChapter.isHidden && !locked && chapterReady && (
+          <QuotePopup key={chapterId} bookId={bookId} chapterId={currentChapter.id}
+            chapterTitle={currentChapter.title} chapterIndex={currentChapterIndex} />
+        )}
 
         {/* CHAPTER READING MODE — Tek bölüm göster */}
         {missingSharedChapter && <p className="ui-notice" role="status">Paylaşılan bölüm bulunamadı. Kitabın diğer bölümlerini okuyabilirsiniz.</p>}
-        {readingMode === 'chapter' && chapterId && (
+        {chapterId && (
           <div className="chapter-reading-mode">
-
-            {user && !currentChapter.isHidden && !locked && (
-              <QuotePopup
-                bookId={bookId}
-                chapterId={currentChapter.id}
-                chapterTitle={currentChapter.title}
-                chapterIndex={currentChapterIndex}
-              />
-            )}
 
             {/* Bölüm Başlığı */}
             <div className="chapter-header">
@@ -498,67 +411,6 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
           </div>
         )}
 
-        {/* BOOK MODE */}
-        {readingMode === 'book' && fullLoading && <p role="status">Kitap görünümü hazırlanıyor...</p>}
-        {readingMode === 'book' && fullError && <p className="ui-notice" role="alert">Kitap yüklenemedi. <button className="ui-text-link" onClick={() => refetchFull()}>Tekrar dene</button></p>}
-        {readingMode === 'book' && !fullLoading && !fullError && pages.length > 0 && (
-          <>
-            <div className="reader-book-mode">
-              <div className={`book-container ${isFlipping ? 'flipping' : ''}`}>
-                
-                <div 
-                  className="book-page left"
-                  onClick={() => changePage('prev')}
-                >
-                  {renderPageContent(pages[currentPage])}
-                  {currentPage > 0 && (
-                    <div className="footer-number">{currentPage}</div>
-                  )}
-                </div>
-
-                <div className="book-spine"></div>
-
-                {currentPage + 1 < pages.length ? (
-                  <div 
-                    className="book-page right"
-                    onClick={() => changePage('next')}
-                  >
-                    {renderPageContent(pages[currentPage + 1])}
-                    <div className="footer-number">{currentPage + 1}</div>
-                  </div>
-                ) : (
-                  <div className="book-page right empty-page">
-                    <div className="end-text">SON</div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="book-navigation">
-              <Button
-                variant="outline"
-                onClick={() => changePage('prev')}
-                disabled={currentPage === 0}
-                icon={<ChevronLeft />}
-              >
-                Önceki
-              </Button>
-              <div className="progress-text">
-                {currentPage === 0 
-                  ? 'Kapak'
-                  : `Sayfa ${currentPage} / ${pages.length - 1}`}
-              </div>
-              <Button
-                variant="outline"
-                onClick={() => changePage('next')}
-                disabled={currentPage >= pages.length - 2}
-              >
-                Sonraki
-                <ChevronRight />
-              </Button>
-            </div>
-          </>
-        )}
       </div>
     </div>
   );

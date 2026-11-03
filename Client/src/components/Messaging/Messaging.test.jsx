@@ -15,6 +15,8 @@ const mockConversations = [
 jest.mock('../../context/AuthContext', () => ({ useAuth: () => ({ user: { id: 'reader' } }) }));
 jest.mock('../../hooks/useMessages', () => ({
   useGetConversations: () => ({ conversations: mockConversations, loading: false, error: null }),
+  useMessageRecipients: () => ({ recipients: [], loading: false, error: null, hasMore: false }),
+  useGetOrCreateConversation: () => ({ getOrCreateConversation: jest.fn(), loading: false }),
   useGetMessages: () => ({ messages: mockMessages, loading: mockLoading, error: mockError, hasMore: true, loadOlderMessages: mockOlder }),
   useSendMessage: () => ({ sendMessage: mockSend, sending: false }),
   useMarkAsRead: () => mockRead,

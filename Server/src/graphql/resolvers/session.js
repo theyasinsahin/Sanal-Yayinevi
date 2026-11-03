@@ -65,15 +65,15 @@ export default {
     },
 
     // Oturumdaki yazılar — girişsiz de görülebilir.
-    getSessionEntries: async (_, { sessionId, limit = 30, offset = 0 }, { user }) => {
-      const entries = await SessionService.getSessionEntries(sessionId, limit, offset, user?._id);
+    getSessionEntries: async (_, { sessionId, limit = 30, offset = 0, accessCode }, context) => {
+      const entries = await SessionService.getSessionEntries(sessionId, limit, offset, context.user?._id, accessCode, context);
       return entries.map(serializeEntry);
     },
 
     // PRIVATE oturuma erişim kodu doğrulama — bunu da girişsiz kullanıcı
     // yapabilmeli (özel bir oturuma koduyla girmek için üye olması şart değil).
-    verifySessionAccessCode: async (_, { sessionId, accessCode }) => {
-      return SessionService.verifySessionAccessCode(sessionId, accessCode);
+    verifySessionAccessCode: async (_, { sessionId, accessCode }, context) => {
+      return SessionService.verifySessionAccessCode(sessionId, accessCode, context);
     },
   },
 
@@ -89,13 +89,14 @@ export default {
       return serializeSession(session);
     },
 
-    addSessionEntry: async (_, { sessionId, content, accessCode }, { user }) => {
+    addSessionEntry: async (_, { sessionId, content, accessCode }, context) => {
+      const { user } = context;
       if (!user) throw new Error('Giriş yapmalısınız.');
       const entry = await SessionService.addSessionEntry(
         user._id,
         sessionId,
         content,
-        accessCode ?? null
+        accessCode ?? null, context
       );
       return serializeEntry(entry);
     },
@@ -105,9 +106,10 @@ export default {
       return SessionService.deleteSessionEntry(entryId, user._id);
     },
 
-    toggleSessionEntryLike: async (_, { entryId }, { user }) => {
+    toggleSessionEntryLike: async (_, { entryId, accessCode }, context) => {
+      const { user } = context;
       if (!user) throw new Error('Giriş yapmalısınız.');
-      const entry = await SessionService.toggleSessionEntryLike(entryId, user._id);
+      const entry = await SessionService.toggleSessionEntryLike(entryId, user._id, accessCode, context);
       return serializeEntry(entry);
     },
 
@@ -120,9 +122,20 @@ export default {
   Subscription: {
     onNewSessionEntry: {
       subscribe: withFilter(
-        () => pubsub.asyncIterableIterator(NEW_SESSION_ENTRY),
-        (payload, variables) => {
-          return payload.sessionId === variables.sessionId;
+        async (_, { sessionId, accessCode }, context) => {
+          await SessionService.requireSessionRead(sessionId, context.user?._id, accessCode, context);
+          return pubsub.asyncIterableIterator(NEW_SESSION_ENTRY);
+        },
+        async (payload, variables, context) => {
+          const { user, User, authExpiresAt } = context;
+          if (payload.sessionId !== variables.sessionId) return false;
+          if (authExpiresAt && authExpiresAt <= Date.now()) return false;
+          if (user) {
+            const active = await User.findOne({ _id: user._id, isActive: { $ne: false }, isDeleted: false });
+            if (!active || (active.authVersion ?? 0) !== (user.authVersion ?? 0)) return false;
+          }
+          try { await SessionService.requireSessionRead(variables.sessionId, user?._id, variables.accessCode, context); return true; }
+          catch { return false; }
         }
       ),
       resolve: (payload) => serializeEntry(payload.onNewSessionEntry),

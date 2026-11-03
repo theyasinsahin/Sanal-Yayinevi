@@ -123,9 +123,11 @@
   transition: background 0.15s;
 }
 
-.notif-item:hover { background: var(--bg-muted, #f9fafb); }
+a.notif-item { color: inherit; text-decoration: none; }
+a.notif-item:hover { background: var(--bg-muted, #f9fafb); }
+a.notif-item:focus-visible { outline: 2px solid #2563eb; outline-offset: -2px; }
 .notif-item.unread { background: #eff6ff; }
-.notif-item.unread:hover { background: #dbeafe; }
+a.notif-item.unread:hover { background: #dbeafe; }
 
 .notif-icon { font-size: 1.4rem; flex-shrink: 0; }
 
