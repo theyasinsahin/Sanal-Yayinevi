@@ -6,9 +6,10 @@
 // (window.postMessage kullanılmaz), bu yüzden Cross-Origin-Opener-Policy
 // bu akışı hiçbir şekilde etkilemez.
 //
-// Google Cloud Console'da bu domain'in (örn. http://localhost:5000)
-// OAuth Client ID'nin "Authorized JavaScript origins" listesinde
-// olması gerekir.
+// Google Cloud Console'da frontend origin'i ve login_uri'nin tam adresi
+// ayrı ayrı kaydedilir. Frontend/API farklı sitelerdeyse login_uri aynı
+// frontend origin'indeki reverse proxy olmalı; POST gövdesi ve Cookie
+// header'ı bu endpoint'e korunarak iletilmelidir.
 import express from 'express';
 import * as UserService from '../services/userService.js';
 import { timingSafeEqual } from 'node:crypto';

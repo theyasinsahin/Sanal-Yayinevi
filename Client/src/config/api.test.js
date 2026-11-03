@@ -36,8 +36,16 @@ test('an explicitly configured WebSocket endpoint is preserved', () => {
   });
 });
 
+test('a same-origin Google callback can proxy to Render without changing GraphQL or WebSocket hosts', () => {
+  expect(createApiConfig('https://sanal-yayinevi.onrender.com', undefined, 'https://sanal-yayinevi-pi.vercel.app/auth/google/callback')).toEqual({
+    API_URL: 'https://sanal-yayinevi.onrender.com',
+    WS_URL: 'wss://sanal-yayinevi.onrender.com/graphql',
+    GOOGLE_LOGIN_URI: 'https://sanal-yayinevi-pi.vercel.app/auth/google/callback',
+  });
+});
+
 test.each([['login', LoginPage], ['registration', RegisterPage]])('%s sends Google credentials to the configured API, rather than a fixed live host', (_, Page) => {
   render(<MockedProvider><MemoryRouter><Page /></MemoryRouter></MockedProvider>);
-  const expected = createApiConfig(process.env.REACT_APP_API_URL || undefined).GOOGLE_LOGIN_URI;
+  const expected = createApiConfig(process.env.REACT_APP_API_URL || undefined, process.env.REACT_APP_WS_URL, process.env.REACT_APP_GOOGLE_LOGIN_URI).GOOGLE_LOGIN_URI;
   expect(screen.getByTestId('google-login')).toHaveAttribute('data-login-uri', expected);
 });
