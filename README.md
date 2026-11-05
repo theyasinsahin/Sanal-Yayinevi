@@ -83,6 +83,9 @@ npm.cmd --prefix Server start
 npm.cmd --prefix Client start
 ```
 
+Sunucu başlangıç hataları, `doctor` komutu, ortam dosyalarının önceliği ve
+MongoDB bağlantı kontrolleri: [Sunucuyu başlatma kılavuzu](docs/server-startup.md).
+
 Testler: [test kılavuzu](docs/testing.md). Basım sisteminin doğrulama sonuçları ve canlı kullanım eksikleri: [sonuç raporu](docs/print-funding-report.md). Kaynak güvenlik denetimi, kalan riskler ve canlı ön koşulları: [güvenlik raporu](docs/security/SECURITY_AUDIT_TR.md), [test sonuçları](docs/security/SECURITY_TEST_RESULTS_TR.md), [operasyon kılavuzu](docs/security/SECURITY_OPERATIONS_TR.md).
 
 Kitap kartlarında destek tutarları ve Keşfet'teki hedefe yakın/tamamlanmış kampanya listeleri: [kullanım ve teknik açıklamalar](docs/book-funding-discovery.md).
