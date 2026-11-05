@@ -1,5 +1,6 @@
 import CompactNumber from '../../components/UI/CompactNumber';
 import UserProfileLink from '../../components/UI/UserProfileLink';
+import MentionInput from '../../components/Mentions/MentionInput';
 import { sessionPath } from '../../utils/publicPaths';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -111,7 +112,7 @@ export const CreateSessionModal = ({ onClose, onCreate, creating = false }) => {
 
           <div className="sessions-field">
             <label className="sessions-label">Açıklama</label>
-            <Textarea
+          <MentionInput as={Textarea}
               name="description"
               placeholder="Kısa bir açıklama ekleyin..."
               value={form.description}

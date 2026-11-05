@@ -48,6 +48,9 @@ const serializeEntry = (entry) => {
 
 export default {
   Query: {
+    getSessionEntry: async (_, { sessionId, entryId, accessCode }, context) => serializeEntry(
+      await SessionService.getSessionEntry(sessionId, entryId, context.user?._id, accessCode, context)
+    ),
     // Oturum listesi — girişsiz de görülebilir. Sadece yazı ekleme
     // (addSessionEntry) ve oturum açma (createSession) gibi Mutation'lar
     // giriş gerektiriyor, aşağıda değişmedi.

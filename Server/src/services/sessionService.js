@@ -1,6 +1,7 @@
 // src/services/sessionService.js
 import bcrypt from 'bcryptjs';
 import { notifyUser } from './notificationService.js';
+import { notifyMentions } from './mentionService.js';
 import { inactiveUserIds } from '../utils/activeUsers.js';
 import Session from '../models/session.js';
 import SessionEntry from '../models/sessionEntry.js';
@@ -52,6 +53,18 @@ const populateEntry = (query) => {
   return query.populate('userId', 'username fullName profilePicture');
 };
 
+async function mentionSession(userId, session, content, entryId) {
+  const creator = session.type === 'FOLLOWERS_ONLY' ? await User.findById(session.createdBy).select('followers') : null;
+  const participants = session.type === 'PRIVATE'
+    ? new Set([String(session.createdBy), ...(await SessionEntry.distinct('userId', { sessionId: session._id, isDeleted: false })).map(String)]) : null;
+  return notifyMentions({ actorId: userId, content, type: 'SESSION_MENTION', message: `${session.title} oturumunda etiketlendin.`,
+    meta: { sessionId: String(session._id), ...(entryId ? { entryId: String(entryId) } : {}) },
+    canAccess: recipient => session.type === 'FOLLOWERS_ONLY'
+      ? String(recipient._id) === String(session.createdBy) || creator?.followers.some(id => String(id) === String(recipient._id))
+      : session.type !== 'PRIVATE' || participants.has(String(recipient._id)),
+  });
+}
+
 // --- SESSION ---
 // Not: Tüm okuma sorguları varsayılan olarak isDeleted:false filtreli.
 // Silinmiş bir oturuma erişim, "Oturum bulunamadı" hatasıyla sonuçlanır
@@ -88,6 +101,8 @@ export const createSession = async (userId, input) => {
 
   const session = new Session(sessionData);
   await session.save();
+
+  await mentionSession(userId, session, session.description);
 
   return Session.findById(session._id).populate('createdBy', 'username fullName profilePicture');
 };
@@ -185,21 +200,11 @@ export const addSessionEntry = async (userId, sessionId, content, accessCode = n
     });
   }
 
-  const mentionedNames = [...new Set(content.match(/@[\p{L}\p{N}_]+(?:[.-][\p{L}\p{N}_]+)*/gu) || [])].map(name => name.slice(1));
-  const mentioned = await User.find({ username: { $in: mentionedNames }, isDeleted: false, isActive: { $ne: false } });
+  const mentioned = await mentionSession(userId, session, entry.content, entry._id);
   const recipients = new Set([String(session.createdBy), ...(await SessionEntry.distinct('userId', { sessionId, isDeleted: false })).map(String)]);
-  for (const recipient of mentioned) {
-    // A mention never grants access to a restricted session.
-    if (session.type === 'FOLLOWERS_ONLY') {
-      const creator = await User.findById(session.createdBy);
-      if (String(recipient._id) !== String(creator._id) && !creator.followers.some(id => String(id) === String(recipient._id))) continue;
-    }
-    if (session.type === 'PRIVATE' && !recipients.has(String(recipient._id))) continue;
-    const sent = await notifyUser(recipient._id, 'mentionInSession', { type: 'SESSION_MENTION', title: 'Oturumda senden bahsedildi', message: session.title + ' oturumunda etiketlendin.', icon: '💬', meta: { sessionId } }, userId);
-    if (sent) recipients.delete(String(recipient._id));
-  }
+  for (const recipientId of mentioned) recipients.delete(recipientId);
   for (const recipientId of recipients) {
-    await notifyUser(recipientId, 'sessionReply', { type: 'SESSION_REPLY', title: 'Oturuma yeni bir ileti eklendi', message: session.title + ' oturumunda yeni bir ileti var.', icon: '💬', meta: { sessionId } }, userId);
+    await notifyUser(recipientId, 'sessionReply', { type: 'SESSION_REPLY', title: 'Oturuma yeni bir ileti eklendi', message: session.title + ' oturumunda yeni bir ileti var.', icon: '💬', meta: { sessionId, entryId: String(entry._id) } }, userId);
   }
   const populated = await populateEntry(SessionEntry.findById(entry._id));
 
@@ -214,6 +219,11 @@ export const addSessionEntry = async (userId, sessionId, content, accessCode = n
 export const getSessionEntries = async (sessionId, limit, offset, userId, accessCode, context) => {
   return readSessionEntries(sessionId, limit, offset, userId, accessCode, context);
 };
+
+export async function getSessionEntry(sessionId, entryId, userId, accessCode, context) {
+  await requireSessionRead(sessionId, userId, accessCode, context);
+  return populateEntry(SessionEntry.findOne({ _id: entryId, sessionId, isDeleted: false, userId: { $nin: await inactiveUserIds() } }));
+}
 
 export async function requireSessionRead(sessionId, userId, accessCode, context) {
   const session = await getSessionById(sessionId, userId);

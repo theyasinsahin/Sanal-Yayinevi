@@ -1,0 +1,10 @@
+type MentionUser {
+  id: ID!
+  username: String!
+  fullName: String!
+  profilePicture: String!
+}
+
+extend type Query {
+  searchMentionUsers(query: String!): [MentionUser!]!
+}

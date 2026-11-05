@@ -1,8 +1,11 @@
 import CompactNumber from '../../components/UI/CompactNumber';
 import UserProfileLink from '../../components/UI/UserProfileLink';
+import MentionInput from '../../components/Mentions/MentionInput';
+import MentionText from '../../components/Mentions/MentionText';
+import useContentTarget from '../../hooks/useContentTarget';
 import { profilePath } from '../../utils/publicPaths';
 import React, { useState, useRef, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { MainLayout } from '../../components/Layout/MainLayout';
@@ -24,8 +27,8 @@ import SocialShareButton from '../../components/Sharing/SocialShareButton';
 import SessionCover from '../../components/Sessions/SessionCover';
 import SessionCoverEditor from '../../components/Sessions/SessionCoverEditor';
 
-import { useLazyQuery } from '@apollo/client';
-import { VERIFY_SESSION_ACCESS_CODE } from '../../graphql/queries/session'; // query'i ekleyeceksin
+import { useLazyQuery, useQuery } from '@apollo/client';
+import { VERIFY_SESSION_ACCESS_CODE, GET_SESSION_ENTRY } from '../../graphql/queries/session';
 
 
 const SESSION_TYPE_LABEL = {
@@ -96,6 +99,7 @@ const AccessCodeGate = ({ sessionId, onSuccess }) => {
 
 // Tek bir yazı kartı — forum stili
 const EntryCard = ({ entry, isOwn, onDelete, onLike, currentUserId, index }) => {
+  const targetRef = useContentTarget(`entry-${entry.id}`);
   const [showMenu, setShowMenu] = useState(false);
   const isLiked = entry.likedBy?.includes(currentUserId);
   const menuRef = useRef(null);
@@ -119,7 +123,7 @@ const EntryCard = ({ entry, isOwn, onDelete, onLike, currentUserId, index }) => 
   });
 
   return (
-    <article className={`entry-card${isOwn ? ' entry-card--own' : ''}`}>
+    <article id={`entry-${entry.id}`} ref={targetRef} tabIndex={-1} className={`entry-card${isOwn ? ' entry-card--own' : ''}`}>
 
       {/* Yazar bilgisi */}
       <div className="entry-card-author">
@@ -167,7 +171,7 @@ const EntryCard = ({ entry, isOwn, onDelete, onLike, currentUserId, index }) => 
 
       {/* Yazı içeriği */}
       <div className="entry-card-content">
-        {entry.content}
+        <MentionText>{entry.content}</MentionText>
       </div>
 
       {/* Alt aksiyonlar */}
@@ -220,7 +224,7 @@ const EntryComposer = ({ onSend, sending, disabled }) => {
 
   return (
     <div className="entry-composer">
-      <textarea
+      <MentionInput
         ref={textareaRef}
         className="entry-composer-input"
         placeholder="Düşüncelerini yaz..."
@@ -247,6 +251,7 @@ const EntryComposer = ({ onSend, sending, disabled }) => {
 };
 
 const SessionDetail = ({ resolvedId } = {}) => {
+  const { hash } = useLocation();
   const params = useParams();
   const sessionId = resolvedId || params.sessionId;
   const navigate = useNavigate();
@@ -270,7 +275,15 @@ const SessionDetail = ({ resolvedId } = {}) => {
 
 const { session, loading: sessionLoading, error: sessionError } = useGetSession(sessionId);
   const canReadEntries = Boolean(session && (session.type !== 'PRIVATE' || accessCode || String(session.createdBy?.id) === String(currentUserId)));
-  const { entries, loading: entriesLoading } = useGetSessionEntries(sessionId, accessCode, canReadEntries);
+  const { entries, loading: entriesLoading, loadMore, hasMore } = useGetSessionEntries(sessionId, accessCode, canReadEntries);
+  const targetEntryId = hash.match(/^#entry-([a-f\d]{24})$/i)?.[1];
+  const { data: targetData, loading: targetLoading, error: targetError } = useQuery(GET_SESSION_ENTRY, {
+    variables: { sessionId, entryId: targetEntryId, ...(accessCode ? { accessCode } : {}) },
+    skip: !canReadEntries || !targetEntryId,
+    fetchPolicy: 'network-only',
+  });
+  const targetEntry = targetData?.getSessionEntry;
+  const visibleEntries = targetEntry && !entries.some(entry => entry.id === targetEntry.id) ? [...entries, targetEntry] : entries;
   const { addEntry, loading: sending }        = useAddSessionEntry(sessionId, accessCode);
   const { deleteEntry }                       = useDeleteSessionEntry(sessionId, accessCode);
   const { toggleLike }                        = useToggleSessionEntryLike();
@@ -448,7 +461,7 @@ const { session, loading: sessionLoading, error: sessionError } = useGetSession(
             </div>
 
             {session.description && (
-              <p className="session-detail-description">{session.description}</p>
+              <p className="session-detail-description"><MentionText>{session.description}</MentionText></p>
             )}
 
             <div className="session-detail-hero-footer">
@@ -509,7 +522,8 @@ const { session, loading: sessionLoading, error: sessionError } = useGetSession(
               </div>
             )}
 
-            {[...entries].reverse().map((entry, i) => (
+            {targetEntryId && !targetLoading && (targetError || !targetEntry) && <p role="status">Etiketlendiğiniz ileti bulunamadı veya artık erişilebilir değil.</p>}
+            {[...visibleEntries].reverse().map((entry, i) => (
               <EntryCard
                 key={entry.id}
                 entry={entry}
@@ -520,6 +534,7 @@ const { session, loading: sessionLoading, error: sessionError } = useGetSession(
                 onLike={handleLikeEntry}
               />
             ))}
+            {hasMore && <Button variant="outline" disabled={entriesLoading} onClick={loadMore}>Diğer iletileri yükle</Button>}
           </div>
 
           {/* KAPALI BANNER */}

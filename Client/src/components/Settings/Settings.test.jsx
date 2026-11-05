@@ -16,7 +16,7 @@ const profile = {
   id: 'user-1', email: 'reader@example.test', weeklyWritingWords: 40,
   privacySettings: { __typename: 'PrivacySettings', isProfilePublic: true, isLibraryPublic: false,
     isFollowListPublic: false, allowMessages: 'followers', showInSearchEngines: false },
-  notificationSettings: { __typename: 'NotificationSettings', newFollower: true, mentionInSession: true,
+  notificationSettings: { __typename: 'NotificationSettings', newFollower: true, mentionInSession: true, mentionInComment: true,
     bookComment: true, bookLike: false, quoteLike: true, sessionReply: true },
   authorSettings: { __typename: 'AuthorSettings', copyrightNote: 'Telif notum', weeklyWordGoal: 100, preferredGenres: ['Roman'] },
 };

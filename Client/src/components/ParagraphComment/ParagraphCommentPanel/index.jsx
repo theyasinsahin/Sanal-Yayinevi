@@ -1,5 +1,8 @@
 import CompactNumber from '../../UI/CompactNumber';
 import UserProfileLink from '../../UI/UserProfileLink';
+import MentionInput from '../../Mentions/MentionInput';
+import MentionText from '../../Mentions/MentionText';
+import useContentTarget from '../../../hooks/useContentTarget';
 // src/components/ParagraphComment/ParagraphCommentPanel/index.jsx
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
@@ -11,6 +14,11 @@ import {
 } from '../../../graphql/mutations/paragraphComment';
 import { useAuth } from '../../../context/AuthContext';
 import './ParagraphCommentPanel.css';
+
+function CommentContent({ comment }) {
+  const targetRef = useContentTarget(`paragraph-comment-${comment.id}`);
+  return <p id={`paragraph-comment-${comment.id}`} ref={targetRef} tabIndex={-1} className="pcpanel-comment-content"><MentionText>{comment.content}</MentionText></p>;
+}
 
 const ParagraphCommentPanel = ({ bookId, chapterId, paragraphIndex, onClose }) => {
   const { user } = useAuth();
@@ -105,7 +113,7 @@ const ParagraphCommentPanel = ({ bookId, chapterId, paragraphIndex, onClose }) =
                   </button>
                 )}
               </div>
-              <p className="pcpanel-comment-content">{comment.content}</p>
+              <CommentContent comment={comment} />
             </div>
           ))
         )}
@@ -114,7 +122,7 @@ const ParagraphCommentPanel = ({ bookId, chapterId, paragraphIndex, onClose }) =
       <div className="pcpanel-input-area">
         {user ? (
           <>
-            <textarea
+            <MentionInput
               className="pcpanel-input"
               placeholder="Yorumunuzu yazın..."
               value={content}

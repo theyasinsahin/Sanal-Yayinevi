@@ -12,6 +12,7 @@ const ParagraphRenderer = ({
   content, 
   bookId, 
   chapterId,
+  requestedParagraphIndex,
   restoreParagraphIndex,
   bookmark,        // { paragraphIndex } — mevcut ayraç
   onSetBookmark,   // (paragraphIndex) => void
@@ -20,6 +21,9 @@ const ParagraphRenderer = ({
   const [openPanelIndex, setOpenPanelIndex] = useState(null);
   const blockRefs = useRef({});
   const restored = useRef('');
+  useEffect(() => {
+    if (Number.isInteger(requestedParagraphIndex) && requestedParagraphIndex >= 0) setOpenPanelIndex(requestedParagraphIndex);
+  }, [chapterId, requestedParagraphIndex]);
 
   const { data: countsData, refetch: refetchCounts } = useQuery(
     GET_PARAGRAPH_COMMENT_COUNTS,

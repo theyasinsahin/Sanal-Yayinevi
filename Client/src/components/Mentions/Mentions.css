@@ -1,0 +1,12 @@
+.mention-input { position: relative; flex: 1; min-width: 0; width: 100%; }
+.mention-input > textarea, .mention-input > input { box-sizing: border-box; width: 100%; }
+.mention-hint { display: block; margin: 4px 0; font-size: 11px; color: var(--text-secondary, #777); }
+.mention-options { position: absolute; top: 100%; left: 0; z-index: 50; box-sizing: border-box; width: min(100%, 360px); max-height: 280px; overflow-y: auto; border: 1px solid var(--border-color, #d5d5d5); border-radius: 12px; background: var(--bg-surface, #fff); color: var(--text-main, #222); box-shadow: 0 8px 28px #0002; padding: 6px; }
+.mention-options > small, .mention-options > p { display: block; padding: 8px; margin: 0; font-size: 12px; }
+.mention-options > button { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; border-radius: 8px; padding: 10px; color: inherit; background: transparent; text-align: left; cursor: pointer; font: inherit; }
+.mention-options > button[aria-selected="true"], .mention-options > button:hover { background: var(--bg-elevated, #eee); }
+.mention-options img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+.mention-options button span span { display: block; font-size: 12px; }
+.mention-link { color: var(--primary, #1a1a1a); font-weight: 600; overflow-wrap: anywhere; }
+[id^="entry-"], [id^="comment-"], [id^="quote-comment-"], [id^="paragraph-comment-"] { scroll-margin-top: 110px; }
+[id^="entry-"]:target, [id^="comment-"]:target, [id^="quote-comment-"]:target, [id^="paragraph-comment-"]:target { outline: 2px solid var(--primary-color, #a35036); outline-offset: 5px; border-radius: 8px; }

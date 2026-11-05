@@ -1,4 +1,6 @@
 import { notifyUser } from './notificationService.js';
+import { notifyMentions } from './mentionService.js';
+import { canReadBook } from '../utils/bookAccess.js';
 import { inactiveUserIds } from '../utils/activeUsers.js';
 import Comment from '../models/comment.js';
 import Book from '../models/book.js';
@@ -39,7 +41,12 @@ export const createComment = async (data) => {
 
   await ScoreService.onCommentCreated(data.userId, savedComment._id);
   const book = await Book.findById(data.bookId);
-  if (book) await notifyUser(book.authorId, 'bookComment', { type: 'COMMENT_RECEIVED', title: 'Kitabına yorum yapıldı', message: book.title + ' kitabına yeni bir yorum geldi.', icon: '💬', meta: { bookId: book._id } }, data.userId);
+  if (book) {
+    const mentioned = await notifyMentions({ actorId: data.userId, content: savedComment.content,
+      message: `${book.title} kitabının yorumunda etiketlendin.`, meta: { bookId: String(book._id), commentId: String(savedComment._id) },
+      canAccess: recipient => canReadBook(book, recipient) });
+    if (!mentioned.has(String(book.authorId))) await notifyUser(book.authorId, 'bookComment', { type: 'COMMENT_RECEIVED', title: 'Kitabına yorum yapıldı', message: book.title + ' kitabına yeni bir yorum geldi.', icon: '💬', meta: { bookId: book._id, commentId: String(savedComment._id) } }, data.userId);
+  }
 
   return await savedComment;
 };
@@ -94,6 +101,11 @@ export const createReply = async (user, bookId, content, parentCommentId) => {
 
   // Ana yoruma reply referansını ekle
   await Comment.findByIdAndUpdate(rootCommentId, { $push: { replies: savedReply._id } });
+
+  const book = await Book.findById(bookId);
+  await notifyMentions({ actorId: user._id, content: savedReply.content,
+    message: `${book.title} kitabının yorum yanıtında etiketlendin.`, meta: { bookId: String(bookId), commentId: String(savedReply._id) },
+    canAccess: recipient => canReadBook(book, recipient) });
 
   return savedReply;
 };

@@ -71,6 +71,13 @@ export const GET_SESSION_ENTRIES = gql`
   }
 `;
 
+export const GET_SESSION_ENTRY = gql`
+  ${ENTRY_FIELDS}
+  query GetSessionEntry($sessionId: ID!, $entryId: ID!, $accessCode: String) {
+    getSessionEntry(sessionId: $sessionId, entryId: $entryId, accessCode: $accessCode) { ...EntryFields }
+  }
+`;
+
 // --- MUTATIONS ---
 export const CREATE_SESSION = gql`
   ${SESSION_FIELDS}

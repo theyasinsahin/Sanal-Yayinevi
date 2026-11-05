@@ -1,5 +1,8 @@
 import CompactNumber from '../../UI/CompactNumber';
 import UserProfileLink from '../../UI/UserProfileLink';
+import MentionInput from '../../Mentions/MentionInput';
+import MentionText from '../../Mentions/MentionText';
+import useContentTarget from '../../../hooks/useContentTarget';
 import React, { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { AccountCircle, FavoriteBorder, Favorite, Delete, Reply } from '@mui/icons-material';
@@ -16,6 +19,7 @@ import { Input } from '../../UI/Input';
 import './CommentItem.css';
 
 const CommentItem = ({ comment, currentUserId, bookId, isReply = false }) => {
+  const targetRef = useContentTarget(`comment-${comment.id}`);
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [replyText, setReplyText] = useState("");
 
@@ -87,7 +91,7 @@ const CommentItem = ({ comment, currentUserId, bookId, isReply = false }) => {
   const likeCount = optimisticLikeCount !== null ? optimisticLikeCount : (comment.likedBy?.length || 0);
 
   return (
-    <div className={`comment-item ${isReply ? 'is-reply' : ''}`}>
+    <div id={`comment-${comment.id}`} ref={targetRef} tabIndex={-1} className={`comment-item ${isReply ? 'is-reply' : ''}`}>
       
       {/* Header */}
       <div className="comment-header">
@@ -126,7 +130,7 @@ const CommentItem = ({ comment, currentUserId, bookId, isReply = false }) => {
 
       {/* Content */}
       <Typography variant="body" className="comment-content">
-        {comment.content}
+        <MentionText>{comment.content}</MentionText>
       </Typography>
 
       {/* Actions */}
@@ -145,7 +149,7 @@ const CommentItem = ({ comment, currentUserId, bookId, isReply = false }) => {
       {/* Reply Input */}
       {showReplyInput && (
         <div className="reply-form">
-          <Input 
+          <MentionInput as={Input} name={`reply-${comment.id}`}
             placeholder={`@${username} kullanıcısına yanıt ver...`}
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}

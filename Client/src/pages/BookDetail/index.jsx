@@ -1,5 +1,6 @@
 import ClassificationSummary from '../../components/Books/Classification/ClassificationSummary';
 import CompactNumber from '../../components/UI/CompactNumber';
+import MentionInput from '../../components/Mentions/MentionInput';
 import ClassificationEditor from '../../components/Books/Classification/ClassificationEditor';
 import { useAuth } from '../../context/AuthContext';
 import { profilePath, readerPath } from '../../utils/publicPaths';
@@ -451,7 +452,7 @@ const BookDetailPage = ({ resolvedId } = {}) => {
                 </Typography>
                 
                 <div className="comment-input-area">
-                  <Textarea 
+                  <MentionInput as={Textarea}
                     name="comment"
                     placeholder="Yorumunuzu buraya yazın..."
                     value={commentText}

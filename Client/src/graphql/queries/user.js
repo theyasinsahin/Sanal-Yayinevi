@@ -39,7 +39,7 @@ export const GET_USER_BY_ID = gql`
           isSearchIndexable
           weeklyWritingWords
           privacySettings { isProfilePublic isLibraryPublic isFollowListPublic allowMessages showInSearchEngines }
-          notificationSettings { newFollower mentionInSession bookComment bookLike quoteLike sessionReply }
+          notificationSettings { newFollower mentionInSession mentionInComment bookComment bookLike quoteLike sessionReply }
           authorSettings { copyrightNote weeklyWordGoal preferredGenres }
           id,
           username,
