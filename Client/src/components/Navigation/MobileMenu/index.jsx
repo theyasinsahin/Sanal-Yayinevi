@@ -117,6 +117,7 @@ const MobileMenu = ({ isOpen, onClose }) => {
                   document.body'ye portallandığı için burada, çekmecenin
                   içinde olmasının konumlandırmaya bir etkisi yok. */}
               <NotificationBell
+                onNavigate={onClose}
                 className="mobile-nav-item mobile-nav-item--bell"
                 label="Bildirimler"
               />

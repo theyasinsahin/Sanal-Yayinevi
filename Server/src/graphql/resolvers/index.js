@@ -1,4 +1,5 @@
 import publicUrlResolvers from './publicUrl.js';
+import mentionResolvers from './mention.js';
 import publisherResolvers from './publisher.js';
 import adminResolvers from './admin.js';
 import classificationResolvers from './classification.js';
@@ -30,6 +31,7 @@ import bookFollowResolvers from "./bookFollow.js";
 // Tüm resolver modüllerini bir dizi içine koyup gönderiyoruz.
 // schema.js içindeki mergeResolvers bunları otomatik birleştirecek.
 export default [
+    mentionResolvers,
     publisherResolvers,
     classificationResolvers,
     printFundingResolvers,

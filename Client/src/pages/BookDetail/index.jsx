@@ -1,4 +1,6 @@
 import ClassificationSummary from '../../components/Books/Classification/ClassificationSummary';
+import CompactNumber from '../../components/UI/CompactNumber';
+import MentionInput from '../../components/Mentions/MentionInput';
 import ClassificationEditor from '../../components/Books/Classification/ClassificationEditor';
 import { useAuth } from '../../context/AuthContext';
 import { profilePath, readerPath } from '../../utils/publicPaths';
@@ -345,7 +347,7 @@ const BookDetailPage = ({ resolvedId } = {}) => {
                 </div>
                 <div className="meta-row">
                   <span className="meta-label">Beğeni:</span>
-                  <span className="meta-value">{likeCount}</span>
+                  <CompactNumber className="meta-value" value={likeCount} label="beğeni" />
                 </div>
               </div>
             </aside>
@@ -446,11 +448,11 @@ const BookDetailPage = ({ resolvedId } = {}) => {
 
               <div className="comments-wrapper" id="comments">
                 <Typography variant="h5" weight="bold" className="mb-4">
-                  Yorumlar ({rawComments.length})                
+                  Yorumlar (<CompactNumber value={rawComments.length} />)
                 </Typography>
                 
                 <div className="comment-input-area">
-                  <Textarea 
+                  <MentionInput as={Textarea}
                     name="comment"
                     placeholder="Yorumunuzu buraya yazın..."
                     value={commentText}

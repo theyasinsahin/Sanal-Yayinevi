@@ -35,6 +35,8 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const requestedChapterId = resolvedChapterId || searchParams.get('chapter');
+  const requestedParagraph = searchParams.get('paragraph');
+  const requestedParagraphIndex = requestedParagraph !== null && /^\d+$/.test(requestedParagraph) ? Number(requestedParagraph) : null;
 
   const { user } = useAuth();
 
@@ -362,6 +364,7 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
               <p className="ui-notice" role="alert">Bölüm yüklenemedi. <button className="ui-text-link" onClick={() => refetchChapter()}>Tekrar dene</button></p> : <ParagraphRenderer
               key={currentChapter.id}
               restoreParagraphIndex={restoreParagraphIndex}
+              requestedParagraphIndex={currentChapter.id === requestedChapterId ? requestedParagraphIndex : null}
               content={currentChapter.content}
               bookId={bookId}
               chapterId={currentChapter.id}

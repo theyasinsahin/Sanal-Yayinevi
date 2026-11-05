@@ -1,3 +1,4 @@
+import MentionInput from '../../Mentions/MentionInput';
 import ClassificationSummary from '../Classification/ClassificationSummary';
 import ClassificationEditor from '../Classification/ClassificationEditor';
 import { profilePath, readerPath } from '../../../utils/publicPaths';
@@ -84,11 +85,11 @@ export default function PrintedBookDetail({ book, comments, commentsLoading, cur
     <section className="printed-panel"><h2>Kitap hakkında</h2><p className="printed-description">{book.description}</p></section>
     {approved && user && !book.authorId && <ClaimForm book={book} refresh={refresh} />}
     {approved && <>
-      <section id="comments" className="printed-panel"><h2>Okur yorumları</h2>{user ? <form onSubmit={event => { event.preventDefault(); onCommentSubmit(); }}><Textarea label="Yorumunuz" name="printed-comment" value={commentText} onChange={onCommentChange} required maxLength={5000} disabled={commentSending} /><Button type="submit" isLoading={commentSending}>Yorum gönder</Button></form> : <p><Link className="ui-text-link" to="/login">Yorum yazmak için giriş yapın</Link></p>}{commentsLoading ? <p role="status">Yorumlar yükleniyor…</p> : <CommentList comments={comments} currentUserId={currentUserId} bookId={book.id} />}</section>
+      <section id="comments" className="printed-panel"><h2>Okur yorumları</h2>{user ? <form onSubmit={event => { event.preventDefault(); onCommentSubmit(); }}><MentionInput as={Textarea} label="Yorumunuz" name="printed-comment" value={commentText} onChange={onCommentChange} required maxLength={5000} disabled={commentSending} /><Button type="submit" isLoading={commentSending}>Yorum gönder</Button></form> : <p><Link className="ui-text-link" to="/login">Yorum yazmak için giriş yapın</Link></p>}{commentsLoading ? <p role="status">Yorumlar yükleniyor…</p> : <CommentList comments={comments} currentUserId={currentUserId} bookId={book.id} />}</section>
       <section className="printed-panel"><h2>Kitaptan alıntılar</h2>{user ? <details className="printed-quote-form"><summary>Alıntı paylaş</summary><form onSubmit={shareQuote}>
         <Textarea label="Kısa alıntı" name="printed-quote" value={text} onChange={event => setText(event.target.value)} required minLength={10} maxLength={1000} disabled={quoting} />
         <Input label="Basılı kitaptaki sayfa numarası" name="printed-page-number" type="number" value={page} onChange={event => setPage(event.target.value)} required min={1} max={book.pageCount} disabled={quoting} />
-        <Textarea label="Notunuz (isteğe bağlı)" name="printed-quote-note" value={note} onChange={event => setNote(event.target.value)} maxLength={1000} disabled={quoting} />
+        <MentionInput as={Textarea} label="Notunuz (isteğe bağlı)" name="printed-quote-note" value={note} onChange={event => setNote(event.target.value)} maxLength={1000} disabled={quoting} />
         <label className="printed-check"><input type="checkbox" checked={spoiler} onChange={event => setSpoiler(event.target.checked)} disabled={quoting} /> Spoiler içeriyor</label>
         <QuoteVisibility value={visibility} onChange={setVisibility} disabled={quoting} id="printed-quote-visibility" />
         <Button type="submit" isLoading={quoting}>{visibility === 'PRIVATE' ? 'Özel olarak kaydet' : 'Alıntıyı paylaş'}</Button>

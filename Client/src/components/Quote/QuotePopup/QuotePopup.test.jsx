@@ -5,7 +5,7 @@ import { useLazyQuery, useMutation } from '@apollo/client';
 import { CREATE_QUOTE_MUTATION, REPOST_QUOTE_MUTATION } from '../../../graphql/mutations/quote';
 import QuotePopup from './index';
 
-jest.mock('@apollo/client', () => ({ ...jest.requireActual('@apollo/client'), useLazyQuery: jest.fn(), useMutation: jest.fn() }));
+jest.mock('@apollo/client', () => ({ ...jest.requireActual('@apollo/client'), useLazyQuery: jest.fn(), useMutation: jest.fn(), useQuery: () => ({}) }));
 jest.mock('../../../context/AuthContext', () => ({ useAuth: () => ({ user: { id: 'reader' } }) }));
 jest.mock('@mui/icons-material', () => ({ Check: () => null, Close: () => null, Repeat: () => null }));
 let check, create, repost, source, selectedNode;

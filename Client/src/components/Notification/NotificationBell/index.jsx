@@ -22,7 +22,7 @@ const MOBILE_BREAKPOINT = 1200; // NavigationBar'ın hamburger'a geçtiği nokta
 // <button> içinde render edilir; böylece satırın tamamı tıklanabilir
 // olur. label verilmezse (navbar'daki gibi) eskisi gibi sadece küçük
 // ikon butonu render edilir — davranış değişmez.
-const NotificationBell = ({ label, className = '' }) => {
+const NotificationBell = ({ label, className = '', onNavigate }) => {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [dropdownStyle, setDropdownStyle] = useState(null);
@@ -139,7 +139,7 @@ const NotificationBell = ({ label, className = '' }) => {
                   const target = notificationTarget(notif, user);
                   const Item = target ? Link : 'div';
                   return <Item key={notif.id} className={`notif-item ${!notif.isRead ? 'unread' : ''}`}
-                    {...(target ? { to: target, onClick: () => setOpen(false) } : {})}>
+                    {...(target ? { to: target, onClick: () => { setOpen(false); onNavigate?.(); } } : {})}>
                     <span className="notif-icon">{notif.icon}</span>
                     <div className="notif-content">
                       <p className="notif-title">{notif.title}</p>

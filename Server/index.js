@@ -1,6 +1,7 @@
 import './src/config/environment.js';
 // Temel Kütüphaneler
 import http from 'http';
+import mongoose from 'mongoose';
 import express from 'express';
 import cors from 'cors';
 import { expressMiddleware } from '@as-integrations/express4';
@@ -29,8 +30,7 @@ import printRoutes from './src/routes/printRoutes.js';
 import { initializePrintFunding } from './src/services/print/common.js';
 import { startPrintWorker } from './src/services/print/worker.js';
 import { printSystemEnabled } from './src/services/print/paymentConfig.js';
-
-const PORT = process.env.PORT || 5000;
+import { validateServerEnvironment, startupFailure } from './src/config/startup.js';
 
 // 2. PubSub instance — tüm uygulama bu tek instance'ı kullanır
 // Dosya seviyesinde export ediyoruz ki servis ve resolver'lar import edebilsin
@@ -38,9 +38,10 @@ export { pubsub };
 
 // 3. Sunucuyu Başlatma Fonksiyonu
 const startServer = async () => {
+  let httpServer, wsServer, serverCleanup, server, stopWorker;
   try {
+    const { port: PORT } = validateServerEnvironment();
     const app = express();
-    if (process.env.NODE_ENV === 'production' && (!process.env.JWT_SECRET || Buffer.byteLength(process.env.JWT_SECRET) < 32 || !process.env.CLIENT_URL)) throw new Error('Üretim oturum/origin yapılandırması eksik.');
     configureHttpSecurity(app);
     app.use(requestShield());
     app.use(compressResponses());
@@ -94,10 +95,10 @@ const startServer = async () => {
     // (dev server veya prod hosting) eklemen gerekir — API sunucusuna değil.
 
     // 4. HTTP sunucusunu oluştur
-    const httpServer = http.createServer(app);
+    httpServer = http.createServer(app);
 
     // 5. WebSocket sunucusu — HTTP sunucusuyla aynı port, /graphql path'i
-    const wsServer = new WebSocketServer({
+    wsServer = new WebSocketServer({
       server: httpServer,
       path: '/graphql',
       maxPayload: 65536,
@@ -111,13 +112,13 @@ const startServer = async () => {
 
     // 6. graphql-ws'i schema'ya bağla
     // useServer'ın döndürdüğü serverCleanup, Apollo kapanırken WS'i de temiz kapatır
-    const serverCleanup = useServer(
+    serverCleanup = useServer(
       websocketOptions(schema, models),
       wsServer
     );
 
     // 7. Apollo Server — WebSocket kapatma plugin'i eklendi
-    const server = new ApolloServer({
+    server = new ApolloServer({
       schema,
       cache: 'bounded',
       introspection: process.env.NODE_ENV !== 'production',
@@ -169,15 +170,29 @@ const startServer = async () => {
     httpServer.keepAliveTimeout = 5000;
     httpServer.maxRequestsPerSocket = 1000;
 
-    await new Promise((resolve) => httpServer.listen({ port: PORT, ...(process.env.BETIK_ISOLATED_PRINT_SANDBOX === 'true' ? { host: '127.0.0.1' } : {}) }, resolve));
+    await new Promise((resolve, reject) => {
+      httpServer.once('error', reject);
+      httpServer.listen({ port: PORT, ...(process.env.BETIK_ISOLATED_PRINT_SANDBOX === 'true' ? { host: '127.0.0.1' } : {}) }, () => {
+        httpServer.removeListener('error', reject);
+        resolve();
+      });
+    });
     // Application notifications also need delivery when funding is disabled.
     // Maintenance only touches money/provider state if sandboxEnabled() is true.
-    startPrintWorker();
+    stopWorker = startPrintWorker();
     console.log(`🚀 Server hazır: http://localhost:${PORT}`);
     console.log(`🔌 WebSocket hazır: ws://localhost:${PORT}/graphql`);
 
   } catch (e) {
-    console.error('Server başlatılamadı. Yapılandırma ve servis erişimini kontrol edin.');
+    const failure = startupFailure(e);
+    console.error(`Server başlatılamadı [${failure.code}].\n${failure.message}`);
+    stopWorker?.();
+    // A failed index build, Apollo startup or listen must release DB/WS handles.
+    await serverCleanup?.dispose().catch(() => {});
+    await server?.stop().catch(() => {});
+    httpServer?.closeAllConnections();
+    if (httpServer?.listening) await new Promise(resolve => httpServer.close(resolve));
+    await mongoose.disconnect().catch(() => {});
     process.exitCode = 1;
   }
 };

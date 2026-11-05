@@ -1,14 +1,39 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import QuoteCard from './index';
-jest.mock('@apollo/client', () => ({ ...jest.requireActual('@apollo/client'), useMutation: () => [jest.fn(), {}], useQuery: () => ({}) }));
+import { useQuery } from '@apollo/client';
+jest.mock('@apollo/client', () => ({ ...jest.requireActual('@apollo/client'), useMutation: () => [jest.fn(), {}], useQuery: jest.fn() }));
 jest.mock('../../../context/AuthContext', () => ({ useAuth: jest.fn() }));
 jest.mock('../../Messaging/ShareModal', () => () => null);
 jest.mock('../../Sharing/SocialShareDialog', () => () => null);
 jest.mock('@mui/icons-material', () => Object.fromEntries(['Favorite', 'FavoriteBorder', 'FormatQuote', 'Person', 'Repeat', 'ChatBubbleOutline', 'Delete', 'Send', 'IosShare'].map(name => [name, () => null])));
 const quote = { id: 'quote', text: 'Özel alıntı metni', note: 'Saklı not', visibility: 'PRIVATE', user: { id: 'owner', username: 'owner' } };
+beforeEach(() => useQuery.mockReturnValue({}));
+
+test.each([
+  [999, '999', '1 B', '999', '1.000'],
+  [999949, '999,9 B', '1 Mn', '999.949', '999.950'],
+])('liking and unliking across %s preserves real integer arithmetic', (count, before, after, exactBefore, exactAfter) => {
+  useAuth.mockReturnValue({ user: { id: 'reader' } });
+  render(<MemoryRouter><QuoteCard quote={{ ...quote, visibility: 'PUBLIC', likedBy: new Array(count) }} /></MemoryRouter>);
+  const like = screen.getByRole('button', { name: `${exactBefore} beğeni` });
+  expect(like).toHaveTextContent(before);
+  fireEvent.click(like);
+  expect(screen.getByRole('button', { name: `${exactAfter} beğeni` })).toHaveTextContent(after);
+  fireEvent.click(screen.getByRole('button', { name: `${exactAfter} beğeni` }));
+  expect(screen.getByRole('button', { name: `${exactBefore} beğeni` })).toHaveTextContent(before);
+});
+
+test('a comment notification automatically expands the quote comments', () => {
+  useAuth.mockReturnValue({ user: { id: 'reader' } });
+  const comment = { id: 'target', content: 'Hello @reader', user: { id: 'owner', username: 'owner' } };
+  useQuery.mockReturnValue({ data: { getQuoteComments: [comment] } });
+  render(<MemoryRouter initialEntries={['/quotes/quote#quote-comment-target']}><QuoteCard quote={{ ...quote, visibility: 'PUBLIC' }} /></MemoryRouter>);
+  expect(screen.getByRole('link', { name: '@reader' })).toHaveAttribute('href', '/yazar/reader');
+  expect(screen.getByText(/Hello/)).toHaveAttribute('id', 'quote-comment-target');
+});
 test('only the owner can render a private quote and no social actions are offered', () => {
   useAuth.mockReturnValue({ user: { id: 'owner' } });
   const { rerender } = render(<MemoryRouter><QuoteCard quote={quote} /></MemoryRouter>);

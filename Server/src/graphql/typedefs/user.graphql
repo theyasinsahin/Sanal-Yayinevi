@@ -20,6 +20,7 @@ type PrivacySettings {
 type NotificationSettings {
   newFollower: Boolean!
   mentionInSession: Boolean!
+  mentionInComment: Boolean!
   bookComment: Boolean!
   bookLike: Boolean!
   quoteLike: Boolean!
@@ -52,6 +53,7 @@ input PrivacySettingsInput {
 input NotificationSettingsInput {
   newFollower: Boolean
   mentionInSession: Boolean
+  mentionInComment: Boolean
   bookComment: Boolean
   bookLike: Boolean
   quoteLike: Boolean

@@ -1,3 +1,4 @@
+import CompactNumber from '../../UI/CompactNumber';
 // src/components/ParagraphComment/ParagraphRenderer/index.jsx
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { useQuery } from '@apollo/client';
@@ -11,6 +12,7 @@ const ParagraphRenderer = ({
   content, 
   bookId, 
   chapterId,
+  requestedParagraphIndex,
   restoreParagraphIndex,
   bookmark,        // { paragraphIndex } — mevcut ayraç
   onSetBookmark,   // (paragraphIndex) => void
@@ -19,6 +21,9 @@ const ParagraphRenderer = ({
   const [openPanelIndex, setOpenPanelIndex] = useState(null);
   const blockRefs = useRef({});
   const restored = useRef('');
+  useEffect(() => {
+    if (Number.isInteger(requestedParagraphIndex) && requestedParagraphIndex >= 0) setOpenPanelIndex(requestedParagraphIndex);
+  }, [chapterId, requestedParagraphIndex]);
 
   const { data: countsData, refetch: refetchCounts } = useQuery(
     GET_PARAGRAPH_COMMENT_COUNTS,
@@ -144,7 +149,7 @@ const ParagraphRenderer = ({
               >
                 <ChatBubbleOutline fontSize="inherit" />
                 {count > 0 && (
-                  <span className="paragraph-comment-count">{count}</span>
+                  <CompactNumber className="paragraph-comment-count" value={count} label="yorum" />
                 )}
               </button>
             </div>

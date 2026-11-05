@@ -13,7 +13,7 @@ const book = {
   format: null, genres: [], classificationTags: [], narrativeFeatures: [], targetAudience: null, contentWarnings: [], classificationStatus: 'COMPLETE', chapters,
 };
 
-async function mockReader(page, { draft = false, username = user.username } = {}) {
+async function mockReader(page, { draft = false, username = user.username, paragraphMention = false } = {}) {
   const sessionUser = { ...user, ...(draft ? { id: 'author' } : {}), username };
   await page.addInitScript(user => {
     localStorage.setItem('token', `fixture.${btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 3600 }))}.fixture`);
@@ -39,7 +39,7 @@ async function mockReader(page, { draft = false, username = user.username } = {}
     const operation = payload.operationName || payload.query.match(/(?:mutation|query)\s+(\w+)/)?.[1];
     const responses = {
       Me: { me: { __typename: 'User', ...sessionUser } },
-      ResolvePublicRoute: { resolvePublicRoute: { __typename: 'PublicRoute', id: 'book', path: '/kitap/test-kitabi', chapterId: null } },
+      ResolvePublicRoute: { resolvePublicRoute: { __typename: 'PublicRoute', id: 'book', path: paragraphMention ? '/kitap/test-kitabi/bolum/ikinci-bolum' : '/kitap/test-kitabi', chapterId: paragraphMention ? 'chapter-1' : null } },
       GetBookReaderData: { getBookById: currentBook },
       GetBookDetail: { getBookById: currentBook }, GetBookById: { getBookById: currentBook },
       GetBookViewer: { getUserById: { __typename: 'User', ...sessionUser, savedBooks: [] } },
@@ -51,6 +51,7 @@ async function mockReader(page, { draft = false, username = user.username } = {}
       GetBookmark: { getBookmark: null }, GetReadingProgress: { getReadingProgress: null },
       SaveReadingProgress: { saveReadingProgress: { id: 'progress', lastChapterId: variables.chapterId, completedChapters: variables.completedChapterIds, isCompleted: false, lastReadAt: new Date().toISOString() } },
       GetParagraphCommentCounts: { getParagraphCommentCounts: [] }, CheckQuoteExists: { checkQuoteExists: { exists: false, quote: null } },
+      GetParagraphComments: { getParagraphComments: paragraphMention ? [{ __typename: 'ParagraphComment', id: 'target-comment', content: 'Merhaba @okur', paragraphIndex: 0, likedBy: [], createdAt: String(Date.now()), user: { __typename: 'User', ...sessionUser, profilePicture: '' } }] : [] },
       GetUnreadNotificationCount: { getUnreadNotificationCount: 0 }, GetUnreadMessageCount: { getUnreadMessageCount: 0 },
       StartReadingSession: { startReadingSession: { sessionId: 'synthetic-session' } },
       ReportReadingTime: { reportReadingTime: { earnedPoints: 0, totalReadingMinutes: 0 } },
@@ -70,6 +71,17 @@ async function mockReader(page, { draft = false, username = user.username } = {}
   });
   return { quotes, unexpected };
 }
+
+test('paragraph mention links open the correct chapter, expand its comments and focus the tagged comment', async ({ page }) => {
+  const app = await mockReader(page, { paragraphMention: true });
+  await page.goto('/book-reader/book?chapter=chapter-1&paragraph=0#paragraph-comment-target-comment');
+  await expect(page.getByRole('heading', { name: 'İkinci bölüm', exact: true })).toBeVisible();
+  const target = page.locator('#paragraph-comment-target-comment');
+  await expect(target).toHaveText('Merhaba @okur');
+  await expect(target).toBeFocused();
+  await expect(target).toBeInViewport();
+  expect(app.unexpected).toEqual([]);
+});
 
 async function selectContent(page, selector) {
   await page.locator(selector).first().evaluate(element => {

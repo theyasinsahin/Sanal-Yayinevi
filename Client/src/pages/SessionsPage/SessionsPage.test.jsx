@@ -76,7 +76,7 @@ test.each(['PRIVATE', 'FOLLOWERS_ONLY'])('%s cards do not offer public sharing',
 
 test('creating a session includes the selected uploaded cover', async () => {
   const onCreate = jest.fn().mockResolvedValue({}), onClose = jest.fn();
-  render(<CreateSessionModal onCreate={onCreate} onClose={onClose} />);
+  render(<MockedProvider><CreateSessionModal onCreate={onCreate} onClose={onClose} /></MockedProvider>);
   fireEvent.change(screen.getByRole('textbox', { name: 'Başlık' }), { target: { value: 'Etkinlik' } });
   fireEvent.click(screen.getByRole('button', { name: 'Fotoğraf seç' }));
   fireEvent.click(screen.getByRole('button', { name: 'Oturum Oluştur' }));
@@ -86,7 +86,7 @@ test('creating a session includes the selected uploaded cover', async () => {
 
 test('creating without a photo or after removing a selected photo submits an empty cover', async () => {
   const onCreate = jest.fn().mockResolvedValue({});
-  render(<CreateSessionModal onCreate={onCreate} onClose={jest.fn()} />);
+  render(<MockedProvider><CreateSessionModal onCreate={onCreate} onClose={jest.fn()} /></MockedProvider>);
   fireEvent.change(screen.getByRole('textbox', { name: 'Başlık' }), { target: { value: 'Etkinlik' } });
   fireEvent.click(screen.getByRole('button', { name: 'Oturum Oluştur' }));
   expect(onCreate).toHaveBeenLastCalledWith(expect.objectContaining({ coverImageUrl: '' }));
@@ -97,14 +97,14 @@ test('creating without a photo or after removing a selected photo submits an emp
 });
 
 test('submission is disabled until the image finishes uploading', () => {
-  render(<CreateSessionModal onCreate={jest.fn()} onClose={jest.fn()} />);
+  render(<MockedProvider><CreateSessionModal onCreate={jest.fn()} onClose={jest.fn()} /></MockedProvider>);
   fireEvent.click(screen.getByRole('button', { name: 'Yükleme başlat' }));
   expect(screen.getByRole('button', { name: 'Oturum Oluştur' })).toBeDisabled();
 });
 
 test('a create failure keeps the form open and shows the server error', async () => {
   const onClose = jest.fn();
-  render(<CreateSessionModal onCreate={jest.fn().mockRejectedValue(new Error('Oturum kaydedilemedi.'))} onClose={onClose} />);
+  render(<MockedProvider><CreateSessionModal onCreate={jest.fn().mockRejectedValue(new Error('Oturum kaydedilemedi.'))} onClose={onClose} /></MockedProvider>);
   fireEvent.change(screen.getByRole('textbox', { name: 'Başlık' }), { target: { value: 'Etkinlik' } });
   fireEvent.click(screen.getByRole('button', { name: 'Oturum Oluştur' }));
   expect(await screen.findByRole('alert')).toHaveTextContent('Oturum kaydedilemedi.');

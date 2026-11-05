@@ -57,6 +57,13 @@ test.each([['USER', '/book-detail/book'], ['ADMIN', '/admin/printed-books']])('r
 });
 
 test.each([
+  ['COMMENT_MENTION', { bookId: 'book', commentId: 'comment' }, '/book-detail/book#comment-comment'],
+  ['PARAGRAPH_MENTION', { bookId: 'book', chapterId: 'chapter', paragraphIndex: 0, commentId: 'comment' }, '/book-reader/book?chapter=chapter&paragraph=0#paragraph-comment-comment'],
+  ['QUOTE_MENTION', { quoteId: 'quote', commentId: 'comment' }, '/quotes/quote#quote-comment-comment'],
+  ['QUOTE_MENTION', { quoteId: 'quote' }, '/quotes/quote'],
+  ['SESSION_MENTION', { sessionId: 'session', entryId: 'entry' }, '/sessions/session#entry-entry'],
+  ['SESSION_REPLY', { sessionId: 'session', entryId: 'entry' }, '/sessions/session#entry-entry'],
+  ['COMMENT_RECEIVED', { bookId: 'book', commentId: 'comment' }, '/book-detail/book#comment-comment'],
   ['NEW_CHAPTER', { bookId: 'book', chapterId: 'chapter' }, '/book-reader/book?chapter=chapter'],
   ['BOOK_LIKED', { bookId: 'book' }, '/book-detail/book'],
   ['COMMENT_RECEIVED', { bookId: 'book' }, '/book-detail/book#comments'],

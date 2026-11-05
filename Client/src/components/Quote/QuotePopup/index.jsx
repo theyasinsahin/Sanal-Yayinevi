@@ -1,3 +1,4 @@
+import MentionInput from '../../Mentions/MentionInput';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import UserProfileLink from '../../UI/UserProfileLink';
@@ -143,7 +144,7 @@ export default function QuotePopup({ bookId, chapterId, chapterTitle, chapterInd
       {checkFailed && popup.text.length <= 1000 && <button type="button" className="quote-popup-btn" onClick={() => check(popup.text, visibility)}>Yeniden kontrol et</button>}
       {duplicateOwned || reposted ? <p>Bu alıntı zaten kayıtlı. <Link to="/profile">Profilimdeki alıntılar</Link></p> : <>
         {existing && <p className="quote-popup-existing-info"><Repeat fontSize="small" /> Bu alıntı <UserProfileLink user={existing.user}>@{existing.user?.username}</UserProfileLink> tarafından paylaşılmış. Yeniden paylaşabilir veya “Sadece ben” seçerek özel kaydedebilirsin.</p>}
-        <textarea className="quote-note-input" aria-label={existing ? 'Yeniden paylaşım notu' : 'Alıntı notu'} placeholder="Not ekle... (isteğe bağlı)" value={note} onChange={event => setNote(event.target.value)} rows={2} disabled={busy} />
+        <MentionInput className="quote-note-input" aria-label={existing ? 'Yeniden paylaşım notu' : 'Alıntı notu'} placeholder="Not ekle... (isteğe bağlı)" value={note} onChange={event => setNote(event.target.value)} rows={2} disabled={busy} />
         <label className="quote-spoiler-checkbox"><input type="checkbox" checked={spoiler} onChange={event => setSpoiler(event.target.checked)} disabled={busy} />Sürprizbozan içeriyor</label>
         <button type="button" className="quote-popup-btn primary full" disabled={busy || checking || checkFailed} onClick={save}>
           {busy ? 'Kaydediliyor…' : visibility === 'PRIVATE' ? 'Özel olarak kaydet' : existing ? 'Yeniden paylaş' : 'Kaydet'}

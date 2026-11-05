@@ -1,4 +1,5 @@
 import { readableChapter } from '../utils/chapterAccess.js';
+import { notifyMentions } from './mentionService.js';
 import User from '../models/user.js';
 // src/services/paragraphCommentService.js
 import { inactiveUserIds } from '../utils/activeUsers.js';
@@ -28,6 +29,9 @@ export const addParagraphComment = async (userId, { bookId, chapterId, paragraph
   if (!await readableChapter(chapterId, await User.findById(userId), bookId)) throw new Error('Bu bölümün içeriğine erişiminiz yok.');
   const comment = new ParagraphComment({ userId, bookId, chapterId, paragraphIndex, content });
   const saved = await comment.save();
+  await notifyMentions({ actorId: userId, content, type: 'PARAGRAPH_MENTION', message: 'Bir paragraf yorumunda etiketlendin.',
+    meta: { bookId: String(bookId), chapterId: String(chapterId), paragraphIndex, commentId: String(saved._id) },
+    canAccess: recipient => readableChapter(chapterId, recipient, bookId) });
   return await populate(ParagraphComment.findById(saved._id));
 };
 

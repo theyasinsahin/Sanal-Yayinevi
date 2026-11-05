@@ -183,9 +183,10 @@
 
 .quote-card-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 12px;
-  flex-shrink: 0;
+  min-width: 0;
 }
 
 .quote-card-time {

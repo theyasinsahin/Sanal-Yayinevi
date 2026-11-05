@@ -268,6 +268,7 @@
 /* Views/likes satırı — istatistiklerin hemen altında */
 .mini-stats-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
   margin-top: 0.75rem;
@@ -279,6 +280,10 @@
 .mini-stats-row svg {
   font-size: 0.95rem !important;
   vertical-align: middle;
+}
+
+.mini-stats-row > span {
+  white-space: nowrap;
 }
 
 /* === HEADER RIGHT: ACTIONS === */

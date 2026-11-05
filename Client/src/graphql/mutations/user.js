@@ -121,6 +121,7 @@ export const UPDATE_NOTIFICATION_SETTINGS_MUTATION = gql`
       notificationSettings {
         newFollower
         mentionInSession
+        mentionInComment
         bookComment
         bookLike
         quoteLike

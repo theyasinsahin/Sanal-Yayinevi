@@ -5,7 +5,7 @@ const NotificationSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   type: { 
     type: String, 
-    enum: ['PRINT_UPDATE', 'BOOK_REVIEW', 'POINTS_EARNED', 'BADGE_EARNED', 'FUNDING_RECEIVED', 'NEW_CHAPTER', 'BOOK_LIKED', 'COMMENT_RECEIVED', 'FOLLOW_REQUEST', 'FOLLOW_REQUEST_ACCEPTED', 'NEW_FOLLOWER', 'QUOTE_LIKED', 'SESSION_MENTION', 'SESSION_REPLY'],
+    enum: ['PRINT_UPDATE', 'BOOK_REVIEW', 'POINTS_EARNED', 'BADGE_EARNED', 'FUNDING_RECEIVED', 'NEW_CHAPTER', 'BOOK_LIKED', 'COMMENT_RECEIVED', 'FOLLOW_REQUEST', 'FOLLOW_REQUEST_ACCEPTED', 'NEW_FOLLOWER', 'QUOTE_LIKED', 'SESSION_MENTION', 'SESSION_REPLY', 'COMMENT_MENTION', 'PARAGRAPH_MENTION', 'QUOTE_MENTION'],
     required: true 
   },
   title: { type: String, required: true },

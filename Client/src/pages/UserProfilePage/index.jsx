@@ -1,5 +1,6 @@
 import { useLiveScoreQuery } from '../../hooks/useLiveScoreQuery';
 import { profilePath } from '../../utils/publicPaths';
+import CompactNumber from '../../components/UI/CompactNumber';
 import { useGetOrCreateConversation } from '../../hooks/useMessages';
 
 import React, { useState, useEffect } from 'react';
@@ -200,13 +201,6 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
   const totalLikes = profile?.usersBooks?.reduce((sum, book) => 
     sum + (book.stats?.likes || 0), 0) || 0;
 
-  const formatNumber = (num) => {
-    if (!num) return '0';
-    if (num >= 1000000) return `${(num / 1000000).toLocaleString('tr-TR', { maximumFractionDigits: 1 })} mn`;
-    if (num >= 1000) return `${(num / 1000).toLocaleString('tr-TR', { maximumFractionDigits: 1 })} bin`;
-    return num.toString();
-  };
-
   const publishedBooks = profile?.usersBooks?.filter(b => b.status !== 'DRAFT') || [];
   const draftBooks = profile?.usersBooks?.filter(b => b.status === 'DRAFT') || [];
   
@@ -315,7 +309,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
                           sebep oluyordu. Artık sayaç, ziyaretçiye göre
                           gerçekten görünen kitap sayısını yansıtıyor. */}
                       <span className="stat-value">
-                        {isMe ? (profile.usersBooks?.length || 0) : publishedBooks.length}
+                        <CompactNumber value={isMe ? profile.usersBooks?.length : publishedBooks.length} />
                       </span>
                       <span className="stat-label">Kitaplar</span>
                     </div>
@@ -323,29 +317,29 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
                     
                     {/* YENİ: Tıklanabilir Followers */}
                     <div className="stat-item-profile clickable" onClick={() => canViewFollowList && openModal('followers')}>
-                      <span className="stat-value">{canViewFollowList ? formatNumber(followerCount) : 'Gizli'}</span>
+                      <span className="stat-value">{canViewFollowList ? <CompactNumber value={followerCount} /> : 'Gizli'}</span>
                       <span className="stat-label">Takipçiler</span>
                     </div>
                     <div className="stat-divider"></div>
 
                     {/* YENİ: Tıklanabilir Following */}
                     <div className="stat-item-profile clickable" onClick={() => canViewFollowList && openModal('following')}>
-                      <span className="stat-value">{canViewFollowList ? formatNumber(profile.following?.length || 0) : 'Gizli'}</span>
+                      <span className="stat-value">{canViewFollowList ? <CompactNumber value={profile.following?.length} /> : 'Gizli'}</span>
                       <span className="stat-label">Takip Edilenler</span>
                     </div>
                     <div className="stat-divider"></div>
                     
                     <div className="stat-item-profile">
-                      <span className="stat-value">⭐ {userScore?.totalPoints || 0}</span>
+                      <span className="stat-value">⭐ <CompactNumber value={userScore?.totalPoints} /></span>
                       <span className="stat-label">Puan</span>
                     </div>
                   
                   </div>
                   
                   <div className="mini-stats-row">
-                     <span><TrendingUp fontSize="small"/> {formatNumber(totalViews)} görüntülenme</span>
+                     <span><TrendingUp fontSize="small"/> <CompactNumber value={totalViews} /> görüntülenme</span>
                      <span>&bull;</span>
-                     <span><Star fontSize="small"/> {formatNumber(totalLikes)} beğeni</span>
+                     <span><Star fontSize="small"/> <CompactNumber value={totalLikes} /> beğeni</span>
                   </div>
                 </>
               )}
@@ -412,7 +406,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
               <button className={`tab-btn ${activeTab === 'drafts' ? 'active' : ''}`} onClick={() => setActiveTab('drafts')}>
                 <Edit /><span>Taslaklar</span>
                 {draftBooks?.length > 0 && (
-                  <span className="draft-count-badge">{draftBooks.length}</span>
+                  <CompactNumber className="draft-count-badge" value={draftBooks.length} />
                 )}
               </button>
             )}
@@ -420,7 +414,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
             <button className={`tab-btn ${activeTab === 'quotes' ? 'active' : ''}`} onClick={() => setActiveTab('quotes')}>
               <FormatQuote /><span>Alıntılar</span>
               {userQuotes.length > 0 && (
-                <span className="draft-count-badge">{userQuotes.length}</span>
+                <CompactNumber className="draft-count-badge" value={userQuotes.length} />
               )}
             </button>
 
@@ -431,7 +425,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
               >
                 <span>Takip</span>
                 {followedBooks.length > 0 && (
-                  <span className="draft-count-badge">{followedBooks.length}</span>
+                  <CompactNumber className="draft-count-badge" value={followedBooks.length} />
                 )}
               </button>
             )}

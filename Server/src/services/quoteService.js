@@ -1,6 +1,7 @@
 import { hiddenChapterIds } from '../utils/chapterAccess.js';
 // src/services/quoteService.js
 import { notifyUser } from './notificationService.js';
+import { notifyMentions } from './mentionService.js';
 import User from '../models/user.js';
 import { canViewProfile } from '../utils/profileAccess.js';
 import { inactiveUserIds } from '../utils/activeUsers.js';
@@ -94,6 +95,8 @@ export const createQuote = async (userId, data) => {
   const saved = await quote.save();
 
   if (visibility === 'PUBLIC') await ScoreService.onQuoteCreated(userId, saved._id);
+  if (visibility === 'PUBLIC') await notifyMentions({ actorId: userId, content: saved.note, type: 'QUOTE_MENTION',
+    message: 'Bir alıntının notunda etiketlendin.', meta: { quoteId: String(saved._id) }, canAccess: recipient => canReadBook(book, recipient) });
 
   return await populateQuote(Quote.findById(saved._id));
 };
@@ -133,6 +136,9 @@ export const repostQuote = async (userId, originalQuoteId, repostComment, isSpoi
   await Quote.findByIdAndUpdate(originalQuoteId, {
     $push: { repostedBy: userId }
   });
+
+  await notifyMentions({ actorId: userId, content: repostComment || '', type: 'QUOTE_MENTION',
+    message: 'Bir alıntı paylaşımında etiketlendin.', meta: { quoteId: String(repost._id) } });
 
   return await populateQuote(Quote.findById(repost._id));
 };
@@ -272,6 +278,8 @@ export const addQuoteComment = async (userId, quoteId, content) => {
   await requireQuote(quoteId, { _id: userId }, { publicOnly: true });
   const comment = new QuoteComment({ userId, quoteId, content });
   const saved = await comment.save();
+  await notifyMentions({ actorId: userId, content, type: 'QUOTE_MENTION', message: 'Bir alıntı yorumunda etiketlendin.',
+    meta: { quoteId: String(quoteId), commentId: String(saved._id) } });
   return await QuoteComment.findById(saved._id)
     .populate('userId', 'username fullName profilePicture');
 };

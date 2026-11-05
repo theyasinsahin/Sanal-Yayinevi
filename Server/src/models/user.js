@@ -12,6 +12,7 @@ const PrivacySettingsSchema = new mongoose.Schema({
 const NotificationSettingsSchema = new mongoose.Schema({
   newFollower:      { type: Boolean, default: true },
   mentionInSession: { type: Boolean, default: true },
+  mentionInComment: { type: Boolean, default: true },
   bookComment:      { type: Boolean, default: true },
   bookLike:         { type: Boolean, default: true },
   quoteLike:        { type: Boolean, default: true },

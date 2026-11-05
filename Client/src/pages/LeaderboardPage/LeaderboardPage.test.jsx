@@ -22,7 +22,8 @@ test('leaderboard profiles use public paths and a reader outside the leaders see
   expect(screen.getAllByRole('link').every(link => link.getAttribute('href') === '/yazar/first')).toBe(true);
   expect(screen.getByText('Senin sıran')).toBeInTheDocument();
   expect(screen.getByText('#12')).toBeInTheDocument();
-  expect(screen.getAllByText('999+ puan').length).toBeGreaterThan(0);
+  expect(screen.getAllByText('1,5 B').length).toBeGreaterThan(0);
+  expect(screen.getAllByTitle('1.500').length).toBeGreaterThan(0);
 });
 test('period tabs request the selected period for both rankings', () => {
   show(); fireEvent.click(screen.getByRole('button', { name: 'Haftalık' }));
