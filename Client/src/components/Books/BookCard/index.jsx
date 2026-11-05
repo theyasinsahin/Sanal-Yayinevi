@@ -1,4 +1,5 @@
 import UserProfileLink from '../../UI/UserProfileLink';
+import CompactNumber from '../../UI/CompactNumber';
 import ClassificationSummary from '../Classification/ClassificationSummary';
 import { bookPath } from '../../../utils/publicPaths';
 import React, { lazy, Suspense, useState } from 'react';
@@ -74,13 +75,6 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
     : '/images/book-placeholder.svg';
   const estimatedReadTime = pageCount ? Math.ceil(pageCount / 3) : 0;
   const isTrending        = stats?.views > 1000;
-
-  const formatNumber = (num) => {
-    if (!num) return '0';
-    if (num >= 1000000) return `${(num / 1000000).toLocaleString('tr-TR', { maximumFractionDigits: 1 })} mn`;
-    if (num >= 1000) return `${(num / 1000).toLocaleString('tr-TR', { maximumFractionDigits: 1 })} bin`;
-    return num.toString();
-  };
 
   const handleBookClick = () => navigate(bookPath(book), {
     state: { catalogReturn: ['/feed', '/printed-books'].includes(location.pathname) ? location.pathname + location.search : undefined },
@@ -169,15 +163,15 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
           <div className="card-stats">
             <div className="stat-item" title="Görüntülenme">
               <EyeIcon className="stat-icon" />
-              <span>{formatNumber(stats?.views || 0)}</span>
+              <CompactNumber value={stats?.views} label="görüntülenme" />
             </div>
             <div className="stat-item" title="Yorumlar">
               <CommentIcon className="stat-icon" />
-              <span>{formatNumber(commentCount || 0)}</span>
+              <CompactNumber value={commentCount} label="yorum" />
             </div>
             <div className="stat-item" title="Beğeniler">
               <FavoriteBorder className="stat-icon" />
-              <span>{formatNumber(stats?.likes || 0)}</span>
+              <CompactNumber value={stats?.likes} label="beğeni" />
             </div>
 
             {/* Sosyal paylaşım ve mevcut Betik mesajlaşması */}

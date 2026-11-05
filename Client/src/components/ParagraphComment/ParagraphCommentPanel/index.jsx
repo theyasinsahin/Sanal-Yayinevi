@@ -1,3 +1,4 @@
+import CompactNumber from '../../UI/CompactNumber';
 import UserProfileLink from '../../UI/UserProfileLink';
 // src/components/ParagraphComment/ParagraphCommentPanel/index.jsx
 import React, { useState } from 'react';
@@ -55,7 +56,7 @@ const ParagraphCommentPanel = ({ bookId, chapterId, paragraphIndex, onClose }) =
         <span className="pcpanel-title">
           Paragraf Yorumları
           {comments.length > 0 && (
-            <span className="pcpanel-count">{comments.length}</span>
+            <CompactNumber className="pcpanel-count" value={comments.length} />
           )}
         </span>
         <button className="pcpanel-close" aria-label="Yorumları kapat" onClick={onClose}>

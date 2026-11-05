@@ -1,3 +1,4 @@
+import CompactNumber from '../../UI/CompactNumber';
 import UserProfileLink from '../../UI/UserProfileLink';
 import React, { useState } from 'react';
 import { useMutation } from '@apollo/client';
@@ -132,7 +133,7 @@ const CommentItem = ({ comment, currentUserId, bookId, isReply = false }) => {
       <div className="comment-actions">
         <button onClick={handleLike} className={`action-link ${isLiked ? 'liked' : ''}`}>
           {isLiked ? <Favorite fontSize="inherit"/> : <FavoriteBorder fontSize="inherit"/>}
-          <span>{likeCount}</span>
+          <CompactNumber value={likeCount} label="beğeni" />
         </button>
 
         <button onClick={() => setShowReplyInput(!showReplyInput)} className="action-link">

@@ -1,3 +1,4 @@
+import CompactNumber from '../../UI/CompactNumber';
 import { bookPath, profilePath } from '../../../utils/publicPaths';
 // src/components/Quote/QuoteCard/index.jsx
 import React, { useState } from 'react';
@@ -260,7 +261,7 @@ const QuoteCard = ({ quote, showBookSource = true }) => {
             onClick={() => setShowComments(!showComments)}
           >
             <ChatBubbleOutline fontSize="small" />
-            <span>{quote.commentCount || 0}</span>
+            <CompactNumber value={quote.commentCount} label="yorum" />
           </button>
 
           {/* Repost */}
@@ -271,7 +272,7 @@ const QuoteCard = ({ quote, showBookSource = true }) => {
               title={repostDone ? 'Yeniden paylaşımı geri al' : 'Yeniden Paylaş'}
             >
               <Repeat fontSize="small" />
-              <span>{repostCount}</span>
+              <CompactNumber value={repostCount} label="yeniden paylaşım" />
             </button>
           )}
 
@@ -281,7 +282,7 @@ const QuoteCard = ({ quote, showBookSource = true }) => {
             onClick={handleLike}
           >
             {isLiked ? <Favorite fontSize="small" /> : <FavoriteBorder fontSize="small" />}
-            <span>{likeCount}</span>
+            <CompactNumber value={likeCount} label="beğeni" />
           </button>
 
           {/* Herkese açık alıntının sosyal paylaşımı */}

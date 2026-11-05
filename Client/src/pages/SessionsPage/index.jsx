@@ -1,3 +1,4 @@
+import CompactNumber from '../../components/UI/CompactNumber';
 import UserProfileLink from '../../components/UI/UserProfileLink';
 import { sessionPath } from '../../utils/publicPaths';
 import React, { useEffect, useState } from 'react';
@@ -247,7 +248,7 @@ export const SessionCard = ({ session }) => (
           </Typography>
         </div>
         <Typography variant="caption" color="muted">
-          {session.participantCount} katılımcı
+          <CompactNumber value={session.participantCount} /> katılımcı
         </Typography>
       </div>
       {session.type === 'OPEN' && session.isActive && <div className="session-card-actions"><SocialShareButton type="SESSION" id={session.id} label="Oturumu paylaş" /></div>}

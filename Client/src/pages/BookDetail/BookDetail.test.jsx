@@ -56,6 +56,13 @@ test('a readable book address queries comments and content with the resolved ID'
   expect(screen.getByRole('link', { name: 'Yazar' })).toHaveAttribute('href', '/yazar/author');
 });
 
+test('book detail uses the same compact likes as book cards', () => {
+  book = { ...baseBook, stats: { likes: 21530 } };
+  show();
+  expect(screen.getByText('21,5 B')).toBeInTheDocument();
+  expect(screen.getByTitle('21.530 beğeni')).toBeInTheDocument();
+});
+
 test('the draft author can publish beside the writing and delete actions', async () => {
   book = { ...baseBook, status: 'DRAFT', digitalStatus: 'DRAFT', chapters: [{ id: 'chapter', title: 'Bölüm', wordCount: 5 }] };
   useAuth.mockReturnValue({ user: { id: 'author' } });

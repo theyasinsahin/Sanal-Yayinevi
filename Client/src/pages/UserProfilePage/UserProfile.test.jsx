@@ -63,6 +63,31 @@ test('the saved library is requested only when its tab is opened', () => {
   expect(useQuery).toHaveBeenCalledWith(GET_PROFILE_SAVED_BOOKS, expect.objectContaining({ variables: { id: 'owner' }, skip: false }));
 });
 
+test('profile totals abbreviate followers, following and book interactions consistently', () => {
+  profile.followers = new Array(21530);
+  profile.following = new Array(1000);
+  profile.usersBooks = [{ id: 'large', title: 'Büyük kitap', status: 'WRITING', stats: { views: 999950, likes: 25300 } }];
+  show();
+  expect(screen.getByText('21,5 B')).toBeInTheDocument();
+  expect(screen.getByText('1 B')).toBeInTheDocument();
+  expect(screen.getByText('1 Mn')).toBeInTheDocument();
+  expect(screen.getByText('25,3 B')).toBeInTheDocument();
+  expect(screen.getByTitle('21.530')).toBeInTheDocument();
+  expect(screen.getByTitle('999.950')).toBeInTheDocument();
+});
+
+test('hidden follow lists never expose counts through tooltips or screen reader text', () => {
+  useAuth.mockReturnValue({ user: { id: 'visitor' } });
+  profile.canViewFollowList = false;
+  profile.followers = new Array(21530);
+  profile.following = new Array(25300);
+  show();
+  expect(screen.getAllByText('Gizli')).toHaveLength(2);
+  expect(screen.queryByTitle('21.530')).not.toBeInTheDocument();
+  expect(screen.queryByTitle('25.300')).not.toBeInTheDocument();
+  expect(screen.queryByText('21.530')).not.toBeInTheDocument();
+});
+
 test('a saved-library failure preserves the profile and can be retried separately', () => {
   const implementation = useQuery.getMockImplementation(), refetch = jest.fn();
   useQuery.mockImplementation((query, options) => query === GET_PROFILE_SAVED_BOOKS

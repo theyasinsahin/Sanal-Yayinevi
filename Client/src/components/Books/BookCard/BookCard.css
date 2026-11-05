@@ -256,6 +256,8 @@
 /* STATISTICS BAR */
 .card-stats {
   display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.6rem;
   justify-content: space-between;
   padding-top: 1rem;
   border-top: 1px solid var(--fog);
@@ -278,6 +280,7 @@
 
 .stat-item {
   display: flex;
+  white-space: nowrap;
   align-items: center;
   gap: 5px;
   font-family: var(--font-sans);

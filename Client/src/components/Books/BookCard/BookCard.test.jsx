@@ -12,6 +12,15 @@ const funding = { id: 'campaign', state: 'ACTIVE', environment: 'SANDBOX', targe
 function Destination() { const location = useLocation(); return <h1>{location.pathname} {location.state?.catalogReturn}</h1>; }
 const show = (props, mocks = []) => render(<MockedProvider mocks={mocks}><MemoryRouter initialEntries={['/feed?search=forest']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><Routes><Route path="/feed" element={<BookCard {...props} />} /><Route path="/kitap/forest" element={<Destination />} /><Route path="/yazar/author" element={<Destination />} /></Routes></MemoryRouter></MockedProvider>);
 
+test('large card metrics share Turkish abbreviations and retain their exact totals', () => {
+  show({ book: { ...book, stats: { views: 21530, likes: 1000000000 }, commentCount: 999950 } });
+  expect(screen.getByText('21,5 B')).toBeInTheDocument();
+  expect(screen.getByText('1 Mn')).toBeInTheDocument();
+  expect(screen.getByText('1 Mr')).toBeInTheDocument();
+  expect(screen.getByTitle('21.530 görüntülenme')).toBeInTheDocument();
+  expect(screen.getByTitle('999.950 yorum')).toBeInTheDocument();
+});
+
 test('opening a book preserves the originating catalog URL for return navigation', () => {
   show({ book }); fireEvent.click(screen.getByText('Forest'));
   expect(screen.getByRole('heading')).toHaveTextContent('/kitap/forest /feed?search=forest');

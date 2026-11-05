@@ -1,3 +1,4 @@
+import CompactNumber from '../../components/UI/CompactNumber';
 import UserProfileLink from '../../components/UI/UserProfileLink';
 import { profilePath } from '../../utils/publicPaths';
 import React, { useState, useRef, useEffect } from 'react';
@@ -178,7 +179,7 @@ const EntryCard = ({ entry, isOwn, onDelete, onLike, currentUserId, index }) => 
           onClick={() => onLike(entry.id)}
         >
           <span className="entry-card-like-icon">♥</span>
-          <span>{entry.likeCount ?? 0}</span>
+          <CompactNumber value={entry.likeCount} label="beğeni" />
         </button>
       </div>
 
@@ -468,11 +469,11 @@ const { session, loading: sessionLoading, error: sessionError } = useGetSession(
                 </span>
                 <span className="session-detail-author-sep">·</span>
                 <span className="session-detail-participant-count">
-                  {session.participantCount} katılımcı
+                  <CompactNumber value={session.participantCount} /> katılımcı
                 </span>
                 <span className="session-detail-author-sep">·</span>
                 <span className="session-detail-participant-count">
-                  {entries.length} yazı
+                  <CompactNumber value={entries.length} /> yazı
                 </span>
               </Link>
             </div>

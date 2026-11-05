@@ -1,3 +1,4 @@
+import CompactNumber from '../../UI/CompactNumber';
 // src/components/ParagraphComment/ParagraphRenderer/index.jsx
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { useQuery } from '@apollo/client';
@@ -144,7 +145,7 @@ const ParagraphRenderer = ({
               >
                 <ChatBubbleOutline fontSize="inherit" />
                 {count > 0 && (
-                  <span className="paragraph-comment-count">{count}</span>
+                  <CompactNumber className="paragraph-comment-count" value={count} label="yorum" />
                 )}
               </button>
             </div>

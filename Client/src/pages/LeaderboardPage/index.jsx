@@ -1,5 +1,6 @@
 import { useLiveScoreQuery } from '../../hooks/useLiveScoreQuery';
 import { profilePath } from '../../utils/publicPaths';
+import CompactNumber from '../../components/UI/CompactNumber';
 // src/pages/LeaderboardPage/index.jsx
 import React, { useState } from 'react';
 import { useSubscription } from '@apollo/client';
@@ -70,7 +71,6 @@ const LeaderboardPage = () => {
 
   const entries = data?.getLeaderboard || [];
   const userRank = rankData?.getUserRank;
-  const displayPoints = (pts) => pts >= 1000 ? '999+' : pts;
 
   return (
     <MainLayout>
@@ -121,7 +121,7 @@ const LeaderboardPage = () => {
                     <Link to={profilePath(entry.user)} className="podium-username">
                       @{entry.user?.username}
                     </Link>
-                    <span className="podium-points">{displayPoints(entry.points)} puan</span>
+                    <span className="podium-points"><CompactNumber value={entry.points} /> puan</span>
                   </div>
                 );
               })}
@@ -160,7 +160,7 @@ const LeaderboardPage = () => {
                         <p className="leaderboard-username">@{entry.user?.username}</p>
                       </div>
                     </Link>
-                    <span className="leaderboard-points">{displayPoints(entry.points)} puan</span>
+                    <span className="leaderboard-points"><CompactNumber value={entry.points} /> puan</span>
                   </div>
                 );
               })
@@ -172,7 +172,7 @@ const LeaderboardPage = () => {
             <div className="leaderboard-my-rank">
               <span className="leaderboard-rank">#{userRank.rank}</span>
               <span className="leaderboard-my-rank-label">Senin sıran</span>
-              <span className="leaderboard-points">{displayPoints(userRank.points)} puan</span>
+              <span className="leaderboard-points"><CompactNumber value={userRank.points} /> puan</span>
             </div>
           )}
 
