@@ -36,7 +36,7 @@ Mevcut biçimlerin yetersiz kaldığı kitaplar için 5 biçim eklenir: Resimli 
 
 ## Uygulama ve kontrol
 
-Çalışma dalı `feature/catalog-editorial`; `develop` bu dalın atasıdır. Kullanıcı 6 Kasım 2026’da commit/push, PR üzerinden yayın ve canlı uygulama adımını onayladı. Canlı uygulamanın sonucu ayrıca kaydedilecektir; önceki kitap ekleme işlemiyle bu içerik düzenlemesinin kayıtları ayrıdır.
+Çalışma dalı `feature/catalog-editorial`; `develop` bu dalın atasıdır. Kullanıcı 6 Kasım 2026’da commit/push, PR üzerinden yayın ve canlı uygulama adımını onayladı. PR #36 birleştirildi ve 261 kitap canlıya uygulandı. 22 sayfanın sırası, açıklamaları ve tüm sınıflandırma alanları canlı API’de; yeni katalog ekranı da Vercel üretim sürümünde doğrulandı. [Canlı sonuç kaydı](printed-catalog-editorial-live-result-2026-11-06.json) ayrı tutulur. Önceki kitap ekleme işlemiyle bu içerik düzenlemesinin kayıtları ayrıdır.
 
 Varsayılan komut tamamen çevrim dışıdır; `.env` yüklemez:
 
@@ -58,5 +58,7 @@ Doğrulama:
 - İstemci üretim derlemesi tamamlandı. Değiştirilen ekranın dışındaki mevcut lint ve Create React App bağımlılık uyarıları devam ediyor.
 - Canlı katalog yalnız okunarak karşılaştırıldı: 261 kayıt, 0 çakışma, 0 editoryal güncelleme.
 - Yalıtılmış replica set üzerinde 261 kitabın tamamı uygulandı; 22 sayfanın sırası, bütün sınıflandırma alanları, özgün künye ve sayaçlar doğrulandı. 261 araştırma kaydı ve 261 yönetici günlüğü oluştu. İki ayrı dijital koruma kaydı değişmedi. İkinci uygulama 0 güncelleme yaptı.
+
+Canlı yayına hazırlanan son dalda başlangıç kontrolleri dahil 8 test dosyasında 75 test geçti. Canlı uygulamada 261 araştırma kaydı ve 261 yönetici günlüğü doğrulandı; diğer 100 kitap ile önceki 209 sınıflandırma terimi değişmedi.
 
 Kaynak ve sıralama değerlendirmeleri zamanla yenilenebilir. Yeni bir inceleme paketi hazırlanırken güncel kayıt parmak izleriyle tekrar karşılaştırma gerekir.
