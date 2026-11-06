@@ -76,7 +76,7 @@ export async function getPrintedBooks({ page = 1, search = '', classification })
   if (searchText) {
     try { filter.$or.push({ isbn: normalizeIsbn(searchText) }); } catch { /* A title or author search is not an ISBN. */ }
   }
-  const [books, total] = await Promise.all([Book.find(filter).sort({ createdAt: -1, _id: -1 }).skip((page - 1) * 12).limit(12), Book.countDocuments(filter)]);
+  const [books, total] = await Promise.all([Book.find(filter).sort({ recognitionScore: -1, createdAt: -1, _id: -1 }).skip((page - 1) * 12).limit(12), Book.countDocuments(filter)]);
   return { books, total, page, totalPages: Math.max(1, Math.ceil(total / 12)) };
 }
 
