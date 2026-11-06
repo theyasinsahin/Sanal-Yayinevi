@@ -1,0 +1,57 @@
+{
+  "status": "LIVE_VERIFIED",
+  "completedAt": "2026-11-06T12:25:13.080Z",
+  "batchId": "tr-editorial-2026-11-06",
+  "manifestSha256": "70dce63c0edc9d9d47a6c3f7dc1f41dac7d72650bee2c0a7fd9f871d55217cec",
+  "books": 261,
+  "updated": 261,
+  "existing": 0,
+  "newTerms": 659,
+  "provenanceRecordsVerified": 261,
+  "auditRecordsVerified": 261,
+  "unchangedOtherBooks": 100,
+  "changedOtherBooks": [],
+  "nonEditorialChanges": [],
+  "originalBibliographyRightsChaptersAndStatsPreserved": true,
+  "previousTermsPreserved": 209,
+  "productionWritten": true,
+  "publicApiVerification": {
+    "status": "PUBLIC_API_VERIFIED",
+    "verifiedAt": "2026-11-06T12:28:13.197Z",
+    "endpoint": "https://sanal-yayinevi.onrender.com/",
+    "booksVerified": 261,
+    "pagesVerified": 22,
+    "orderVerified": true,
+    "allClassificationFieldsVerified": true,
+    "allDescriptionsVerified": true,
+    "firstTitles": [
+      "Küçük Prens",
+      "Kürk Mantolu Madonna",
+      "İnsan Neyle Yaşar?",
+      "Satranç",
+      "Tutunamayanlar",
+      "Beyaz Zambaklar Ülkesinde",
+      "Araba Sevdası",
+      "Mai ve Siyah",
+      "Çocuk Kalbi",
+      "Drakula"
+    ]
+  },
+  "publicationVerifiedAt": "2026-11-06T12:30:51.845Z",
+  "pullRequest": "https://github.com/theyasinsahin/Sanal-Yayinevi/pull/36",
+  "mergeCommit": "11d2d550a1ea9a0d33828d326fa3a025e311c971",
+  "frontendVerification": {
+    "verifiedAt": "2026-11-06T12:29:11.440Z",
+    "url": "https://sanal-yayinevi-pi.vercel.app/printed-books",
+    "status": 200,
+    "productionCatalogHeaderVerified": true,
+    "catalogChunk": "/static/js/732.39953aa0.chunk.js"
+  },
+  "validation": {
+    "serverSuites": 8,
+    "serverTests": 75,
+    "clientTests": 15,
+    "clientProductionBuild": "PASSED_WITH_EXISTING_WARNINGS",
+    "vercelDeployment": "SUCCESS"
+  }
+}
