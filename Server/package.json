@@ -21,7 +21,9 @@
     "seed:badges": "node src/scripts/seedBadges.js",
     "seed:books": "node src/scripts/seedBook.js",
     "migrate:points": "node src/scripts/migratePoints.js",
-    "migrate:classification": "node src/scripts/migrateClassification.js"
+    "migrate:classification": "node src/scripts/migrateClassification.js",
+    "catalog:printed": "node src/scripts/importPrintedCatalog.js",
+    "catalog:curate": "node src/scripts/curatePrintedCatalog.js"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.22.9",

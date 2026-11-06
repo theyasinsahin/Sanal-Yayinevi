@@ -31,7 +31,7 @@ export default function PrintedBooksPage() {
   const { data: mine, error: mineError, refetch: refreshMine } = useQuery(GET_MY_PRINTED_SUBMISSIONS, { skip: !user, fetchPolicy: 'network-only' });
   const catalog = data?.getPrintedBooks;
   return <MainLayout><div className="printed-page"><Container maxWidth="6xl">
-    <header className="printed-heading"><Typography variant="caption">BETİK KİTAPLIĞI</Typography><Typography variant="h1" weight="bold">Basılı Kitaplar</Typography><Typography variant="body" color="muted">Raflarda yerini almış eserleri keşfedin. Okur yorumlarıyla tanışın, sevdiğiniz satırları paylaşın.</Typography>
+    <header className="printed-heading"><Typography variant="caption">BETİK KİTAPLIĞI</Typography><Typography variant="h1" weight="bold">Basılı Kitaplar</Typography><Typography variant="body" color="muted">Raflarda yerini almış eserleri keşfedin. Kitaplar, Türkiye’deki genel okur bilinirliği esas alınarak hazırlanan editoryal sırayla listelenir.</Typography>
       <div className="printed-actions">{user ? <Button onClick={() => { setAdding(value => !value); setSubmitted(false); }}>{adding ? 'İstek formunu kapat' : 'Basılı kitap ekle'}</Button> : <Link className="ui-text-link" to="/login">Kitap eklemek için giriş yapın</Link>}</div>
     </header>
     {submitted && <p className="ui-notice ui-notice--success" role="status">İsteğiniz Betik'e iletildi. Onaydan sonra kitabınız burada listelenecek.</p>}

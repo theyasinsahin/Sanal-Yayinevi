@@ -1,0 +1,14 @@
+{
+  "verifiedAt": "2026-11-06T11:53:37.800Z",
+  "database": "EPHEMERAL_ISOLATED_REPLICA_SET",
+  "manifestSha256": "70dce63c0edc9d9d47a6c3f7dc1f41dac7d72650bee2c0a7fd9f871d55217cec",
+  "updated": 261,
+  "verifiedApiPages": 22,
+  "classificationRecords": 261,
+  "provenanceRecords": 261,
+  "auditRecords": 261,
+  "protectedDigitalRecordsUnchanged": 2,
+  "originalBibliographyAndStatsPreserved": true,
+  "idempotentReapply": true,
+  "productionWritten": false
+}

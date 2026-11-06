@@ -27,3 +27,6 @@ Server/classification-report-*.json
 todolist.txt
 AGENT.md
 
+.catalog-research/
+Server/printed-catalog-report-*.json
+Server/printed-editorial-report-*.json

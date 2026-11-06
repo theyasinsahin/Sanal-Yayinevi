@@ -32,7 +32,9 @@ test('all initial options exist and genres are grouped independently from format
   const result = await execute('{ getClassificationOptions { formats { slug } genres { slug group } narrativeFeatures { slug } targetAudiences { slug } contentWarnings { slug } } }');
   expect(result.errors).toBeUndefined();
   const options = result.data.getClassificationOptions;
-  expect(options.formats).toHaveLength(22); expect(options.genres).toHaveLength(45); expect(options.narrativeFeatures).toHaveLength(8);
+  expect(options.formats).toHaveLength(27); expect(options.genres).toHaveLength(45); expect(options.narrativeFeatures).toHaveLength(46);
+  expect(options.formats.map(item => item.slug)).toEqual(expect.arrayContaining(['resimli-kitap', 'etkinlik-kitabi', 'rehber', 'atlas', 'fotograf-kitabi']));
+  expect(options.narrativeFeatures.map(item => item.slug)).toEqual(expect.arrayContaining(['cerceve-anlati', 'bilinc-akisi', 'gorsel-anlatim']));
   expect(options.genres.some(genre => genre.slug === 'roman')).toBe(false);
   expect(new Set(options.genres.map(genre => genre.group))).toEqual(new Set(['FICTION', 'KNOWLEDGE']));
 });
