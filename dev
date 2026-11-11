@@ -19,6 +19,9 @@ fi
 tests() {
   docker compose -p "betik-tests-$LOCAL_UID" -f compose.test.yaml "$@"
 }
+android() {
+  docker compose -p betik-android -f compose.android.yaml --profile android "$@"
+}
 case "${1:-help}" in
   init) python3 docker/bootstrap.py ;;
   doctor)
@@ -50,8 +53,25 @@ case "${1:-help}" in
       *) echo 'Use: ./dev test server|client|lint|unit|e2e' >&2; exit 2 ;;
     esac
     ;;
+  android)
+    action="${2:-doctor}"
+    mkdir -p artifacts/android
+    case "$action" in
+      setup) android build android; android run --rm android setup ;;
+      doctor|versions) android run --rm --interactive=false android "$action" ;;
+      build)
+        android build android
+        android run --rm --interactive=false android build "${3:-emulator}"
+        ;;
+      import-debug-key)
+        [[ -f "${3:-}" ]] || { echo 'Provide the existing debug.keystore file path.' >&2; exit 2; }
+        android run --rm -T android import-debug-key < "$3"
+        ;;
+      *) echo 'Use: ./dev android setup|doctor|versions|build [emulator|usb]|import-debug-key [path]' >&2; exit 2 ;;
+    esac
+    ;;
   help|--help|-h)
-    printf '%s\n' './dev init | doctor | up | down | logs [service] | seed | db | check | test [target]'
+    printf '%s\n' './dev init | doctor | up | down | logs [service] | seed | db | check | test [target] | android [action]'
     ;;
   *) echo 'Unknown command. Use ./dev help.' >&2; exit 2 ;;
 esac
