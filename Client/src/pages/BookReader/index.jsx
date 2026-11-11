@@ -324,7 +324,6 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
 
       {/* READING AREA */}
       <div className="reading-area" {...(isCompact && sidebarOpen ? { inert: '' } : {})}>
-      {!user && !locked && currentChapterIndex === chapters.findIndex(chapter => chapter.canReadContent !== false) && <p className="ui-notice">İlk bölümü üye olmadan okuyabilirsin.</p>}
       {restoredBookmark?.chapterId === currentChapter.id && !bookmarkConfirmed && !locked && chapterReady && <p className="ui-notice" role="status">
         Ayracı kaydetmeye hazırsın. <button className="ui-text-link" onClick={() => handleSetBookmark(restoredBookmark.paragraphIndex)}>Ayracı buraya kaydet</button>
       </p>}
