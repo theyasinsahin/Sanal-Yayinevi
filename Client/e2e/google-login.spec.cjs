@@ -64,7 +64,10 @@ test('personal profile plane fits the left gutter and disappears when there is n
 test('Google callback keeps the session through profile loading, focus and a full reload', async ({ page }) => {
   const app = await mockApplication(page);
   await page.goto('/login');
+  // The lazy login route can mount after navigation finishes on a cold CI runner.
+  await expect(page.getByRole('heading', { name: "Betik'e Giriş", exact: true })).toBeVisible();
   const nonce = await page.evaluate(() => JSON.parse(sessionStorage.getItem('betik:google-login-nonce')).nonce);
+  expect(nonce).toMatch(/^[a-f0-9]{64}$/);
   const callback = new URLSearchParams({ token, user: JSON.stringify(user), nonce });
   await page.goto(`/auth/callback#${callback}`);
   await expect(page).toHaveURL(/\/profile$/);
