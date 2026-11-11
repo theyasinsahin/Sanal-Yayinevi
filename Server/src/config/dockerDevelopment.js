@@ -21,5 +21,4 @@ export function configureDockerDevelopment(env = process.env) {
   if (env.DEV_EXTERNAL_INTEGRATIONS !== 'true') {
     for (const key of disabledIntegrationKeys) delete env[key];
   }
-  if (env.GOOGLE_CLIENT_ID === '620840983651-ue12o2dcdbr9o7iv0dkmhj4ed6vstno4.apps.googleusercontent.com') delete env.GOOGLE_CLIENT_ID;
 }
