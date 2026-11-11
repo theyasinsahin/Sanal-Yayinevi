@@ -1,3 +1,5 @@
+import { cleanRichText } from '../richText';
+
 // Sayfa başına ortalama karakter limiti
 // 950x680px bir alan için yaklaşık 1200-1400 karakter idealdir.
 const MAX_CHARS_PER_PAGE = 1200; 
@@ -6,7 +8,7 @@ export const parseContentToPages = (htmlContent, chapterTitle) => {
   if (!htmlContent) return [];
 
   const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = htmlContent;
+  tempDiv.innerHTML = cleanRichText(htmlContent);
   
   // ReactQuill veya editörden gelen children'lar (<p>, <h2>, <ul> vs.)
   const children = Array.from(tempDiv.children); 
@@ -42,7 +44,7 @@ export const parseContentToPages = (htmlContent, chapterTitle) => {
 
   children.forEach((node) => {
     const nodeHTML = node.outerHTML;
-    const nodeTextLength = node.innerText.length;
+    const nodeTextLength = (node.innerText ?? node.textContent ?? '').length;
     
     // SENARYO 1: Element tek başına sığıyorsa direkt ekle
     if (currentLength + nodeTextLength <= MAX_CHARS_PER_PAGE) {
@@ -70,7 +72,7 @@ export const parseContentToPages = (htmlContent, chapterTitle) => {
         // 1. Tag ismini (p, div, h1) ve attributes'larını al (class vs kalsın diye)
         const tagName = node.tagName.toLowerCase();
         const attributes = Array.from(node.attributes)
-            .map(attr => `${attr.name}="${attr.value}"`)
+            .map(attr => `${attr.name}="${attr.value.replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]))}"`)
             .join(' ');
         
         const openingTag = `<${tagName} ${attributes}>`;

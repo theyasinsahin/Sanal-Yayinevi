@@ -6,6 +6,7 @@ export const GET_CHAPTER_BY_ID = gql`
             id,
             title,
             content,
+            canReadContent accessStatus isHidden
             createdAt,
         }
     }

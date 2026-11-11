@@ -4,7 +4,7 @@ import { MockedProvider } from '@apollo/client/testing';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import Login from './Login';
 import Register from './Register';
-import { LOGIN, SEND_REGISTRATION_CODE, REGISTER } from '../../graphql/mutations/user';
+import { LOGIN, SEND_REGISTRATION_CODE, REGISTER_AND_LOGIN } from '../../graphql/mutations/user';
 jest.mock('@mui/icons-material', () => require('../../../test-support/icons.cjs'));
 
 const mockLogin = jest.fn();
@@ -12,9 +12,9 @@ let mockUser;
 jest.mock('../../context/AuthContext', () => ({ useAuth: () => ({ login: mockLogin, user: mockUser }) }));
 jest.mock('../../components/Layout/MainLayout', () => ({ MainLayout: ({ children }) => <main>{children}</main> }));
 jest.mock('@react-oauth/google', () => ({ GoogleLogin: () => null }));
-beforeEach(() => { mockLogin.mockReset(); mockUser = null; });
+beforeEach(() => { mockLogin.mockReset(); mockUser = null; sessionStorage.clear(); localStorage.clear(); });
 afterEach(() => jest.restoreAllMocks());
-const show = (element, mocks = [], initial = '/auth') => render(<MockedProvider mocks={mocks}><MemoryRouter initialEntries={[initial]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><Routes><Route path="/auth" element={element} /><Route path="/profile" element={<h1>Profile destination</h1>} /><Route path="/login" element={<h1>Login destination</h1>} /></Routes></MemoryRouter></MockedProvider>);
+const show = (element, mocks = [], initial = '/auth') => render(<MockedProvider mocks={mocks}><MemoryRouter initialEntries={[initial]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><Routes><Route path="/auth" element={element} /><Route path="/profile" element={<h1>Profile destination</h1>} /><Route path="/login" element={<h1>Login destination</h1>} /><Route path="/book-reader/book" element={<h1>Reader destination</h1>} /></Routes></MemoryRouter></MockedProvider>);
 const fields = { fullName: 'Reader Name', username: 'reader', email: 'reader@test.com', password: 'GoodPass1!' };
 const change = (label, value) => fireEvent.change(screen.getByLabelText(label), { target: { value } });
 const fillRegistration = (password = fields.password) => {
@@ -58,9 +58,19 @@ test('a rejected registration code request stays on the account form with the se
   expect(await screen.findByRole('alert')).toHaveTextContent('Username is taken');
   expect(screen.getByLabelText(/^Kullanıcı Adı/)).toHaveValue('reader');
 });
+test('a failed email delivery keeps registration details and permits a successful retry', async () => {
+  const message = 'E-posta şu anda gönderilemiyor. Lütfen biraz sonra tekrar deneyin.';
+  show(<Register />, [codeMock(400, message), codeMock()]); fillRegistration();
+  fireEvent.click(screen.getByRole('button', { name: 'Doğrulama Kodu Gönder' }));
+  expect(await screen.findByRole('alert')).toHaveTextContent(message);
+  expect(screen.getByLabelText(/^E-Posta/)).toHaveValue(fields.email);
+  fireEvent.click(screen.getByRole('button', { name: 'Doğrulama Kodu Gönder' }));
+  expect(await screen.findByLabelText(/^Doğrulama Kodu/)).toHaveAttribute('autocomplete', 'one-time-code');
+  expect(screen.getByRole('button', { name: /Kodu yeniden gönder/ })).toBeDisabled();
+});
 test('registration sends email verification first, then submits account data together with the entered code', async () => {
-  const register = jest.fn(() => ({ data: { register: { __typename: 'Status', code: 400, message: 'Verification expired' } } }));
-  show(<Register />, [codeMock(), { request: { query: REGISTER, variables: { ...fields, code: '123456' } }, result: register }]);
+  const register = jest.fn(() => ({ data: { registerAndLogin: { __typename: 'RegistrationPayload', code: 400, message: 'Verification expired', token: null, user: null } } }));
+  show(<Register />, [codeMock(), { request: { query: REGISTER_AND_LOGIN, variables: { ...fields, code: '123456' } }, result: register }]);
   fillRegistration(); fireEvent.click(screen.getByRole('button', { name: 'Doğrulama Kodu Gönder' }));
   const codeInput = await screen.findByLabelText(/^Doğrulama Kodu/);
   fireEvent.change(codeInput, { target: { value: '123456' } });
@@ -68,4 +78,40 @@ test('registration sends email verification first, then submits account data tog
   expect(await screen.findByRole('alert')).toHaveTextContent('Verification expired');
   expect(register).toHaveBeenCalledTimes(1);
   expect(mockLogin).not.toHaveBeenCalled();
+});
+
+test('verified registration logs in immediately and returns to the requested chapter', async () => {
+  const user = { __typename: 'User', id: 'new-reader', username: fields.username, fullName: fields.fullName, email: fields.email, role: 'USER' };
+  show(<Register />, [codeMock(), {
+    request: { query: REGISTER_AND_LOGIN, variables: { ...fields, code: '123456' } },
+    result: { data: { registerAndLogin: { __typename: 'RegistrationPayload', code: 200, message: 'Registered', token: 'new-token', user } } },
+  }], '/auth?returnTo=%2Fbook-reader%2Fbook%3Fchapter%3Dsecond');
+  fillRegistration(); fireEvent.click(screen.getByRole('button', { name: 'Doğrulama Kodu Gönder' }));
+  fireEvent.change(await screen.findByLabelText(/^Doğrulama Kodu/), { target: { value: '123456' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Kayıt İşlemini Tamamla' }));
+  expect(await screen.findByRole('heading', { name: 'Reader destination' })).toBeInTheDocument();
+  expect(mockLogin).toHaveBeenCalledWith('new-token', 'new-reader', expect.objectContaining({ id: 'new-reader' }));
+  expect(mockLogin).toHaveBeenCalledTimes(1);
+});
+
+test('account creation without a token offers login instead of creating the account again', async () => {
+  show(<Register />, [codeMock(), {
+    request: { query: REGISTER_AND_LOGIN, variables: { ...fields, code: '123456' } },
+    result: { data: { registerAndLogin: { __typename: 'RegistrationPayload', code: 200, message: 'Account created', token: null, user: null } } },
+  }]);
+  fillRegistration(); fireEvent.click(screen.getByRole('button', { name: 'Doğrulama Kodu Gönder' }));
+  fireEvent.change(await screen.findByLabelText(/^Doğrulama Kodu/), { target: { value: '123456' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Kayıt İşlemini Tamamla' }));
+  expect(await screen.findByRole('link', { name: 'Hesabın oluşturuldu — Giriş yaparak devam et' })).toHaveAttribute('href', '/login');
+  expect(mockLogin).not.toHaveBeenCalled();
+  expect(screen.getByRole('button', { name: 'Kayıt İşlemini Tamamla' })).toBeDisabled();
+});
+
+test('blocked browser storage leaves email registration usable and explains why Google is unavailable', async () => {
+  jest.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('Storage blocked'); });
+  jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('Storage blocked'); });
+  show(<Register />, [codeMock()], '/auth?returnTo=%2Fbook-reader%2Fbook');
+  expect(screen.getByRole('status')).toHaveTextContent('E-posta ile devam edebilirsiniz.');
+  fillRegistration(); fireEvent.click(screen.getByRole('button', { name: 'Doğrulama Kodu Gönder' }));
+  expect(await screen.findByLabelText(/^Doğrulama Kodu/)).toBeInTheDocument();
 });

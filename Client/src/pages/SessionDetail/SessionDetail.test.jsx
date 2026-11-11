@@ -3,7 +3,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { MockedProvider } from '@apollo/client/testing';
 import SessionDetail from './index';
-import { VERIFY_SESSION_ACCESS_CODE } from '../../graphql/queries/session';
+import { VERIFY_SESSION_ACCESS_CODE, GET_SESSION_ENTRY } from '../../graphql/queries/session';
 jest.mock('@mui/icons-material', () => require('../../../test-support/icons.cjs'));
 
 let mockSession, mockEntries, mockUser, mockError, mockLoading;
@@ -29,8 +29,20 @@ beforeEach(() => {
   mockToast.mockReset(); jest.spyOn(window, 'scrollTo').mockImplementation(() => {});
 });
 afterEach(() => jest.restoreAllMocks());
-const show = (mocks = []) => render(<MockedProvider mocks={mocks}><MemoryRouter initialEntries={['/sessions/room']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><Routes><Route path="/sessions/:sessionId" element={<SessionDetail />} /><Route path="/sessions" element={<h1>Sessions destination</h1>} /></Routes></MemoryRouter></MockedProvider>);
+const show = (mocks = [], path = '/sessions/room') => render(<MockedProvider mocks={mocks}><MemoryRouter initialEntries={[path]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><Routes><Route path="/sessions/:sessionId" element={<SessionDetail />} /><Route path="/sessions" element={<h1>Sessions destination</h1>} /></Routes></MemoryRouter></MockedProvider>);
 const compose = value => fireEvent.change(screen.getByPlaceholderText('Düşüncelerini yaz...'), { target: { value } });
+
+test('a mention notification opens and focuses an entry outside the loaded page', async () => {
+  const id = '0123456789abcdef01234567';
+  const target = { ...mockEntries[0], __typename: 'SessionEntry', id, sessionId: 'room', content: 'A tagged entry outside the first page' };
+  const scroll = jest.fn();
+  Element.prototype.scrollIntoView = scroll;
+  show([{ request: { query: GET_SESSION_ENTRY, variables: { sessionId: 'room', entryId: id } }, result: { data: { getSessionEntry: target } } }], `/sessions/room#entry-${id}`);
+  expect(await screen.findByText(target.content)).toBeInTheDocument();
+  const article = screen.getAllByRole('article').find(element => element.id === `entry-${id}`);
+  await waitFor(() => expect(article).toHaveFocus());
+  expect(scroll).toHaveBeenCalledWith({ block: 'center', behavior: 'auto' });
+});
 
 test('a room without a cover still shows its title, entries and valid author links', () => {
   show();

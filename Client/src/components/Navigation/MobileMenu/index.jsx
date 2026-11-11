@@ -71,7 +71,7 @@ const MobileMenu = ({ isOpen, onClose }) => {
 
           <Link to="/leaderboard" className="mobile-nav-item" onClick={onClose}>
             <EmojiEvents className="mobile-icon" />
-            <Typography variant="body" weight="medium">Lider Tablosu</Typography>
+            <Typography variant="body" weight="medium">Aktiflik Tablosu</Typography>
           </Link>
 
           <Link to="/sessions" className="mobile-nav-item" onClick={onClose}>
@@ -117,6 +117,7 @@ const MobileMenu = ({ isOpen, onClose }) => {
                   document.body'ye portallandığı için burada, çekmecenin
                   içinde olmasının konumlandırmaya bir etkisi yok. */}
               <NotificationBell
+                onNavigate={onClose}
                 className="mobile-nav-item mobile-nav-item--bell"
                 label="Bildirimler"
               />

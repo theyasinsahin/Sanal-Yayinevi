@@ -1,9 +1,11 @@
 import ClassificationSummary from '../../components/Books/Classification/ClassificationSummary';
+import CompactNumber from '../../components/UI/CompactNumber';
+import MentionInput from '../../components/Mentions/MentionInput';
 import ClassificationEditor from '../../components/Books/Classification/ClassificationEditor';
 import { useAuth } from '../../context/AuthContext';
 import { profilePath, readerPath } from '../../utils/publicPaths';
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client';
 import { 
   ArrowBack, 
@@ -21,7 +23,7 @@ import {
 // --- GRAPHQL ---
 import { GET_BOOK_DETAIL } from '../../graphql/queries/book';
 import { GET_BOOK_VIEWER, ME_QUERY } from '../../graphql/queries/user';
-import { LIKE_BOOK_MUTATION, DELETE_BOOK_MUTATION } from '../../graphql/mutations/book';
+import { LIKE_BOOK_MUTATION, DELETE_BOOK_MUTATION, UPDATE_BOOK_STATUS_MUTATION } from '../../graphql/mutations/book';
 import { TOGGLE_SAVED_BOOK_MUTATION } from '../../graphql/mutations/user';
 import { CREATE_COMMENT_MUTATION } from '../../graphql/mutations/comment';
 import { GET_COMMENTS_BY_BOOK_ID } from '../../graphql/queries/comment';
@@ -43,13 +45,19 @@ import PrintedBookDetail from '../../components/Books/PrintedBookDetail';
 import BookShareButton from '../../components/Books/BookShareButton';
 
 import './BookDetail.css';
+import { useRegistration, useRestoredRegistration } from '../../hooks/useRegistration';
 
 const BookDetailPage = ({ resolvedId } = {}) => {
   const params = useParams();
   const id = resolvedId || params.id;
   const navigate = useNavigate();
+  const { hash, pathname } = useLocation();
   const { user } = useAuth();
   const currentUserId = user?.id;
+  const requestRegistration = useRegistration();
+  const restoredComment = useRestoredRegistration('comment', { bookId: id });
+  const restoredSave = useRestoredRegistration('save', { bookId: id });
+  const restoredLike = useRestoredRegistration('like', { bookId: id });
   const [commentText, setCommentText] = useState("");
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
 
@@ -64,6 +72,7 @@ const BookDetailPage = ({ resolvedId } = {}) => {
     setOptimisticLikeCount(null);
     setCommentText('');
   }, [currentUserId]);
+  useEffect(() => { if (restoredComment) setCommentText(restoredComment.draft || ''); }, [restoredComment]);
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -83,6 +92,13 @@ const BookDetailPage = ({ resolvedId } = {}) => {
   });
 
   const book = bookData ? bookData.getBookById : null;
+  useEffect(() => {
+    if (restoredSave || restoredLike) document.getElementById(restoredSave ? 'book-save' : 'book-like')?.focus();
+  }, [restoredSave, restoredLike, book]);
+  const hasContent = book?.chapters?.some(chapter => chapter.wordCount > 0);
+  useEffect(() => {
+    if (book && hash === '#comments') document.getElementById('comments')?.scrollIntoView?.({ block: 'start' });
+  }, [book, hash]);
   const rawComments = commentsData ? commentsData.getCommentsByBookId : [];
 
   const { data: currentUserData } = useQuery(GET_BOOK_VIEWER, {
@@ -98,6 +114,10 @@ const BookDetailPage = ({ resolvedId } = {}) => {
   });
 
   const [likeBook] = useMutation(LIKE_BOOK_MUTATION);
+  const [publishBook, { loading: publishing }] = useMutation(UPDATE_BOOK_STATUS_MUTATION, {
+    refetchQueries: [{ query: GET_BOOK_DETAIL, variables: { id } }],
+    awaitRefetchQueries: true,
+  });
   const [toggleSavedBook] = useMutation(TOGGLE_SAVED_BOOK_MUTATION);
   
   const [createComment, { loading: commentSending }] = useMutation(CREATE_COMMENT_MUTATION, {
@@ -123,8 +143,28 @@ const BookDetailPage = ({ resolvedId } = {}) => {
     }
   };
 
+  const handlePublish = async () => {
+    if (!hasContent) { showToast('Yayınlamak için en az bir bölüme metin ekleyin.', 'error'); return; }
+    if (!window.confirm('Kitap herkese görünür olacak. Onaylıyor musunuz?')) return;
+    try {
+      await publishBook({ variables: { bookId: book.id, status: 'WRITING' } });
+      showToast('Kitabınız yayınlandı ve okuyuculara açıldı.', 'success');
+    } catch (error) {
+      showToast(error.message || 'Kitap yayınlanamadı. Lütfen tekrar deneyin.', 'error');
+    }
+  };
+
+  const handlePublicationStatus = async status => {
+    const drafting = status === 'DRAFT';
+    if (!window.confirm(drafting ? 'Kitap yayından kaldırılıp taslağa çekilecek. Onaylıyor musunuz?' : 'Kitabın yazım aşamasını bitirdiniz mi?')) return;
+    try {
+      await publishBook({ variables: { bookId: book.id, status } });
+      showToast(drafting ? 'Kitabınız taslağa çekildi.' : 'Kitabınızın yazımı tamamlandı.', 'success');
+    } catch (error) { showToast(error.message || 'Yayın durumu değiştirilemedi. Lütfen tekrar deneyin.', 'error'); }
+  };
+
   const handleLike = async () => {
-    if (!currentUserId) return showToast("Giriş yapmalısınız", 'warning');
+    if (!currentUserId) return requestRegistration({ action: 'like', bookId: id });
     const currentlyLiked = optimisticLiked !== null ? optimisticLiked : isLikedFromServer;
     const currentCount = optimisticLikeCount !== null ? optimisticLikeCount : (book.stats?.likes || 0);
     setOptimisticLiked(!currentlyLiked);
@@ -139,7 +179,7 @@ const BookDetailPage = ({ resolvedId } = {}) => {
   };
 
   const handleSave = async () => {
-    if (!currentUserId) return showToast("Giriş yapmalısınız", 'warning');
+    if (!currentUserId) return requestRegistration({ action: 'save', bookId: id });
     const currentlySaved = optimisticSaved !== null ? optimisticSaved : isSavedFromServer;
     setOptimisticSaved(!currentlySaved);
     showToast(!currentlySaved ? 'Kitaplığına eklendi' : 'Kitaplıktan çıkarıldı', 'success');
@@ -155,7 +195,7 @@ const BookDetailPage = ({ resolvedId } = {}) => {
   };
 
   const handleCommentSubmit = async () => {
-    if (!currentUserId) return showToast("Giriş yapmalısınız", 'warning');
+    if (!currentUserId) return requestRegistration({ action: 'comment', bookId: id, draft: commentText, returnTo: `${pathname}#comments` });
     if (!commentText.trim()) return; 
     try {
         await createComment({ 
@@ -250,6 +290,8 @@ const BookDetailPage = ({ resolvedId } = {}) => {
   // --- VARIABLES ---
   const author = book.author;
   const isAuthor = currentUserId && book.authorId === currentUserId;
+  const isDraft = (book.digitalStatus || (book.status === 'DRAFT' ? 'DRAFT' : 'PUBLISHED')) === 'DRAFT';
+  const isCompleted = book.writingStatus ? book.writingStatus === 'COMPLETED' : ['COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'].includes(book.status);
   const viewer = currentUserId && currentUserData?.getUserById?.id === currentUserId ? currentUserData.getUserById : null;
   const isAdmin = viewer?.role === 'ADMIN';
 
@@ -314,7 +356,7 @@ const BookDetailPage = ({ resolvedId } = {}) => {
                 </div>
                 <div className="meta-row">
                   <span className="meta-label">Beğeni:</span>
-                  <span className="meta-value">{likeCount}</span>
+                  <CompactNumber className="meta-value" value={likeCount} label="beğeni" />
                 </div>
               </div>
             </aside>
@@ -351,13 +393,13 @@ const BookDetailPage = ({ resolvedId } = {}) => {
                 <div className="secondary-actions">
                    <Button 
                      variant="ghost" 
-                     onClick={handleLike} 
+                     id="book-like" onClick={handleLike}
                      className={isLiked ? 'text-pink-600' : ''}
                      icon={isLiked ? <Favorite /> : <FavoriteBorder />}
                    />
                    <Button 
                      variant="ghost" 
-                     onClick={handleSave} 
+                     id="book-save" onClick={handleSave}
                      className={isSaved ? 'text-blue-600' : ''}
                      icon={isSaved ? <Bookmark /> : <BookmarkBorder />}
                    />
@@ -365,6 +407,16 @@ const BookDetailPage = ({ resolvedId } = {}) => {
                 </div>
               </div>
 
+              {isAuthor && !isDraft && <section className="book-publication-actions" aria-label="Yayın yönetimi">
+                <div><strong>{isCompleted ? 'Kitabınızın yazımı tamamlandı' : 'Kitabınız okuyuculara açık'}</strong>
+                  <p>{isCompleted ? 'Destek fonu için basım başvurusu oluşturabilir veya başvurunuzu takip edebilirsiniz.' : 'Yazımı tamamlayabilir veya kitabınızı yeniden taslağa çekebilirsiniz.'}</p>
+                </div>
+                <div className="book-publication-buttons">
+                  <Button variant="danger" size="small" onClick={() => handlePublicationStatus('DRAFT')} disabled={deleting} isLoading={publishing}>Taslağa Çek</Button>
+                  {isCompleted ? <Link to={`/print/${book.id}`} className="no-underline"><Button variant="primary" size="small" disabled={deleting || publishing}>Destek Fonu İçin Başvur / Başvurumu Gör</Button></Link>
+                    : <Button variant="primary" size="small" onClick={() => handlePublicationStatus('COMPLETED')} disabled={deleting || !hasContent} isLoading={publishing}>Yazımı Tamamla</Button>}
+                </div>
+              </section>}
               {(isAuthor || isAdmin) && (
                 <div className="admin-actions">
                    {isAuthor && (
@@ -374,11 +426,18 @@ const BookDetailPage = ({ resolvedId } = {}) => {
                        </Button>
                      </Link>
                    )}
+                   {isAuthor && (book.digitalStatus || (book.status === 'DRAFT' ? 'DRAFT' : 'PUBLISHED')) === 'DRAFT' && (
+                     <Button variant="primary" size="small" onClick={handlePublish} isLoading={publishing} disabled={deleting || !hasContent}>
+                       Yayınla (Görünür Yap)
+                     </Button>
+                   )}
+                   {isAuthor && book.status === 'DRAFT' && !hasContent && <p role="status">Yayınlamak için en az bir bölüme metin ekleyin.</p>}
                    <Button 
                      variant="danger" 
                      size="small" 
                      onClick={handleDelete} 
                      isLoading={deleting}
+                     disabled={publishing}
                      icon={<Delete fontSize="small"/>}
                    >
                      Sil
@@ -396,13 +455,13 @@ const BookDetailPage = ({ resolvedId } = {}) => {
               {(isAuthor || isAdmin) && <ClassificationEditor key={book.id} book={book} />}
               <BookFundingPanel bookId={book.id} />
 
-              <div className="comments-wrapper">
+              <div className="comments-wrapper" id="comments">
                 <Typography variant="h5" weight="bold" className="mb-4">
-                  Yorumlar ({rawComments.length})                
+                  Yorumlar (<CompactNumber value={rawComments.length} />)
                 </Typography>
                 
                 <div className="comment-input-area">
-                  <Textarea 
+                  <MentionInput as={Textarea}
                     name="comment"
                     placeholder="Yorumunuzu buraya yazın..."
                     value={commentText}

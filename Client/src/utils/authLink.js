@@ -1,6 +1,6 @@
 import { setContext } from '@apollo/client/link/context';
 import { onError } from '@apollo/client/link/error';
-import { invalidateSession, tokenExpiresAt } from './authSession';
+import { invalidateSession, tokenExpiresAt, sessionToken } from './authSession';
 
 export function isAuthenticationError({ graphQLErrors, networkError }) {
   return graphQLErrors?.some(error =>
@@ -13,7 +13,7 @@ export function isAuthenticationError({ graphQLErrors, networkError }) {
 
 export function createAuthLink() {
   const credentials = setContext((_, { headers }) => {
-    let token = localStorage.getItem('token');
+    let token = sessionToken();
     if (token && tokenExpiresAt(token) <= Date.now()) {
       invalidateSession(token);
       token = null;

@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
+import { fileURLToPath } from 'node:url';
 
-jest.unstable_mockModule('../../src/utils/auth.js', () => ({
+jest.unstable_mockModule(fileURLToPath(new URL('../../src/utils/auth.js', import.meta.url)), () => ({
     authenticateUser: jest.fn()
 }));
 
@@ -52,6 +53,7 @@ describe('Comment Resolvers', () => {
             const res = await commentResolvers.Mutation.replyToComment(null, { bookId: mockBook._id, content: 'Reply', parentCommentId: parent._id }, context);
             
             expect(res.parentId.toString()).toBe(parent._id.toString());
+            expect(res.content).toBe('@commUser Reply');
             
             const updatedParent = await Comment.findById(parent._id);
             expect(updatedParent.replies).toContainEqual(res._id);

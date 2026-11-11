@@ -1,3 +1,4 @@
+import { hasChapterContent } from '../../utils/chapterContent';
 import ClassificationEditor from '../../components/Books/Classification/ClassificationEditor';
 import { bookPath, readerPath } from '../../utils/publicPaths';
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react';
@@ -81,6 +82,7 @@ const BookDashboard = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const dashboardRef = useRef(null);
+  const chapterActionsRef = useRef(null);
   const [isActionBusy, setIsActionBusy] = useState(false);
   const actionBusy = useRef(false);
   const notificationTimer = useRef(null);
@@ -136,6 +138,7 @@ const BookDashboard = () => {
         const top = element.getBoundingClientRect().top - viewportOffset;
         const remaining = Math.max(240, viewportHeight - Math.max(0, top));
         element.style.setProperty('--dashboard-measured-height', `${remaining}px`);
+        element.classList.toggle('dashboard-short-viewport', remaining < 500);
         frame = null;
       });
     };
@@ -235,6 +238,10 @@ const BookDashboard = () => {
     catch { showNotification('Değişiklikler kaydedilemedi. Yeniden deneyin.', 'error'); }
   };
   const saveMessages = { saved: 'Kaydedildi', saving: 'Kaydediliyor…', pending: 'Otomatik kayıt bekleniyor…', error: 'Kaydedilemedi — Kaydet ile tekrar deneyin.' };
+
+  const hasContent = chapters.some(chapter => hasChapterContent(chapter.content));
+  const isDraft = (book?.digitalStatus || (book?.status === 'DRAFT' ? 'DRAFT' : 'PUBLISHED')) === 'DRAFT';
+  const isCompleted = book?.writingStatus ? book.writingStatus === 'COMPLETED' : ['COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'].includes(book?.status);
 
   // --- RENDER ---
   if (bookLoading) return <div className="p-8 text-center">Yükleniyor...</div>;
@@ -338,58 +345,6 @@ const BookDashboard = () => {
           </div>
         </div>
 
-        {book.kind !== 'PRINTED' && <div className="status-management-panel p-4 border-t mt-4">
-             <Typography variant="h6" className="mb-2">Yayın Durumu</Typography>
-             
-             <div className="mb-4">
-                <Badge variant={
-                    book?.status === 'PUBLISHED' ? 'success' : 
-                    book?.status === 'FUNDING' ? 'warning' :
-                    book?.status === 'DRAFT' ? 'neutral' : 'primary'
-                }>
-                    {book?.status}
-                </Badge>
-             </div>
-
-             <div className="flex flex-col gap-2">
-                {/* DRAFT / WRITING DÖNGÜSÜ */}
-                {book && (
-                    <Button 
-                      variant={book.status === 'DRAFT' ? 'success' : 'danger'} 
-                      size="small" 
-                      onClick={togglePublish}
-                      isLoading={statusLoading || isActionBusy}
-                      className="w-full"
-                    >
-                       {book.status === 'DRAFT' ? 'Yayınla (Görünür Yap)' : 'Taslağa Çek'}
-                    </Button>
-                )}
-
-                {/* WRITING -> COMPLETED */}
-                {book?.status === 'WRITING' && (
-                    <Button 
-                      variant="primary" 
-                      size="small" 
-                      onClick={markAsCompleted}
-                      className="w-full"
-                    >
-                       Yazımı Tamamla
-                    </Button>
-                )}
-
-                {/* COMPLETED -> FUNDING (Hesaplama) */}
-                {(book?.writingStatus === 'COMPLETED' || ['COMPLETED', 'FUNDING', 'FUNDED', 'PUBLISHED'].includes(book?.status)) && (
-                    <Button 
-                      variant="warning" 
-                      size="small" 
-                      onClick={() => runAfterSaving(() => navigate(`/print/${bookId}`))}
-                      className="w-full"
-                    >
-                       Basım İçin Başvur / Başvurumu Gör
-                    </Button>
-                )}
-             </div>
-          </div>}
       </aside>
 
       {/* --- EDITOR AREA --- */}
@@ -407,6 +362,33 @@ const BookDashboard = () => {
           </button>
           <span className="dashboard-mobile-book-name">{book?.title}</span>
         </div>
+        {book.kind !== 'PRINTED' && (
+          <section className="dashboard-publish-bar" aria-label="Yayın yönetimi">
+            <div className="dashboard-publish-summary">
+              <strong className="dashboard-publish-desktop-status">{isDraft ? 'Kitabınız taslak olarak kayıtlı' : isCompleted ? 'Kitabınızın yazımı tamamlandı' : 'Kitabınız okuyuculara açık'}</strong>
+              <strong className="dashboard-publish-mobile-status">{isDraft ? 'Taslak' : isCompleted ? 'Yazım tamamlandı' : 'Yayında'}</strong>
+              <p className={!hasContent ? 'dashboard-publish-hint is-required' : 'dashboard-publish-hint'}>{!hasContent ? 'Yayınlamak için en az bir bölüme metin ekleyin.' : isDraft
+                ? 'Hazır olduğunuzda yayınlayarak okuyuculara açabilirsiniz.'
+                : isCompleted ? 'Destek fonu için basım başvurunuzu oluşturabilir veya mevcut başvurunuzu görebilirsiniz.'
+                : 'Yazımı tamamlayabilir veya kitabınızı yeniden taslağa çekebilirsiniz.'}</p>
+            </div>
+            <div className="dashboard-publish-actions">
+              <Button variant={isDraft ? 'primary' : 'danger'} size="small" icon={<Visibility />} onClick={togglePublish}
+                disabled={editorLocked || (isDraft && !hasContent)} isLoading={statusLoading || isActionBusy}>
+                {isDraft ? 'Yayınla (Görünür Yap)' : 'Taslağa Çek'}
+              </Button>
+              {!isDraft && !isCompleted && <Button variant="primary" size="small" onClick={markAsCompleted}
+                disabled={editorLocked || !hasContent} isLoading={statusLoading || isActionBusy}>Yazımı Tamamla</Button>}
+              {!isDraft && isCompleted && <Button variant="primary" size="small"
+                disabled={editorLocked} isLoading={isActionBusy}
+                aria-label="Destek Fonu İçin Başvur / Başvurumu Gör"
+                onClick={() => runAfterSaving(() => navigate(`/print/${bookId}`))}>
+                  <span className="dashboard-publish-desktop-status">Destek Fonu İçin Başvur / Başvurumu Gör</span>
+                  <span className="dashboard-publish-mobile-status">Destek Fonu</span>
+                </Button>}
+            </div>
+          </section>
+        )}
         {selectedChapter ? (
           <>
             <header className="editor-topbar">
@@ -419,11 +401,23 @@ const BookDashboard = () => {
                 </span>
               </div>
               <div className="editor-topbar-actions">
-                <Button type="button" variant="outline" disabled={editorLocked} aria-pressed={chapters.find(c => c.id === selectedChapter)?.isHidden === true} onClick={toggleChapterVisibility}>
-                  {chapters.find(c => c.id === selectedChapter)?.isHidden ? 'Okuyuculara aç' : 'Okuyuculardan gizle'}
-                </Button>
-                {book.status !== 'DRAFT' && !chapters.find(c => c.id === selectedChapter)?.isHidden && <SocialShareButton type="CHAPTER" id={selectedChapter} label="Bölümü paylaş" beforeOpen={() => manager.flush()} disabled={editorLocked} />}
-              <Button variant="primary" onClick={saveChapter}
+                <details className="editor-chapter-actions" ref={chapterActionsRef}
+                  onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) event.currentTarget.open = false; }}
+                  onKeyDown={event => {
+                    if (event.key === 'Escape') { event.currentTarget.open = false; event.currentTarget.querySelector('summary')?.focus(); }
+                  }}>
+                  <summary aria-label="Bölüm işlemleri" title="Bölüm işlemleri">⋯</summary>
+                  <div className="editor-chapter-actions-menu">
+                    <Button type="button" variant="ghost" size="small" disabled={editorLocked}
+                      aria-pressed={chapters.find(c => c.id === selectedChapter)?.isHidden === true}
+                      onClick={() => { chapterActionsRef.current.open = false; toggleChapterVisibility(); }}>
+                      {chapters.find(c => c.id === selectedChapter)?.isHidden ? 'Okuyuculara aç' : 'Okuyuculardan gizle'}
+                    </Button>
+                    {book.status !== 'DRAFT' && !chapters.find(c => c.id === selectedChapter)?.isHidden && <SocialShareButton type="CHAPTER" id={selectedChapter} label="Bölümü paylaş"
+                      beforeOpen={async () => { await manager.flush(); if (chapterActionsRef.current) chapterActionsRef.current.open = false; }} disabled={editorLocked} />}
+                  </div>
+                </details>
+              <Button variant="primary" size="small" onClick={saveChapter}
                 className="dashboard-save-button"
                 aria-label="Bölümü kaydet"
                 aria-busy={saveStatus === 'saving'}

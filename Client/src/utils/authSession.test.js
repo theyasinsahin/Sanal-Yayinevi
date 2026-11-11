@@ -1,4 +1,4 @@
-import { AUTH_SESSION_CHANGED, tokenExpiresAt, readSession, clearSession, invalidateSession } from './authSession';
+import { AUTH_SESSION_CHANGED, tokenExpiresAt, readSession, clearSession, invalidateSession, writeSession, sessionToken } from './authSession';
 
 const token = payload => `header.${btoa(JSON.stringify(payload))}.signature`;
 beforeEach(() => { localStorage.clear(); jest.spyOn(Date, 'now').mockReturnValue(100000); });
@@ -42,4 +42,18 @@ test('a response for an old token cannot clear a newer login', () => {
   expect(localStorage.getItem('token')).toBe('new-token');
   invalidateSession('new-token');
   expect(localStorage.getItem('token')).toBeNull();
+});
+
+test('a storage-disabled browser can authenticate in memory and sign out safely', () => {
+  const valid = token({ exp: 200 });
+  jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('Storage disabled'); });
+  jest.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('Storage disabled'); });
+  jest.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => { throw new Error('Storage disabled'); });
+  try {
+    writeSession(valid, { id: 'reader' });
+    expect(sessionToken()).toBe(valid);
+    expect(readSession()).toEqual({ id: 'reader', token: valid });
+    invalidateSession('old-token'); expect(readSession()).not.toBeNull();
+    invalidateSession(valid); expect(readSession()).toBeNull();
+  } finally { clearSession(); }
 });

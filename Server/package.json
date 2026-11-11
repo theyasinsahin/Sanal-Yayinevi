@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
+    "doctor": "node src/scripts/doctor.js",
     "sandbox:print": "node src/scripts/startPrintSandbox.js",
     "sandbox:print:verify": "node src/scripts/startPrintSandbox.js --verify",
     "mail:verify": "node src/scripts/verifyMail.js",
@@ -15,11 +16,14 @@
     "test:ci": "npm run test -- --runInBand",
     "test:coverage": "npm run test:ci -- --coverage --coverageReporters=text-summary --coverageReporters=html --coverageReporters=json-summary",
     "test:performance": "npm run test -- --runInBand tests/performance.test.js",
+    "security:scan": "node src/scripts/securityScan.js",
     "perf:benchmark": "node src/scripts/performanceBenchmark.js optimized",
     "seed:badges": "node src/scripts/seedBadges.js",
     "seed:books": "node src/scripts/seedBook.js",
     "migrate:points": "node src/scripts/migratePoints.js",
-    "migrate:classification": "node src/scripts/migrateClassification.js"
+    "migrate:classification": "node src/scripts/migrateClassification.js",
+    "catalog:printed": "node src/scripts/importPrintedCatalog.js",
+    "catalog:curate": "node src/scripts/curatePrintedCatalog.js"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.22.9",
@@ -33,11 +37,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@apollo/server": "^4.11.0",
+    "@apollo/server": "^5.5.1",
+    "@as-integrations/express4": "^1.1.2",
     "@graphql-tools/load-files": "^7.0.0",
-    "apollo-server-cache-memcached": "^3.3.1",
+    "@graphql-tools/merge": "^9.2.8",
+    "@graphql-tools/schema": "^10.1.5",
     "bcryptjs": "^3.0.2",
-    "body-parser": "^1.20.3",
     "compression": "^1.8.2",
     "cors": "^2.8.5",
     "dataloader": "^2.2.3",
@@ -45,16 +50,20 @@
     "express": "^4.21.0",
     "express-validator": "^7.2.0",
     "google-auth-library": "^10.6.2",
-    "graphql": "^16.9.0",
+    "graphql": "^16.14.2",
     "graphql-subscriptions": "^3.0.0",
-    "graphql-tools": "^9.0.1",
     "graphql-type-json": "^0.3.2",
     "graphql-ws": "^6.0.8",
     "iyzipay": "^2.0.64",
     "jsonwebtoken": "^9.0.2",
-    "jwt-decode": "^4.0.0",
     "mongoose": "^8.6.3",
-    "nodemailer": "^8.0.7",
+    "nodemailer": "^10.3.1",
+    "sanitize-html": "^2.18.1",
     "ws": "^8.20.0"
-  }
+  },
+  "engines": {
+    "node": "26.x",
+    "npm": "11.x"
+  },
+  "packageManager": "npm@11.13.0"
 }

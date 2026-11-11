@@ -32,7 +32,7 @@ extend type Query {
   getBooksByAuthorId(authorId: ID!): [Book!]
   getBookByTitle(title: String!): Book
   searchBooks(query: String!): [Book!]
-  getAllBooks: [Book!]
+  getAllBooks(limit: Int, offset: Int): [Book!]
 }
 
 input PrintConfigInput {

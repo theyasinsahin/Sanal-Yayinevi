@@ -1,9 +1,12 @@
 import { notifyUser } from './notificationService.js';
+import { mentionedUsernames, notifyMentions } from './mentionService.js';
+import { canReadBook } from '../utils/bookAccess.js';
 import { inactiveUserIds } from '../utils/activeUsers.js';
 import Comment from '../models/comment.js';
 import Book from '../models/book.js';
 import * as ScoreService from './scoreService.js';
 import { visiblePrintedFilter } from '../utils/printedBooks.js';
+import { paginate } from '../security/pagination.js';
 
 // --- OKUMA İŞLEMLERİ ---
 // Varsayılan olarak silinmiş (isDeleted: true) yorumlar hariç tutulur.
@@ -21,8 +24,8 @@ export const findCommentsByUserId = async (userId) => {
   return await Comment.find({ userId, isDeleted: false }).sort({ date: -1 });
 };
 
-export const findAllComments = async () => {
-  return await Comment.find({ isDeleted: false, userId: { $nin: await inactiveUserIds() } }).sort({ date: -1 });
+export const findAllComments = async (options = {}) => {
+  return await paginate(Comment.find({ isDeleted: false, userId: { $nin: await inactiveUserIds() } }).sort({ date: -1, _id: -1 }), options);
 };
 
 // Bir yoruma gelen yanıtları bulmak için (Nested Comments)
@@ -38,7 +41,12 @@ export const createComment = async (data) => {
 
   await ScoreService.onCommentCreated(data.userId, savedComment._id);
   const book = await Book.findById(data.bookId);
-  if (book) await notifyUser(book.authorId, 'bookComment', { type: 'COMMENT_RECEIVED', title: 'Kitabına yorum yapıldı', message: book.title + ' kitabına yeni bir yorum geldi.', icon: '💬', meta: { bookId: book._id } }, data.userId);
+  if (book) {
+    const mentioned = await notifyMentions({ actorId: data.userId, content: savedComment.content,
+      message: `${book.title} kitabının yorumunda etiketlendin.`, meta: { bookId: String(book._id), commentId: String(savedComment._id) },
+      canAccess: recipient => canReadBook(book, recipient) });
+    if (!mentioned.has(String(book.authorId))) await notifyUser(book.authorId, 'bookComment', { type: 'COMMENT_RECEIVED', title: 'Kitabına yorum yapıldı', message: book.title + ' kitabına yeni bir yorum geldi.', icon: '💬', meta: { bookId: book._id, commentId: String(savedComment._id) } }, data.userId);
+  }
 
   return await savedComment;
 };
@@ -68,18 +76,17 @@ export const toggleLike = async (commentId, userId) => {
 // REPLY OLUŞTURMA
 export const createReply = async (user, bookId, content, parentCommentId) => {
   if (!await Book.exists({ ...visiblePrintedFilter, _id: bookId, isDeleted: false })) throw new Error('Kitap bulunamadı veya henüz yayımlanmadı.');
-  const targetComment = await Comment.findOne({ _id: parentCommentId, isDeleted: false }).populate('userId');
+  const targetComment = await Comment.findOne({ _id: parentCommentId, isDeleted: false }).populate('userId', 'username isDeleted isActive');
   if (!targetComment) throw new Error("Hedef yorum bulunamadı.");
   if (String(targetComment.bookId) !== String(bookId)) throw new Error('Yorum bu kitaba ait değil.');
 
-  // Eğer hedef zaten bir yanıtsa, onun ana yorumunu (root) bul
-  let rootCommentId = parentCommentId;
-  let finalContent = content;
-
-  if (targetComment.parentId) {
-    rootCommentId = targetComment.parentId;
-    finalContent = `@${targetComment.userId.username} ${content}`;
-  }
+  // Keep the flattened reply tree, but mention the actual target's author.
+  const rootCommentId = targetComment.parentId || parentCommentId;
+  const recipient = targetComment.userId;
+  const username = recipient && !recipient.isDeleted && recipient.isActive !== false ? recipient.username : null;
+  const text = content.trim();
+  if (!text || (username && text === `@${username}`)) throw new Error('Yanıt metni boş olamaz.');
+  const finalContent = username && !mentionedUsernames(text).includes(username) ? `@${username} ${text}` : text;
 
   const newReply = new Comment({
     userId: user._id,
@@ -93,6 +100,11 @@ export const createReply = async (user, bookId, content, parentCommentId) => {
 
   // Ana yoruma reply referansını ekle
   await Comment.findByIdAndUpdate(rootCommentId, { $push: { replies: savedReply._id } });
+
+  const book = await Book.findById(bookId);
+  await notifyMentions({ actorId: user._id, content: savedReply.content,
+    message: `${book.title} kitabının yorum yanıtında etiketlendin.`, meta: { bookId: String(bookId), commentId: String(savedReply._id) },
+    canAccess: recipient => canReadBook(book, recipient) });
 
   return savedReply;
 };

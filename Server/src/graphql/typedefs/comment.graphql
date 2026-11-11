@@ -4,7 +4,7 @@ extend type Query {
   getCommentsByBookId(bookId: ID!): [Comment!]
   getCommentById(id: ID!): Comment
   getCommentsByUserId(userId: ID!): [Comment!]
-  getAllComments: [Comment!]
+  getAllComments(limit: Int, offset: Int): [Comment!]
 }
 
 extend type Mutation {

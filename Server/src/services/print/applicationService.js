@@ -1,6 +1,7 @@
 import Book from '../../models/book.js';
 import ClassificationTerm from '../../models/classificationTerm.js';
 import Chapter from '../../models/chapter.js';
+import sanitizeHtml from 'sanitize-html';
 import User from '../../models/user.js';
 import { BookPrintVersion, PrintApplication, PrintTariff, PrintAsset, FundingCampaign, PrintInterest, PrintAudit } from '../../models/printFunding.js';
 import { actor, owner, fail, id, int, text, hash, transact, audit, notice, page, initializePrintTariffManagement, initializePrintApplicationManagement } from './common.js';
@@ -18,9 +19,13 @@ export async function updateDigitalStatus(context, { bookId, status, fundingTarg
     if (status === 'DRAFT' && await FundingCampaign.exists({ bookId: book._id, $or: [{ activeLock: true }, { state: 'REFUNDING' }, { state: 'SUCCEEDED', productionState: { $nin: ['COMPLETED', 'CANCELLED'] } }] }).session(session)) throw fail('Aktif kampanya/üretim varken kitabı taslağa çekemezsiniz. Önce kontrollü iptal sürecini yürütün.');
     const from = `${digitalState(book)}/${writingState(book)}`;
     book.digitalStatus = digitalState(book); book.writingStatus = writingState(book);
-    if (status === 'COMPLETED') {
+    if (status !== 'DRAFT') {
       const chapters = await Chapter.find({ bookId, isDeleted: false }).session(session).lean();
-      if (!chapters.some(chapter => plainText(chapter.content).trim())) throw fail('Kitabı tamamlamak için metin içeren bir bölüm gerekli.');
+      const hasContent = chapters.some(chapter => sanitizeHtml(chapter.content || '', { allowedTags: [], allowedAttributes: {} })
+        .replace(/&nbsp;/gi, ' ').replace(/[\s\u200B-\u200D\uFEFF]/gu, ''));
+      if (!hasContent) throw fail('Kitabı yayınlamak veya tamamlamak için en az bir bölüme metin ekleyin.');
+    }
+    if (status === 'COMPLETED') {
       book.writingStatus = 'COMPLETED'; book.completedAt = new Date();
     } else if (status === 'DRAFT') book.digitalStatus = 'DRAFT';
     else book.digitalStatus = 'PUBLISHED';

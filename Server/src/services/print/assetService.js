@@ -1,8 +1,10 @@
 import { PrintAsset, PrintApplication } from '../../models/printFunding.js';
 import { actor, id, fail, hash, text } from './common.js';
+import { consumeRate } from '../../security/rateLimit.js';
 
 export async function uploadAsset(context, bytes, filename) {
   const user = await actor(context);
+  await consumeRate('pdf-upload', user.id, 20, 60 * 60000);
   if (!Buffer.isBuffer(bytes) || bytes.length < 10 || bytes.length > 10 * 1024 * 1024 || bytes.subarray(0, 5).toString() !== '%PDF-' || !bytes.subarray(-2048).includes(Buffer.from('%%EOF'))) throw fail('Geçerli, en fazla 10 MB PDF dosyası gerekli.');
   const sha256 = hash(bytes), safeName = text(filename || 'baski.pdf', 'Dosya adı', 1, 120).replace(/[^\p{L}\p{N}._ -]/gu, '_');
   // Private application documents are not a payment operation. Keep deduplication

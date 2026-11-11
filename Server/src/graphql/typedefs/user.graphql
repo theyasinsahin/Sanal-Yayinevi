@@ -7,6 +7,13 @@ type AuthPayload {
   user: User!
 }
 
+type RegistrationPayload {
+  code: Int!
+  message: String!
+  token: String
+  user: User
+}
+
 # ─── Yeni Alt Tipler ─────────────────────────────────────────────
 
 type PrivacySettings {
@@ -20,6 +27,7 @@ type PrivacySettings {
 type NotificationSettings {
   newFollower: Boolean!
   mentionInSession: Boolean!
+  mentionInComment: Boolean!
   bookComment: Boolean!
   bookLike: Boolean!
   quoteLike: Boolean!
@@ -52,6 +60,7 @@ input PrivacySettingsInput {
 input NotificationSettingsInput {
   newFollower: Boolean
   mentionInSession: Boolean
+  mentionInComment: Boolean
   bookComment: Boolean
   bookLike: Boolean
   quoteLike: Boolean
@@ -112,6 +121,8 @@ type User {
 # ─── Mutation'lar ─────────────────────────────────────────────────
 
 extend type Mutation {
+  registerAndLogin(username: String!, fullName: String!, email: String!, password: String!, code: String!): RegistrationPayload!
+  logout: Status!
   # Mevcut mutation'lar (değişmedi)
   googleAuth(token: String!): AuthPayload!
   forgotPassword(email: String!): Status!
@@ -157,7 +168,7 @@ extend type Query {
   getUserById(id: ID!): User
   getUserByUsername(username: String!): User
   getUserByEmail(email: String!): User
-  getAllUsers: [User!]
+  getAllUsers(limit: Int, offset: Int): [User!]
   me: User
   getFollowingByUserId(id: ID!): [User]
   getFollowersByUserId(id: ID!): [User]

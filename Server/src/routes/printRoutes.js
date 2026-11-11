@@ -7,7 +7,7 @@ import IyzicoCheckout from '../models/iyzicoCheckout.js';
 import { actor, id, fail } from '../services/print/common.js';
 
 const router = express.Router();
-router.post('/iyzico/callback/:reference', express.urlencoded({ extended: false, limit: '8kb' }), async (req, res) => {
+router.post('/iyzico/callback/:reference', express.urlencoded({ extended: false, limit: '8kb', parameterLimit: 5, inflate: false }), async (req, res) => {
   res.set('Cache-Control', 'no-store');
   try {
     const reference = id(req.params.reference);
@@ -22,12 +22,12 @@ const errorResponse = (error, res) => {
   const code = error.extensions?.code;
   res.status(code === 'UNAUTHENTICATED' ? 401 : code === 'FORBIDDEN' ? 403 : code === 'PAYMENTS_DISABLED' ? 503 : code === 'BAD_USER_INPUT' ? 400 : 500).json({ error: code || 'PRINT_SERVICE_UNAVAILABLE', message: code ? error.message : 'Basım servisi işlemi tamamlayamadı.' });
 };
-router.post('/webhooks/sandbox', express.raw({ type: 'application/json', limit: '32kb' }), async (req, res) => {
+router.post('/webhooks/sandbox', express.raw({ type: 'application/json', limit: '32kb', inflate: false }), async (req, res) => {
   try { await receiveWebhook(req.body, req.headers); res.status(200).json({ received: true }); } catch (error) { errorResponse(error, res); }
 });
 router.post('/assets', async (req, res, next) => {
   try { req.printUser = await authenticateUser(req, User); await actor({ user: req.printUser }); next(); } catch (error) { errorResponse(error, res); }
-}, express.raw({ type: 'application/pdf', limit: '10mb' }), async (req, res) => {
+}, express.raw({ type: 'application/pdf', limit: '10mb', inflate: false }), async (req, res) => {
   try { res.status(201).json(await uploadAsset({ user: req.printUser }, req.body, req.headers['x-filename'])); } catch (error) { errorResponse(error, res); }
 });
 router.get('/assets/:id', async (req, res) => {

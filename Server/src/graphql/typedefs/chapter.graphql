@@ -3,7 +3,7 @@
 extend type Query {
   getChaptersByBookId(bookId: ID!): [Chapter!]
   getChapterById(id: ID!): Chapter
-  getAllChapters: [Chapter!]
+  getAllChapters(limit: Int, offset: Int): [Chapter!]
   # Yazarın tüm bölümlerini çekmek nadir bir senaryodur ama kalabilir
   getChaptersByAuthorId(authorId: ID!): [Chapter!]
 }
@@ -28,7 +28,10 @@ extend type Mutation {
   deleteChapter(id: ID!): Status!
 }
 
+enum ChapterAccessStatus { READABLE REGISTRATION_REQUIRED HIDDEN UNAVAILABLE }
+
 type Chapter {
+  accessStatus: ChapterAccessStatus!
   id: ID!
   bookId: ID!
   authorId: ID!

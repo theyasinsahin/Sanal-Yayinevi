@@ -1,13 +1,20 @@
 import React from 'react';
-import { act, render } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import ParagraphRenderer from './index';
 jest.mock('@apollo/client', () => ({ ...jest.requireActual('@apollo/client'), useQuery: () => ({ data: { getParagraphCommentCounts: [] } }) }));
-jest.mock('../ParagraphCommentPanel', () => () => null);
+jest.mock('../ParagraphCommentPanel', () => ({ paragraphIndex }) => <div data-testid="open-comments">{paragraphIndex}</div>);
 jest.mock('@mui/icons-material', () => Object.fromEntries(['ChatBubbleOutline', 'Bookmark', 'BookmarkBorder'].map(name => [name, () => null])));
 
 beforeEach(() => { jest.useFakeTimers(); Element.prototype.scrollIntoView = jest.fn(); });
 afterEach(() => { jest.useRealTimers(); });
 const props = { bookId: 'book', chapterId: 'chapter', content: '<p>İlk paragraf</p><p>İkinci paragraf</p><p>Üçüncü paragraf</p>' };
+
+test('a notification opens the requested paragraph comments and updates when its target changes', () => {
+  const view = render(<ParagraphRenderer {...props} requestedParagraphIndex={0} />);
+  expect(screen.getByTestId('open-comments')).toHaveTextContent('0');
+  view.rerender(<ParagraphRenderer {...props} requestedParagraphIndex={2} />);
+  expect(screen.getByTestId('open-comments')).toHaveTextContent('2');
+});
 
 test('a restored bookmark scrolls to its paragraph once after render', () => {
   const view = render(<ParagraphRenderer {...props} restoreParagraphIndex={1} />);

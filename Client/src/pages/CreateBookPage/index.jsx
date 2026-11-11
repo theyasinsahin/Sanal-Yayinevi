@@ -1,6 +1,5 @@
 import ClassificationFields, { emptyClassification, classificationError, classificationInput } from '../../components/Books/Classification/ClassificationFields';
-import { bookPath } from '../../utils/publicPaths';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
 import { 
@@ -23,6 +22,7 @@ import './CreateBook.css';
 
 const CreateBookPage = () => {
   const navigate = useNavigate();
+  const formRef = useRef(null);
   
   const [createBook, { loading: creating }] = useMutation(CREATE_BOOK_MUTATION);  
 
@@ -37,6 +37,13 @@ const CreateBookPage = () => {
   
   const [classification, setClassification] = useState(emptyClassification);
   const [errors, setErrors] = useState({});
+  const focusField = name => {
+    const field = formRef.current?.querySelector(`[data-field="${name}"]`);
+    if (!field) return;
+    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const control = field.querySelector('input:not([type="file"]), select, textarea, button') || field;
+    control.focus({ preventScroll: true });
+  };
 
   // --- HANDLERS ---
   const handleInputChange = (e) => {
@@ -63,6 +70,7 @@ const CreateBookPage = () => {
     if (invalid) newErrors.classification = invalid;
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      requestAnimationFrame(() => focusField(['imageUrl', 'title', 'classification', 'description'].find(name => newErrors[name])));
       return;
     }
 
@@ -75,7 +83,7 @@ const CreateBookPage = () => {
       };
 
       const response = await createBook({ variables });
-      navigate(bookPath(response.data.createBook));
+      navigate(`/dashboard/${response.data.createBook.id}`);
 
     } catch (error) {
       console.error("Hata:", error);
@@ -94,26 +102,35 @@ const CreateBookPage = () => {
               Yeni Kitap Oluştur
             </Typography>
             <Typography variant="body" color="muted">
-              Eserinizi yayınlayın ve okuyucularla buluşturun.
+              Kitabınızı taslak olarak kaydedin, bölümlerinizi yazın ve hazır olduğunuzda yayınlayın.
             </Typography>
           </div>
 
           <div className="create-book-card">
-            <form onSubmit={handleSubmit} className="book-form-grid">
+            <form ref={formRef} onSubmit={handleSubmit} className="book-form-grid" noValidate aria-busy={creating}>
+              {Object.keys(errors).some(name => name !== 'submit' && errors[name]) && (
+                <div className="create-book-errors" role="alert">
+                  <strong>Taslağı kaydetmek için eksik alanları tamamlayın.</strong>
+                  <ul>{['imageUrl', 'title', 'classification', 'description'].filter(name => errors[name]).map(name => (
+                    <li key={name}><button type="button" onClick={() => focusField(name)}>{errors[name]}</button></li>
+                  ))}</ul>
+                </div>
+              )}
               
               {/* --- SOL KOLON: GÖRSEL --- */}
-              <div className="form-left-col">
+              <div className={`form-left-col ${errors.imageUrl ? 'create-field-invalid' : ''}`} data-field="imageUrl" tabIndex={-1} aria-describedby={errors.imageUrl ? 'cover-error' : undefined}>
                 <Typography variant="h6" className="section-title">Kapak Görseli</Typography>
                 
                 <div className="cover-upload-wrapper">
                   <ImageUpload 
+                      disabled={creating}
                       onUploadSuccess={handleImageSuccess} 
                       label="Kapak Yükle"
                       currentImage={bookData.imageUrl}
                   />
                 </div>
                 {errors.imageUrl && (
-                  <Typography variant="caption" color="danger" className="mt-2 block">
+                  <Typography id="cover-error" variant="caption" color="danger" className="create-field-error">
                     {errors.imageUrl}
                   </Typography>
                 )}
@@ -125,6 +142,7 @@ const CreateBookPage = () => {
               {/* --- SAĞ KOLON: BİLGİLER --- */}
               <div className="form-right-col">
                 
+                <div data-field="title" className={errors.title ? 'create-field-invalid' : ''}>
                 <Input
                   label="Kitap Başlığı"
                   name="title"
@@ -133,12 +151,21 @@ const CreateBookPage = () => {
                   onChange={handleInputChange}
                   icon={<Title fontSize="small" />}
                   error={errors.title}
+                  aria-invalid={Boolean(errors.title)}
+                  disabled={creating}
                   required
                 />
+                </div>
 
-                <ClassificationFields value={classification} onChange={setClassification} disabled={creating} />
-                {errors.classification && <p role="alert">{errors.classification}</p>}
+                <div data-field="classification" tabIndex={-1} className={errors.classification ? 'create-field-invalid' : ''} aria-describedby={errors.classification ? 'classification-error' : undefined}>
+                <ClassificationFields value={classification} onChange={value => {
+                  setClassification(value);
+                  if (errors.classification) setErrors(prev => ({ ...prev, classification: classificationError(value) || null }));
+                }} disabled={creating} />
+                {errors.classification && <p id="classification-error" className="create-field-error">{errors.classification}</p>}
+                </div>
 
+                <div data-field="description" className={errors.description ? 'create-field-invalid' : ''}>
                 <Textarea
                     label="Açıklama"
                     name="description"
@@ -148,11 +175,14 @@ const CreateBookPage = () => {
                     placeholder="Kitabınızın konusu nedir?"
                     icon={<Subject fontSize="small" />}
                     error={errors.description}
+                    aria-invalid={Boolean(errors.description)}
+                    disabled={creating}
                 />
+                </div>
 
                 <div className="form-actions">
                   {errors.submit && (
-                    <div className="error-banner mb-4">
+                    <div className="error-banner mb-4" role="alert">
                       {errors.submit}
                     </div>
                   )}
@@ -164,7 +194,7 @@ const CreateBookPage = () => {
                     className="w-full"
                     isLoading={creating}
                   >
-                    Kitabı Yayınla
+                    Taslak Olarak Kaydet
                   </Button>
                 </div>
 

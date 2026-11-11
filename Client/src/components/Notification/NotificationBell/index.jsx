@@ -9,6 +9,7 @@ import { GET_NOTIFICATIONS, GET_UNREAD_NOTIFICATION_COUNT } from '../../../graph
 import { MARK_NOTIFICATIONS_READ } from '../../../graphql/mutations/score';
 import { useAuth } from '../../../context/AuthContext';
 import FollowRequests from '../../Follow/FollowRequests';
+import { notificationTarget } from '../../../utils/notificationTarget';
 import './NotificationBell.css';
 
 // Panel document.body'ye portallanıp "position: fixed" ile, JS'in
@@ -21,7 +22,7 @@ const MOBILE_BREAKPOINT = 1200; // NavigationBar'ın hamburger'a geçtiği nokta
 // <button> içinde render edilir; böylece satırın tamamı tıklanabilir
 // olur. label verilmezse (navbar'daki gibi) eskisi gibi sadece küçük
 // ikon butonu render edilir — davranış değişmez.
-const NotificationBell = ({ label, className = '' }) => {
+const NotificationBell = ({ label, className = '', onNavigate }) => {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [dropdownStyle, setDropdownStyle] = useState(null);
@@ -134,17 +135,19 @@ const NotificationBell = ({ label, className = '' }) => {
               <div className="notif-empty">Diğer bildirim yok.</div>
             ) : (
               <div className="notif-list">
-                {notifications.map(notif => (
-                  <div key={notif.id} className={`notif-item ${!notif.isRead ? 'unread' : ''}`}>
+                {notifications.map(notif => {
+                  const target = notificationTarget(notif, user);
+                  const Item = target ? Link : 'div';
+                  return <Item key={notif.id} className={`notif-item ${!notif.isRead ? 'unread' : ''}`}
+                    {...(target ? { to: target, onClick: () => { setOpen(false); onNavigate?.(); } } : {})}>
                     <span className="notif-icon">{notif.icon}</span>
                     <div className="notif-content">
                       <p className="notif-title">{notif.title}</p>
                       <p className="notif-message">{notif.message}</p>
                       <span className="notif-time">{timeAgo(notif.createdAt)}</span>
-                      {notif.type === 'BOOK_REVIEW' && <Link className="ui-text-link" to={user?.role === 'ADMIN' ? '/admin/printed-books' : notif.meta?.bookId ? `/book-detail/${notif.meta.bookId}` : '/printed-books'} onClick={() => setOpen(false)}>Başvuruyu görüntüle</Link>}
                     </div>
-                  </div>
-                ))}
+                  </Item>;
+                })}
               </div>
             )}
             </div>

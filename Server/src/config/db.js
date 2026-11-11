@@ -1,13 +1,12 @@
 import mongoose from 'mongoose';
 
 const connectDB = async () => {
-  try {
-    const conn = await mongoose.connect(process.env.MONGO_URI);
-    console.log(`MongoDB Bağlantısı Başarılı: ${conn.connection.host}`);
-  } catch (error) {
-    console.error(`MongoDB Bağlantı Hatası: ${error.message}`);
-    process.exit(1); // Hata varsa uygulamayı durdur
-  }
+  const connection = await mongoose.connect(process.env.MONGO_URI, {
+    serverSelectionTimeoutMS: 10000,
+    connectTimeoutMS: 10000,
+  });
+  console.log('MongoDB bağlantısı başarılı.');
+  return connection;
 };
 
 export default connectDB;

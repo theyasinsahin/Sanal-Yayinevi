@@ -1,5 +1,11 @@
+import { useLocation } from 'react-router-dom';
+import CompactNumber from '../../UI/CompactNumber';
 import UserProfileLink from '../../UI/UserProfileLink';
-import React, { useState } from 'react';
+import MentionInput from '../../Mentions/MentionInput';
+import MentionText from '../../Mentions/MentionText';
+import useContentTarget from '../../../hooks/useContentTarget';
+import React, { useEffect, useState } from 'react';
+import { useRegistration, useRestoredRegistration } from '../../../hooks/useRegistration';
 import { useMutation } from '@apollo/client';
 import { AccountCircle, FavoriteBorder, Favorite, Delete, Reply } from '@mui/icons-material';
 
@@ -15,8 +21,14 @@ import { Input } from '../../UI/Input';
 import './CommentItem.css';
 
 const CommentItem = ({ comment, currentUserId, bookId, isReply = false }) => {
+  const requestRegistration = useRegistration();
+  const { pathname } = useLocation();
+  const restored = useRestoredRegistration('reply', { commentId: comment.id });
+  useRestoredRegistration('comment-like', { commentId: comment.id });
+  const targetRef = useContentTarget(`comment-${comment.id}`);
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [replyText, setReplyText] = useState("");
+  useEffect(() => { if (restored) { setShowReplyInput(true); setReplyText(restored.draft || ''); } }, [restored]);
 
   // Optimistic UI state
   const [optimisticLiked, setOptimisticLiked] = useState(null);     // null = sunucudan gelen değeri kullan
@@ -46,7 +58,7 @@ const CommentItem = ({ comment, currentUserId, bookId, isReply = false }) => {
   };
 
   const handleLike = async () => {
-    if (!currentUserId) return;
+    if (!currentUserId) return requestRegistration({ action: 'comment-like', bookId, commentId: comment.id, returnTo: `${pathname}#comment-${comment.id}` });
 
     const currentlyLiked = optimisticLiked !== null ? optimisticLiked : isLikedFromServer;
     const currentCount = optimisticLikeCount !== null ? optimisticLikeCount : (comment.likedBy?.length || 0);
@@ -65,7 +77,8 @@ const CommentItem = ({ comment, currentUserId, bookId, isReply = false }) => {
   };
 
   const handleReplySubmit = async () => {
-    if (!replyText.trim()) return;
+    if (!currentUserId) return requestRegistration({ action: 'reply', bookId, commentId: comment.id, draft: replyText, returnTo: `${pathname}#comment-${comment.id}` });
+    if (!replyText.trim() || replyText.trim() === replyMention) return;
     await replyToComment({
       variables: { bookId, content: replyText, parentCommentId: comment.id }
     });
@@ -74,6 +87,7 @@ const CommentItem = ({ comment, currentUserId, bookId, isReply = false }) => {
   // Variables
   const author = comment.userId;
   const username = author?.username || "Bilinmeyen";
+  const replyMention = author?.username ? `@${author.username}` : '';
   const profilePic = author?.profilePicture;
   const dateStr = comment.date ? new Date(comment.date).toLocaleDateString('tr-TR') : '';
   const isMyComment = currentUserId && author?.id === currentUserId;
@@ -86,7 +100,7 @@ const CommentItem = ({ comment, currentUserId, bookId, isReply = false }) => {
   const likeCount = optimisticLikeCount !== null ? optimisticLikeCount : (comment.likedBy?.length || 0);
 
   return (
-    <div className={`comment-item ${isReply ? 'is-reply' : ''}`}>
+    <div id={`comment-${comment.id}`} ref={targetRef} tabIndex={-1} className={`comment-item ${isReply ? 'is-reply' : ''}`}>
       
       {/* Header */}
       <div className="comment-header">
@@ -125,17 +139,20 @@ const CommentItem = ({ comment, currentUserId, bookId, isReply = false }) => {
 
       {/* Content */}
       <Typography variant="body" className="comment-content">
-        {comment.content}
+        <MentionText>{comment.content}</MentionText>
       </Typography>
 
       {/* Actions */}
       <div className="comment-actions">
         <button onClick={handleLike} className={`action-link ${isLiked ? 'liked' : ''}`}>
           {isLiked ? <Favorite fontSize="inherit"/> : <FavoriteBorder fontSize="inherit"/>}
-          <span>{likeCount}</span>
+          <CompactNumber value={likeCount} label="beğeni" />
         </button>
 
-        <button onClick={() => setShowReplyInput(!showReplyInput)} className="action-link">
+        <button onClick={() => {
+          if (!showReplyInput && !replyText.trim()) setReplyText(replyMention ? `${replyMention} ` : '');
+          setShowReplyInput(!showReplyInput);
+        }} className="action-link">
           <Reply fontSize="inherit"/>
           <span>Yanıtla</span>
         </button>
@@ -144,14 +161,15 @@ const CommentItem = ({ comment, currentUserId, bookId, isReply = false }) => {
       {/* Reply Input */}
       {showReplyInput && (
         <div className="reply-form">
-          <Input 
+          <MentionInput as={Input} name={`reply-${comment.id}`}
             placeholder={`@${username} kullanıcısına yanıt ver...`}
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
             className="mb-2"
+            autoFocus
           />
           <div className="flex justify-end">
-            <Button size="small" variant="dark" onClick={handleReplySubmit} isLoading={replyLoading}>
+            <Button size="small" variant="dark" onClick={handleReplySubmit} isLoading={replyLoading} disabled={!replyText.trim() || replyText.trim() === replyMention}>
               Gönder
             </Button>
           </div>

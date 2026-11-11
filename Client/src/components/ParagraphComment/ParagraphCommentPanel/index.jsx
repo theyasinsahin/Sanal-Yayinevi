@@ -1,6 +1,12 @@
+import { useLocation } from 'react-router-dom';
+import CompactNumber from '../../UI/CompactNumber';
 import UserProfileLink from '../../UI/UserProfileLink';
+import MentionInput from '../../Mentions/MentionInput';
+import MentionText from '../../Mentions/MentionText';
+import useContentTarget from '../../../hooks/useContentTarget';
 // src/components/ParagraphComment/ParagraphCommentPanel/index.jsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useRegistration, useRestoredRegistration } from '../../../hooks/useRegistration';
 import { useQuery, useMutation } from '@apollo/client';
 import { Send, Delete, Person, Close } from '@mui/icons-material';
 import { GET_PARAGRAPH_COMMENTS } from '../../../graphql/queries/paragraphComment';
@@ -11,9 +17,18 @@ import {
 import { useAuth } from '../../../context/AuthContext';
 import './ParagraphCommentPanel.css';
 
+function CommentContent({ comment }) {
+  const targetRef = useContentTarget(`paragraph-comment-${comment.id}`);
+  return <p id={`paragraph-comment-${comment.id}`} ref={targetRef} tabIndex={-1} className="pcpanel-comment-content"><MentionText>{comment.content}</MentionText></p>;
+}
+
 const ParagraphCommentPanel = ({ bookId, chapterId, paragraphIndex, onClose }) => {
   const { user } = useAuth();
   const [content, setContent] = useState('');
+  const requestRegistration = useRegistration();
+  const { pathname } = useLocation();
+  const restored = useRestoredRegistration('paragraph-comment', { chapterId, paragraphIndex });
+  useEffect(() => { if (restored) setContent(restored.draft || ''); }, [restored]);
 
   const { data, loading, refetch } = useQuery(GET_PARAGRAPH_COMMENTS, {
     variables: { chapterId, paragraphIndex },
@@ -25,6 +40,8 @@ const ParagraphCommentPanel = ({ bookId, chapterId, paragraphIndex, onClose }) =
   const comments = data?.getParagraphComments || [];
 
   const handleAdd = async () => {
+    if (!user) return requestRegistration({ action: 'paragraph-comment', bookId, chapterId, paragraphIndex, draft: content,
+      returnTo: `${pathname}?chapter=${chapterId}&paragraph=${paragraphIndex}` });
     if (!content.trim()) return;
     await addComment({
       variables: { bookId, chapterId, paragraphIndex, content: content.trim() }
@@ -55,7 +72,7 @@ const ParagraphCommentPanel = ({ bookId, chapterId, paragraphIndex, onClose }) =
         <span className="pcpanel-title">
           Paragraf Yorumları
           {comments.length > 0 && (
-            <span className="pcpanel-count">{comments.length}</span>
+            <CompactNumber className="pcpanel-count" value={comments.length} />
           )}
         </span>
         <button className="pcpanel-close" aria-label="Yorumları kapat" onClick={onClose}>
@@ -104,16 +121,16 @@ const ParagraphCommentPanel = ({ bookId, chapterId, paragraphIndex, onClose }) =
                   </button>
                 )}
               </div>
-              <p className="pcpanel-comment-content">{comment.content}</p>
+              <CommentContent comment={comment} />
             </div>
           ))
         )}
       </div>
 
       <div className="pcpanel-input-area">
-        {user ? (
+        {(
           <>
-            <textarea
+            <MentionInput
               className="pcpanel-input"
               placeholder="Yorumunuzu yazın..."
               value={content}
@@ -132,10 +149,6 @@ const ParagraphCommentPanel = ({ bookId, chapterId, paragraphIndex, onClose }) =
               {adding ? 'Gönderiliyor...' : 'Gönder'}
             </button>
           </>
-        ) : (
-          <p className="pcpanel-login-notice">
-            Yorum yapmak için giriş yapmalısınız.
-          </p>
         )}
       </div>
     </div>

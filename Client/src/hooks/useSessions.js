@@ -63,19 +63,19 @@ export const useGetSession = (sessionId) => {
 };
 
 // --- Oturum yazıları ---
-export const useGetSessionEntries = (sessionId) => {
+export const useGetSessionEntries = (sessionId, accessCode = null, enabled = true) => {
   const [exhausted, setExhausted] = useState(false);
-  useEffect(() => setExhausted(false), [sessionId]);
+  useEffect(() => setExhausted(false), [sessionId, accessCode]);
   const { data, loading, error, fetchMore } = useQuery(GET_SESSION_ENTRIES, {
-    variables: { sessionId, limit: ENTRIES_PER_PAGE, offset: 0 },
-    skip: !sessionId,
+    variables: { sessionId, limit: ENTRIES_PER_PAGE, offset: 0, ...(accessCode ? { accessCode } : {}) },
+    skip: !sessionId || !enabled,
     fetchPolicy: 'cache-and-network',
   });
 
   const loadMore = () => {
     const currentCount = data?.getSessionEntries?.length ?? 0;
     fetchMore({
-      variables: { sessionId, limit: ENTRIES_PER_PAGE, offset: currentCount },
+      variables: { sessionId, limit: ENTRIES_PER_PAGE, offset: currentCount, ...(accessCode ? { accessCode } : {}) },
       updateQuery: (prev, { fetchMoreResult }) => {
         if (!fetchMoreResult?.getSessionEntries?.length) { setExhausted(true); return prev; }
         return {
@@ -99,10 +99,10 @@ export const useGetSessionEntries = (sessionId) => {
 };
 
 // --- Gerçek zamanlı yeni yazı dinleme ---
-export const useNewSessionEntrySubscription = (sessionId) => {
+export const useNewSessionEntrySubscription = (sessionId, accessCode = null, enabled = true) => {
   useSubscription(ON_NEW_SESSION_ENTRY, {
-    variables: { sessionId },
-    skip: !sessionId,
+    variables: { sessionId, ...(accessCode ? { accessCode } : {}) },
+    skip: !sessionId || !enabled,
     onData: ({ client, data }) => {
       const newEntry = data?.data?.onNewSessionEntry;
       if (!newEntry) return;
@@ -111,7 +111,7 @@ export const useNewSessionEntrySubscription = (sessionId) => {
       client.cache.updateQuery(
         {
           query: GET_SESSION_ENTRIES,
-          variables: { sessionId, limit: ENTRIES_PER_PAGE, offset: 0 },
+          variables: { sessionId, limit: ENTRIES_PER_PAGE, offset: 0, ...(accessCode ? { accessCode } : {}) },
         },
         (existing) => {
           if (!existing?.getSessionEntries) return existing;
@@ -160,7 +160,7 @@ export const useCreateSession = () => {
 };
 
 // --- Yazı gönderme ---
-export const useAddSessionEntry = (sessionId) => {
+export const useAddSessionEntry = (sessionId, readAccessCode = null) => {
   const [addEntryMutation, { loading }] = useMutation(ADD_SESSION_ENTRY, {
     refetchQueries: [
       { query: GET_SESSION, variables: { sessionId } }
@@ -194,7 +194,7 @@ export const useAddSessionEntry = (sessionId) => {
         cache.updateQuery(
           {
             query: GET_SESSION_ENTRIES,
-            variables: { sessionId, limit: ENTRIES_PER_PAGE, offset: 0 },
+            variables: { sessionId, limit: ENTRIES_PER_PAGE, offset: 0, ...(readAccessCode ? { accessCode: readAccessCode } : {}) },
           },
           (existing) => {
             if (!existing?.getSessionEntries) return existing;
@@ -217,7 +217,7 @@ export const useAddSessionEntry = (sessionId) => {
 };
 
 // --- Yazı silme ---
-export const useDeleteSessionEntry = (sessionId) => {
+export const useDeleteSessionEntry = (sessionId, readAccessCode = null) => {
   const [deleteEntryMutation, { loading }] = useMutation(DELETE_SESSION_ENTRY, {
     refetchQueries: [
       { query: GET_SESSION, variables: { sessionId } }, // ✅ ekle
@@ -226,7 +226,7 @@ export const useDeleteSessionEntry = (sessionId) => {
       cache.updateQuery(
         {
           query: GET_SESSION_ENTRIES,
-          variables: { sessionId, limit: ENTRIES_PER_PAGE, offset: 0 },
+          variables: { sessionId, limit: ENTRIES_PER_PAGE, offset: 0, ...(readAccessCode ? { accessCode: readAccessCode } : {}) },
         },
         (existing) => {
           if (!existing?.getSessionEntries) return existing;
@@ -251,7 +251,7 @@ export const useToggleSessionEntryLike = () => {
   const [toggleLikeMutation, { loading }] = useMutation(TOGGLE_SESSION_ENTRY_LIKE);
 
   return {
-    toggleLike: (entryId) => toggleLikeMutation({ variables: { entryId } }),
+    toggleLike: (entryId, accessCode) => toggleLikeMutation({ variables: { entryId, ...(accessCode ? { accessCode } : {}) } }),
     loading,
   };
 };

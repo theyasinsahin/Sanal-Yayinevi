@@ -6,6 +6,7 @@ import { mergeTypeDefs, mergeResolvers } from '@graphql-tools/merge';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import GraphQLJSON from 'graphql-type-json';
 import resolvers from './resolvers/index.js'; // Resolver index dosyan
+import { secureRootFields } from '../security/graphqlSecurity.js';
 
 // TypeDefs'leri yükle
 const typeDefs = mergeTypeDefs(
@@ -22,4 +23,4 @@ const schema = makeExecutableSchema({
   },
 });
 
-export default schema;
+export default secureRootFields(schema);

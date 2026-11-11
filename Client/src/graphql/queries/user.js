@@ -8,9 +8,27 @@ export const GET_BOOK_VIEWER = gql`
   }
 `;
 
-export const GET_USER_BY_ID = gql`
+const PROFILE_BOOK_FIELDS = gql`
   ${WORK_CLASSIFICATION_FIELDS}
   ${BOOK_FUNDING_FIELDS}
+  fragment ProfileBookFields on Book {
+    ...BookFundingFields
+    publicPath
+    kind printedAuthor publisher publicationYear isbn
+    status id title
+    author { id fullName username profilePicture }
+    imageUrl
+    ...WorkClassificationFields
+    description
+    stats { views shares likes }
+    pageCount
+  }
+`;
+
+// Keep the initial profile and the optional saved library in separate requests.
+// Both book lists together exceed the server's nested-list operation budget.
+export const GET_USER_BY_ID = gql`
+  ${PROFILE_BOOK_FIELDS}
     query GetUserById($id:ID!){
         getUserById(id: $id){
           followStatus
@@ -21,58 +39,15 @@ export const GET_USER_BY_ID = gql`
           isSearchIndexable
           weeklyWritingWords
           privacySettings { isProfilePublic isLibraryPublic isFollowListPublic allowMessages showInSearchEngines }
-          notificationSettings { newFollower mentionInSession bookComment bookLike quoteLike sessionReply }
+          notificationSettings { newFollower mentionInSession mentionInComment bookComment bookLike quoteLike sessionReply }
           authorSettings { copyrightNote weeklyWordGoal preferredGenres }
           id,
           username,
           fullName,
           email,
-          savedBooks {
-            ...BookFundingFields
-            publicPath
-            kind printedAuthor publisher publicationYear isbn
-            status
-            id
-            title
-            author {
-              id
-              fullName
-              username
-              profilePicture
-            }
-            imageUrl
-            ...WorkClassificationFields
-            description
-            stats {
-              views
-              shares
-              likes
-            }
-            pageCount
-          },
           role,
           usersBooks {
-            ...BookFundingFields
-            publicPath
-            kind printedAuthor publisher publicationYear isbn
-            status
-            id
-            title
-            author {
-              id
-              fullName
-              username
-              profilePicture
-            }
-              imageUrl
-            ...WorkClassificationFields
-            description
-            stats {
-              views
-              shares
-              likes
-            }
-            pageCount
+            ...ProfileBookFields
           },
           bio,
           profilePicture,
@@ -90,6 +65,16 @@ export const GET_USER_BY_ID = gql`
           },
         }
 }
+`;
+
+export const GET_PROFILE_SAVED_BOOKS = gql`
+  ${PROFILE_BOOK_FIELDS}
+  query GetProfileSavedBooks($id: ID!) {
+    getUserById(id: $id) {
+      id
+      savedBooks { ...ProfileBookFields }
+    }
+  }
 `;
 
 export const ME_QUERY = gql`

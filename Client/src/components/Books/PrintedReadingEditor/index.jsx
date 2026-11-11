@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useRegistration, useRestoredRegistration } from '../../../hooks/useRegistration';
 import { useMutation, useQuery } from '@apollo/client';
 import { useAuth } from '../../../context/AuthContext';
 import { Button } from '../../UI/Button';
@@ -7,6 +7,9 @@ import { Textarea } from '../../UI/Textarea';
 import { MY_PRINTED_READING, SAVE_PRINTED_READING, REMOVE_PRINTED_READING } from '../../../graphql/printedReadings';
 
 export default function PrintedReadingEditor({ bookId }) {
+  const requestRegistration = useRegistration();
+  const restored = useRestoredRegistration('printed-reading', { bookId });
+  const ratingRef = useRef(null);
   const { user, ensureSession } = useAuth();
   const [rating, setRating] = useState('');
   const [review, setReview] = useState('');
@@ -17,6 +20,7 @@ export default function PrintedReadingEditor({ bookId }) {
     variables: { bookId }, skip: !user, fetchPolicy: 'network-only', context: { queryDeduplication: false },
   });
   const record = user && data?.myPrintedBookReading?.userId === user.id ? data.myPrintedBookReading : null;
+  useEffect(() => { if (restored) ratingRef.current?.focus(); }, [restored, loading]);
   useEffect(() => { setRating(record ? String(record.rating) : ''); setReview(record?.review || ''); }, [record]);
   const [save, { loading: saving }] = useMutation(SAVE_PRINTED_READING, {
     update(cache, result) {
@@ -48,11 +52,11 @@ export default function PrintedReadingEditor({ bookId }) {
   }
   return <section className="printed-panel printed-reading-editor" id="okuma-degerlendirmem">
     <h2>Okudum ve değerlendirdim</h2>
-    {!user ? <p><Link to="/login" className="ui-text-link">Okuduklarınıza eklemek ve puan vermek için giriş yapın</Link></p> : <>
+    {!user ? <p><Button variant="outline" onClick={() => requestRegistration({ action: 'printed-reading', bookId })}>Okuduklarıma ekle ve puan ver</Button></p> : <>
       <p>Okuduğunuz basılı kitabı puanlayın. Değerlendirmeniz profilinizdeki ayrı kitaplıkta, kitaplık gizlilik ayarınıza göre görünür.</p>
       {loading && !data ? <p role="status">Değerlendirmeniz yükleniyor…</p> : error ? <p role="alert">{error.message} <Button variant="outline" onClick={() => refetch().catch(() => {})}>Tekrar dene</Button></p> : <form onSubmit={submit} aria-label="Basılı kitap değerlendirmesi">
         <label className="printed-rating-label" htmlFor={`reading-rating-${bookId}`}>Puanınız (5 üzerinden)
-          <select id={`reading-rating-${bookId}`} value={rating} onChange={event => setRating(event.target.value)} required disabled={busy}>
+          <select ref={ratingRef} id={`reading-rating-${bookId}`} value={rating} onChange={event => setRating(event.target.value)} required disabled={busy}>
             <option value="">Puan seçin</option>{[1, 2, 3, 4, 5].map(value => <option key={value} value={value}>{value} / 5</option>)}
           </select>
         </label>

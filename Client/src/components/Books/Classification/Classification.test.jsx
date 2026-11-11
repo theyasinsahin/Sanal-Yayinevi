@@ -42,19 +42,34 @@ test('summary displays format, topics and separate audience/content warnings', (
   render(<ClassificationSummary book={{ format: options.formats[0], genres: options.genres.slice(0, 2), classificationTags: [term('buyu', 'Büyü')], narrativeFeatures: options.narrativeFeatures, targetAudience: options.targetAudiences[0], contentWarnings: options.contentWarnings, classificationStatus: 'COMPLETE' }} />);
   for (const text of ['Roman', 'Fantastik, Gizem', 'Büyü', 'Seri Kurgu', 'Genç', 'Şiddet']) expect(screen.getByText(text)).toBeInTheDocument();
 });
-test('creation sends the complete classification and navigates to the created work', async () => {
+test('creation saves a draft with complete classification and opens the writing dashboard', async () => {
   const classification = { formatId: 'roman', genreIds: ['genre0'], tags: [], narrativeFeatureIds: [], targetAudienceId: null, contentWarningIds: [] };
   const result = jest.fn(() => ({ data: { createBook: { publicPath: '/kitap/new', id: 'new', title: 'Yeni Eser', description: 'Tanıtım', authorId: 'author', comments: [], chapters: [] } } }));
-  render(<MockedProvider mocks={[mockOptions, { request: { query: CREATE_BOOK_MUTATION, variables: { title: 'Yeni Eser', description: 'Tanıtım', imageUrl: 'https://example.test/cover.jpg', classification } }, result }]}><MemoryRouter><Routes><Route path="/" element={<CreateBookPage />} /><Route path="/kitap/new" element={<p>Yeni eser açıldı</p>} /></Routes></MemoryRouter></MockedProvider>);
+  render(<MockedProvider mocks={[mockOptions, { request: { query: CREATE_BOOK_MUTATION, variables: { title: 'Yeni Eser', description: 'Tanıtım', imageUrl: 'https://example.test/cover.jpg', classification } }, result }]}><MemoryRouter><Routes><Route path="/" element={<CreateBookPage />} /><Route path="/dashboard/new" element={<p>Yeni eser açıldı</p>} /></Routes></MemoryRouter></MockedProvider>);
   await screen.findByText('Kurgu ve Hikâyeler');
   fireEvent.change(screen.getByLabelText(/Kitap Başlığı/), { target: { value: 'Yeni Eser' } });
   fireEvent.change(screen.getByLabelText('Açıklama'), { target: { value: 'Tanıtım' } });
   fireEvent.click(screen.getByText('Kapak seç'));
   fireEvent.change(screen.getByLabelText('Eser biçimi *'), { target: { value: 'roman' } });
   fireEvent.click(screen.getByLabelText('Fantastik'));
-  fireEvent.click(screen.getByRole('button', { name: 'Kitabı Yayınla' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Taslak Olarak Kaydet' }));
   expect(await screen.findByText('Yeni eser açıldı')).toBeInTheDocument();
   expect(result).toHaveBeenCalledTimes(1);
+});
+test('missing fields are highlighted and validation moves focus to the first missing field', async () => {
+  const scroll = HTMLElement.prototype.scrollIntoView;
+  HTMLElement.prototype.scrollIntoView = jest.fn();
+  try {
+    render(<MockedProvider mocks={[mockOptions]}><MemoryRouter><CreateBookPage /></MemoryRouter></MockedProvider>);
+    await screen.findByText('Kurgu ve Hikâyeler');
+    fireEvent.click(screen.getByRole('button', { name: 'Taslak Olarak Kaydet' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('eksik alanları tamamlayın');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Kapak seç' })).toHaveFocus());
+    expect(document.querySelector('[data-field="imageUrl"]')).toHaveClass('create-field-invalid');
+    expect(screen.getByLabelText(/Kitap Başlığı/)).toHaveAttribute('aria-invalid', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'Bir eser biçimi seçin.' }));
+    expect(screen.getByLabelText('Eser biçimi *')).toHaveFocus();
+  } finally { HTMLElement.prototype.scrollIntoView = scroll; }
 });
 test('editing preserves unsaved selections across unrelated rerenders and saves the new classification', async () => {
   const book = { __typename: 'Book', id: 'book', format: options.formats[0], genres: [options.genres[0]], classificationTags: [], narrativeFeatures: [], targetAudience: null, contentWarnings: [], classificationStatus: 'COMPLETE' };

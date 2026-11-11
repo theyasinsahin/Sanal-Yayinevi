@@ -1,5 +1,6 @@
 import { useLiveScoreQuery } from '../../hooks/useLiveScoreQuery';
 import { profilePath } from '../../utils/publicPaths';
+import CompactNumber from '../../components/UI/CompactNumber';
 import { useGetOrCreateConversation } from '../../hooks/useMessages';
 
 import React, { useState, useEffect } from 'react';
@@ -14,7 +15,7 @@ import {
 } from '@mui/icons-material';
 
 import { useAuth } from '../../context/AuthContext';
-import { GET_USER_BY_ID } from '../../graphql/queries/user';
+import { GET_USER_BY_ID, GET_PROFILE_SAVED_BOOKS } from '../../graphql/queries/user';
 import { UPDATE_USER_MUTATION } from '../../graphql/mutations/user';
 import { GET_USER_SCORE, GET_USER_BADGES } from '../../graphql/queries/score';
 import { GET_FOLLOWED_BOOKS } from '../../graphql/queries/bookFollow';
@@ -85,6 +86,12 @@ const UserProfile = ({ resolvedId } = {}) => {
   const canView = isMe || profile?.canViewProfile !== false;
   const canViewLibrary = isMe || profile?.canViewLibrary === true;
   const canViewFollowList = isMe || profile?.canViewFollowList !== false;
+  const { data: savedBooksData, loading: savedBooksLoading, error: savedBooksError, refetch: refetchSavedBooks } = useQuery(GET_PROFILE_SAVED_BOOKS, {
+    variables: { id: targetId },
+    skip: !targetId || !profile || !canViewLibrary || activeTab !== 'saved',
+    fetchPolicy: 'network-only',
+  });
+  const savedBooks = savedBooksData?.getUserById?.id === targetId ? savedBooksData.getUserById.savedBooks || [] : [];
   useEffect(() => {
     if (!profile) return;
     let meta = document.querySelector('meta[name="robots"]');
@@ -143,12 +150,12 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
 
   // HAYALET HESAP KONTROLÜ
   useEffect(() => {
-    if (!loading && !profile && isMe) {
+    if (!loading && !error && data?.getUserById === null && isMe) {
       showToast("Oturumunuz geçersiz. Lütfen tekrar giriş yapın.", "error");
       logout();
       navigate('/login');
     }
-  }, [loading, profile, isMe, logout, navigate]);
+  }, [loading, error, data, isMe, logout, navigate]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -194,13 +201,6 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
   const totalLikes = profile?.usersBooks?.reduce((sum, book) => 
     sum + (book.stats?.likes || 0), 0) || 0;
 
-  const formatNumber = (num) => {
-    if (!num) return '0';
-    if (num >= 1000000) return `${(num / 1000000).toLocaleString('tr-TR', { maximumFractionDigits: 1 })} mn`;
-    if (num >= 1000) return `${(num / 1000).toLocaleString('tr-TR', { maximumFractionDigits: 1 })} bin`;
-    return num.toString();
-  };
-
   const publishedBooks = profile?.usersBooks?.filter(b => b.status !== 'DRAFT') || [];
   const draftBooks = profile?.usersBooks?.filter(b => b.status === 'DRAFT') || [];
   
@@ -217,13 +217,14 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
   if (error || !profile) {
     return (
       <MainLayout>
-        <div className="error-state" style={{ textAlign: 'center', padding: '100px 20px' }}>
-          <Typography variant="h3" weight="bold">Kullanıcı Bulunamadı</Typography>
+        <div className="error-state" role={error ? 'alert' : undefined} style={{ textAlign: 'center', padding: '100px 20px' }}>
+          <Typography variant="h3" weight="bold">{error ? 'Profil yüklenemedi' : 'Kullanıcı Bulunamadı'}</Typography>
           <Typography variant="body" color="muted" className="mt-2 mb-4">
-            Aradığınız profil silinmiş veya hiç var olmamış olabilir.
+            {error ? 'Profil bilgilerine şu anda ulaşılamıyor. Lütfen yeniden deneyin.' : 'Aradığınız profil silinmiş veya hiç var olmamış olabilir.'}
           </Typography>
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
-            <Button variant="primary" onClick={() => navigate('/')}>Ana Sayfaya Dön</Button>
+            {error && <Button variant="primary" onClick={() => refetch()}>Tekrar Dene</Button>}
+            <Button variant={error ? 'outline' : 'primary'} onClick={() => navigate('/')}>Ana Sayfaya Dön</Button>
             {isMe && <Button variant="outline" onClick={handleLogout} icon={<Logout />}>Çıkış Yap</Button>}
           </div>
         </div>
@@ -308,7 +309,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
                           sebep oluyordu. Artık sayaç, ziyaretçiye göre
                           gerçekten görünen kitap sayısını yansıtıyor. */}
                       <span className="stat-value">
-                        {isMe ? (profile.usersBooks?.length || 0) : publishedBooks.length}
+                        <CompactNumber value={isMe ? profile.usersBooks?.length : publishedBooks.length} />
                       </span>
                       <span className="stat-label">Kitaplar</span>
                     </div>
@@ -316,29 +317,29 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
                     
                     {/* YENİ: Tıklanabilir Followers */}
                     <div className="stat-item-profile clickable" onClick={() => canViewFollowList && openModal('followers')}>
-                      <span className="stat-value">{canViewFollowList ? formatNumber(followerCount) : 'Gizli'}</span>
+                      <span className="stat-value">{canViewFollowList ? <CompactNumber value={followerCount} /> : 'Gizli'}</span>
                       <span className="stat-label">Takipçiler</span>
                     </div>
                     <div className="stat-divider"></div>
 
                     {/* YENİ: Tıklanabilir Following */}
                     <div className="stat-item-profile clickable" onClick={() => canViewFollowList && openModal('following')}>
-                      <span className="stat-value">{canViewFollowList ? formatNumber(profile.following?.length || 0) : 'Gizli'}</span>
+                      <span className="stat-value">{canViewFollowList ? <CompactNumber value={profile.following?.length} /> : 'Gizli'}</span>
                       <span className="stat-label">Takip Edilenler</span>
                     </div>
                     <div className="stat-divider"></div>
                     
                     <div className="stat-item-profile">
-                      <span className="stat-value">⭐ {userScore?.totalPoints || 0}</span>
+                      <span className="stat-value">⭐ <CompactNumber value={userScore?.totalPoints} /></span>
                       <span className="stat-label">Puan</span>
                     </div>
                   
                   </div>
                   
                   <div className="mini-stats-row">
-                     <span><TrendingUp fontSize="small"/> {formatNumber(totalViews)} görüntülenme</span>
+                     <span><TrendingUp fontSize="small"/> <CompactNumber value={totalViews} /> görüntülenme</span>
                      <span>&bull;</span>
-                     <span><Star fontSize="small"/> {formatNumber(totalLikes)} beğeni</span>
+                     <span><Star fontSize="small"/> <CompactNumber value={totalLikes} /> beğeni</span>
                   </div>
                 </>
               )}
@@ -405,7 +406,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
               <button className={`tab-btn ${activeTab === 'drafts' ? 'active' : ''}`} onClick={() => setActiveTab('drafts')}>
                 <Edit /><span>Taslaklar</span>
                 {draftBooks?.length > 0 && (
-                  <span className="draft-count-badge">{draftBooks.length}</span>
+                  <CompactNumber className="draft-count-badge" value={draftBooks.length} />
                 )}
               </button>
             )}
@@ -413,7 +414,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
             <button className={`tab-btn ${activeTab === 'quotes' ? 'active' : ''}`} onClick={() => setActiveTab('quotes')}>
               <FormatQuote /><span>Alıntılar</span>
               {userQuotes.length > 0 && (
-                <span className="draft-count-badge">{userQuotes.length}</span>
+                <CompactNumber className="draft-count-badge" value={userQuotes.length} />
               )}
             </button>
 
@@ -424,7 +425,7 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
               >
                 <span>Takip</span>
                 {followedBooks.length > 0 && (
-                  <span className="draft-count-badge">{followedBooks.length}</span>
+                  <CompactNumber className="draft-count-badge" value={followedBooks.length} />
                 )}
               </button>
             )}
@@ -446,7 +447,9 @@ const followedBooks = followedBooksData?.getFollowedBooks || [];
               <BookCarousel books={publishedBooks} loading={loading} />
             )}
             {canViewLibrary && activeTab === 'saved' && (
-              <BookCarousel books={(profile.savedBooks || []).filter(book => book.kind !== 'PRINTED')} loading={loading} />
+              savedBooksError ? <div className="ui-notice ui-notice--error" role="alert">
+                Dijital kitaplık yüklenemedi. <Button variant="link" onClick={() => refetchSavedBooks()}>Tekrar Dene</Button>
+              </div> : <BookCarousel books={savedBooks.filter(book => book.kind !== 'PRINTED')} loading={savedBooksLoading} />
             )}
             {isMe && activeTab === 'drafts' && (
               <BookCarousel books={draftBooks} loading={loading} />

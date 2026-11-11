@@ -1,0 +1,34 @@
+{
+  "status": "COMPLETE",
+  "completedAt": "2026-11-06T10:19:16.054Z",
+  "batchId": "tr-printed-2026-11-06",
+  "manifestSha256": "e68faf12f1a179f1986ba4da7051f80b1983bccca543bbbd56efd74196a305f7",
+  "books": 254,
+  "userAuthorizedProductionImport": true,
+  "importedBooks": 254,
+  "existing": 0,
+  "conflicts": 0,
+  "newBooksVerified": 254,
+  "provenanceRecordsVerified": 254,
+  "auditRecordsVerified": 254,
+  "existingBooksCompared": 107,
+  "changedExistingBooks": [],
+  "currentPrintedTotal": 261,
+  "dryRunAfterImport": {
+    "existing": 254,
+    "conflicts": 0,
+    "wouldCreate": 0
+  },
+  "publicApiVerified": true,
+  "publicVerification": {
+    "ok": true,
+    "endpoint": "https://sanal-yayinevi.onrender.com/",
+    "verifiedAt": "2026-11-06T10:19:47.540Z",
+    "totalPrintedBooks": 261,
+    "pagesVerified": 22,
+    "packageBooksVerified": 254,
+    "missing": 0,
+    "metadataMismatches": 0,
+    "catalogUrl": "https://sanal-yayinevi-pi.vercel.app/printed-books"
+  }
+}

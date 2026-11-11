@@ -4,6 +4,7 @@ import { print } from 'graphql';
 import { GET_READING_PROGRESS, SAVE_READING_PROGRESS } from '../graphql/readingProgress';
 import { progressStorageKey, ProgressWriter, readLocalProgress, resolveReaderProgress } from '../utils/readerProgress';
 import { API_URL } from '../config/api';
+import { sessionToken } from '../utils/authSession';
 
 export function useReaderProgress({ bookId, userId, chapters, bookLoading, bookmark, bookmarkLoading, bookmarkError, refetchBookmark, requestedChapterId }) {
   const scope = `${userId || 'guest'}:${bookId}`;
@@ -27,8 +28,7 @@ export function useReaderProgress({ bookId, userId, chapters, bookLoading, bookm
   useEffect(() => {
     if (!userId || !bookId) return undefined;
     let mounted = true;
-    let token = null;
-    try { token = localStorage.getItem('token'); } catch { /* No browser credentials are available. */ }
+    const token = sessionToken();
     const writer = new ProgressWriter({ onStatus: status => { if (mounted) setSyncStatus(status); },
       save: async (variables, keepalive) => {
         const abort = new AbortController();

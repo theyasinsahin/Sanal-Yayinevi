@@ -4,6 +4,8 @@ import { inactiveUserIds } from '../utils/activeUsers.js';
 import Chapter from '../models/chapter.js';
 import Book from '../models/book.js'; // Sayfa sayısı güncellemek için lazım
 import * as ScoreService from './scoreService.js';
+import { cleanRichText } from '../security/richText.js';
+import { paginate } from '../security/pagination.js';
 
 // --- OKUMA İŞLEMLERİ ---
 // Varsayılan olarak silinmiş (isDeleted: true) bölümler hariç tutulur.
@@ -15,15 +17,15 @@ export const findChapterById = async (id, { includeDeleted = false } = {}) => {
 
 export const findChaptersByBookId = async (bookId) => {
   // Bölüm numarasına veya oluşturulma tarihine göre sıralamak mantıklıdır
-  return await Chapter.find({ bookId, isDeleted: false, authorId: { $nin: await inactiveUserIds() } }).sort({ createdAt: 1 });
+  return await Chapter.find({ bookId, isDeleted: false, authorId: { $nin: await inactiveUserIds() } }).sort({ createdAt: 1, _id: 1 });
 };
 
 export const findChaptersByAuthorId = async (authorId) => {
-  return await Chapter.find({ authorId, isDeleted: false });
+  return await Chapter.find({ authorId, isDeleted: false }).sort({ createdAt: 1, _id: 1 });
 };
 
-export const findAllChapters = async () => {
-  return await Chapter.find({ isDeleted: false, authorId: { $nin: await inactiveUserIds() } });
+export const findAllChapters = async (options = {}) => {
+  return await paginate(Chapter.find({ isDeleted: false, authorId: { $nin: await inactiveUserIds() } }).sort({ createdAt: 1, _id: 1 }), options);
 };
 
 // Helper: Kitabın toplam sayfa sayısını güncelle (silinmemiş bölümler üzerinden)
@@ -35,6 +37,7 @@ const updateBookTotalPageCount = async (bookId) => {
 
 // CREATE
 export const createChapter = async (data) => {
+  data = { ...data, content: cleanRichText(data.content) };
   const newChapter = await Chapter.create(data);
   await recordWriting(data.authorId, newChapter._id, '', data.content);
 
@@ -51,6 +54,7 @@ export const createChapter = async (data) => {
 
 // UPDATE
 export const updateChapter = async (chapterId, data) => {
+  if (typeof data.content === 'string') data = { ...data, content: cleanRichText(data.content) };
   const previous = await Chapter.findOne({ _id: chapterId, isDeleted: false });
   const updatedChapter = await Chapter.findOneAndUpdate(
     { _id: chapterId, isDeleted: false },

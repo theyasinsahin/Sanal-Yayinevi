@@ -1,12 +1,16 @@
+import CompactNumber from '../../UI/CompactNumber';
 import { bookPath, profilePath } from '../../../utils/publicPaths';
+import MentionInput from '../../Mentions/MentionInput';
+import MentionText from '../../Mentions/MentionText';
+import useContentTarget from '../../../hooks/useContentTarget';
 // src/components/Quote/QuoteCard/index.jsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
 import { 
   Favorite, FavoriteBorder, FormatQuote, Person, 
   Repeat, ChatBubbleOutline, Delete, Send
 } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { 
   TOGGLE_QUOTE_LIKE_MUTATION, 
   REPOST_QUOTE_MUTATION,
@@ -21,11 +25,22 @@ import './QuoteCard.css';
 import ShareModal from '../../Messaging/ShareModal';
 import SocialShareDialog from '../../Sharing/SocialShareDialog';
 import { IosShare } from '@mui/icons-material';
+import { useRegistration, useRestoredRegistration } from '../../../hooks/useRegistration';
 
 // useAuth zaten import edilmiş, değişiklik yok
 
+function CommentContent({ comment }) {
+  const targetRef = useContentTarget(`quote-comment-${comment.id}`);
+  return <p id={`quote-comment-${comment.id}`} ref={targetRef} tabIndex={-1} className="quote-card-comment-content"><MentionText>{comment.content}</MentionText></p>;
+}
+
 const QuoteCard = ({ quote, showBookSource = true }) => {
+  const { hash, pathname } = useLocation();
   const { user } = useAuth();
+  const requestRegistration = useRegistration();
+  const restoredComment = useRestoredRegistration('quote-comment', { quoteId: quote.id });
+  const restoredRepost = useRestoredRegistration('repost', { quoteId: quote.id });
+  useRestoredRegistration('like', { quoteId: quote.id });
   const isPrivate = quote.visibility === 'PRIVATE' || quote.originalQuote?.visibility === 'PRIVATE';
 
   // --- Like state ---
@@ -43,7 +58,12 @@ const QuoteCard = ({ quote, showBookSource = true }) => {
 
   // --- Yorum state ---
   const [showComments, setShowComments] = useState(false);
+  useEffect(() => {
+    if (pathname === `/quotes/${quote.id}` && hash.startsWith('#quote-comment-')) setShowComments(true);
+  }, [hash, pathname, quote.id]);
   const [commentText, setCommentText] = useState('');
+  useEffect(() => { if (restoredComment) { setCommentText(restoredComment.draft || ''); setShowComments(true); } }, [restoredComment]);
+  useEffect(() => { if (restoredRepost) { setRepostComment(restoredRepost.draft || ''); setShowRepostInput(true); } }, [restoredRepost]);
 
   const [shareOpen, setShareOpen] = useState(false);
   const [messageOpen, setMessageOpen] = useState(false);
@@ -76,7 +96,7 @@ const QuoteCard = ({ quote, showBookSource = true }) => {
 
   // --- Handlers ---
   const handleLike = async () => {
-    if (!user) return;
+    if (!user) return requestRegistration({ action: 'like', quoteId: quote.id, returnTo: `/quotes/${quote.id}` });
     const currentLiked = optimisticLiked !== null ? optimisticLiked : isLikedFromServer;
     const currentCount = optimisticCount !== null ? optimisticCount : (quote.likedBy?.length || 0);
     setOptimisticLiked(!currentLiked);
@@ -90,7 +110,7 @@ const QuoteCard = ({ quote, showBookSource = true }) => {
   };
 
   const handleRepost = async () => {
-    if (!user) return;
+    if (!user) return requestRegistration({ action: 'repost', quoteId: quote.id, draft: repostComment, returnTo: `/quotes/${quote.id}` });
 
     const originalId = quote.isRepost ? quote.originalQuote?.id : quote.id;
 
@@ -128,6 +148,7 @@ const QuoteCard = ({ quote, showBookSource = true }) => {
   };
 
   const handleAddComment = async () => {
+    if (!user) return requestRegistration({ action: 'quote-comment', quoteId: quote.id, draft: commentText, returnTo: `/quotes/${quote.id}` });
     if (!commentText.trim() || !user) return;
     try {
       await addComment({ variables: { quoteId: quote.id, content: commentText.trim() } });
@@ -185,7 +206,7 @@ const QuoteCard = ({ quote, showBookSource = true }) => {
 
       {/* Repost yorumu */}
       {quote.isRepost && quote.repostComment && (
-        <p className="quote-card-repost-comment">"{quote.repostComment}"</p>
+        <p className="quote-card-repost-comment">"<MentionText>{quote.repostComment}</MentionText>"</p>
       )}
 
       {/* Alıntı Metni */}
@@ -209,7 +230,7 @@ const QuoteCard = ({ quote, showBookSource = true }) => {
 
       {/* Not (orijinal alıntının notu) */}
       {displayQuote.note && (
-        <p className="quote-card-note">"{displayQuote.note}"</p>
+        <p className="quote-card-note">"<MentionText>{displayQuote.note}</MentionText>"</p>
       )}
 
       {/* Repost ise orijinal kullanıcıyı göster */}
@@ -260,7 +281,7 @@ const QuoteCard = ({ quote, showBookSource = true }) => {
             onClick={() => setShowComments(!showComments)}
           >
             <ChatBubbleOutline fontSize="small" />
-            <span>{quote.commentCount || 0}</span>
+            <CompactNumber value={quote.commentCount} label="yorum" />
           </button>
 
           {/* Repost */}
@@ -271,7 +292,7 @@ const QuoteCard = ({ quote, showBookSource = true }) => {
               title={repostDone ? 'Yeniden paylaşımı geri al' : 'Yeniden Paylaş'}
             >
               <Repeat fontSize="small" />
-              <span>{repostCount}</span>
+              <CompactNumber value={repostCount} label="yeniden paylaşım" />
             </button>
           )}
 
@@ -281,7 +302,7 @@ const QuoteCard = ({ quote, showBookSource = true }) => {
             onClick={handleLike}
           >
             {isLiked ? <Favorite fontSize="small" /> : <FavoriteBorder fontSize="small" />}
-            <span>{likeCount}</span>
+            <CompactNumber value={likeCount} label="beğeni" />
           </button>
 
           {/* Herkese açık alıntının sosyal paylaşımı */}
@@ -300,7 +321,7 @@ const QuoteCard = ({ quote, showBookSource = true }) => {
       {/* Repost input */}
       {!isPrivate && showRepostInput && !repostDone && (
         <div className="quote-card-repost-input">
-          <textarea
+          <MentionInput
             className="quote-card-textarea"
             placeholder="Yeniden paylaşım yorumu ekle... (isteğe bağlı)"
             value={repostComment}
@@ -331,9 +352,9 @@ const QuoteCard = ({ quote, showBookSource = true }) => {
         <div className="quote-card-comments">
           
           {/* Yorum input */}
-          {user && (
+          {(
             <div className="quote-card-comment-input">
-              <input
+              <MentionInput as="input"
                 placeholder="Yorum yaz..."
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
@@ -375,7 +396,7 @@ const QuoteCard = ({ quote, showBookSource = true }) => {
                     </button>
                   )}
                 </div>
-                <p className="quote-card-comment-content">{comment.content}</p>
+                <CommentContent comment={comment} />
               </div>
             ))
           )}

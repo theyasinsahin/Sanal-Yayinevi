@@ -60,7 +60,9 @@ export async function verifySandboxFlow(data) {
   await production('DELIVERED'); await production('COMPLETED'); assert.equal(campaign.productionState, 'COMPLETED');
   campaign = await open(data.books[1].id); const refundPayment = await pay(campaign, 0, 5000);
   await gql('mutation($id:ID!){closeFundingCampaign(campaignId:$id,reason:"Sandbox tam iade kontrolü"){id state}}', { id: campaign.id }, tokens.admin);
-  await maintain(); await maintain();
+  // One pass queues/processes refunds and settles campaigns again. Together
+  // with the earlier success pass this stays within the API's 2/minute limit.
+  await maintain();
   const refunded = (await gql('query($id:ID!){myFundingPayment(id:$id){id state refund{state amountMinor}}}', { id: refundPayment.id }, tokens.reader)).myFundingPayment;
   assert.equal(refunded.state, 'REFUNDED'); assert.equal(refunded.refund.state, 'SUCCEEDED'); assert.equal(refunded.refund.amountMinor, 5000);
 }

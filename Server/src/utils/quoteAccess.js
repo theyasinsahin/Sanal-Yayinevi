@@ -3,6 +3,8 @@ import { GraphQLError } from 'graphql';
 import Quote from '../models/quote.js';
 import User from '../models/user.js';
 import Chapter from '../models/chapter.js';
+import Book from '../models/book.js';
+import { canReadBook } from './bookAccess.js';
 
 // Missing visibility belongs to quotes created before this feature. Unknown
 // values are not public. Private quotes have no administrator/follower bypass.
@@ -20,6 +22,8 @@ export async function requireQuote(id, viewer, { publicOnly = false } = {}) {
   if (!mongoose.isObjectIdOrHexString(id)) throw quoteUnavailable();
   const quote = await Quote.findOne({ _id: id, isDeleted: { $ne: true } });
   if (!quote || !(publicOnly ? isPublicQuote(quote) : canReadQuote(quote, viewer))) throw quoteUnavailable();
+  const book = await Book.findById(quote.bookId);
+  if (!canReadBook(book, publicOnly ? null : viewer)) throw quoteUnavailable();
   if (quote.chapterId && await Chapter.exists({ _id: quote.chapterId, isHidden: true })) throw quoteUnavailable();
   if (!await User.exists({ _id: quote.userId, isDeleted: false, isActive: { $ne: false } })) throw quoteUnavailable();
   if (quote.isRepost) {

@@ -61,7 +61,7 @@ Projeyi yerel ortamınızda çalıştırmak için aşağıdaki adımları izleyi
 
 ### Gereksinimler
 
-- Node.js 22 (bu geliştirmede test edilen sürüm: 22.14.0)
+- Node.js **26.x** ve npm **11.x**. Yerel hedef sürümler: **Node.js 26.13.0 / npm 11.13.0**; `.node-version` ve `packageManager` alanları bu sürümlerle eşleşir.
 - MongoDB replica set veya mongos; tek düğümlü standalone finansal transaction desteklemez.
 
 ### Kurulum
@@ -83,8 +83,15 @@ npm.cmd --prefix Server start
 npm.cmd --prefix Client start
 ```
 
-Testler: [test kılavuzu](docs/testing.md). Basım sisteminin doğrulama sonuçları ve canlı kullanım eksikleri: [sonuç raporu](docs/print-funding-report.md).
+Sunucu başlangıç hataları, `doctor` komutu, ortam dosyalarının önceliği ve
+MongoDB bağlantı kontrolleri: [Sunucuyu başlatma kılavuzu](docs/server-startup.md).
+
+Testler: [test kılavuzu](docs/testing.md). Basım sisteminin doğrulama sonuçları ve canlı kullanım eksikleri: [sonuç raporu](docs/print-funding-report.md). Kaynak güvenlik denetimi, kalan riskler ve canlı ön koşulları: [güvenlik raporu](docs/security/SECURITY_AUDIT_TR.md), [test sonuçları](docs/security/SECURITY_TEST_RESULTS_TR.md), [operasyon kılavuzu](docs/security/SECURITY_OPERATIONS_TR.md).
 
 Kitap kartlarında destek tutarları ve Keşfet'teki hedefe yakın/tamamlanmış kampanya listeleri: [kullanım ve teknik açıklamalar](docs/book-funding-discovery.md).
+
+Kitap yazma/yayınlama, mobil editör, bildirim ve mesaj araması düzenlemeleri: [akış raporu](docs/book-authoring-reader-report.md). Son toplu kontroller ve dal güncellemesi: [3 Kasım teslim kaydı](docs/release-readiness-2026-11-03.md).
+
+Vercel frontend / Render backend ile Google girişinde `GOOGLE_CSRF_FAILED` için [aynı-origin callback kurulumu](docs/google-login-production-fix.md).
 
 Betik © 2026 - Tüm Hakları Saklıdır.

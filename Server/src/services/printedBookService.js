@@ -32,7 +32,7 @@ const reviewNote = (approve, note) => approve ? (note ? text(note, 'İnceleme no
 const notice = (userId, title, message, bookId, session) => Notification.create([{ userId, type: 'BOOK_REVIEW', title, message, icon: '📚', meta: { bookId } }], { session });
 async function notifyAdmins(bookId, title, session) {
   const admins = await User.find({ role: 'ADMIN', isDeleted: false, isActive: { $ne: false } }).session(session).select('_id');
-  for (const admin of admins) await notice(admin._id, title, 'Basılı kitap yönetiminde yeni bir başvuru var.', bookId, session);
+  for (const admin of admins) await notice(admin._id, title, 'Basılı kitap yönetiminde yeni bir istek var.', bookId, session);
 }
 
 export async function submitPrintedBook(input, user) {
@@ -58,7 +58,7 @@ export async function submitPrintedBook(input, user) {
       } else {
         [book] = await Book.create([data], { session });
       }
-      await notifyAdmins(book._id, 'Basılı kitap başvurusu', session);
+      await notifyAdmins(book._id, 'Basılı kitap ekleme isteği', session);
       return book;
     });
   } catch (error) {
@@ -76,7 +76,7 @@ export async function getPrintedBooks({ page = 1, search = '', classification })
   if (searchText) {
     try { filter.$or.push({ isbn: normalizeIsbn(searchText) }); } catch { /* A title or author search is not an ISBN. */ }
   }
-  const [books, total] = await Promise.all([Book.find(filter).sort({ createdAt: -1, _id: -1 }).skip((page - 1) * 12).limit(12), Book.countDocuments(filter)]);
+  const [books, total] = await Promise.all([Book.find(filter).sort({ recognitionScore: -1, createdAt: -1, _id: -1 }).skip((page - 1) * 12).limit(12), Book.countDocuments(filter)]);
   return { books, total, page, totalPages: Math.max(1, Math.ceil(total / 12)) };
 }
 
@@ -106,9 +106,9 @@ export async function reviewPrintedBook({ bookId, approve, note }, user) {
   return mongoose.connection.transaction(async session => {
     const actor = await requireCurrentAdmin({ user }, session);
     const book = await Book.findOneAndUpdate({ _id: bookId, kind: 'PRINTED', publicationStatus: 'PENDING', isDeleted: false }, { publicationStatus: approve ? 'APPROVED' : 'REJECTED', status: approve ? 'PUBLISHED' : 'DRAFT', reviewNote: review, reviewedBy: requireUser(user), reviewedAt: new Date() }, { new: true, session });
-    if (!book) throw new Error('Bekleyen kitap başvurusu bulunamadı veya zaten incelendi.');
-    await notice(book.submittedBy, approve ? 'Kitabın kataloğa eklendi' : 'Kitap başvurusu sonuçlandı', `${book.title}: ${approve ? 'Yayımlandı.' : review}`, book._id, session);
-    await AdminAudit.create([{ actorId: actor._id, resource: 'Book', recordId: book.id, action: approve ? 'APPROVE' : 'REJECT', reason: (review || 'Basılı kitap başvurusu onaylandı.').slice(0, 500), fields: ['publicationStatus', 'status', 'reviewNote', 'reviewedBy', 'reviewedAt'] }], { session });
+    if (!book) throw new Error('Bekleyen kitap isteği bulunamadı veya zaten incelendi.');
+    await notice(book.submittedBy, approve ? 'Kitabın kataloğa eklendi' : 'Kitap ekleme isteği sonuçlandı', `${book.title}: ${approve ? 'Yayımlandı.' : review}`, book._id, session);
+    await AdminAudit.create([{ actorId: actor._id, resource: 'Book', recordId: book.id, action: approve ? 'APPROVE' : 'REJECT', reason: (review || 'Basılı kitap ekleme isteği onaylandı.').slice(0, 500), fields: ['publicationStatus', 'status', 'reviewNote', 'reviewedBy', 'reviewedAt'] }], { session });
     return book;
   });
 }

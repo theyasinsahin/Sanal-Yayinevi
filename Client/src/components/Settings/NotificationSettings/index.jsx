@@ -13,6 +13,7 @@ const NOTIFICATION_GROUPS = [
     rows: [
       { key: 'newFollower',     label: 'Yeni Takipçi',          sub: 'Onayladığınız takip isteği sonrası bilgi bildirimi. Onay bekleyen istekler her zaman gösterilir.' },
       { key: 'mentionInSession',label: 'Oturumda Bahsedilme', sub: 'Bir oturumda etiketlendiğinizde.' },
+      { key: 'mentionInComment',label: 'Yorum ve Alıntıda Etiketlenme', sub: 'Kitap veya paragraf yorumunda, alıntı notunda ya da yanıtında etiketlendiğinizde.' },
     ],
   },
   {

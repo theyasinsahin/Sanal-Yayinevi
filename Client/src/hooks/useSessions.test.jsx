@@ -56,6 +56,20 @@ test('entry deletion updates cached entries without removing unrelated entries',
   await act(async () => { await result.current.deleteEntry('remove'); });
   expect(cache.readQuery({ query: GET_SESSION_ENTRIES, variables }).getSessionEntries.map(e => e.id)).toEqual(['keep']);
 });
+
+test('private entries are not requested before code verification and retain the code during pagination', async () => {
+  const privateVariables = { ...variables, accessCode: 'private-code' };
+  const mocks = [
+    { request: { query: GET_SESSION_ENTRIES, variables: privateVariables }, result: { data: { getSessionEntries: [entry('private')] } } },
+    { request: { query: GET_SESSION_ENTRIES, variables: { ...privateVariables, offset: 1 } }, result: { data: { getSessionEntries: [entry('more')] } } },
+  ];
+  const { result, rerender } = renderHook(({ code, enabled }) => useGetSessionEntries('room', code, enabled), { initialProps: { code: null, enabled: false }, wrapper: wrapper(mocks) });
+  expect(result.current.entries).toEqual([]); expect(result.current.loading).toBe(false);
+  rerender({ code: 'private-code', enabled: true });
+  await waitFor(() => expect(result.current.entries).toHaveLength(1));
+  act(() => result.current.loadMore());
+  await waitFor(() => expect(result.current.entries).toHaveLength(2));
+});
 test('subscription deliveries append once even when a mutation already added the entry', async () => {
   let observer;
   const cache = new InMemoryCache();

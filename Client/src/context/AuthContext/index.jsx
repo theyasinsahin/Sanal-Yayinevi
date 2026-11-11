@@ -1,10 +1,11 @@
 import React, { createContext, useState, useContext, useCallback, useEffect, useRef } from 'react';
-import { useApolloClient } from '@apollo/client';
+import { gql, useApolloClient } from '@apollo/client';
 import { ME_QUERY } from '../../graphql/queries/user';
-import { AUTH_SESSION_CHANGED, clearSession, invalidateSession, readSession, tokenExpiresAt } from '../../utils/authSession';
+import { AUTH_SESSION_CHANGED, clearSession, invalidateSession, readSession, tokenExpiresAt, hasSessionCredentials, writeSession } from '../../utils/authSession';
 import { isAuthenticationError } from '../../utils/authLink';
 
 const AuthContext = createContext();
+const LOGOUT = gql`mutation Logout { logout { code message } }`;
 
 export const AuthProvider = ({ children }) => {
   const client = useApolloClient();
@@ -28,7 +29,7 @@ export const AuthProvider = ({ children }) => {
     const stored = readSession();
     if (!stored) {
       observedToken.current = null;
-      if (current.current || ['token', 'userId', 'user'].some(key => localStorage.getItem(key))) {
+      if (current.current || hasSessionCredentials()) {
         updateUser(null);
         clearSession();
       }
@@ -54,7 +55,7 @@ export const AuthProvider = ({ children }) => {
         }
         // Privileged navigation uses the current server role, never a stored role.
         const next = { ...session, role: data.me.role || 'USER' };
-        localStorage.setItem('user', JSON.stringify({ ...next, token: undefined }));
+        writeSession(session.token, next);
         updateUser(next);
       } catch (error) {
         if (isAuthenticationError(error)) invalidateSession(session.token);
@@ -111,18 +112,17 @@ export const AuthProvider = ({ children }) => {
 
   const login = (newToken, userId, userData = {}) => {
     const next = { ...userData, id: userId };
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('userId', userId);
-    localStorage.setItem('user', JSON.stringify(next));
+    writeSession(newToken, next);
     observedToken.current = newToken;
     updateUser({ ...next, token: newToken });
     setLoading(false);
     window.dispatchEvent(new Event(AUTH_SESSION_CHANGED));
   };
 
-  const logout = () => {
-    clearSession();
-    window.location.href = '/login';
+  const logout = async () => {
+    try { await client.mutate?.({ mutation: LOGOUT }); }
+    catch { /* Local sign-out remains available when the server is unreachable. */ }
+    finally { clearSession(); window.location.href = '/login'; }
   };
 
   const ensureSession = () => {

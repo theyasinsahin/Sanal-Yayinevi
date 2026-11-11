@@ -5,23 +5,36 @@ import { MemoryRouter } from 'react-router-dom';
 import ParagraphCommentPanel from './index';
 import { GET_PARAGRAPH_COMMENTS } from '../../../graphql/queries/paragraphComment';
 import { ADD_PARAGRAPH_COMMENT, DELETE_PARAGRAPH_COMMENT } from '../../../graphql/mutations/paragraphComment';
+import RegistrationPrompt from '../../Registration/RegistrationPrompt';
+import { finishRegistrationIntent, saveRegistrationIntent } from '../../../utils/registrationIntent';
 jest.mock('@mui/icons-material', () => require('../../../../test-support/icons.cjs'));
 
 let mockUser;
 jest.mock('../../../context/AuthContext', () => ({ useAuth: () => ({ user: mockUser }) }));
-beforeEach(() => { mockUser = { id: 'reader' }; });
+beforeEach(() => { mockUser = { id: 'reader' }; sessionStorage.clear(); });
 const comment = { __typename: 'ParagraphComment', id: 'comment', content: 'A thought', likedBy: [], createdAt: String(Date.now()), user: { __typename: 'User', id: 'reader', username: 'reader', fullName: 'Reader', profilePicture: '' } };
 const variables = { chapterId: 'chapter', paragraphIndex: 3 };
 const list = comments => ({ request: { query: GET_PARAGRAPH_COMMENTS, variables }, result: { data: { getParagraphComments: comments } } });
-const show = mocks => render(<MockedProvider mocks={mocks}><MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><ParagraphCommentPanel bookId="book" {...variables} onClose={jest.fn()} /></MemoryRouter></MockedProvider>);
+const show = mocks => render(<MockedProvider mocks={mocks}><MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><RegistrationPrompt /><ParagraphCommentPanel bookId="book" {...variables} onClose={jest.fn()} /></MemoryRouter></MockedProvider>);
 
-test('guests can read paragraph comments and visit authors but cannot post or delete', async () => {
+test('guests can read and draft a paragraph comment, but posting requests registration', async () => {
   mockUser = null; show([list([comment])]);
   expect(await screen.findByText('A thought')).toBeInTheDocument();
   expect(screen.getByRole('link', { name: '@reader' })).toHaveAttribute('href', '/yazar/reader');
-  expect(screen.getByText('Yorum yapmak için giriş yapmalısınız.')).toBeInTheDocument();
-  expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+  fireEvent.change(screen.getByRole('textbox'), { target: { value: 'My draft' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Gönder' }));
+  expect(screen.getByRole('dialog', { name: 'Sohbete katıl' })).toBeInTheDocument();
+  fireEvent.keyDown(document, { key: 'Escape' });
+  expect(screen.getByRole('textbox')).toHaveValue('My draft');
   expect(screen.queryByRole('button', { name: 'Yorumu sil' })).not.toBeInTheDocument();
+});
+
+test('a restored paragraph draft is not automatically posted after authentication', async () => {
+  saveRegistrationIntent({ action: 'paragraph-comment', returnTo: '/book-reader/book', bookId: 'book', ...variables, draft: 'Keep my draft' });
+  finishRegistrationIntent({ userId: 'reader' });
+  show([list([])]);
+  expect(await screen.findByRole('textbox')).toHaveValue('Keep my draft');
+  expect(screen.getByRole('button', { name: 'Gönder' })).toBeEnabled();
 });
 test('posting trims content, sends the selected paragraph and refreshes its comment list', async () => {
   const add = jest.fn(() => ({ data: { addParagraphComment: comment } }));

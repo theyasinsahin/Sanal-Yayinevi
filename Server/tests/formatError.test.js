@@ -3,7 +3,7 @@ import formatError from '../src/utils/formatError.js';
 const formatted = { message: 'Failure', locations: [{ line: 1, column: 2 }], path: ['operation'], extensions: { code: 'INTERNAL_SERVER_ERROR', traceId: 'test' } };
 test('validation errors expose individual field messages with a bad-input code', () => {
   const result = formatError(formatted, { message: 'Validation', originalError: { name: 'ValidationError', errors: { email: { message: 'Invalid email' }, title: { message: 'Title required' } } } });
-  expect(result).toMatchObject({ path: formatted.path, locations: formatted.locations, extensions: { code: 'BAD_USER_INPUT', details: ['Invalid email', 'Title required'] } });
+  expect(result).toMatchObject({ path: formatted.path, locations: formatted.locations, extensions: { code: 'BAD_USER_INPUT', details: ['email: geçerli bir değer girin.', 'title: geçerli bir değer girin.'] } });
 });
 test('duplicate key errors identify the conflicting field without echoing its private value', () => {
   const result = formatError(formatted, { message: 'Duplicate', originalError: { code: 11000, keyValue: { email: 'private@example.test' } } });

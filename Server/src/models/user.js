@@ -12,6 +12,7 @@ const PrivacySettingsSchema = new mongoose.Schema({
 const NotificationSettingsSchema = new mongoose.Schema({
   newFollower:      { type: Boolean, default: true },
   mentionInSession: { type: Boolean, default: true },
+  mentionInComment: { type: Boolean, default: true },
   bookComment:      { type: Boolean, default: true },
   bookLike:         { type: Boolean, default: true },
   quoteLike:        { type: Boolean, default: true },
@@ -53,6 +54,8 @@ const User = new mongoose.Schema({
   isVerified:     { type: Boolean, default: false },
   isActive:       { type: Boolean, default: true },
   authVersion:    { type: Number, default: 0 },
+  loginBlocked:   { type: Boolean, default: false },
+  googleSubject:  { type: String },
 
   // ── Soft-delete ──────────────────────────────────────────────────
   isDeleted:  { type: Boolean, default: false },

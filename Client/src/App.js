@@ -22,6 +22,9 @@ import { ToastProvider } from './context/ToastContext';
 import NavigationBar from "./components/Navigation/NavigationBar";
 import ScrollToTop from './components/ScrollToTop';
 import InstallPrompt from './components/InstallPrompt';
+import PersonalFoxes from './components/PersonalFoxes';
+import RegistrationPrompt from './components/Registration/RegistrationPrompt';
+import { sessionToken } from './utils/authSession';
 
 import LandingPage from "./pages/Landing";
 
@@ -84,11 +87,11 @@ const httpLink = createHttpLink({
 const wsClient = createClient({
     url: WS_URL,
     connectionParams: () => ({
-      authorization: localStorage.getItem("token")
-        ? `Bearer ${localStorage.getItem("token")}`
+      authorization: sessionToken()
+        ? `Bearer ${sessionToken()}`
         : "",
     }),
-    shouldRetry: () => !!localStorage.getItem("token"),
+    shouldRetry: () => !!sessionToken(),
     retryAttempts: 5,
   });
 const wsLink = new GraphQLWsLink(wsClient);
@@ -140,9 +143,11 @@ const ProtectedRoute = ({ children }) => {
 // içinden geçiyor.
 const RootLayout = () => (
   <>
+    <RegistrationPrompt />
     <ScrollToTop />
     <ScoreUpdates reconnect={reconnectSubscriptions} />
     <PageBoundary><Outlet /></PageBoundary>
+    <PersonalFoxes />
     {/* Mobilde "Ana ekrana ekle" banner'ı — tüm sayfalarda tek yerden */}
     <InstallPrompt />
   </>

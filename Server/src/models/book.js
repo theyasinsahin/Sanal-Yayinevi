@@ -32,6 +32,9 @@ const BookSchema = new mongoose.Schema({
   contentWarningIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'ClassificationTerm' }],
   classificationStatus: { type: String, enum: ['COMPLETE', 'NEEDS_REVIEW'], default: 'NEEDS_REVIEW' },
   classificationVersion: Number,
+  // Editorial order for the Turkish printed catalog. No fabricated view/like counts.
+  recognitionScore: { type: Number, min: 0, max: 1000000 },
+  editorialVersion: String,
   tags: { type: [String], default: [] },
   description: String,
   stats: {
@@ -88,6 +91,7 @@ const BookSchema = new mongoose.Schema({
 BookSchema.index({ isDeleted: 1 });
 BookSchema.index({ isbn: 1 }, { unique: true, partialFilterExpression: { isbn: { $type: 'string' } } });
 BookSchema.index({ kind: 1, publicationStatus: 1, createdAt: -1 });
+BookSchema.index({ kind: 1, publicationStatus: 1, isDeleted: 1, recognitionScore: -1, createdAt: -1, _id: -1 });
 BookSchema.index({ isDeleted: 1, publishDate: -1, _id: -1 });
 BookSchema.index({ isDeleted: 1, updatedAt: -1, _id: -1 });
 BookSchema.index({ isDeleted: 1, 'stats.likes': -1, _id: -1 });

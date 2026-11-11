@@ -2,8 +2,9 @@ import React from 'react';
 import { GET_CLASSIFICATION_OPTIONS } from '../../graphql/classification';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MockedProvider } from '@apollo/client/testing';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import PrintedBooks from './index';
+import ScrollToTop from '../../components/ScrollToTop';
 import PrintedBookDetail from '../../components/Books/PrintedBookDetail';
 import AdminPrintedBooks from '../Admin/PrintedBooks';
 import { useAuth } from '../../context/AuthContext';
@@ -25,14 +26,93 @@ const show = (element, mocks = []) => render(<MockedProvider mocks={mocks} addTy
 const detail = overrides => <PrintedBookDetail book={{ ...book, ...overrides }} comments={[]} currentUserId="reader" commentText="" onCommentChange={jest.fn()} onCommentSubmit={jest.fn()} refresh={jest.fn()} />;
 beforeEach(() => { useAuth.mockReturnValue({ user: { id: 'reader' }, ensureSession: () => ({ id: 'reader' }) }); });
 
-test('approved print editions have a separate catalog card and do not show funding controls', async () => {
+test('search updates for every character, deletion and clearing without submitting and resets pagination', async () => {
   useAuth.mockReturnValue({ user: null });
-  show(<PrintedBooks />, [catalog([book])]);
-  expect(await screen.findByRole('heading', { name: book.title })).toBeInTheDocument();
-  expect(screen.getByRole('link', { name: /Kitabı incele/ })).toHaveAttribute('href', '/book-detail/printed');
-  expect(screen.getByText(book.printedAuthor)).toBeInTheDocument();
+  window.scrollTo = jest.fn();
+  const prefixes = ['E', 'Ey', 'Eyr', 'Eyrü', 'Eyrük', 'Eyrüki', 'Eyrükit', 'Eyrüki', ''];
+  const response = (search, page, title) => ({
+    request: { query: GET_PRINTED_BOOKS, variables: { search, page } },
+    result: { data: { getPrintedBooks: { books: [{ ...book, title }], total: 30, page, totalPages: 3 } } },
+  });
+  function Location() { return <output data-testid="catalog-location">{useLocation().search}</output>; }
+  render(<MockedProvider addTypename={false} mocks={[
+    response('', 3, 'İlk liste'),
+    ...prefixes.map((search, index) => response(search, 1, `Sonuç ${index}`)),
+  ]}><MemoryRouter initialEntries={['/printed-books?page=3&keep=value']}><ScrollToTop /><PrintedBooks /><Location /></MemoryRouter></MockedProvider>);
+  await screen.findByRole('link', { name: /İlk liste/ });
+  window.scrollTo.mockClear();
+  const input = screen.getByRole('searchbox', { name: 'Kitap, yazar, yayınevi veya ISBN ara' });
+  expect(screen.queryByRole('button', { name: 'Ara' })).not.toBeInTheDocument();
+  for (const [index, search] of prefixes.entries()) {
+    fireEvent.change(input, { target: { value: search } });
+    await screen.findByRole('link', { name: `Sonuç ${index} — ${book.printedAuthor}` });
+    expect(input).toHaveValue(search);
+    const params = new URLSearchParams(screen.getByTestId('catalog-location').textContent);
+    expect(params.get('page')).toBe('1');
+    expect(params.get('keep')).toBe('value');
+    expect(params.get('search')).toBe(search || null);
+    expect(window.scrollTo).not.toHaveBeenCalled();
+  }
+});
+
+test.each(['', 'https://example.test/cover.jpg'])('printed catalog shows only linked covers with an accessible book name (image: %s)', async imageUrl => {
+  useAuth.mockReturnValue({ user: null });
+  show(<PrintedBooks />, [catalog([{ ...book, imageUrl }])]);
+  expect(await screen.findByRole('link', { name: `${book.title} — ${book.printedAuthor}` })).toHaveAttribute('href', '/book-detail/printed');
+  expect(screen.queryByRole('heading', { name: book.title })).not.toBeInTheDocument();
+  expect(screen.queryByText(book.printedAuthor)).not.toBeInTheDocument();
+  expect(screen.queryByText('Kitabı incele')).not.toBeInTheDocument();
+  if (imageUrl) {
+    const cover = screen.getByRole('img', { name: `${book.title} kapağı` });
+    expect(cover).toHaveAttribute('src', imageUrl);
+    fireEvent.error(cover);
+  }
+  expect(screen.getByText(book.title)).toBeInTheDocument();
   expect(screen.queryByText(/Fonlama/)).not.toBeInTheDocument();
   expect(screen.getByRole('link', { name: 'Kitap eklemek için giriş yapın' })).toHaveAttribute('href', '/login');
+  expect(screen.queryByRole('button', { name: /kitaplar$/ })).not.toBeInTheDocument();
+});
+
+test('side arrows preserve scroll and search params, retain books while loading and respect both page boundaries', async () => {
+  useAuth.mockReturnValue({ user: null });
+  window.scrollTo = jest.fn();
+  const response = (page, delay = 0) => ({
+    request: { query: GET_PRINTED_BOOKS, variables: { page, search: 'roman' } },
+    delay,
+    result: { data: { getPrintedBooks: {
+      books: [{ ...book, id: `page-${page}`, title: `Sayfa ${page} kitabı` }],
+      total: 13, page, totalPages: 2,
+    } } },
+  });
+  function Location() { return <output data-testid="catalog-location">{useLocation().search}</output>; }
+  render(<MockedProvider addTypename={false} mocks={[response(1), response(2, 80), response(1)]}>
+    <MemoryRouter initialEntries={['/printed-books?page=1&search=roman&keep=value']}>
+      <ScrollToTop /><PrintedBooks /><Location />
+    </MemoryRouter>
+  </MockedProvider>);
+  await screen.findByRole('link', { name: /Sayfa 1 kitabı/ });
+  const previous = screen.getByRole('button', { name: 'Önceki kitaplar' });
+  const next = screen.getByRole('button', { name: 'Sonraki kitaplar' });
+  expect(previous).toBeDisabled();
+  expect(next).toBeEnabled();
+  expect(next).toHaveAttribute('aria-controls', 'printed-book-list');
+  window.scrollTo.mockClear();
+  fireEvent.click(next);
+  expect(screen.getByRole('link', { name: /Sayfa 1 kitabı/ })).toBeInTheDocument();
+  expect(screen.getByRole('region', { name: 'Basılı kitap listesi' })).toHaveAttribute('aria-busy', 'true');
+  expect(next).toBeDisabled();
+  fireEvent.click(next);
+  await screen.findByRole('link', { name: /Sayfa 2 kitabı/ });
+  expect(next).toBeDisabled();
+  expect(previous).toBeEnabled();
+  expect(screen.getByTestId('catalog-location')).toHaveTextContent('?page=2&search=roman&keep=value');
+  expect(window.scrollTo).not.toHaveBeenCalled();
+  fireEvent.click(previous);
+  await screen.findByRole('link', { name: /Sayfa 1 kitabı/ });
+  await waitFor(() => expect(next).toBeEnabled());
+  expect(previous).toBeDisabled();
+  expect(screen.getByTestId('catalog-location')).toHaveTextContent('?page=1&search=roman&keep=value');
+  expect(window.scrollTo).not.toHaveBeenCalled();
 });
 
 test('ISBN lookup fills metadata but preserves manual submission when the provider has no record', async () => {
@@ -40,7 +120,7 @@ test('ISBN lookup fills metadata but preserves manual submission when the provid
   fireEvent.click(screen.getByRole('button', { name: 'Basılı kitap ekle' }));
   fireEvent.change(screen.getByLabelText('ISBN (varsa)'), { target: { value: book.isbn } });
   fireEvent.click(screen.getByRole('button', { name: 'ISBN ile bul' }));
-  expect(await screen.findByText(/elle girerek başvurabilirsiniz/)).toBeInTheDocument();
+  expect(await screen.findByText(/elle girerek istek gönderebilirsiniz/)).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Betik onayına gönder' })).toBeEnabled();
 });
 
@@ -49,14 +129,14 @@ test('losing the session closes the submission form and it stays closed after an
   const element = () => <MockedProvider mocks={mocks} addTypename={false}><MemoryRouter><PrintedBooks /></MemoryRouter></MockedProvider>;
   const view = render(element());
   fireEvent.click(screen.getByRole('button', { name: 'Basılı kitap ekle' }));
-  expect(screen.getByRole('heading', { name: 'Basılı kitap başvurusu' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Basılı kitap ekleme isteği' })).toBeInTheDocument();
   useAuth.mockReturnValue({ user: null });
   view.rerender(element());
-  expect(screen.queryByRole('heading', { name: 'Basılı kitap başvurusu' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: 'Basılı kitap ekleme isteği' })).not.toBeInTheDocument();
   expect(screen.getByRole('link', { name: 'Kitap eklemek için giriş yapın' })).toBeInTheDocument();
   useAuth.mockReturnValue({ user: { id: 'other' }, ensureSession: () => ({ id: 'other' }) });
   view.rerender(element());
-  expect(screen.queryByRole('heading', { name: 'Basılı kitap başvurusu' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: 'Basılı kitap ekleme isteği' })).not.toBeInTheDocument();
   await screen.findByText('Raflarımız ilk eserlerini bekliyor');
 });
 
@@ -84,7 +164,7 @@ test('manual submissions are sent for review and do not appear as approved books
     fireEvent.change(screen.getByLabelText(new RegExp(label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))), { target: { value } });
   }
   fireEvent.click(screen.getByRole('button', { name: 'Betik onayına gönder' }));
-  expect(await screen.findByText(/Başvurunuz Betik'e iletildi/)).toBeInTheDocument();
+  expect(await screen.findByText(/İsteğiniz Betik'e iletildi/)).toBeInTheDocument();
   expect(screen.queryByRole('heading', { name: book.title })).not.toBeInTheDocument();
 });
 
@@ -113,9 +193,22 @@ test('pending rights claims show their status instead of offering duplicate subm
 });
 
 test('approved author access exposes the chapter editor while retaining the print interface', async () => {
-  show(detail({ authorId: 'reader', canEditContent: true }), [quotes()]);
+  show(detail({ authorId: 'reader', author: { id: 'reader', username: 'onayli-yazar', fullName: 'Onaylı Yazar' }, canEditContent: true }), [quotes()]);
   expect(screen.getByRole('link', { name: 'Bölüm ekle / düzenle' })).toHaveAttribute('href', '/dashboard/printed');
+  expect(screen.getByRole('link', { name: 'Onaylı Yazar' })).toHaveAttribute('href', '/yazar/onayli-yazar');
+  expect(screen.queryByText(/Hak talebinde bulunun/)).not.toBeInTheDocument();
   expect(screen.getByText('Basılı eser')).toBeInTheDocument();
+  await screen.findByText('Bu kitaptan henüz bir alıntı paylaşılmadı.');
+});
+
+test.each([null, { id: 'reader' }])('approved authors are linked publicly without granting visitors editing or new claims (viewer: %p)', async user => {
+  useAuth.mockReturnValue({ user });
+  show(detail({ authorId: 'verified-author', author: { id: 'verified-author', username: 'onayli-yazar', fullName: 'Onaylı Yazar' } }), [quotes()]);
+  expect(screen.getByText(/Betik'te onaylanan yazar:/)).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'Onaylı Yazar' })).toHaveAttribute('href', '/yazar/onayli-yazar');
+  expect(screen.getByText(book.printedAuthor)).toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: 'Bölüm ekle / düzenle' })).not.toBeInTheDocument();
+  expect(screen.queryByText(/Hak talebinde bulunun/)).not.toBeInTheDocument();
   await screen.findByText('Bu kitaptan henüz bir alıntı paylaşılmadı.');
 });
 
@@ -146,5 +239,5 @@ test('admin review requires a rejection reason and approval removes the pending 
   fireEvent.click(await screen.findByRole('button', { name: 'Reddet' }));
   expect(screen.getByRole('alert')).toHaveTextContent('gerekçe');
   fireEvent.click(screen.getByRole('button', { name: 'Onayla' }));
-  expect(await screen.findByText('Bekleyen kitap başvurusu yok.')).toBeInTheDocument();
+  expect(await screen.findByText('Bekleyen kitap isteği yok.')).toBeInTheDocument();
 });

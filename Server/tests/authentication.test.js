@@ -68,3 +68,7 @@ test('authorization uses the current database role rather than token role claims
   await User.updateOne({ _id: user._id }, { role: 'ADMIN' });
   expect((await authenticate(token)).role).toBe('ADMIN');
 });
+
+test('a different symmetric algorithm cannot bypass the access-token algorithm allowlist', async () => {
+  expect(await authenticate(credentials({}, { algorithm: 'HS384' }))).toBeNull();
+});

@@ -5,10 +5,10 @@ import { useLazyQuery, useMutation } from '@apollo/client';
 import { CREATE_QUOTE_MUTATION, REPOST_QUOTE_MUTATION } from '../../../graphql/mutations/quote';
 import QuotePopup from './index';
 
-jest.mock('@apollo/client', () => ({ ...jest.requireActual('@apollo/client'), useLazyQuery: jest.fn(), useMutation: jest.fn() }));
+jest.mock('@apollo/client', () => ({ ...jest.requireActual('@apollo/client'), useLazyQuery: jest.fn(), useMutation: jest.fn(), useQuery: () => ({}) }));
 jest.mock('../../../context/AuthContext', () => ({ useAuth: () => ({ user: { id: 'reader' } }) }));
 jest.mock('@mui/icons-material', () => ({ Check: () => null, Close: () => null, Repeat: () => null }));
-let check, create, repost;
+let check, create, repost, source, selectedNode;
 const text = 'Kitaptan seçilen anlamlı bir cümle.';
 beforeEach(() => {
   check = jest.fn().mockResolvedValue({ data: { checkQuoteExists: { exists: false, quote: null } } });
@@ -16,9 +16,11 @@ beforeEach(() => {
   repost = jest.fn().mockResolvedValue({ data: {} });
   useLazyQuery.mockReturnValue([check]);
   useMutation.mockImplementation(query => [query === CREATE_QUOTE_MUTATION ? create : repost, { loading: false }]);
-  jest.spyOn(window, 'getSelection').mockReturnValue({ toString: () => text, rangeCount: 1, removeAllRanges: jest.fn(), getRangeAt: () => ({ startOffset: 2, endOffset: 34, getBoundingClientRect: () => ({ left: 20, width: 60, top: 100 }) }) });
+  source = document.createElement('div'); source.dataset.quoteSource = ''; source.textContent = text;
+  document.body.appendChild(source); selectedNode = source.firstChild;
+  jest.spyOn(window, 'getSelection').mockReturnValue({ toString: () => text, rangeCount: 1, removeAllRanges: jest.fn(), getRangeAt: () => ({ startContainer: selectedNode, endContainer: selectedNode, startOffset: 2, endOffset: 34, getBoundingClientRect: () => ({ left: 20, width: 60, top: 100 }) }) });
 });
-afterEach(() => jest.restoreAllMocks());
+afterEach(() => { source.remove(); jest.restoreAllMocks(); });
 async function select() {
   render(<MemoryRouter><QuotePopup bookId="book" chapterId="chapter" chapterTitle="Bölüm" chapterIndex={0} /></MemoryRouter>);
   fireEvent.mouseUp(document.body);
@@ -34,6 +36,30 @@ test.each(['PUBLIC', 'PRIVATE'])('digital selection saves with %s visibility and
   fireEvent.click(button);
   await waitFor(() => expect(create).toHaveBeenCalledWith({ variables: { text, note: 'Kişisel not', bookId: 'book', chapterId: 'chapter', chapterTitle: 'Bölüm', chapterIndex: 0, location: { startOffset: 2, endOffset: 34 }, isSpoiler: false, visibility } }));
   expect(repost).not.toHaveBeenCalled();
+});
+
+test.each(['touchend', 'selectionchange'])('mobile selection opens and saves without a mouse event: %s', async type => {
+  render(<MemoryRouter><QuotePopup bookId="book" chapterId="chapter" chapterTitle="Bölüm" chapterIndex={0} /></MemoryRouter>);
+  fireEvent(document, new Event(type));
+  const save = await screen.findByRole('button', { name: 'Kaydet' });
+  await waitFor(() => expect(save).toBeEnabled());
+  fireEvent.click(save);
+  await waitFor(() => expect(create).toHaveBeenCalledWith(expect.objectContaining({ variables: expect.objectContaining({ text, chapterId: 'chapter' }) })));
+});
+
+test('selection outside book content never creates a quote', async () => {
+  source.removeAttribute('data-quote-source');
+  render(<MemoryRouter><QuotePopup bookId="book" chapterId="chapter" /></MemoryRouter>);
+  fireEvent.mouseUp(document.body);
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(check).not.toHaveBeenCalled();
+});
+
+test('book view quotes use the selected page chapter rather than the adjacent chapter', async () => {
+  Object.assign(source.dataset, { chapterId: 'adjacent', chapterTitle: 'Yan sayfa', chapterIndex: '3' });
+  await select();
+  fireEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
+  await waitFor(() => expect(create).toHaveBeenCalledWith(expect.objectContaining({ variables: expect.objectContaining({ chapterId: 'adjacent', chapterTitle: 'Yan sayfa', chapterIndex: 3 }) })));
 });
 
 test('a public duplicate can be saved as a private personal copy instead of reposted', async () => {

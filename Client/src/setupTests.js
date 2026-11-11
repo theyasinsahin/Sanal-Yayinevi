@@ -8,3 +8,5 @@ import { configure } from '@testing-library/react';
 // Large accessible lists can take longer to settle on CI/Windows machines.
 // Performance regressions use structural budgets rather than this UI wait limit.
 configure({ asyncUtilTimeout: 3000 });
+// JSDOM 16 does not expose Web Crypto; use the actual Node implementation.
+Object.defineProperty(window, 'crypto', { configurable: true, value: require('crypto').webcrypto });
