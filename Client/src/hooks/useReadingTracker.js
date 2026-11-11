@@ -5,6 +5,7 @@ import { START_READING_SESSION, REPORT_READING_TIME } from '../graphql/mutations
 import { ReadingTracker } from '../utils/readingTracker';
 import { API_URL } from '../config/api';
 import { notifyScoreChanged } from '../utils/scoreUpdates';
+import { sessionToken } from '../utils/authSession';
 const closingSessions = new Map();
 
 async function withTimeout(operation) {
@@ -42,7 +43,7 @@ export const useReadingTracker = ({ isActive, userId, bookId, chapterId, onIdleW
           if (keepalive) {
             result = await withTimeout(async signal => {
               const response = await fetch(API_URL, { method: 'POST', keepalive: true, signal,
-                headers: { 'Content-Type': 'application/json', authorization: `Bearer ${localStorage.getItem('token') || ''}` },
+                headers: { 'Content-Type': 'application/json', authorization: `Bearer ${sessionToken() || ''}` },
                 body: JSON.stringify({ query: print(REPORT_READING_TIME), variables }),
               });
               if (!response.ok) throw new Error('Okuma kaydı gönderilemedi.');

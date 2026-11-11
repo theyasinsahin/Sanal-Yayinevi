@@ -2,7 +2,8 @@ import MentionInput from '../../Mentions/MentionInput';
 import ClassificationSummary from '../Classification/ClassificationSummary';
 import ClassificationEditor from '../Classification/ClassificationEditor';
 import { profilePath, readerPath } from '../../../utils/publicPaths';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useRegistration, useRestoredRegistration } from '../../../hooks/useRegistration';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery } from '@apollo/client';
 import { MainLayout } from '../../Layout/MainLayout';
@@ -49,12 +50,19 @@ function ClaimForm({ book, refresh }) {
 
 export default function PrintedBookDetail({ book, comments, commentsLoading, currentUserId, commentText, onCommentChange, onCommentSubmit, commentSending, refresh }) {
   const { user } = useAuth();
+  const requestRegistration = useRegistration();
+  const restored = useRestoredRegistration('quote', { bookId: book.id });
   const approved = book.publicationStatus === 'APPROVED';
   const [text, setText] = useState('');
   const [note, setNote] = useState('');
   const [page, setPage] = useState('');
   const [spoiler, setSpoiler] = useState(false);
   const [visibility, setVisibility] = useState('PUBLIC');
+  useEffect(() => {
+    if (!restored?.draft) return;
+    const draft = restored.draft;
+    setText(draft.text || ''); setNote(draft.note || ''); setPage(draft.page || ''); setSpoiler(Boolean(draft.spoiler)); setVisibility(draft.visibility || 'PUBLIC');
+  }, [restored]);
   const [quoteError, setQuoteError] = useState('');
   const [quoteSent, setQuoteSent] = useState(false);
   const [failedUrl, setFailedUrl] = useState(null);
@@ -62,6 +70,7 @@ export default function PrintedBookDetail({ book, comments, commentsLoading, cur
   const [quote, { loading: quoting }] = useMutation(CREATE_PRINTED_QUOTE, { update: invalidateQuoteLists });
   async function shareQuote(event) {
     event.preventDefault(); setQuoteError(''); setQuoteSent(false);
+    if (!user) return requestRegistration({ action: 'quote', bookId: book.id, draft: { text, page, note, spoiler, visibility } });
     try {
       await quote({ variables: { bookId: book.id, text: text.trim(), pageNumber: Number(page), note: note.trim(), isSpoiler: spoiler, visibility } });
       setText(''); setNote(''); setPage(''); setSpoiler(false); setQuoteSent(true); await refetch();
@@ -85,15 +94,15 @@ export default function PrintedBookDetail({ book, comments, commentsLoading, cur
     <section className="printed-panel"><h2>Kitap hakkında</h2><p className="printed-description">{book.description}</p></section>
     {approved && user && !book.authorId && <ClaimForm book={book} refresh={refresh} />}
     {approved && <>
-      <section id="comments" className="printed-panel"><h2>Okur yorumları</h2>{user ? <form onSubmit={event => { event.preventDefault(); onCommentSubmit(); }}><MentionInput as={Textarea} label="Yorumunuz" name="printed-comment" value={commentText} onChange={onCommentChange} required maxLength={5000} disabled={commentSending} /><Button type="submit" isLoading={commentSending}>Yorum gönder</Button></form> : <p><Link className="ui-text-link" to="/login">Yorum yazmak için giriş yapın</Link></p>}{commentsLoading ? <p role="status">Yorumlar yükleniyor…</p> : <CommentList comments={comments} currentUserId={currentUserId} bookId={book.id} />}</section>
-      <section className="printed-panel"><h2>Kitaptan alıntılar</h2>{user ? <details className="printed-quote-form"><summary>Alıntı paylaş</summary><form onSubmit={shareQuote}>
+      <section id="comments" className="printed-panel"><h2>Okur yorumları</h2>{<form onSubmit={event => { event.preventDefault(); onCommentSubmit(); }}><MentionInput as={Textarea} label="Yorumunuz" name="printed-comment" value={commentText} onChange={onCommentChange} required maxLength={5000} disabled={commentSending} /><Button type="submit" isLoading={commentSending}>Yorum gönder</Button></form>}{commentsLoading ? <p role="status">Yorumlar yükleniyor…</p> : <CommentList comments={comments} currentUserId={currentUserId} bookId={book.id} />}</section>
+      <section className="printed-panel"><h2>Kitaptan alıntılar</h2>{<details open={restored ? true : undefined} className="printed-quote-form"><summary>Alıntı paylaş</summary><form onSubmit={shareQuote}>
         <Textarea label="Kısa alıntı" name="printed-quote" value={text} onChange={event => setText(event.target.value)} required minLength={10} maxLength={1000} disabled={quoting} />
         <Input label="Basılı kitaptaki sayfa numarası" name="printed-page-number" type="number" value={page} onChange={event => setPage(event.target.value)} required min={1} max={book.pageCount} disabled={quoting} />
         <MentionInput as={Textarea} label="Notunuz (isteğe bağlı)" name="printed-quote-note" value={note} onChange={event => setNote(event.target.value)} maxLength={1000} disabled={quoting} />
         <label className="printed-check"><input type="checkbox" checked={spoiler} onChange={event => setSpoiler(event.target.checked)} disabled={quoting} /> Spoiler içeriyor</label>
         <QuoteVisibility value={visibility} onChange={setVisibility} disabled={quoting} id="printed-quote-visibility" />
         <Button type="submit" isLoading={quoting}>{visibility === 'PRIVATE' ? 'Özel olarak kaydet' : 'Alıntıyı paylaş'}</Button>
-      </form></details> : <p><Link className="ui-text-link" to="/login">Alıntı paylaşmak için giriş yapın</Link></p>}
+      </form></details>}
       {quoteError && <p className="ui-notice ui-notice--error" role="alert">{quoteError}</p>}{quoteSent && <p className="ui-notice ui-notice--success" role="status">{visibility === 'PRIVATE' ? 'Alıntınız yalnızca sizin görebileceğiniz şekilde kaydedildi.' : 'Alıntınız paylaşıldı.'}</p>}
       {loading && <p role="status">Alıntılar yükleniyor…</p>}{error && <p className="ui-notice ui-notice--error" role="alert">Alıntılar yüklenemedi. {error.message}</p>}
       <div className="printed-quotes">{data?.getQuotesByBook?.map(item => <QuoteCard key={item.id} quote={item} />)}{!loading && !error && data?.getQuotesByBook?.length === 0 && <p>Bu kitaptan henüz bir alıntı paylaşılmadı.</p>}</div>

@@ -9,6 +9,7 @@ import { useAuth } from '../../context/AuthContext';
 import { GET_BOOKMARK } from '../../graphql/queries/bookmark';
 import { GET_READING_PROGRESS, SAVE_READING_PROGRESS } from '../../graphql/readingProgress';
 import { progressStorageKey } from '../../utils/readerProgress';
+import RegistrationPrompt from '../../components/Registration/RegistrationPrompt';
 
 jest.mock('@mui/icons-material', () => Object.fromEntries(['ArrowBack', 'Check', 'AutoStories', 'ChevronLeft', 'ChevronRight', 'MenuBook'].map(name => [name, () => null])));
 jest.mock('../../context/AuthContext', () => ({ useAuth: jest.fn() }));
@@ -33,8 +34,29 @@ const show = (path, options = {}) => render(<MockedProvider mocks={[
   { request: { query: GET_READING_PROGRESS, variables: { bookId: 'book' } }, delay: options.delay || 0, result: { data: { getReadingProgress: options.progress || null } } },
   { request: { query: SAVE_READING_PROGRESS }, variableMatcher: () => true, maxUsageCount: 20,
     result: variables => ({ data: { saveReadingProgress: { id: 'progress', lastChapterId: variables.chapterId, completedChapters: variables.completedChapterIds, isCompleted: false, lastReadAt: new Date().toISOString() } } }) },
-]} addTypename={false}><MemoryRouter initialEntries={[path]}><Routes><Route path="/book-reader/:bookId" element={<BookReader />} /><Route path="/kitap/:slug/bolum/:chapterSlug" element={<BookReader resolvedId="book" resolvedChapterId="second" />} /></Routes></MemoryRouter></MockedProvider>);
+]} addTypename={false}><MemoryRouter initialEntries={[path]}><RegistrationPrompt /><Routes><Route path="/book-reader/:bookId" element={<BookReader />} /><Route path="/kitap/:slug/oku" element={<BookReader resolvedId="book" />} /><Route path="/kitap/:slug/bolum/:chapterSlug" element={<BookReader resolvedId="book" resolvedChapterId="second" />} /></Routes></MemoryRouter></MockedProvider>);
 beforeEach(() => { window.innerWidth = 1440; window.scrollTo = jest.fn(); localStorage.clear(); useAuth.mockReturnValue({ user: null }); });
+
+const gatedBook = () => ({ ...book, chapters: book.chapters.map((chapter, index) => ({ ...chapter, content: index ? '' : chapter.content,
+  canReadContent: index === 0, accessStatus: index ? 'REGISTRATION_REQUIRED' : 'READABLE' })) });
+test('guest chapter navigation opens a dismissible registration prompt without leaving the first chapter', async () => {
+  show('/book-reader/book', { book: gatedBook() });
+  await screen.findByRole('heading', { name: 'İlk Bölüm' });
+  fireEvent.click(screen.getByRole('button', { name: 'Tamamla ve Devam Et' }));
+  expect(screen.getByRole('dialog', { name: 'Hikâyeye devam et' })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'Ücretsiz hesap oluştur' })).toHaveAttribute('href', expect.stringContaining('chapter%3Dsecond'));
+  fireEvent.keyDown(document, { key: 'Escape' });
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'İlk Bölüm' })).toBeInTheDocument();
+  expect(screen.queryByText('İkinci bölümün metni.')).not.toBeInTheDocument();
+});
+test('a direct locked chapter link shows an inline registration card and offers the open preview', async () => {
+  show('/book-reader/book?chapter=second', { book: gatedBook() });
+  expect(await screen.findByRole('heading', { name: 'Hikâyeye devam et' })).toBeInTheDocument();
+  expect(screen.queryByText('Yazar bu bölümün içeriğini gizledi.')).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'İlk açık bölümü oku' }));
+  expect(await screen.findByRole('heading', { name: 'İlk Bölüm' })).toBeInTheDocument();
+});
 
 test('mobile chapter navigation opens as a dialog, closes after selection and restores scrolling', async () => {
   window.innerWidth = 393;

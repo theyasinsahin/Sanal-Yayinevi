@@ -44,9 +44,9 @@ test('removing a read record resets the form and permits adding it again', async
   expect(screen.getByRole('combobox')).toHaveValue('');
 });
 
-test('guests see a login link without private queries or editing controls', () => {
+test('guests see a registration invitation without private queries or editing controls', () => {
   useAuth.mockReturnValue({ user: null }); show([]);
-  expect(screen.getByRole('link', { name: /giriş yapın/ })).toHaveAttribute('href', '/login');
+  expect(screen.getByRole('button', { name: 'Okuduklarıma ekle ve puan ver' })).toBeInTheDocument();
   expect(screen.queryByRole('form')).not.toBeInTheDocument();
 });
 

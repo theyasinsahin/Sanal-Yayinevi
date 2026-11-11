@@ -184,6 +184,12 @@ test('a claim grants no rights until admin approval; approval enables writing an
   const ownerBook = await Book.findById(book.id);
   expect(canEditBookContent(ownerBook, other)).toBe(true);
   expect(canEditBookContent(ownerBook, user)).toBe(false);
+  const visitorView = await apolloQuery(clientBookQuery, null, { id: book.id });
+  expect(visitorView.getBookById).toMatchObject({
+    authorId: other.id, author: { id: other.id, username: other.username, fullName: other.fullName }, canEditContent: false,
+  });
+  const authorView = await apolloQuery(clientBookQuery, other, { id: book.id });
+  expect(authorView.getBookById).toMatchObject({ authorId: other.id, author: { id: other.id }, canEditContent: true });
   const chapter = await chapters.Mutation.createChapter(null, { bookId: book.id, title: 'Önsöz', content: 'Yazar tarafından paylaşılan bölüm', pageCount: 1 }, context(other));
   expect(chapter.authorId.toString()).toBe(other.id);
   expect((await Book.findById(book.id)).pageCount).toBe(200);

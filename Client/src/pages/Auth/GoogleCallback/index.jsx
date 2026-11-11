@@ -5,6 +5,7 @@ import { consumeGoogleLoginNonce } from '../../../utils/googleLoginNonce';
 import { useAuth } from '../../../context/AuthContext';
 import { Typography } from '../../../components/UI/Typography';
 import { MainLayout } from '../../../components/Layout/MainLayout';
+import { finishRegistrationIntent } from '../../../utils/registrationIntent';
 
 // Backend (/auth/google/callback) doğrulamayı bitirdikten sonra bizi
 // buraya ?token=...&user=... ile yönlendirir. Bu sayfanın tek işi:
@@ -38,7 +39,7 @@ const GoogleCallback = () => {
       const userData = JSON.parse(userParam);
       if (typeof userData.id !== 'string' || !userData.id) throw new Error('Invalid session');
       login(token, userData.id, userData);
-      navigate('/profile', { replace: true });
+      navigate(finishRegistrationIntent({ userId: userData.id, isNewAccount: searchParams.get('newAccount') === 'true' }), { replace: true });
     } catch (err) {
       console.error('Google giriş yanıtı işlenemedi.');
       navigate('/login?error=google_auth_failed', { replace: true });

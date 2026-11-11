@@ -62,6 +62,8 @@
     "ws": "^8.20.0"
   },
   "engines": {
-    "node": ">=22.15.0"
-  }
+    "node": "26.x",
+    "npm": "11.x"
+  },
+  "packageManager": "npm@11.13.0"
 }

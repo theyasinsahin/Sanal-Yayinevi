@@ -1,7 +1,9 @@
 # Sunucuyu başlatma ve bağlantı kontrolü
 
-Proje en az Node.js 22.15.0 ister. `node --version` ile kullanılan sürümü
-kontrol edin. Node.js güncellendikten sonra terminali yeniden açın.
+Proje Node.js **26.x** ve npm **11.x** kullanır. Yerel hedef sürümler
+**Node.js 26.13.0 / npm 11.13.0** olarak ayarlanmıştır. `node --version` ve
+`npm.cmd --version` ile kullanılan sürümleri kontrol edin. Node.js
+güncellendikten sonra terminali yeniden açın.
 
 Proje ana klasöründe (`Betik`) komutlar:
 
@@ -56,7 +58,7 @@ kodu 1 olur; bütün kritik kontroller başarılıysa 0 olur.
 
 | Sonuç | Yapılacak işlem |
 | --- | --- |
-| `NODE_VERSION` | Node.js sürümünü proje gereksinimine yükseltin. |
+| `NODE_VERSION` | `.node-version` dosyasındaki Node.js 26.13.0 sürümünü kullanın. |
 | `STARTUP_CONFIG_INVALID` | Mesajdaki eksik/değersiz ortam değişkenlerini düzeltin. |
 | `PORT_IN_USE` | İlgili servisi durdurun veya portu değiştirin; değişirse istemci API/WS adreslerini de güncelleyin. |
 | `MONGO_URI_INVALID` | Bağlantı adresinin biçimini ve seçeneklerini kontrol edin. |
@@ -83,3 +85,51 @@ proje ana klasöründe `npm.cmd --prefix Server run sandbox:print` kullanılabil
 Bu ortamın verileri geçicidir. Yalnız HTTP akışını doğrulamak için
 `npm.cmd --prefix Server run sandbox:print:verify` çalıştırın; normal `.env`
 ve üretim veritabanı kullanılmaz.
+
+## Render dağıtımı
+
+Render servisi için **Root Directory** `Server`, **Build Command** `npm ci`,
+**Start Command** `npm start` olmalı. `.node-version` dosyaları hem depo kökünde
+hem `Server` klasöründe Node.js **26.13.0** sürümünü seçer. Render Environment
+içinde ayrıca `NODE_VERSION` tanımlıysa bu değer dosyalardan önceliklidir;
+onu da `26.13.0` yapın veya dosyadaki seçimin kullanılması için kaldırın.
+`package.json` içindeki `engines.node: "26.x"`, sonraki ana sürümlere
+kendiliğinden geçilmesini önler. npm hedefi `packageManager: "npm@11.13.0"`,
+uyumlu npm ana sürümü `engines.npm: "11.x"` olarak belirtilmiştir.
+
+İstemcide de aynı Node.js/npm hedefleri kullanılır. Vercel, istemcinin
+`engines.node: "26.x"` değerine göre Node.js 26 serisini seçebilir;
+Vercel'de alt/yama sürümleri platform tarafından yönetildiğinden yereldeki
+26.13.0 ile birebir aynı yama sürümü garanti edilmez.
+Bkz. [Vercel Node.js sürümleri](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions).
+
+`MONGO_AUTH_FAILED` ile kapanıyorsa şu sırayı izleyin:
+
+1. Render servisinin **Environment** bölümünde `MONGO_URI` değerini güncelleyin.
+   Yerelde bağlantısı doğrulanmış `Server/.env` içindeki bağlantı adresini,
+   değişken adı ve dış tırnaklar olmadan Value alanına koyun. Yerel `.env`
+   dosyasını değiştirmek veya Git'e push yapmak Render Environment değerini
+   değiştirmez. Render değişkeni varsa `.env.prod` dosyasından da önceliklidir.
+2. Atlas kullanıyorsanız bağlantının doğru cluster'a ve **Database Access**
+   kullanıcısına ait olduğunu doğrulayın. Atlas web hesabı parolasını kullanmayın.
+   URI parolasındaki özel karakterler bir kez URL kodlanmış olmalı;
+   `authSource` kullanıcının tanımlı olduğu veritabanıyla eşleşmeli. Atlas SCRAM
+   veritabanı kullanıcılarında bu genellikle `admin` olur.
+3. Diğer zorunlu Render değişkenlerini koruyun: `NODE_ENV=production`, mevcut
+   `JWT_SECRET` ve HTTPS frontend origin'ini içeren `CLIENT_URL`. Ortam dosyalarını
+   veya gerçek bağlantı adreslerini Git'e eklemeyin.
+4. Yalnız ortam değişkenlerini değiştirdiyseniz **Save and deploy** kullanın.
+   Node sürüm dosyaları gibi kaynak değişiklikleri için commit'i push ettikten
+   sonra yeni build/deploy başlatın. **Save only** değişikliği çalışan servise
+   uygulamaz.
+5. Logda önce `MongoDB bağlantısı başarılı.`, sonra `Server hazır` mesajını
+   kontrol edin. HTTP sağlık sorgusunu Render servis adresinde çalıştırın.
+
+Veritabanı doğrulaması tamamlanmadan uygulama HTTP portunu açmaz. Bu nedenle
+kimlik doğrulama hatasının ardından görülen `No open ports detected` mesajı
+ikincil sonuçtur. Uygulama zaten Render'ın `PORT` değişkenini kullanır; bu hatayı
+gidermek için rastgele bir port tanımlamak gerekmez.
+
+Kaynaklar: [Render Node sürümü](https://render.com/docs/node-version),
+[Render ortam değişkenleri](https://render.com/docs/configure-environment-variables),
+[Atlas bağlantı sorunları](https://www.mongodb.com/docs/atlas/troubleshoot-connection/).

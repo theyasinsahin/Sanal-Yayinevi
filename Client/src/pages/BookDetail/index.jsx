@@ -45,14 +45,19 @@ import PrintedBookDetail from '../../components/Books/PrintedBookDetail';
 import BookShareButton from '../../components/Books/BookShareButton';
 
 import './BookDetail.css';
+import { useRegistration, useRestoredRegistration } from '../../hooks/useRegistration';
 
 const BookDetailPage = ({ resolvedId } = {}) => {
   const params = useParams();
   const id = resolvedId || params.id;
   const navigate = useNavigate();
-  const { hash } = useLocation();
+  const { hash, pathname } = useLocation();
   const { user } = useAuth();
   const currentUserId = user?.id;
+  const requestRegistration = useRegistration();
+  const restoredComment = useRestoredRegistration('comment', { bookId: id });
+  const restoredSave = useRestoredRegistration('save', { bookId: id });
+  const restoredLike = useRestoredRegistration('like', { bookId: id });
   const [commentText, setCommentText] = useState("");
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
 
@@ -67,6 +72,7 @@ const BookDetailPage = ({ resolvedId } = {}) => {
     setOptimisticLikeCount(null);
     setCommentText('');
   }, [currentUserId]);
+  useEffect(() => { if (restoredComment) setCommentText(restoredComment.draft || ''); }, [restoredComment]);
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -86,6 +92,9 @@ const BookDetailPage = ({ resolvedId } = {}) => {
   });
 
   const book = bookData ? bookData.getBookById : null;
+  useEffect(() => {
+    if (restoredSave || restoredLike) document.getElementById(restoredSave ? 'book-save' : 'book-like')?.focus();
+  }, [restoredSave, restoredLike, book]);
   const hasContent = book?.chapters?.some(chapter => chapter.wordCount > 0);
   useEffect(() => {
     if (book && hash === '#comments') document.getElementById('comments')?.scrollIntoView?.({ block: 'start' });
@@ -155,7 +164,7 @@ const BookDetailPage = ({ resolvedId } = {}) => {
   };
 
   const handleLike = async () => {
-    if (!currentUserId) return showToast("Giriş yapmalısınız", 'warning');
+    if (!currentUserId) return requestRegistration({ action: 'like', bookId: id });
     const currentlyLiked = optimisticLiked !== null ? optimisticLiked : isLikedFromServer;
     const currentCount = optimisticLikeCount !== null ? optimisticLikeCount : (book.stats?.likes || 0);
     setOptimisticLiked(!currentlyLiked);
@@ -170,7 +179,7 @@ const BookDetailPage = ({ resolvedId } = {}) => {
   };
 
   const handleSave = async () => {
-    if (!currentUserId) return showToast("Giriş yapmalısınız", 'warning');
+    if (!currentUserId) return requestRegistration({ action: 'save', bookId: id });
     const currentlySaved = optimisticSaved !== null ? optimisticSaved : isSavedFromServer;
     setOptimisticSaved(!currentlySaved);
     showToast(!currentlySaved ? 'Kitaplığına eklendi' : 'Kitaplıktan çıkarıldı', 'success');
@@ -186,7 +195,7 @@ const BookDetailPage = ({ resolvedId } = {}) => {
   };
 
   const handleCommentSubmit = async () => {
-    if (!currentUserId) return showToast("Giriş yapmalısınız", 'warning');
+    if (!currentUserId) return requestRegistration({ action: 'comment', bookId: id, draft: commentText, returnTo: `${pathname}#comments` });
     if (!commentText.trim()) return; 
     try {
         await createComment({ 
@@ -384,13 +393,13 @@ const BookDetailPage = ({ resolvedId } = {}) => {
                 <div className="secondary-actions">
                    <Button 
                      variant="ghost" 
-                     onClick={handleLike} 
+                     id="book-like" onClick={handleLike}
                      className={isLiked ? 'text-pink-600' : ''}
                      icon={isLiked ? <Favorite /> : <FavoriteBorder />}
                    />
                    <Button 
                      variant="ghost" 
-                     onClick={handleSave} 
+                     id="book-save" onClick={handleSave}
                      className={isSaved ? 'text-blue-600' : ''}
                      icon={isSaved ? <Bookmark /> : <BookmarkBorder />}
                    />

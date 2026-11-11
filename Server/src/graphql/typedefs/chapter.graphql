@@ -28,7 +28,10 @@ extend type Mutation {
   deleteChapter(id: ID!): Status!
 }
 
+enum ChapterAccessStatus { READABLE REGISTRATION_REQUIRED HIDDEN UNAVAILABLE }
+
 type Chapter {
+  accessStatus: ChapterAccessStatus!
   id: ID!
   bookId: ID!
   authorId: ID!

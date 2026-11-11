@@ -8,12 +8,11 @@ import { printSystemEnabled, iyzicoSandboxConfigured } from '../services/print/p
 // Read-only DB diagnostics: a separate connection has no attached models,
 // indexes, seed data or provider calls. A TCP listener briefly probes the port.
 const manifest = JSON.parse(await readFile(new URL('../../package.json', import.meta.url), 'utf8'));
-const minimum = manifest.engines.node.replace(/^>=/, '').split('.').map(Number);
-const current = process.versions.node.split('.').map(Number);
-const supported = current[0] > minimum[0] || current[0] === minimum[0] && (current[1] > minimum[1] || current[1] === minimum[1] && current[2] >= minimum[2]);
+// engines.node selects a major series; .node-version pins the local patch.
+const supported = process.versions.node.split('.')[0] === manifest.engines.node.split('.')[0];
 function fail(code, message) { console.error(`[${code}] ${message}`); process.exitCode = 1; }
 if (supported) console.log(`[OK] Node.js ${process.versions.node}`);
-else fail('NODE_VERSION', `Node.js ${process.versions.node}; proje ${manifest.engines.node} gerektiriyor. Node.js sürümünü güncelleyin.`);
+else fail('NODE_VERSION', `Node.js ${process.versions.node}; proje ${manifest.engines.node} gerektiriyor. .node-version dosyasındaki sürümü kullanın.`);
 
 try {
   const { port } = validateServerEnvironment();

@@ -25,6 +25,7 @@ import './QuoteCard.css';
 import ShareModal from '../../Messaging/ShareModal';
 import SocialShareDialog from '../../Sharing/SocialShareDialog';
 import { IosShare } from '@mui/icons-material';
+import { useRegistration, useRestoredRegistration } from '../../../hooks/useRegistration';
 
 // useAuth zaten import edilmiş, değişiklik yok
 
@@ -36,6 +37,10 @@ function CommentContent({ comment }) {
 const QuoteCard = ({ quote, showBookSource = true }) => {
   const { hash, pathname } = useLocation();
   const { user } = useAuth();
+  const requestRegistration = useRegistration();
+  const restoredComment = useRestoredRegistration('quote-comment', { quoteId: quote.id });
+  const restoredRepost = useRestoredRegistration('repost', { quoteId: quote.id });
+  useRestoredRegistration('like', { quoteId: quote.id });
   const isPrivate = quote.visibility === 'PRIVATE' || quote.originalQuote?.visibility === 'PRIVATE';
 
   // --- Like state ---
@@ -57,6 +62,8 @@ const QuoteCard = ({ quote, showBookSource = true }) => {
     if (pathname === `/quotes/${quote.id}` && hash.startsWith('#quote-comment-')) setShowComments(true);
   }, [hash, pathname, quote.id]);
   const [commentText, setCommentText] = useState('');
+  useEffect(() => { if (restoredComment) { setCommentText(restoredComment.draft || ''); setShowComments(true); } }, [restoredComment]);
+  useEffect(() => { if (restoredRepost) { setRepostComment(restoredRepost.draft || ''); setShowRepostInput(true); } }, [restoredRepost]);
 
   const [shareOpen, setShareOpen] = useState(false);
   const [messageOpen, setMessageOpen] = useState(false);
@@ -89,7 +96,7 @@ const QuoteCard = ({ quote, showBookSource = true }) => {
 
   // --- Handlers ---
   const handleLike = async () => {
-    if (!user) return;
+    if (!user) return requestRegistration({ action: 'like', quoteId: quote.id, returnTo: `/quotes/${quote.id}` });
     const currentLiked = optimisticLiked !== null ? optimisticLiked : isLikedFromServer;
     const currentCount = optimisticCount !== null ? optimisticCount : (quote.likedBy?.length || 0);
     setOptimisticLiked(!currentLiked);
@@ -103,7 +110,7 @@ const QuoteCard = ({ quote, showBookSource = true }) => {
   };
 
   const handleRepost = async () => {
-    if (!user) return;
+    if (!user) return requestRegistration({ action: 'repost', quoteId: quote.id, draft: repostComment, returnTo: `/quotes/${quote.id}` });
 
     const originalId = quote.isRepost ? quote.originalQuote?.id : quote.id;
 
@@ -141,6 +148,7 @@ const QuoteCard = ({ quote, showBookSource = true }) => {
   };
 
   const handleAddComment = async () => {
+    if (!user) return requestRegistration({ action: 'quote-comment', quoteId: quote.id, draft: commentText, returnTo: `/quotes/${quote.id}` });
     if (!commentText.trim() || !user) return;
     try {
       await addComment({ variables: { quoteId: quote.id, content: commentText.trim() } });
@@ -344,7 +352,7 @@ const QuoteCard = ({ quote, showBookSource = true }) => {
         <div className="quote-card-comments">
           
           {/* Yorum input */}
-          {user && (
+          {(
             <div className="quote-card-comment-input">
               <MentionInput as="input"
                 placeholder="Yorum yaz..."

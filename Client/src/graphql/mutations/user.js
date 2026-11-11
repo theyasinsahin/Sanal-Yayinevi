@@ -46,6 +46,14 @@ export const REGISTER = gql`
   }
 `;
 
+export const REGISTER_AND_LOGIN = gql`
+  mutation RegisterAndLogin($username: String!, $fullName: String!, $email: String!, $password: String!, $code: String!) {
+    registerAndLogin(username: $username, fullName: $fullName, email: $email, password: $password, code: $code) {
+      code message token user { id username fullName email role }
+    }
+  }
+`;
+
 export const LOGIN = gql`
   mutation Login($email: String!, $password: String!) {
     login(email: $email, password: $password) {

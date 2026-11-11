@@ -4,7 +4,7 @@ const user = { id: 'reader', username: 'okur', fullName: 'Test Okur', email: 're
 const chapters = ['Birinci', 'İkinci', 'Üçüncü'].map((name, index) => ({
   __typename: 'Chapter', id: `chapter-${index}`, title: `${name} bölüm`,
   content: `<p>${name} bölümde anlatılan bu hikâye, okurların beğendiği satırları seçerek saklayabilmesini anlatır. Bir kelimeye basılı tutup seçimi genişleterek alıntı kaydedebilirsiniz.</p>`,
-  pageCount: 1, wordCount: 30, isHidden: false, canReadContent: true,
+  pageCount: 1, wordCount: 30, isHidden: false, canReadContent: true, accessStatus: 'READABLE',
 }));
 const book = {
   __typename: 'Book', id: 'book', publicPath: '/kitap/test-kitabi', title: 'Bir Okuma Yolculuğu',
@@ -13,9 +13,9 @@ const book = {
   format: null, genres: [], classificationTags: [], narrativeFeatures: [], targetAudience: null, contentWarnings: [], classificationStatus: 'COMPLETE', chapters,
 };
 
-async function mockReader(page, { draft = false, username = user.username, paragraphMention = false } = {}) {
+async function mockReader(page, { draft = false, username = user.username, paragraphMention = false, guest = false } = {}) {
   const sessionUser = { ...user, ...(draft ? { id: 'author' } : {}), username };
-  await page.addInitScript(user => {
+  if (!guest) await page.addInitScript(user => {
     localStorage.setItem('token', `fixture.${btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 3600 }))}.fixture`);
     localStorage.setItem('user', JSON.stringify(user)); localStorage.setItem('userId', user.id);
   }, sessionUser);
@@ -37,16 +37,27 @@ async function mockReader(page, { draft = false, username = user.username, parag
     if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
     const payload = request.postDataJSON(), variables = payload.variables || {};
     const operation = payload.operationName || payload.query.match(/(?:mutation|query)\s+(\w+)/)?.[1];
+    const authenticated = !guest || Boolean(request.headers().authorization);
+    const accessibleChapters = currentBook.chapters.map((chapter, index) => ({ ...chapter,
+      accessStatus: authenticated || !index ? 'READABLE' : 'REGISTRATION_REQUIRED',
+      canReadContent: authenticated || !index,
+      content: authenticated || !index ? chapter.content : '',
+    }));
+    const readerBook = { ...currentBook, chapters: accessibleChapters };
+    const registrationToken = `fixture.${btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 3600 }))}.fixture`;
+    const resolvedChapter = variables.chapter || (paragraphMention ? 'chapter-1' : null);
     const responses = {
-      Me: { me: { __typename: 'User', ...sessionUser } },
-      ResolvePublicRoute: { resolvePublicRoute: { __typename: 'PublicRoute', id: 'book', path: paragraphMention ? '/kitap/test-kitabi/bolum/ikinci-bolum' : '/kitap/test-kitabi', chapterId: paragraphMention ? 'chapter-1' : null } },
-      GetBookReaderData: { getBookById: currentBook },
+      Me: { me: authenticated ? { __typename: 'User', ...sessionUser } : null },
+      ResolvePublicRoute: { resolvePublicRoute: { __typename: 'PublicRoute', id: 'book', path: resolvedChapter ? '/kitap/test-kitabi/bolum/ikinci-bolum' : '/kitap/test-kitabi', chapterId: resolvedChapter ? 'chapter-1' : null } },
+      GetBookReaderData: { getBookById: readerBook },
       GetBookDetail: { getBookById: currentBook }, GetBookById: { getBookById: currentBook },
       GetBookViewer: { getUserById: { __typename: 'User', ...sessionUser, savedBooks: [] } },
       GetCommentsByBookId: { getCommentsByBookId: [] }, IsFollowingBook: { isFollowingBook: false },
       PrintOverview: { printPaymentMode: 'DISABLED', printOverview: null },
       GetCommunityConfig: { getCommunityConfig: { email: '', phone: '', socials: {} } },
-      GetReadingChapter: { getReadingChapter: chapters.find(chapter => chapter.id === variables.chapterId) },
+      GetReadingChapter: { getReadingChapter: accessibleChapters.find(chapter => chapter.id === variables.chapterId) },
+      SendRegistrationCode: { sendRegistrationCode: { __typename: 'Status', code: 200, message: 'Kod gönderildi.' } },
+      RegisterAndLogin: { registerAndLogin: { __typename: 'RegistrationPayload', code: 200, message: 'Kayıt tamamlandı.', token: registrationToken, user: { __typename: 'User', ...sessionUser } } },
       IncrementBookViews: { incrementBookViews: { __typename: 'Book', id: 'book', publicPath: book.publicPath, stats: { __typename: 'BookStats', views: 1 } } },
       GetBookmark: { getBookmark: null }, GetReadingProgress: { getReadingProgress: null },
       SaveReadingProgress: { saveReadingProgress: { id: 'progress', lastChapterId: variables.chapterId, completedChapters: variables.completedChapterIds, isCompleted: false, lastReadAt: new Date().toISOString() } },
@@ -71,6 +82,42 @@ async function mockReader(page, { draft = false, username = user.username, parag
   });
   return { quotes, unexpected };
 }
+
+test('guest chapter navigation can be dismissed without changing the current chapter', async ({ page }) => {
+  const app = await mockReader(page, { guest: true });
+  await page.goto('/book-reader/book');
+  await expect(page.getByRole('heading', { name: 'Birinci bölüm', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Tamamla ve Devam Et' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Hikâyeye devam et' });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('link', { name: 'Ücretsiz hesap oluştur' })).toBeFocused();
+  await dialog.getByRole('button', { name: 'Şimdilik geri dön' }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Birinci bölüm', exact: true })).toBeVisible();
+  expect(app.unexpected).toEqual([]);
+});
+
+test('a direct locked chapter returns to that chapter after verified registration and automatic login', async ({ page }) => {
+  const app = await mockReader(page, { guest: true });
+  await page.goto('/book-reader/book?chapter=chapter-1');
+  await expect(page.getByRole('heading', { name: 'Hikâyeye devam et' })).toBeVisible();
+  await expect(page.locator('.paragraph-renderer')).toHaveCount(0);
+  await page.getByRole('link', { name: 'Ücretsiz hesap oluştur' }).click();
+  await expect(page).toHaveURL(/\/register\?returnTo=/);
+  await page.getByLabel('Tam Adınız').fill('Test Okur');
+  await page.getByLabel('Kullanıcı Adı').fill('okur');
+  await page.getByLabel(/^E-Posta/).fill('reader@example.test');
+  await page.getByLabel(/^Şifre/).fill('Correct!123');
+  await page.getByRole('checkbox', { name: /Kullanım Koşulları/ }).check();
+  await page.getByRole('button', { name: 'Doğrulama Kodu Gönder' }).click();
+  await page.getByLabel(/^Doğrulama Kodu/).fill('123456');
+  await page.getByRole('button', { name: 'Kayıt İşlemini Tamamla' }).click();
+  await expect(page).toHaveURL(/\/kitap\/test-kitabi\/oku\?chapter=chapter-1/);
+  await expect(page.getByRole('heading', { name: 'İkinci bölüm', exact: true })).toBeVisible();
+  await expect(page.locator('.paragraph-renderer')).toContainText('İkinci bölümde anlatılan');
+  await expect(page.getByRole('heading', { name: 'Hikâyeye devam et' })).toHaveCount(0);
+  expect(app.unexpected).toEqual([]);
+});
 
 test('paragraph mention links open the correct chapter, expand its comments and focus the tagged comment', async ({ page }) => {
   const app = await mockReader(page, { paragraphMention: true });
