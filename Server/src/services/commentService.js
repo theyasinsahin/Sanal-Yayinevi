@@ -1,5 +1,5 @@
 import { notifyUser } from './notificationService.js';
-import { notifyMentions } from './mentionService.js';
+import { mentionedUsernames, notifyMentions } from './mentionService.js';
 import { canReadBook } from '../utils/bookAccess.js';
 import { inactiveUserIds } from '../utils/activeUsers.js';
 import Comment from '../models/comment.js';
@@ -76,18 +76,17 @@ export const toggleLike = async (commentId, userId) => {
 // REPLY OLUŞTURMA
 export const createReply = async (user, bookId, content, parentCommentId) => {
   if (!await Book.exists({ ...visiblePrintedFilter, _id: bookId, isDeleted: false })) throw new Error('Kitap bulunamadı veya henüz yayımlanmadı.');
-  const targetComment = await Comment.findOne({ _id: parentCommentId, isDeleted: false }).populate('userId');
+  const targetComment = await Comment.findOne({ _id: parentCommentId, isDeleted: false }).populate('userId', 'username isDeleted isActive');
   if (!targetComment) throw new Error("Hedef yorum bulunamadı.");
   if (String(targetComment.bookId) !== String(bookId)) throw new Error('Yorum bu kitaba ait değil.');
 
-  // Eğer hedef zaten bir yanıtsa, onun ana yorumunu (root) bul
-  let rootCommentId = parentCommentId;
-  let finalContent = content;
-
-  if (targetComment.parentId) {
-    rootCommentId = targetComment.parentId;
-    finalContent = `@${targetComment.userId.username} ${content}`;
-  }
+  // Keep the flattened reply tree, but mention the actual target's author.
+  const rootCommentId = targetComment.parentId || parentCommentId;
+  const recipient = targetComment.userId;
+  const username = recipient && !recipient.isDeleted && recipient.isActive !== false ? recipient.username : null;
+  const text = content.trim();
+  if (!text || (username && text === `@${username}`)) throw new Error('Yanıt metni boş olamaz.');
+  const finalContent = username && !mentionedUsernames(text).includes(username) ? `@${username} ${text}` : text;
 
   const newReply = new Comment({
     userId: user._id,

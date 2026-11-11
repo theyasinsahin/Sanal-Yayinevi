@@ -1,6 +1,6 @@
 import * as ChapterService from '../../services/chapterService.js';
 import { getLoaders } from '../loaders.js';
-import { canReadChapter } from '../../utils/chapterAccess.js';
+import { chapterAccessStatus, registrationGateEnabled } from '../../utils/chapterAccess.js';
 import { chapterWordCount } from '../../utils/chapterLength.js';
 import * as BookService from '../../services/bookService.js';
 import * as BookFollowService from '../../services/bookFollowService.js';
@@ -103,6 +103,7 @@ export default {
   // FIELD RESOLVERS
   Chapter: {
     isHidden: chapter => chapter.isHidden === true,
+    accessStatus: chapterStatus,
     canReadContent: chapterReadable,
     content: async (chapter, args, context) => await chapterReadable(chapter, args, context) ? cleanRichText(chapter.content) : '',
     wordCount: chapter => Number.isInteger(chapter.wordCount) ? chapter.wordCount : typeof chapter.content === 'string' ? chapterWordCount(chapter.content) : null,
@@ -110,7 +111,13 @@ export default {
 };
 
 async function chapterReadable(chapter, _, context) {
+  return await chapterStatus(chapter, _, context) === 'READABLE';
+}
+
+async function chapterStatus(chapter, _, context) {
   const loaders = getLoaders(context);
-  const [book, inactive] = await Promise.all([loaders.books.load(chapter.bookId), loaders.inactiveIds()]);
-  return canReadChapter(chapter, book, context.user) && !inactive.some(id => String(id) === String(book?.authorId) || String(id) === String(chapter.authorId));
+  const [book, inactive, first] = await Promise.all([loaders.books.load(chapter.bookId), loaders.inactiveIds(),
+    !context.user && registrationGateEnabled() ? loaders.firstOpenChapters.load(chapter.bookId) : null]);
+  if (inactive.some(id => String(id) === String(book?.authorId) || String(id) === String(chapter.authorId))) return 'UNAVAILABLE';
+  return chapterAccessStatus(chapter, book, context.user, first);
 }

@@ -310,6 +310,7 @@ export const authenticateWithGoogleCredential = async (idToken, { requireNonce =
     if (user && (user.googleSubject && user.googleSubject !== payload.sub || !email.endsWith('@gmail.com') && !payload.hd)) throw new Error('Bu hesaba mevcut parolanızla giriş yapın; Google bağlantısı ayrıca doğrulanmalıdır.');
   }
 
+  let isNewAccount = false;
   if (!user) {
     // Silinmiş bir hesapla aynı e-posta varsa net bir hata ver
     const deletedUser = await User.findOne({ email, isDeleted: true });
@@ -328,6 +329,7 @@ export const authenticateWithGoogleCredential = async (idToken, { requireNonce =
       profilePicture: highResPicture
     });
     await user.save();
+    isNewAccount = true;
   }
 
   if (user.loginBlocked) throw new Error('Giriş bilgileri geçersiz.');
@@ -338,7 +340,7 @@ export const authenticateWithGoogleCredential = async (idToken, { requireNonce =
   // 5. Kendi JWT token'ını üret
   const authToken = jwt.sign({ userId: user._id, version: user.authVersion ?? 0 }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
-  return { token: authToken, user, loginNonce: payload.nonce };
+  return { token: authToken, user, loginNonce: payload.nonce, isNewAccount };
 };
 
 // GraphQL mutation — mevcut popup akışını kullanan istemciler için korunuyor
@@ -407,7 +409,7 @@ export const sendRegistrationCode = async (email, username) => {
 };
 
 // 2. ADIM: ASIL KAYIT (REGISTER)
-export const registerUser = async ({ username, fullName, email, password, code }) => {
+export const registerUser = async ({ username, fullName, email, password, code }, { startSession = false } = {}) => {
   email = normalizeEmail(email); checkUsername(username);
   if (typeof fullName !== 'string' || fullName.trim().length < 2 || fullName.length > 120) throw new Error('Ad soyad 2–120 karakter olmalı.');
   const passwordError = validatePassword(password);
@@ -427,6 +429,14 @@ export const registerUser = async ({ username, fullName, email, password, code }
   const user = new User({ username, fullName: fullName.trim(), email, password: hashedPassword, isVerified: true });
   await user.save();
 
+  if (startSession) {
+    try {
+      const token = jwt.sign({ userId: user._id, version: user.authVersion ?? 0 }, process.env.JWT_SECRET, { expiresIn: '1d' });
+      return { code: 200, message: 'Kayıt başarıyla tamamlandı.', token, user };
+    } catch {
+      return { code: 200, message: 'Hesabınız oluşturuldu. Devam etmek için giriş yapın.', token: null, user: null };
+    }
+  }
   return { code: 200, message: 'Kayıt başarıyla tamamlandı.' };
 };
 

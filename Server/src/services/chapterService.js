@@ -17,15 +17,15 @@ export const findChapterById = async (id, { includeDeleted = false } = {}) => {
 
 export const findChaptersByBookId = async (bookId) => {
   // Bölüm numarasına veya oluşturulma tarihine göre sıralamak mantıklıdır
-  return await Chapter.find({ bookId, isDeleted: false, authorId: { $nin: await inactiveUserIds() } }).sort({ createdAt: 1 });
+  return await Chapter.find({ bookId, isDeleted: false, authorId: { $nin: await inactiveUserIds() } }).sort({ createdAt: 1, _id: 1 });
 };
 
 export const findChaptersByAuthorId = async (authorId) => {
-  return await Chapter.find({ authorId, isDeleted: false });
+  return await Chapter.find({ authorId, isDeleted: false }).sort({ createdAt: 1, _id: 1 });
 };
 
 export const findAllChapters = async (options = {}) => {
-  return await paginate(Chapter.find({ isDeleted: false, authorId: { $nin: await inactiveUserIds() } }).sort({ _id: 1 }), options);
+  return await paginate(Chapter.find({ isDeleted: false, authorId: { $nin: await inactiveUserIds() } }).sort({ createdAt: 1, _id: 1 }), options);
 };
 
 // Helper: Kitabın toplam sayfa sayısını güncelle (silinmemiş bölümler üzerinden)

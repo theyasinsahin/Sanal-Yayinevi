@@ -33,7 +33,7 @@ router.post('/callback', async (req, res) => {
     if (cookies.length !== 1 || typeof csrf !== 'string' || csrf.length < 16 || csrf.length > 512 || Buffer.byteLength(cookies[0]) !== Buffer.byteLength(csrf) || !timingSafeEqual(Buffer.from(cookies[0]), Buffer.from(csrf))) return res.status(403).json({ error: 'GOOGLE_CSRF_FAILED' });
     if (typeof credential !== 'string' || credential.length > 8192) return res.status(400).json({ error: 'BAD_REQUEST' });
     await consumeRate('google-callback', req.ip || req.socket.remoteAddress, 20, 15 * 60000);
-    const { token, user, loginNonce } = await UserService.authenticateWithGoogleCredential(credential, { requireNonce: true });
+    const { token, user, loginNonce, isNewAccount } = await UserService.authenticateWithGoogleCredential(credential, { requireNonce: true });
 
     // Frontend'e göndereceğimiz kullanıcı verisini daralt (parola vb. hassas alanlar hariç)
     const userPayload = {
@@ -50,7 +50,7 @@ router.post('/callback', async (req, res) => {
 
     // Frontend'deki /auth/callback route'una yönlendir; o sayfa
     // token'ı okuyup AuthContext.login() ile localStorage'a yazacak.
-    return res.redirect(`${clientUrl}/auth/callback#token=${encodeURIComponent(token)}&user=${encodedUser}&nonce=${encodeURIComponent(loginNonce)}`);
+    return res.redirect(`${clientUrl}/auth/callback#token=${encodeURIComponent(token)}&user=${encodedUser}&nonce=${encodeURIComponent(loginNonce)}&newAccount=${isNewAccount === true}`);
   } catch (err) {
     console.error('GOOGLE_CALLBACK_FAILED');
     return res.redirect(`${clientUrl}/login?error=google_auth_failed`);

@@ -37,6 +37,7 @@ const policies = {
   startPrintCheckout: [15, 60000], runPrintMaintenance: [2, 60000],
 };
 export async function limitOperation(context, name, args, mutation) {
+  if (name === 'registerAndLogin') name = 'register';
   const req = context.req || context.socketRequest;
   if (!req) return; // In-process service calls have no remote caller.
   const ip = req.ip || req.socket?.remoteAddress || 'unknown';

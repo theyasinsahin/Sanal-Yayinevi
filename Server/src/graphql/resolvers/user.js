@@ -88,6 +88,15 @@ export default {
         }
     },
 
+    registerAndLogin: async (_, args) => {
+        try {
+            return await UserService.registerUser(args, { startSession: true });
+        } catch (e) {
+            console.error('REGISTRATION_FAILED');
+            return { code: 400, message: accountMessage(e), token: null, user: null };
+        }
+    },
+
     register: async (_, args) => {
         try {
             return await UserService.registerUser(args);
