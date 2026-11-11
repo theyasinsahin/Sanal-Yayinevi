@@ -1,6 +1,7 @@
 import PublicContentRoute from './components/Route/PublicContentRoute';
 import ScoreUpdates from './components/Score/ScoreUpdates';
 import React, { lazy } from 'react';
+import { GOOGLE_CLIENT_ID } from './config/integrations';
 import PageBoundary from './components/Route/PageBoundary';
 import {
   ApolloClient,
@@ -240,9 +241,15 @@ const router = createBrowserRouter([
   }
 ]);
 
+function OptionalGoogleProvider({ children }) {
+  return GOOGLE_CLIENT_ID
+    ? <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>{children}</GoogleOAuthProvider>
+    : <>{children}</>;
+}
+
 function App() {
   return (
-    <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || "620840983651-ue12o2dcdbr9o7iv0dkmhj4ed6vstno4.apps.googleusercontent.com"}>
+    <OptionalGoogleProvider>
       <ApolloProvider client={client}>
         <AuthProvider>
           <ReadingPreferencesProvider>
@@ -254,7 +261,7 @@ function App() {
           </ReadingPreferencesProvider>
         </AuthProvider>
       </ApolloProvider>
-    </GoogleOAuthProvider>
+    </OptionalGoogleProvider>
   );
 }
 

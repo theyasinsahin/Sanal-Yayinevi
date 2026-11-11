@@ -28,5 +28,8 @@ todolist.txt
 AGENT.md
 
 .catalog-research/
+artifacts/
+Server/.eslintcache
+Client/.eslintcache
 Server/printed-catalog-report-*.json
 Server/printed-editorial-report-*.json

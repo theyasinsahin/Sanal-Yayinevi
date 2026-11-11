@@ -24,6 +24,7 @@ import { Button } from '../../../components/UI/Button';
 import { Input } from '../../../components/UI/Input';
 import { Container } from '../../../components/UI/Container';
 import { GoogleLogin } from '@react-oauth/google';
+import { GOOGLE_LOGIN_ENABLED } from '../../../config/integrations';
 
 import '../AuthPages.css';
 import { MainLayout } from '../../../components/Layout/MainLayout';
@@ -193,7 +194,7 @@ const RegisterPage = () => {
                     Artık form-row SADECE gerçekten yan yana olması gereken
                     iki input'u sarmalıyor; Google butonu ve ayırıcı kendi
                     tam genişlikte satırlarında. */}
-                <div className="google-auth-wrapper mb-4">
+                {GOOGLE_LOGIN_ENABLED && <div className="google-auth-wrapper mb-4">
                   {/* ux_mode="redirect": popup + postMessage yerine gerçek sayfa
                       yönlendirmesi kullanır (COOP sorununu tamamen ortadan
                       kaldırır). useOneTap kaldırıldı — o da iframe/postMessage
@@ -204,11 +205,11 @@ const RegisterPage = () => {
                       login_uri={GOOGLE_LOGIN_URI}
                       onError={() => setCustomError("Google penceresi açılamadı veya iptal edildi.")}
                   /> : <p role="status">Tarayıcı oturum depolaması kapalı. E-posta ile devam edebilirsiniz.</p>}
-                </div>
+                </div>}
 
-                <div className="auth-divider">
+                {GOOGLE_LOGIN_ENABLED && <div className="auth-divider">
                     <span className="divider-text">VEYA E-POSTA İLE</span>
-                </div>
+                </div>}
 
                 <div className="form-row">
                   <Input 

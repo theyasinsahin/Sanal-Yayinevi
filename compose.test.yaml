@@ -1,0 +1,37 @@
+name: betik-tests
+
+x-checks: &checks
+  build:
+    context: .
+    dockerfile: docker/Dockerfile
+    target: checks
+    args:
+      LOCAL_UID: ${LOCAL_UID:-1000}
+      LOCAL_GID: ${LOCAL_GID:-1000}
+  image: betik-checks
+  init: true
+  network_mode: none
+  volumes:
+    - ./artifacts:/artifacts
+  environment:
+    NODE_ENV: test
+    CI: "true"
+    MONGOMS_VERSION: 8.0.34
+    MONGOMS_RUNTIME_DOWNLOAD: "false"
+
+services:
+  checks:
+    <<: *checks
+    command: ["bash", "docker/checks.sh", "unit"]
+  browser:
+    <<: *checks
+    image: betik-browser-checks
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: browser
+      args:
+        LOCAL_UID: ${LOCAL_UID:-1000}
+        LOCAL_GID: ${LOCAL_GID:-1000}
+    shm_size: 1gb
+    command: ["bash", "docker/checks.sh", "browser"]

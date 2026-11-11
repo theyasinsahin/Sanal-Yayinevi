@@ -52,6 +52,8 @@ test('the default CLI validates offline even with database environment variables
     expect(result.status).toBe(0);
     expect(JSON.parse(await readFile(reportFile, 'utf8'))).toMatchObject({ mode: 'validate', databaseAccessed: false, books: manifest.books.length });
   } finally {
+    // Fail closed before deleting files; keep this guard even if a prior assertion failed.
+    // eslint-disable-next-line no-unsafe-finally
     if (dirname(resolve(temp)) !== resolve(tmpdir()) || !basename(temp).startsWith('betik-catalog-test-')) throw new Error('Unexpected test cleanup path');
     await rm(temp, { recursive: true, force: true });
   }

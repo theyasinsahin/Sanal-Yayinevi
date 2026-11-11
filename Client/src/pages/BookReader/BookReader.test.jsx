@@ -127,15 +127,15 @@ test('saved positions open the matching chapter and mark preceding chapters with
   localStorage.setItem(progressStorageKey('book'), JSON.stringify({ lastChapterId: 'second', completedChapterIds: [] }));
   show('/book-reader/book');
   await screen.findByRole('heading', { name: 'İkinci Bölüm' });
-  expect(screen.getByText('İlk Bölüm', { selector: '.chapter-title' }).closest('.chapter-item')).toHaveClass('completed');
-  expect(screen.getByText('İkinci Bölüm', { selector: '.chapter-title' }).closest('.chapter-item')).not.toHaveClass('completed');
+  expect(screen.getByRole('button', { name: 'İlk Bölüm: okundu durumunu değiştir' })).toHaveClass('checked');
+  expect(screen.getByRole('button', { name: 'İkinci Bölüm: okundu durumunu değiştir' })).not.toHaveClass('checked');
   expect(screen.getByText('2 bölümden 1 tanesi okundu')).toBeInTheDocument();
 });
 
 test('a shared chapter opens directly without declaring its preceding chapters read', async () => {
   show('/book-reader/book?chapter=second');
   await screen.findByRole('heading', { name: 'İkinci Bölüm' });
-  expect(screen.getByText('İlk Bölüm', { selector: '.chapter-title' }).closest('.chapter-item')).not.toHaveClass('completed');
+  expect(screen.getByRole('button', { name: 'İlk Bölüm: okundu durumunu değiştir' })).not.toHaveClass('checked');
 });
 
 test('a delayed bookmark wins over local progress and restores its paragraph without an initial overwrite', async () => {
@@ -146,7 +146,7 @@ test('a delayed bookmark wins over local progress and restores its paragraph wit
   expect(JSON.parse(localStorage.getItem(progressStorageKey('book', 'reader')))).toEqual(original);
   await screen.findByRole('heading', { name: 'İkinci Bölüm' });
   expect(await screen.findByRole('article')).toHaveAttribute('data-restore-paragraph', '3');
-  expect(screen.getByText('İlk Bölüm', { selector: '.chapter-title' }).closest('.chapter-item')).toHaveClass('completed');
+  expect(screen.getByRole('button', { name: 'İlk Bölüm: okundu durumunu değiştir' })).toHaveClass('checked');
 });
 
 test('a signed-in reader resumes from the server on a device with no local history', async () => {
@@ -159,11 +159,11 @@ test('a signed-in reader resumes from the server on a device with no local histo
 test('manual completion changes remain editable after restoring a saved position', async () => {
   localStorage.setItem(progressStorageKey('book'), JSON.stringify({ lastChapterId: 'second', completedChapterIds: [] }));
   show('/book-reader/book'); await screen.findByRole('heading', { name: 'İkinci Bölüm' });
-  const first = screen.getByText('İlk Bölüm', { selector: '.chapter-title' }).closest('.chapter-item');
-  fireEvent.click(first.querySelector('.chapter-checkbox'));
-  expect(first).not.toHaveClass('completed');
+  const first = screen.getByRole('button', { name: 'İlk Bölüm: okundu durumunu değiştir' });
+  fireEvent.click(first);
+  expect(first).not.toHaveClass('checked');
   fireEvent.click(screen.getByRole('button', { name: 'Tamamla' }));
-  expect(screen.getByText('İkinci Bölüm', { selector: '.chapter-title' }).closest('.chapter-item')).toHaveClass('completed');
+  expect(screen.getByRole('button', { name: 'İkinci Bölüm: okundu durumunu değiştir' })).toHaveClass('checked');
 });
 
 test('a different account does not inherit another readers scoped history', async () => {

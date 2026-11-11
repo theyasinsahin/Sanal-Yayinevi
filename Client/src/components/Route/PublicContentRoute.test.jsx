@@ -32,6 +32,8 @@ test('legacy chapter links use a readable chapter URL while reader operations re
   ]);
   expect(await screen.findByTestId('content')).toHaveTextContent('"chapter":"chapter-2"');
   expect(screen.getByTestId('content')).toHaveTextContent('/kitap/roman-deniz/bolum/ilk-bolum?mode=chapter');
+  // Canonical metadata lives in document.head, outside Testing Library's body queries.
+  // eslint-disable-next-line testing-library/no-node-access
   expect(document.querySelector('link[rel="canonical"]').href).toBe('http://localhost/kitap/roman-deniz/bolum/ilk-bolum');
 });
 

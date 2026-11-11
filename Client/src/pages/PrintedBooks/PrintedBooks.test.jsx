@@ -62,11 +62,10 @@ test.each(['', 'https://example.test/cover.jpg'])('printed catalog shows only li
   expect(screen.queryByRole('heading', { name: book.title })).not.toBeInTheDocument();
   expect(screen.queryByText(book.printedAuthor)).not.toBeInTheDocument();
   expect(screen.queryByText('Kitabı incele')).not.toBeInTheDocument();
-  if (imageUrl) {
-    const cover = screen.getByRole('img', { name: `${book.title} kapağı` });
-    expect(cover).toHaveAttribute('src', imageUrl);
-    fireEvent.error(cover);
-  }
+  const cover = screen.queryByRole('img', { name: `${book.title} kapağı` });
+  expect(Boolean(cover)).toBe(Boolean(imageUrl));
+  expect(cover?.getAttribute('src') || '').toBe(imageUrl);
+  if (cover) fireEvent.error(cover);
   expect(screen.getByText(book.title)).toBeInTheDocument();
   expect(screen.queryByText(/Fonlama/)).not.toBeInTheDocument();
   expect(screen.getByRole('link', { name: 'Kitap eklemek için giriş yapın' })).toHaveAttribute('href', '/login');
@@ -145,7 +144,7 @@ test('submission does not reach the server when credentials disappear just befor
   useAuth.mockReturnValue({ user: { id: 'reader' }, ensureSession });
   show(<PrintedBooks />, [catalog([]), mine()]);
   fireEvent.click(screen.getByRole('button', { name: 'Basılı kitap ekle' }));
-  fireEvent.submit(screen.getByRole('button', { name: 'Betik onayına gönder' }).closest('form'));
+  fireEvent.submit(screen.getByRole('button', { name: 'Betik onayına gönder' }).form);
   expect(ensureSession).toHaveBeenCalledTimes(1);
   expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   await screen.findByText('Raflarımız ilk eserlerini bekliyor');

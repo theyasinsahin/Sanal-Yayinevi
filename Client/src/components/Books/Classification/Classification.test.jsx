@@ -65,6 +65,8 @@ test('missing fields are highlighted and validation moves focus to the first mis
     fireEvent.click(screen.getByRole('button', { name: 'Taslak Olarak Kaydet' }));
     expect(screen.getByRole('alert')).toHaveTextContent('eksik alanları tamamlayın');
     await waitFor(() => expect(screen.getByRole('button', { name: 'Kapak seç' })).toHaveFocus());
+    // The invalid style belongs to the non-interactive field wrapper.
+    // eslint-disable-next-line testing-library/no-node-access
     expect(document.querySelector('[data-field="imageUrl"]')).toHaveClass('create-field-invalid');
     expect(screen.getByLabelText(/Kitap Başlığı/)).toHaveAttribute('aria-invalid', 'true');
     fireEvent.click(screen.getByRole('button', { name: 'Bir eser biçimi seçin.' }));
