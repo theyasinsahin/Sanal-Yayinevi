@@ -173,5 +173,56 @@ yapılandırmaya dönün. Korunan Windows klasörü geri dönüş seçeneğidir.
 ## Android aşaması
 
 Android araçları web, MongoDB, Dev Container ve otomatik test kabulünden önce
-kurulmaz veya indirilmez. Sonraki aşama yalnız debug APK/imzasız AAB içindir.
-Emülatör ve ADB Windows'ta kalır; üretim anahtarı veya mağaza yayını kullanılmaz.
+kurulmaz veya indirilmez. Web kabulünden sonra ayrı compose.android.yaml profili
+kullanılır. JDK 21 imajı digest ile sabittir; Node/npm web ile aynıdır.
+SDK 36 ve Build Tools 35.0.0 ayrı Android volume'unda, Gradle 8.14.3 ise mevcut
+wrapper üzerinden kullanılır. Command-line tools ve Gradle indirmeleri resmi
+SHA-256 değerleriyle doğrulanır. Framework, Gradle ve AGP yükseltilmez.
+
+Ubuntu proje terminalinizde:
+
+    ./dev android setup
+
+Önce araç imajı hazırlanır; bu adım SDK indirmez. Ardından SDK lisans bağlantısı
+gösterilir. Lisansı okuyup kabul ediyorsanız yes yazın; paket kurulumu sırasında
+gösterilen gerekli lisansları da kendiniz yanıtlayın. Yerel kurulum otomatik
+lisans onayı vermez. Lisanslar: https://developer.android.com/studio#terms-and-conditions
+
+Mevcut Windows debug imza kimliğinizi ilk derlemeden önce koruyun:
+
+    ./dev android import-debug-key /mnt/c/Users/Talha/.android/debug.keystore
+    ./dev android doctor
+    ./dev android build emulator
+
+İçe aktarma yalnız varsayılan androiddebugkey kimliğini kabul eder; mevcut
+Docker debug anahtarının üzerine yazmaz. Anahtar ayrı özel volume'da kalır;
+Git, imaj, çıktı klasörü veya CI'a aktarılmaz. Windows anahtarı yoksa ilk debug
+derlemesi volume'da yeni anahtar üretir. Üretim imza anahtarları kullanılmaz.
+
+Emülatör APK'sı API'ye http://10.0.2.2:5000 üzerinden bağlanır. USB telefon için:
+
+    ./dev android build usb
+
+USB hata ayıklamayı telefonda açıp Windows ADB bağlantısına izin verin.
+Windows platform-tools içindeki adb ile cihazı seçerek adb reverse tcp:5000
+tcp:5000 çalıştırın. USB APK'sı http://localhost:5000 adresini kullanır.
+Emülatör, ADB ve telefon yetkilendirmesi Windows'ta kalır. Web servisleri
+./dev up ile açık olmalıdır.
+
+Çıktılar artifacts/android/emulator veya artifacts/android/usb altında
+betik-debug.apk ve betik-unsigned.aab dosyalarıdır. APK'nın imzası ve AAB'nin
+imzasız olduğu derleme sonunda denetlenir. AAB yerel test adreslerini içerir;
+mağaza yayını değildir. Debug uygulaması Betik Dev adı ve com.betik.app.dockerdev
+paketiyle kurulur; mevcut telefon uygulamanızın üzerine yazılmaz.
+Kaynaklar imaja alınır; build ve Capacitor sync yalnız
+geçici konteyner kopyasını değiştirir. Android'e kaynak bind mount'u, Docker
+socket, gerçek environment dosyası veya geliştirme veritabanı verilmez.
+
+Manual Android build workflow'u yalnız elle başlatılır. SDK lisansını kabul
+ettiğinizi belirten seçenek açılmadan iş çalışmaz. Yalnız APK/AAB çıktıları
+yüklenir; deploy veya mağaza yayını yoktur. GitHub workflow_dispatch için dosyanın
+varsayılan dalda bulunmasını gerektirdiğinden, develop'a eklemek tek başına
+bu düğmeyi etkinleştirmez; main yayını ayrı onaya tabidir.
+
+Geri dönüşte Android profilini kullanmayı bırakın. SDK, Gradle ve debug-key
+volume'larını silmeyin; web ortamı ve Windows kurulumu etkilenmez.

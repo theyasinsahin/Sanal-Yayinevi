@@ -1,0 +1,28 @@
+name: betik-android
+
+services:
+  android:
+    profiles: ["android"]
+    image: betik-android-builder
+    build:
+      context: .
+      dockerfile: docker/android.Dockerfile
+      args:
+        LOCAL_UID: ${LOCAL_UID:-1000}
+        LOCAL_GID: ${LOCAL_GID:-1000}
+    init: true
+    working_dir: /workspace/Client
+    volumes:
+      - android-sdk:/opt/android-sdk
+      - gradle-cache:/home/node/.gradle
+      - android-debug:/home/node/.android
+      - ./artifacts/android:/artifacts
+    environment:
+      REACT_APP_DOCKER_DEV: "true"
+      REACT_APP_DEV_INTEGRATIONS: "false"
+    command: ["doctor"]
+
+volumes:
+  android-sdk:
+  gradle-cache:
+  android-debug:
