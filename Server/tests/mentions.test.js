@@ -5,6 +5,7 @@ import { connect, clearDatabase, closeDatabase } from './db.js';
 import User from '../src/models/user.js';
 import Book from '../src/models/book.js';
 import Chapter from '../src/models/chapter.js';
+import Comment from '../src/models/comment.js';
 import Quote from '../src/models/quote.js';
 import SessionEntry from '../src/models/sessionEntry.js';
 import Notification from '../src/models/notification.js';
@@ -98,6 +99,56 @@ test('both root and nested book replies notify eligible tagged users with the re
   const result = await notices();
   expect(result.find(item => String(item.userId) === publicUser.id).meta.commentId).toBe(reply.id);
   expect(result.find(item => String(item.userId) === follower.id).meta.commentId).toBe(nested.id);
+});
+
+test('root and nested replies automatically mention the actual target and notify it once', async () => {
+  const root = await createComment({ userId: author.id, bookId: book.id, content: 'Root' });
+  await Notification.deleteMany();
+  const reply = await createReply(actor, book.id, 'Ana yoruma yanıt', root.id);
+  expect(reply.content).toBe('@author Ana yoruma yanıt');
+  expect(reply.parentId.toString()).toBe(root.id);
+  expect(await Notification.countDocuments({ userId: author.id, type: 'COMMENT_MENTION', 'meta.commentId': reply.id })).toBe(1);
+  const nested = await createReply(publicUser, book.id, 'Alt yoruma yanıt', reply.id);
+  expect(nested.content).toBe('@actor Alt yoruma yanıt');
+  expect(nested.parentId.toString()).toBe(root.id);
+  expect(await Notification.countDocuments({ userId: actor.id, type: 'COMMENT_MENTION', 'meta.commentId': nested.id })).toBe(1);
+  expect(await Notification.countDocuments({ userId: author.id, 'meta.commentId': nested.id })).toBe(0);
+});
+
+test('existing target mentions are not duplicated in root or nested replies and other tags are preserved', async () => {
+  const root = await createComment({ userId: author.id, bookId: book.id, content: 'Root' });
+  const reply = await createReply(actor, book.id, '@author Merhaba @public.user', root.id);
+  expect(reply.content).toBe('@author Merhaba @public.user');
+  const nested = await createReply(publicUser, book.id, 'Katılıyorum @actor', reply.id);
+  expect(nested.content).toBe('Katılıyorum @actor');
+  const otherTag = await createReply(actor, book.id, '@follower Merhaba', root.id);
+  expect(otherTag.content).toBe('@author @follower Merhaba');
+});
+
+test('automatic reply mentions respect notification preferences and do not notify the sender', async () => {
+  const root = await createComment({ userId: author.id, bookId: book.id, content: 'Root' });
+  await Notification.deleteMany();
+  await User.updateOne({ _id: author.id }, { 'notificationSettings.mentionInComment': false });
+  const reply = await createReply(actor, book.id, 'Tercihler korunur', root.id);
+  expect(reply.content).toBe('@author Tercihler korunur');
+  expect(await notices()).toEqual([]);
+  await createReply(actor, book.id, 'Kendi yanıtıma devam', reply.id);
+  expect(await notices()).toEqual([]);
+});
+
+test('blank replies and mention-only replies are rejected before saving', async () => {
+  const root = await createComment({ userId: author.id, bookId: book.id, content: 'Root' });
+  await expect(createReply(actor, book.id, '   ', root.id)).rejects.toThrow('Yanıt metni boş olamaz.');
+  await expect(createReply(actor, book.id, ' @author ', root.id)).rejects.toThrow('Yanıt metni boş olamaz.');
+  expect(await Comment.countDocuments({ parentId: root.id })).toBe(0);
+});
+
+test('replying to an unavailable author never stores an undefined or stale mention', async () => {
+  const root = await createComment({ userId: author.id, bookId: book.id, content: 'Root' });
+  await User.updateOne({ _id: author.id }, { isActive: false });
+  expect((await createReply(actor, book.id, 'Yanıt', root.id)).content).toBe('Yanıt');
+  await User.deleteOne({ _id: author.id });
+  expect((await createReply(actor, book.id, 'Başka yanıt', root.id)).content).toBe('Başka yanıt');
 });
 
 test('paragraph mentions point to the chapter, paragraph and comment, and hidden chapters do not leak notices', async () => {

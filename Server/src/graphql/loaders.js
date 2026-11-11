@@ -21,6 +21,15 @@ export function createLoaders() {
     return ids.map(id => map.get(recordId(id)) || null);
   }, { cacheKeyFn: recordId, maxBatchSize: 100 });
   return {
+    firstOpenChapters: new DataLoader(async ids => {
+      const records = await Chapter.aggregate([
+        { $match: { bookId: { $in: ids.map(id => new Chapter.base.Types.ObjectId(recordId(id))) }, isDeleted: false, isHidden: { $ne: true }, authorId: { $nin: await inactiveIds() } } },
+        { $sort: { bookId: 1, createdAt: 1, _id: 1 } },
+        { $group: { _id: '$bookId', chapterId: { $first: '$_id' } } },
+      ]).exec();
+      const map = new Map(records.map(record => [String(record._id), record.chapterId]));
+      return ids.map(id => map.get(recordId(id)) || null);
+    }, { cacheKeyFn: recordId, maxBatchSize: 100 }),
     bookCampaigns: new DataLoader(latestBookCampaigns, { cacheKeyFn: recordId, maxBatchSize: 100 }),
     users: byId(User), books: byId(Book), chapters: byId(Chapter), quotes: byId(Quote), genres: byId(Genre), classificationTerms: byId(ClassificationTerm), inactiveIds,
     commentCounts: new DataLoader(async ids => {
