@@ -1,7 +1,8 @@
+import { authReturnTo, registrationUrl } from '../../../utils/registrationIntent';
 // src/pages/Auth/ForgotPassword/index.jsx
 import React, { useState } from 'react';
 import { useMutation } from '@apollo/client';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Email } from '@mui/icons-material';
 import { FORGOT_PASSWORD_MUTATION } from '../../../graphql/mutations/user';
 import { MainLayout } from '../../../components/Layout/MainLayout';
@@ -12,6 +13,7 @@ import { Input } from '../../../components/UI/Input';
 import '../AuthPages.css';
 
 const ForgotPasswordPage = () => {
+  const { search } = useLocation();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -56,7 +58,7 @@ const ForgotPasswordPage = () => {
                 </Typography>
                 <p>Spam klasörünü de kontrol edin. E-posta ulaşmadıysa biraz sonra yeniden deneyebilirsiniz.</p>
                 <Button type="button" variant="outline" onClick={() => setSent(false)}>Yeniden dene</Button>
-                <Link to="/login" className="ui-text-link">
+                <Link to={registrationUrl('login', { returnTo: authReturnTo(search) })} className="ui-text-link">
                   Giriş sayfasına dön
                 </Link>
               </div>
@@ -77,7 +79,7 @@ const ForgotPasswordPage = () => {
                   Sıfırlama Bağlantısı Gönder
                 </Button>
                 <div className="auth-footer">
-                  <Link to="/login" className="ui-text-link">Giriş sayfasına dön</Link>
+                  <Link to={registrationUrl('login', { returnTo: authReturnTo(search) })} className="ui-text-link">Giriş sayfasına dön</Link>
                 </div>
               </form>
             )}

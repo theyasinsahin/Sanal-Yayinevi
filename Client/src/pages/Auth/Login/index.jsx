@@ -20,6 +20,7 @@ import { MainLayout } from '../../../components/Layout/MainLayout';
 
 import { GOOGLE_LOGIN_URI } from '../../../config/api';
 import { googleLoginNonce } from '../../../utils/googleLoginNonce';
+import { authReturnTo, finishRegistrationIntent, registrationUrl, rememberAuthReturnTo } from '../../../utils/registrationIntent';
 
 const LoginPage = () => {
   const [googleNonce] = useState(googleLoginNonce);
@@ -27,6 +28,7 @@ const LoginPage = () => {
   const { login } = useAuth();
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
+  useEffect(() => { rememberAuthReturnTo(`?${searchParams}`); }, [searchParams]);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -35,9 +37,9 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (user) {
-      navigate('/profile');
+      navigate(finishRegistrationIntent({ userId: user.id, search: `?${searchParams}` }), { replace: true });
     }
-  }, [user]);
+  }, [user, navigate, searchParams]);
 
   const [customError, setCustomError] = useState('');
 
@@ -109,12 +111,12 @@ const LoginPage = () => {
               token ile geri yönlendirir. Bu akışta onSuccess ÇAĞRILMAZ —
               sonuç URL üzerinden GoogleCallback sayfasında işlenir. */}
           <div className="google-auth-wrapper">
-            <GoogleLogin locale="tr"
+            {googleNonce ? <GoogleLogin locale="tr"
               nonce={googleNonce}
               ux_mode="redirect"
               login_uri={GOOGLE_LOGIN_URI}
               onError={() => setCustomError("Google penceresi açılamadı veya iptal edildi.")}
-            />
+            /> : <p role="status">Tarayıcı oturum depolaması kapalı. E-posta ile devam edebilirsiniz.</p>}
           </div>
 
           {/* AYIRICI ÇİZGİ */}
@@ -149,7 +151,7 @@ const LoginPage = () => {
             />
 
             <div className="auth-options">
-              <Link to="/sifremi-unuttum" className="ui-text-link">
+              <Link to={`/sifremi-unuttum?returnTo=${encodeURIComponent(authReturnTo(`?${searchParams}`))}`} className="ui-text-link">
                 Şifremi Unuttum
               </Link>
             </div>
@@ -167,7 +169,7 @@ const LoginPage = () => {
             <div className="auth-footer">
               <Typography variant="body" color="muted">
                 Hesabın yok mu?{' '}
-                <Link to="/register" className="ui-text-link">
+                <Link to={registrationUrl('register', { returnTo: authReturnTo(`?${searchParams}`) })} className="ui-text-link">
                   Kayıt Ol
                 </Link>
               </Typography>

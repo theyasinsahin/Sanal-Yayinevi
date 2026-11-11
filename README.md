@@ -61,7 +61,7 @@ Projeyi yerel ortamınızda çalıştırmak için aşağıdaki adımları izleyi
 
 ### Gereksinimler
 
-- Node.js 22.15.0 veya üstü desteklenen, güvenlik yamaları uygulanmış bir Node.js sürümü
+- Node.js **26.x** ve npm **11.x**. Yerel hedef sürümler: **Node.js 26.13.0 / npm 11.13.0**; `.node-version` ve `packageManager` alanları bu sürümlerle eşleşir.
 - MongoDB replica set veya mongos; tek düğümlü standalone finansal transaction desteklemez.
 
 ### Kurulum

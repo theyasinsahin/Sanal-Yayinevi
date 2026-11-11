@@ -70,6 +70,49 @@ test.each(['', 'https://example.test/cover.jpg'])('printed catalog shows only li
   expect(screen.getByText(book.title)).toBeInTheDocument();
   expect(screen.queryByText(/Fonlama/)).not.toBeInTheDocument();
   expect(screen.getByRole('link', { name: 'Kitap eklemek için giriş yapın' })).toHaveAttribute('href', '/login');
+  expect(screen.queryByRole('button', { name: /kitaplar$/ })).not.toBeInTheDocument();
+});
+
+test('side arrows preserve scroll and search params, retain books while loading and respect both page boundaries', async () => {
+  useAuth.mockReturnValue({ user: null });
+  window.scrollTo = jest.fn();
+  const response = (page, delay = 0) => ({
+    request: { query: GET_PRINTED_BOOKS, variables: { page, search: 'roman' } },
+    delay,
+    result: { data: { getPrintedBooks: {
+      books: [{ ...book, id: `page-${page}`, title: `Sayfa ${page} kitabı` }],
+      total: 13, page, totalPages: 2,
+    } } },
+  });
+  function Location() { return <output data-testid="catalog-location">{useLocation().search}</output>; }
+  render(<MockedProvider addTypename={false} mocks={[response(1), response(2, 80), response(1)]}>
+    <MemoryRouter initialEntries={['/printed-books?page=1&search=roman&keep=value']}>
+      <ScrollToTop /><PrintedBooks /><Location />
+    </MemoryRouter>
+  </MockedProvider>);
+  await screen.findByRole('link', { name: /Sayfa 1 kitabı/ });
+  const previous = screen.getByRole('button', { name: 'Önceki kitaplar' });
+  const next = screen.getByRole('button', { name: 'Sonraki kitaplar' });
+  expect(previous).toBeDisabled();
+  expect(next).toBeEnabled();
+  expect(next).toHaveAttribute('aria-controls', 'printed-book-list');
+  window.scrollTo.mockClear();
+  fireEvent.click(next);
+  expect(screen.getByRole('link', { name: /Sayfa 1 kitabı/ })).toBeInTheDocument();
+  expect(screen.getByRole('region', { name: 'Basılı kitap listesi' })).toHaveAttribute('aria-busy', 'true');
+  expect(next).toBeDisabled();
+  fireEvent.click(next);
+  await screen.findByRole('link', { name: /Sayfa 2 kitabı/ });
+  expect(next).toBeDisabled();
+  expect(previous).toBeEnabled();
+  expect(screen.getByTestId('catalog-location')).toHaveTextContent('?page=2&search=roman&keep=value');
+  expect(window.scrollTo).not.toHaveBeenCalled();
+  fireEvent.click(previous);
+  await screen.findByRole('link', { name: /Sayfa 1 kitabı/ });
+  await waitFor(() => expect(next).toBeEnabled());
+  expect(previous).toBeDisabled();
+  expect(screen.getByTestId('catalog-location')).toHaveTextContent('?page=1&search=roman&keep=value');
+  expect(window.scrollTo).not.toHaveBeenCalled();
 });
 
 test('ISBN lookup fills metadata but preserves manual submission when the provider has no record', async () => {
@@ -150,9 +193,22 @@ test('pending rights claims show their status instead of offering duplicate subm
 });
 
 test('approved author access exposes the chapter editor while retaining the print interface', async () => {
-  show(detail({ authorId: 'reader', canEditContent: true }), [quotes()]);
+  show(detail({ authorId: 'reader', author: { id: 'reader', username: 'onayli-yazar', fullName: 'Onaylı Yazar' }, canEditContent: true }), [quotes()]);
   expect(screen.getByRole('link', { name: 'Bölüm ekle / düzenle' })).toHaveAttribute('href', '/dashboard/printed');
+  expect(screen.getByRole('link', { name: 'Onaylı Yazar' })).toHaveAttribute('href', '/yazar/onayli-yazar');
+  expect(screen.queryByText(/Hak talebinde bulunun/)).not.toBeInTheDocument();
   expect(screen.getByText('Basılı eser')).toBeInTheDocument();
+  await screen.findByText('Bu kitaptan henüz bir alıntı paylaşılmadı.');
+});
+
+test.each([null, { id: 'reader' }])('approved authors are linked publicly without granting visitors editing or new claims (viewer: %p)', async user => {
+  useAuth.mockReturnValue({ user });
+  show(detail({ authorId: 'verified-author', author: { id: 'verified-author', username: 'onayli-yazar', fullName: 'Onaylı Yazar' } }), [quotes()]);
+  expect(screen.getByText(/Betik'te onaylanan yazar:/)).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'Onaylı Yazar' })).toHaveAttribute('href', '/yazar/onayli-yazar');
+  expect(screen.getByText(book.printedAuthor)).toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: 'Bölüm ekle / düzenle' })).not.toBeInTheDocument();
+  expect(screen.queryByText(/Hak talebinde bulunun/)).not.toBeInTheDocument();
   await screen.findByText('Bu kitaptan henüz bir alıntı paylaşılmadı.');
 });
 

@@ -1,6 +1,8 @@
 import HiddenChapterNotice from '../../components/Books/HiddenChapterNotice';
 import { isChapterLocked, chapterLengthLabel } from '../../utils/chapterVisibility';
-import { bookPath } from '../../utils/publicPaths';
+import { bookPath, readerPath } from '../../utils/publicPaths';
+import { useRegistration, useRestoredRegistration } from '../../hooks/useRegistration';
+import { RegistrationCard } from '../../components/Registration/RegistrationPrompt';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client';
@@ -38,7 +40,11 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
   const requestedParagraph = searchParams.get('paragraph');
   const requestedParagraphIndex = requestedParagraph !== null && /^\d+$/.test(requestedParagraph) ? Number(requestedParagraph) : null;
 
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const requestRegistration = useRegistration();
+  const restoredBookmark = useRestoredRegistration('bookmark', { bookId });
+  useRestoredRegistration('read', { bookId });
+  const [bookmarkConfirmed, setBookmarkConfirmed] = useState(false);
 
   const [showIdleWarning, setShowIdleWarning] = useState(false);
   const [bookmarkActionError, setBookmarkActionError] = useState('');
@@ -94,12 +100,15 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
 
   const handleSetBookmark = async (paragraphIndex) => {
     const chapter = chapters[currentChapterIndex];
+    if (!user) return requestRegistration({ action: 'bookmark', bookId, chapterId: chapter.id, paragraphIndex,
+      returnTo: `${readerPath(book)}?chapter=${chapter.id}&paragraph=${paragraphIndex}` });
     setBookmarkActionError('');
     try {
       await setBookmarkMutation({ variables: {
         bookId, chapterId: chapter.id, chapterIndex: currentChapterIndex, paragraphIndex, chapterTitle: chapter.title,
       } });
       await refetchBookmark();
+      setBookmarkConfirmed(true);
     } catch { setBookmarkActionError('Ayraç kaydedilemedi. Lütfen tekrar deneyin.'); }
   };
 
@@ -123,8 +132,9 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
 
   const { data: bookData, loading: bookLoading, error: bookError, refetch: refetchBook } = useQuery(GET_BOOK_READER_DATA, {
     variables: { id: bookId },
-    skip: !bookId,
-    fetchPolicy: 'cache-and-network',
+    skip: !bookId || authLoading,
+    fetchPolicy: 'no-cache',
+    context: { queryDeduplication: false },
   });
 
   const book = bookData?.getBookById;
@@ -134,7 +144,7 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
     ready: progressReady, currentChapterIndex, completedChapters,
     setCurrentChapterIndex, setCompletedChapters, restoreParagraphIndex,
     missingSharedChapter, syncError: progressSyncError, retry: retryProgress,
-  } = useReaderProgress({ bookId, userId: user?.id, chapters, bookLoading,
+  } = useReaderProgress({ bookId, userId: user?.id, chapters, bookLoading: bookLoading || authLoading,
     bookmark, bookmarkLoading, bookmarkError, refetchBookmark, requestedChapterId });
   const chapterBookmark = bookmark?.chapterId === chapters[currentChapterIndex]?.id ? bookmark : null;
   const chapterId = chapters[currentChapterIndex]?.id;
@@ -147,6 +157,9 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
   // Apollo may retain the previous variables' result while a new chapter loads.
   const locked = isChapterLocked(chapters[currentChapterIndex]) || (loadedChapter?.id === chapterId && isChapterLocked(loadedChapter));
   const currentChapter = { ...chapters[currentChapterIndex], ...(loadedChapter?.id === chapterId ? loadedChapter : {}), content: !locked && loadedChapter?.id === chapterId ? loadedChapter?.content : undefined };
+  const registrationRequired = currentChapter.accessStatus === 'REGISTRATION_REQUIRED';
+  const readingIntent = chapter => ({ action: 'read', bookId, chapterId: chapter.id, bookTitle: book.title,
+    returnTo: `${readerPath(book)}?chapter=${chapter.id}` });
 
   const readingStatus = useReadingTracker({
     isActive: Boolean(!locked && progressReady && user?.id && book && book.status !== 'DRAFT' &&
@@ -212,6 +225,11 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
 
   const goToChapter = (index) => {
     if (index < 0 || index >= chapters.length) return;
+    if (chapters[index].accessStatus === 'REGISTRATION_REQUIRED') {
+      setSidebarOpen(false);
+      requestRegistration(readingIntent(chapters[index]));
+      return;
+    }
     setSidebarOpen(false);
     setCurrentChapterIndex(index);
   };
@@ -227,7 +245,7 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
     <p>Kitap yüklenemedi.</p><button className="ui-text-link" onClick={() => refetchBook()}>Tekrar dene</button>
   </div>;
 
-  if (bookLoading || !book || !progressReady) {
+  if (authLoading || bookLoading || !book || !progressReady) {
     return (
       <div className="reader-loading">
         <div className="spinner"></div>
@@ -297,6 +315,7 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
                 <div className="chapter-title">{chapter.title}</div>
                 <span className="chapter-length">{chapterLengthLabel(chapter)}</span>
                 {chapter.isHidden && <span className="chapter-visibility-label">Okuyuculara kapalı</span>}
+                {chapter.accessStatus === 'REGISTRATION_REQUIRED' && <span className="chapter-visibility-label">Ücretsiz üyelikle oku</span>}
               </button>
             </div>
           ))}
@@ -305,6 +324,10 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
 
       {/* READING AREA */}
       <div className="reading-area" {...(isCompact && sidebarOpen ? { inert: '' } : {})}>
+      {!user && !locked && currentChapterIndex === chapters.findIndex(chapter => chapter.canReadContent !== false) && <p className="ui-notice">İlk bölümü üye olmadan okuyabilirsin.</p>}
+      {restoredBookmark?.chapterId === currentChapter.id && !bookmarkConfirmed && !locked && chapterReady && <p className="ui-notice" role="status">
+        Ayracı kaydetmeye hazırsın. <button className="ui-text-link" onClick={() => handleSetBookmark(restoredBookmark.paragraphIndex)}>Ayracı buraya kaydet</button>
+      </p>}
       {bookmarkActionError && <p className="ui-notice" role="alert">{bookmarkActionError}</p>}
       {progressSyncError && <p className="ui-notice" role="status">
         Okuma ilerlemesi eşitlenemedi. Bu cihazdaki kayıt korunuyor. <button className="ui-text-link" onClick={() => retryProgress().catch(() => {})}>Tekrar dene</button>
@@ -340,7 +363,7 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
           </div>
           <button type="button" aria-label="Alıntı ipucunu kapat" onClick={() => setQuoteHelpOpen(false)}>×</button>
         </aside>}
-        {user && !currentChapter.isHidden && !locked && chapterReady && (
+        {!currentChapter.isHidden && !locked && chapterReady && (
           <QuotePopup key={chapterId} bookId={bookId} chapterId={currentChapter.id}
             chapterTitle={currentChapter.title} chapterIndex={currentChapterIndex} />
         )}
@@ -360,7 +383,13 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
             </div>
 
             {/* Bölüm İçeriği */}
-            {locked ? <HiddenChapterNotice chapter={currentChapter} bookId={bookId} /> : chapterLoading && !chapterReady ? <p role="status">Bölüm yükleniyor...</p> : chapterError || !chapterReady ?
+            {registrationRequired ? <RegistrationCard intent={readingIntent(currentChapter)}>
+              <button className="ui-text-link" onClick={() => {
+                const first = chapters.find(chapter => chapter.canReadContent !== false);
+                if (first) navigate(`${readerPath(book)}?chapter=${first.id}`, { replace: true });
+              }}>İlk açık bölümü oku</button>
+              <button className="ui-text-link" onClick={() => navigate(bookPath(book))}>Kitap detayına dön</button>
+            </RegistrationCard> : locked ? currentChapter.accessStatus === 'UNAVAILABLE' ? <p role="status">Bu bölüm artık erişilebilir değil. Kitabın diğer bölümlerine dönebilirsin.</p> : <HiddenChapterNotice chapter={currentChapter} bookId={bookId} /> : chapterLoading && !chapterReady ? <p role="status">Bölüm yükleniyor...</p> : chapterError || !chapterReady ?
               <p className="ui-notice" role="alert">Bölüm yüklenemedi. <button className="ui-text-link" onClick={() => refetchChapter()}>Tekrar dene</button></p> : <ParagraphRenderer
               key={currentChapter.id}
               restoreParagraphIndex={restoreParagraphIndex}
@@ -369,7 +398,7 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
               bookId={bookId}
               chapterId={currentChapter.id}
               bookmark={chapterBookmark}
-              onSetBookmark={user ? handleSetBookmark : null}
+              onSetBookmark={handleSetBookmark}
               onRemoveBookmark={user ? handleRemoveBookmark : null}
             />}
 
@@ -387,6 +416,7 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
               <button
                 className="chapter-nav-btn complete-btn"
                 onClick={() => {
+                  if (registrationRequired) { requestRegistration(readingIntent(currentChapter)); return; }
                   if (!completedChapters.includes(currentChapterIndex)) {
                     toggleChapterCompletion(currentChapterIndex);
                   }
@@ -394,9 +424,9 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
                     goToChapter(currentChapterIndex + 1);
                   }
                 }}
-                disabled={isLastChapter && (locked || completedChapters.includes(currentChapterIndex))}
+                disabled={isLastChapter && !registrationRequired && (locked || completedChapters.includes(currentChapterIndex))}
               >
-                {locked ? (isLastChapter ? 'Okuyuculara kapalı' : 'Sonraki Bölüm') : isLastChapter
+                {registrationRequired ? 'Ücretsiz üyelikle oku' : locked ? (isLastChapter ? 'Okuyuculara kapalı' : 'Sonraki Bölüm') : isLastChapter
                   ? completedChapters.includes(currentChapterIndex)
                     ? '✦ Tamamlandı'
                     : 'Tamamla'
@@ -408,7 +438,7 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
             </div>
 
             {/* Son bölümdeyse bitiş işareti */}
-            {isLastChapter && (
+            {isLastChapter && !locked && (
               <div className="end-marker">✦ SON ✦</div>
             )}
           </div>

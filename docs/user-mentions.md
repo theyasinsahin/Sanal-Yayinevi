@@ -4,6 +4,15 @@ Oturum açıklamalarında ve iletilerinde, dijital/basılı kitap yorumlarında 
 
 Bir hesap herkese açıksa veya etiketleyen kullanıcıyı takip ediyorsa etiketlenebilir. Sunucu, elle yazılan kullanıcı adlarında da aynı kuralı uygular. Kullanıcının kendisine, silinmiş ya da pasif hesaplara bildirim gönderilmez. Tek içerikte aynı alıcıya bir bildirim gider; en fazla 30 farklı etiket işlenir, öneri listesi en fazla 8 hesap gösterir. E-posta adresleri ve URL içindeki `@` işaretleri etiket sayılmaz.
 
+Kitap yorumunda **Yanıtla** seçildiğinde yanıt alanına hedef yorumun yazarının
+`@kullanıcıadı` etiketi otomatik eklenir. Sunucu da bu etiketi kayıtta tamamlar;
+alan temizlenmiş veya eski istemciden gönderilmiş olsa bile yanıt ilgili kişiyi
+etiketler. Ana yoruma ve bir yanıtın altına yazarken doğrudan cevap verilen kişi
+kullanılır. Metinde aynı etiket zaten varsa tekrarlanmaz; diğer etiketler ve
+bildirim/gizlilik tercihleri korunur. Yalnız etiket içeren boş yanıt gönderilemez.
+Yanıt alanını kapatıp açmak taslağı korur. Yazarı bulunmayan veya pasif bir
+yorum için geçersiz etiket oluşturulmaz.
+
 Bildirim tıklandığında ilgili ileti veya yorum açılır, ekrana kaydırılır ve odaklanır. Oturumun ilk 30 iletisinde bulunmayan hedef ileti ayrıca yüklenir. Paragraf yorumunda doğru bölüm ve paragraf paneli, alıntı yorumunda yorum listesi açılır. Mobil bildirimden geçişte menü kapanır.
 
 Etiket, içeriğin erişim koşullarını değiştirmez. Takipçilere özel oturumlarda yalnızca oturum sahibinin takipçilerine; özel oturumlarda yalnızca mevcut katılımcılara bildirim gönderilir. Gizli bölüm yorumları için alıcının bölüm erişimi denetlenir. “Sadece ben” alıntı notları bildirim üretmez. Sonradan erişimi kaldırılan veya silinen içerik, bağlantıdan yeniden açılmaya çalışıldığında mevcut erişim denetimlerine tabidir.

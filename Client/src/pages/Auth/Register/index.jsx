@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useMutation } from '@apollo/client';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
+import { authReturnTo, finishRegistrationIntent, registrationUrl, rememberAuthReturnTo } from '../../../utils/registrationIntent';
 import { 
   Person, 
   Email, 
@@ -11,7 +13,7 @@ import {
 } from '@mui/icons-material';
 
 // --- GRAPHQL & UTILS ---
-import { REGISTER, SEND_REGISTRATION_CODE } from '../../../graphql/mutations/user';
+import { REGISTER_AND_LOGIN, SEND_REGISTRATION_CODE } from '../../../graphql/mutations/user';
 
 import PasswordStrengthIndicator from '../../../components/UI/PasswordStrengthIndicator';
 import { validatePassword } from '../../../utils/PasswordValidation';
@@ -32,6 +34,9 @@ import { googleLoginNonce } from '../../../utils/googleLoginNonce';
 const RegisterPage = () => {
   const [googleNonce] = useState(googleLoginNonce);
   const navigate = useNavigate();
+  const { login } = useAuth();
+  const { search } = useLocation();
+  useEffect(() => { rememberAuthReturnTo(search); }, [search]);
   
   // --- STATE'LER ---
   const [step, setStep] = useState(1); // 1: Form, 2: Doğrulama
@@ -57,7 +62,7 @@ const RegisterPage = () => {
 
   // --- MUTATION'LAR ---
   const [sendCode, { loading: codeLoading, error: codeError }] = useMutation(SEND_REGISTRATION_CODE);
-  const [register, { loading: regLoading, error: regError }] = useMutation(REGISTER);
+  const [register, { loading: regLoading, error: regError }] = useMutation(REGISTER_AND_LOGIN);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -108,12 +113,15 @@ const RegisterPage = () => {
         variables: { ...formData, code: verificationCode } 
       });
       
-      const result = res.data.register;
+      const result = res.data.registerAndLogin;
 
       if (result.code === 200) {
         // Kayıt başarılıysa başarı mesajını göster ve giriş sayfasına at
         setCustomSuccess(result.message);
-        setTimeout(() => navigate('/login'), 2000);
+        if (result.token && result.user) {
+          login(result.token, result.user.id, result.user);
+          navigate(finishRegistrationIntent({ userId: result.user.id, isNewAccount: true, search }), { replace: true });
+        }
       } else {
         // Geçersiz kod vb. durumlarda hatayı ekrana bas
         setCustomError(result.message);
@@ -170,6 +178,7 @@ const RegisterPage = () => {
                 </Typography>
               </div>
             )}
+            {customSuccess && <Link className="ui-text-link" to={registrationUrl('login', { returnTo: authReturnTo(search) })}>Hesabın oluşturuldu — Giriş yaparak devam et</Link>}
 
             {/* --- ADIM 1: KAYIT FORMU --- */}
             {step === 1 && (
@@ -189,12 +198,12 @@ const RegisterPage = () => {
                       yönlendirmesi kullanır (COOP sorununu tamamen ortadan
                       kaldırır). useOneTap kaldırıldı — o da iframe/postMessage
                       tabanlı olduğu için aynı türde sorunlara açıktı. */}
-                  <GoogleLogin locale="tr"
+                  {googleNonce ? <GoogleLogin locale="tr"
                       nonce={googleNonce}
                       ux_mode="redirect"
                       login_uri={GOOGLE_LOGIN_URI}
                       onError={() => setCustomError("Google penceresi açılamadı veya iptal edildi.")}
-                  />
+                  /> : <p role="status">Tarayıcı oturum depolaması kapalı. E-posta ile devam edebilirsiniz.</p>}
                 </div>
 
                 <div className="auth-divider">
@@ -317,7 +326,7 @@ const RegisterPage = () => {
 
             <div className="auth-footer">
               <Typography variant="body" color="muted">
-                Zaten hesabın var mı? <Link to="/login" className="ui-text-link">Giriş Yap</Link>
+                Zaten hesabın var mı? <Link to={registrationUrl('login', { returnTo: authReturnTo(search) })} className="ui-text-link">Giriş Yap</Link>
               </Typography>
             </div>
           </div>

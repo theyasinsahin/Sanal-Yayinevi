@@ -26,10 +26,20 @@ export default function PrintedBooksPage() {
   const hasClassification = Object.values(classification).some(values => values.length);
   const [adding, setAdding] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [pageDirection, setPageDirection] = useState(1);
   useEffect(() => { setAdding(false); setSubmitted(false); }, [user?.id]);
-  const { data, loading, error, refetch } = useQuery(GET_PRINTED_BOOKS, { variables: { page, search, ...(hasClassification ? { classification } : {}) }, fetchPolicy: 'cache-and-network' });
+  const { data, previousData, loading, error, refetch } = useQuery(GET_PRINTED_BOOKS, { variables: { page, search, ...(hasClassification ? { classification } : {}) }, fetchPolicy: 'cache-and-network', notifyOnNetworkStatusChange: true });
   const { data: mine, error: mineError, refetch: refreshMine } = useQuery(GET_MY_PRINTED_SUBMISSIONS, { skip: !user, fetchPolicy: 'network-only' });
-  const catalog = data?.getPrintedBooks;
+  const catalog = (data || previousData)?.getPrintedBooks;
+  const changePage = direction => {
+    if (loading || page + direction < 1 || page + direction > catalog.totalPages) return;
+    setPageDirection(direction);
+    setParams(previous => {
+      const next = new URLSearchParams(previous);
+      next.set('page', String(page + direction));
+      return next;
+    }, { replace: true, preventScrollReset: true });
+  };
   return <MainLayout><div className="printed-page"><Container maxWidth="6xl">
     <header className="printed-heading"><Typography variant="caption">BETİK KİTAPLIĞI</Typography><Typography variant="h1" weight="bold">Basılı Kitaplar</Typography><Typography variant="body" color="muted">Raflarda yerini almış eserleri keşfedin. Kitaplar, Türkiye’deki genel okur bilinirliği esas alınarak hazırlanan editoryal sırayla listelenir.</Typography>
       <div className="printed-actions">{user ? <Button onClick={() => { setAdding(value => !value); setSubmitted(false); }}>{adding ? 'İstek formunu kapat' : 'Basılı kitap ekle'}</Button> : <Link className="ui-text-link" to="/login">Kitap eklemek için giriş yapın</Link>}</div>
@@ -52,9 +62,19 @@ export default function PrintedBooksPage() {
       for (const key of ['formats', 'genres', 'tags', 'features', 'audiences']) { next.delete(key); for (const code of value[key] || []) next.append(key, code); }
       next.set('page', '1'); return next;
     })} /></details>
-    {loading && <p role="status">Basılı kitaplar yükleniyor…</p>}
+    {loading && !catalog && <p role="status">Basılı kitaplar yükleniyor…</p>}
     {error && <div className="ui-notice ui-notice--error" role="alert"><p>{error.message}</p><Button onClick={() => refetch()}>Tekrar dene</Button></div>}
-    {!error && catalog && <><p className="printed-count">{catalog.total} basılı eser</p>{catalog.books.length ? <div className="printed-grid">{catalog.books.map(book => <PrintedBookCard key={book.id} book={book} coverOnly />)}</div> : <section className="printed-panel printed-empty"><h2>{search ? 'Aramanıza uygun bir eser bulunamadı' : 'Raflarımız ilk eserlerini bekliyor'}</h2><p>{search ? 'Başka bir kitap adı, yazar veya ISBN ile arayın.' : 'Fiziksel olarak yayımlanmış bir kitabı incelemeye göndererek kataloğa katkıda bulunabilirsiniz.'}</p></section>}
-      {catalog.totalPages > 1 && <nav className="printed-actions" aria-label="Basılı kitap sayfaları"><Button variant="outline" disabled={page <= 1} onClick={() => setParams(previous => { const next = new URLSearchParams(previous); next.set('page', String(page - 1)); return next; })}>Önceki</Button><span>{page} / {catalog.totalPages}</span><Button variant="outline" disabled={page >= catalog.totalPages} onClick={() => setParams(previous => { const next = new URLSearchParams(previous); next.set('page', String(page + 1)); return next; })}>Sonraki</Button></nav>}</>}
+    {catalog && <><p className="printed-count">{catalog.total} basılı eser</p>{catalog.books.length ? <section className={`printed-catalog${catalog.totalPages > 1 ? ' printed-catalog--paginated' : ''}`} aria-label="Basılı kitap listesi" aria-busy={loading}>
+      {catalog.totalPages > 1 && <button type="button" className="printed-page-arrow printed-page-arrow--previous" aria-label="Önceki kitaplar" title="Önceki kitaplar" aria-controls="printed-book-list" disabled={loading || page <= 1} onClick={() => changePage(-1)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6" /></svg></button>}
+      <div className={`printed-catalog-viewport${loading ? ' is-loading' : ''}`}>
+        <div id="printed-book-list" className="printed-grid printed-grid--transition" key={`${catalog.page}:${search}:${JSON.stringify(classification)}`} style={{ '--printed-enter-x': `${pageDirection * 18}px` }}>
+          {catalog.books.map(book => <PrintedBookCard key={book.id} book={book} coverOnly />)}
+          {catalog.totalPages > 1 && Array.from({ length: Math.max(0, 12 - catalog.books.length) }, (_, index) => <div key={`empty-${index}`} className="printed-grid-spacer" aria-hidden="true" />)}
+        </div>
+      </div>
+      {catalog.totalPages > 1 && <button type="button" className="printed-page-arrow printed-page-arrow--next" aria-label="Sonraki kitaplar" title="Sonraki kitaplar" aria-controls="printed-book-list" disabled={loading || page >= catalog.totalPages} onClick={() => changePage(1)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6" /></svg></button>}
+    </section> : !error && <section className="printed-panel printed-empty"><h2>{search ? 'Aramanıza uygun bir eser bulunamadı' : 'Raflarımız ilk eserlerini bekliyor'}</h2><p>{search ? 'Başka bir kitap adı, yazar veya ISBN ile arayın.' : 'Fiziksel olarak yayımlanmış bir kitabı incelemeye göndererek kataloğa katkıda bulunabilirsiniz.'}</p></section>}
+      <p className="printed-sr-only" role="status">{loading ? 'Basılı kitaplar yükleniyor…' : `Sayfa ${catalog.page} / ${catalog.totalPages}`}</p>
+    </>}
   </Container></div></MainLayout>;
 }

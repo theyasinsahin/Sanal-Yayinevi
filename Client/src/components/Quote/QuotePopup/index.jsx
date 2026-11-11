@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom';
 import MentionInput from '../../Mentions/MentionInput';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -9,10 +10,14 @@ import { CHECK_QUOTE_EXISTS } from '../../../graphql/queries/quote';
 import { useAuth } from '../../../context/AuthContext';
 import { invalidateQuoteLists } from '../../../utils/quoteCache';
 import QuoteVisibility from '../QuoteVisibility';
+import { useRegistration, useRestoredRegistration } from '../../../hooks/useRegistration';
 import './QuotePopup.css';
 
 export default function QuotePopup({ bookId, chapterId, chapterTitle, chapterIndex }) {
   const { user } = useAuth();
+  const requestRegistration = useRegistration();
+  const { pathname } = useLocation();
+  const restored = useRestoredRegistration('quote', { bookId, chapterId });
   const [popup, setPopup] = useState({ visible: false });
   const [visibility, setVisibility] = useState('PUBLIC');
   const [note, setNote] = useState('');
@@ -27,8 +32,18 @@ export default function QuotePopup({ bookId, chapterId, chapterTitle, chapterInd
   const [checkQuote] = useLazyQuery(CHECK_QUOTE_EXISTS, { fetchPolicy: 'network-only' });
   const [createQuote, { loading: creating }] = useMutation(CREATE_QUOTE_MUTATION, { update: invalidateQuoteLists });
   const [repostQuote, { loading: reposting }] = useMutation(REPOST_QUOTE_MUTATION, { update: invalidateQuoteLists });
+  useEffect(() => {
+    if (!restored?.selection) return;
+    const selection = restored.selection;
+    setPopup({ ...selection, visible: true, x: window.innerWidth / 2, y: window.innerHeight / 2, bottom: window.innerHeight / 2 });
+    setNote(restored.draft?.note || ''); setVisibility(restored.draft?.visibility || 'PUBLIC'); setSpoiler(Boolean(restored.draft?.spoiler));
+    check(selection.text, restored.draft?.visibility || 'PUBLIC');
+    // The consumed intent only restores a form; saving still needs confirmation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restored]);
 
   async function check(text, selectedVisibility) {
+    if (!user) return;
     const request = ++generation.current;
     setChecking(true); setCheckFailed(false); setExisting(null); setError('');
     try {
@@ -121,6 +136,12 @@ export default function QuotePopup({ bookId, chapterId, chapterTitle, chapterInd
     generation.current++; lastSelection.current = null; clearTimeout(closeTimer.current); setPopup({ visible: false }); window.getSelection()?.removeAllRanges();
   }
   async function save() {
+    if (!user) {
+      requestRegistration({ action: 'quote', bookId, chapterId: popup.source?.chapterId || chapterId,
+        returnTo: `${pathname}?chapter=${popup.source?.chapterId || chapterId}`,
+        selection: { text: popup.text, source: popup.source, location: popup.location }, draft: { note, visibility, spoiler } });
+      return;
+    }
     setError('');
     try {
       if (existing && visibility === 'PUBLIC') await repostQuote({ variables: { originalQuoteId: existing.id, repostComment: note.trim() || null, isSpoiler: spoiler } });

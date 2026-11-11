@@ -40,7 +40,7 @@ export function resolveReaderProgress({ chapters, bookmark, local, server, reque
   const completed = new Set(saved?.completed || []);
   const requestedIndex = ids.indexOf(requestedChapterId);
   const bookmarkIndex = ids.indexOf(bookmark?.chapterId);
-  let index = 0, paragraphIndex = null, source = 'default';
+  let index = Math.max(0, chapters.findIndex(chapter => chapter.canReadContent !== false)), paragraphIndex = null, source = 'default';
   if (requestedIndex >= 0) { index = requestedIndex; source = 'link'; }
   else if (bookmarkIndex >= 0) {
     index = bookmarkIndex; source = 'bookmark';

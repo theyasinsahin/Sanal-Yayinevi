@@ -1,3 +1,5 @@
+import { RegistrationCard } from '../../components/Registration/RegistrationPrompt';
+import { useRestoredRegistration } from '../../hooks/useRegistration';
 import GenrePreferenceChoices from '../../components/Books/Classification/GenrePreferenceChoices';
 import { genreName } from '../../utils/genreDisplay';
 import React, { useState } from 'react';
@@ -105,6 +107,7 @@ const PreferenceBox = ({ preference, onEdit }) => {
 
 // --- ANA SAYFA ---
 const FeedPage = () => {
+  useRestoredRegistration('recommendations');
   const { filters } = useFilters();
   const catalogTitle = filters.sortBy === 'closestToTarget' ? 'Hedefe en yakın kitaplar' :
     filters.funding === 'FUNDED' ? 'Hedefini tamamlayan kitaplar' : filters.funding === 'ACTIVE' ? 'Desteği açık kitaplar' : 'Keşfet';
@@ -275,17 +278,7 @@ const FeedPage = () => {
                     // hiçbir geri bildirim almadan kaydın sessizce
                     // başarısız olduğunu görüyordu. Artık baştan net bir
                     // giriş daveti gösteriliyor, boşa vakit kaybettirmiyor.
-                    <div className="no-results-box">
-                      <Typography variant="h6" color="muted">Giriş yapman gerekiyor</Typography>
-                      <Typography variant="body" color="muted" style={{ marginTop: '0.5rem' }}>
-                        Sana özel kitap önerileri hazırlayabilmemiz için önce giriş yapmalısın.
-                      </Typography>
-                      <div style={{ marginTop: '1.5rem' }}>
-                        <Link to="/login" style={{ textDecoration: 'none' }}>
-                          <Button variant="primary">Giriş Yap</Button>
-                        </Link>
-                      </div>
-                    </div>
+                    <RegistrationCard intent={{ action: 'recommendations', returnTo: '/feed?tab=for-you' }} />
                   ) : (!onboardingCompleted || editingPreference) ? (
                     <FeedOnboarding onComplete={handleOnboardingComplete} />
                   ) : (
