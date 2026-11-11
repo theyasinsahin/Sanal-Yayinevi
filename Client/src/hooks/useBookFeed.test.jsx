@@ -15,56 +15,56 @@ const result = (ids, endCursor, hasNextPage) => ({ data: { getBookFeed: { __type
 const wrapper = mocks => ({ children }) => <MockedProvider mocks={mocks}>{children}</MockedProvider>;
 
 test('more books append once while retaining existing cards and server pagination state', async () => {
-  const hook = renderHook(() => useBookFeed(filters), { wrapper: wrapper([
+  const view = renderHook(() => useBookFeed(filters), { wrapper: wrapper([
     { request: { query: GET_BOOK_FEED, variables }, result: result(['first', 'second'], 'cursor', true) },
     { request: { query: GET_BOOK_FEED, variables: { ...variables, after: 'cursor' } }, result: result(['second', 'third'], 'end', false) },
   ]) });
-  await waitFor(() => expect(hook.result.current.books).toHaveLength(2));
-  await act(async () => { await Promise.all([hook.result.current.loadMore(), hook.result.current.loadMore()]); });
-  expect(hook.result.current.moreError).toBeNull();
-  await waitFor(() => expect(hook.result.current.books.map(book => book.id)).toEqual(['first', 'second', 'third']));
-  expect(hook.result.current.hasNextPage).toBe(false);
+  await waitFor(() => expect(view.result.current.books).toHaveLength(2));
+  await act(async () => { await Promise.all([view.result.current.loadMore(), view.result.current.loadMore()]); });
+  expect(view.result.current.moreError).toBeNull();
+  await waitFor(() => expect(view.result.current.books.map(book => book.id)).toEqual(['first', 'second', 'third']));
+  expect(view.result.current.hasNextPage).toBe(false);
 });
 
 test('a delayed older page cannot enter the results after the filter changes', async () => {
-  const hook = renderHook(({ filter }) => useBookFeed(filter), { initialProps: { filter: filters }, wrapper: wrapper([
+  const view = renderHook(({ filter }) => useBookFeed(filter), { initialProps: { filter: filters }, wrapper: wrapper([
     { request: { query: GET_BOOK_FEED, variables }, result: result(['first'], 'cursor', true) },
     { request: { query: GET_BOOK_FEED, variables: { ...variables, after: 'cursor' } }, delay: 100, result: result(['old-page'], 'end', false) },
     { request: { query: GET_BOOK_FEED, variables: { ...variables, classification: { genres: ['fantastik'] } } }, result: result(['filtered'], 'end', false) },
   ]) });
-  await waitFor(() => expect(hook.result.current.books[0]?.id).toBe('first'));
+  await waitFor(() => expect(view.result.current.books[0]?.id).toBe('first'));
   let request;
-  act(() => { request = hook.result.current.loadMore(); });
-  hook.rerender({ filter: { ...filters, classification: { genres: ['fantastik'] } } });
+  act(() => { request = view.result.current.loadMore(); });
+  view.rerender({ filter: { ...filters, classification: { genres: ['fantastik'] } } });
   await act(async () => { await request; });
-  await waitFor(() => expect(hook.result.current.books.map(book => book.id)).toEqual(['filtered']));
+  await waitFor(() => expect(view.result.current.books.map(book => book.id)).toEqual(['filtered']));
 });
 
 test('search waits for typing to settle and sends genre and sort to the server', async () => {
   const searched = jest.fn(() => result(['matching'], 'end', false));
-  const hook = renderHook(({ filter }) => useBookFeed(filter), { initialProps: { filter: filters }, wrapper: wrapper([
+  const view = renderHook(({ filter }) => useBookFeed(filter), { initialProps: { filter: filters }, wrapper: wrapper([
     { request: { query: GET_BOOK_FEED, variables }, result: result(['first'], 'end', false) },
     { request: { query: GET_BOOK_FEED, variables: { ...variables, search: 'roman' } }, result: searched },
     { request: { query: GET_BOOK_FEED, variables: { ...variables, search: 'roman', classification: { genres: ['fantastik'] }, sort: 'POPULAR' } }, result: result(['popular'], 'end', false) },
   ]) });
-  await waitFor(() => expect(hook.result.current.books).toHaveLength(1));
-  hook.rerender({ filter: { ...filters, search: 'r' } });
-  hook.rerender({ filter: { ...filters, search: 'roman' } });
+  await waitFor(() => expect(view.result.current.books).toHaveLength(1));
+  view.rerender({ filter: { ...filters, search: 'r' } });
+  view.rerender({ filter: { ...filters, search: 'roman' } });
   expect(searched).not.toHaveBeenCalled();
-  await waitFor(() => expect(hook.result.current.books[0]?.id).toBe('matching'));
+  await waitFor(() => expect(view.result.current.books[0]?.id).toBe('matching'));
   expect(searched).toHaveBeenCalledTimes(1);
-  hook.rerender({ filter: { ...filters, search: 'roman', classification: { genres: ['fantastik'] }, sortBy: 'popular' } });
-  await waitFor(() => expect(hook.result.current.books[0]?.id).toBe('popular'));
+  view.rerender({ filter: { ...filters, search: 'roman', classification: { genres: ['fantastik'] }, sortBy: 'popular' } });
+  await waitFor(() => expect(view.result.current.books[0]?.id).toBe('popular'));
 });
 
 test('recommendation tab does not download the catalog until enabled', async () => {
   const fetched = jest.fn(() => result(['first'], 'end', false));
-  const hook = renderHook(({ enabled }) => useBookFeed(filters, enabled), { initialProps: { enabled: false }, wrapper: wrapper([
+  const view = renderHook(({ enabled }) => useBookFeed(filters, enabled), { initialProps: { enabled: false }, wrapper: wrapper([
     { request: { query: GET_BOOK_FEED, variables }, result: fetched },
   ]) });
   expect(fetched).not.toHaveBeenCalled();
-  hook.rerender({ enabled: true });
-  await waitFor(() => expect(hook.result.current.books).toHaveLength(1));
+  view.rerender({ enabled: true });
+  await waitFor(() => expect(view.result.current.books).toHaveLength(1));
   expect(fetched).toHaveBeenCalledTimes(1);
 });
 
@@ -75,38 +75,38 @@ test('returning to discovery retains books loaded with load more and the paginat
     { request: { query: GET_BOOK_FEED, variables: { ...variables, after: 'cursor' } }, result: result(['second'], 'next', true) },
   ];
   const provider = ({ children }) => <MockedProvider cache={cache} mocks={mocks}>{children}</MockedProvider>;
-  const first = renderHook(() => useBookFeed(filters), { wrapper: provider });
-  await waitFor(() => expect(first.result.current.books).toHaveLength(1));
-  await act(async () => { await first.result.current.loadMore(); });
-  await waitFor(() => expect(first.result.current.books).toHaveLength(2));
-  first.unmount();
-  const returned = renderHook(() => useBookFeed(filters), {
+  const view = renderHook(() => useBookFeed(filters), { wrapper: provider });
+  await waitFor(() => expect(view.result.current.books).toHaveLength(1));
+  await act(async () => { await view.result.current.loadMore(); });
+  await waitFor(() => expect(view.result.current.books).toHaveLength(2));
+  view.unmount();
+  const utils = renderHook(() => useBookFeed(filters), {
     wrapper: ({ children }) => <MockedProvider cache={cache} mocks={[]}>{children}</MockedProvider>,
   });
-  expect(returned.result.current.books.map(book => book.id)).toEqual(['first', 'second']);
-  expect(returned.result.current.loading).toBe(false);
-  expect(returned.result.current.hasNextPage).toBe(true);
+  expect(utils.result.current.books.map(book => book.id)).toEqual(['first', 'second']);
+  expect(utils.result.current.loading).toBe(false);
+  expect(utils.result.current.hasNextPage).toBe(true);
 });
 
 test('funding filters and closest sort are sent with the same search and pagination cursor', async () => {
   const selected = { ...filters, sortBy: 'closestToTarget', search: 'İpek', classification: { genres: ['roman'] } };
   const requested = { ...variables, sort: 'CLOSEST_TO_TARGET', funding: 'ACTIVE', search: 'İpek', classification: { genres: ['roman'] } };
-  const hook = renderHook(() => useBookFeed(selected), { wrapper: wrapper([
+  const view = renderHook(() => useBookFeed(selected), { wrapper: wrapper([
     { request: { query: GET_BOOK_FEED, variables: requested }, result: result(['near'], 'near-cursor', true) },
     { request: { query: GET_BOOK_FEED, variables: { ...requested, after: 'near-cursor' } }, result: result(['far'], null, false) },
   ]) });
-  await waitFor(() => expect(hook.result.current.books[0]?.id).toBe('near'));
-  await act(async () => { await hook.result.current.loadMore(); });
-  await waitFor(() => expect(hook.result.current.books.map(book => book.id)).toEqual(['near', 'far']));
+  await waitFor(() => expect(view.result.current.books[0]?.id).toBe('near'));
+  await act(async () => { await view.result.current.loadMore(); });
+  await waitFor(() => expect(view.result.current.books.map(book => book.id)).toEqual(['near', 'far']));
 });
 
 test('changing from active campaigns to funded books starts a separate result set', async () => {
-  const hook = renderHook(({ funding }) => useBookFeed({ ...filters, funding }), { initialProps: { funding: 'ACTIVE' }, wrapper: wrapper([
+  const view = renderHook(({ funding }) => useBookFeed({ ...filters, funding }), { initialProps: { funding: 'ACTIVE' }, wrapper: wrapper([
     { request: { query: GET_BOOK_FEED, variables: { ...variables, funding: 'ACTIVE' } }, result: result(['active'], 'cursor', true) },
     { request: { query: GET_BOOK_FEED, variables: { ...variables, funding: 'FUNDED' } }, result: result(['funded'], null, false) },
   ]) });
-  await waitFor(() => expect(hook.result.current.books[0]?.id).toBe('active'));
-  hook.rerender({ funding: 'FUNDED' });
-  await waitFor(() => expect(hook.result.current.books.map(book => book.id)).toEqual(['funded']));
-  expect(hook.result.current.hasNextPage).toBe(false);
+  await waitFor(() => expect(view.result.current.books[0]?.id).toBe('active'));
+  view.rerender({ funding: 'FUNDED' });
+  await waitFor(() => expect(view.result.current.books.map(book => book.id)).toEqual(['funded']));
+  expect(view.result.current.hasNextPage).toBe(false);
 });

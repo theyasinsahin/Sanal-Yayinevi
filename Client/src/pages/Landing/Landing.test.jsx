@@ -1,4 +1,4 @@
-import React, { act } from 'react';
+import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MockedProvider } from '@apollo/client/testing';
@@ -64,12 +64,12 @@ test('typing each character, submitting with Enter and clearing keep the search 
   show([response(books), response([books[2]], { search: 'İstanbul' })]);
   await screen.findByText('En Sevilen Roman');
   const input = screen.getByRole('searchbox');
-  await act(async () => userEvent.type(input, 'İstanbul{enter}'));
+  await userEvent.type(input, 'İstanbul{enter}');
   expect(input).toHaveValue('İstanbul');
   expect(await screen.findByText('1 kitap listeleniyor.')).toBeInTheDocument();
   expect(screen.getByRole('link', { name: 'İstanbul Hikâyeleri' })).toBeInTheDocument();
   expect(screen.queryByRole('link', { name: 'En Sevilen Roman' })).not.toBeInTheDocument();
-  await act(async () => userEvent.click(screen.getByRole('button', { name: 'Aramayı temizle' })));
+  await userEvent.click(screen.getByRole('button', { name: 'Aramayı temizle' }));
   expect(input).toHaveValue('');
   await screen.findByRole('link', { name: 'En Sevilen Roman' });
   expect(screen.getAllByTestId('book-card')).toHaveLength(3);

@@ -5,6 +5,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint index.js jest.config.js eslint.config.js src tests",
     "start": "node index.js",
     "dev": "nodemon index.js",
     "doctor": "node src/scripts/doctor.js",
@@ -26,6 +27,7 @@
     "catalog:curate": "node src/scripts/curatePrintedCatalog.js"
   },
   "devDependencies": {
+    "eslint": "10.14.0",
     "@babel/preset-env": "^7.22.9",
     "@babel/preset-react": "^7.22.5",
     "babel-jest": "^29.6.2",

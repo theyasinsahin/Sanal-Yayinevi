@@ -38,8 +38,8 @@ test.each([true, false])('only a newly registered account inherits this book gue
   saveRegistrationIntent({ action: 'read', bookId: 'book', returnTo: '/book-reader/book?chapter=second' });
   finishRegistrationIntent({ userId: 'reader', isNewAccount });
   const result = localStorage.getItem(progressStorageKey('book', 'reader'));
-  if (isNewAccount) expect(JSON.parse(result)).toMatchObject({ ...guest, updatedAt: expect.any(String), pending: true });
-  else expect(result).toBeNull();
+  const inherited = expect.objectContaining({ ...guest, updatedAt: expect.any(String), pending: true });
+  expect(result ? JSON.parse(result) : null).toEqual(isNewAccount ? inherited : null);
 });
 
 test('a draft completed under another account is discarded instead of reassigned on login', () => {

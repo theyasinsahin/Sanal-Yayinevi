@@ -71,6 +71,8 @@ test('the draft author can publish beside the writing and delete actions', async
   jest.spyOn(window, 'confirm').mockReturnValue(true);
   show();
   const button = screen.getByRole('button', { name: 'Yayınla (Görünür Yap)' });
+  // This layout assertion checks that all author controls share one wrapper.
+  // eslint-disable-next-line testing-library/no-node-access
   const actions = button.closest('.admin-actions');
   expect(actions).toContainElement(screen.getByRole('link', { name: 'Yazmaya Devam Et' }));
   expect(actions).toContainElement(screen.getByRole('button', { name: 'Sil' }));

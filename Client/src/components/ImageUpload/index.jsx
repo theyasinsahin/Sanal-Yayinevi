@@ -1,8 +1,9 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { AddPhotoAlternate } from '@mui/icons-material';
 
-const CLOUD_NAME    = 'dw1sepw7z';
-const UPLOAD_PRESET = 'quill_preset';
+import { CLOUDINARY, IMAGE_UPLOAD_ENABLED } from '../../config/integrations';
+const CLOUD_NAME = CLOUDINARY.cloudName;
+const UPLOAD_PRESET = CLOUDINARY.uploadPreset;
 
 export const cropImage = (file, aspectRatio = 2 / 3, maxWidth = Infinity) => {
   return new Promise((resolve, reject) => {
@@ -72,7 +73,7 @@ const ImageUpload = ({ onUploadSuccess, label = 'Resim Yükle', currentImage, as
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
-    if (!file || loading || disabled) return;
+    if (!file || loading || disabled || !IMAGE_UPLOAD_ENABLED) return;
     if (file.size > maxFileSize || (allowedTypes && !allowedTypes.includes(file.type))) {
       const message = 'JPEG, PNG veya WebP biçiminde, en fazla 8 MB bir görsel seçin.';
       if (onError) onError(message); else alert(message);
@@ -145,7 +146,7 @@ const ImageUpload = ({ onUploadSuccess, label = 'Resim Yükle', currentImage, as
           )}
         </div>
       </label>
-      <input id={inputId} type="file" accept={accept} disabled={disabled || loading} aria-label={label}
+      <input id={inputId} type="file" accept={accept} disabled={disabled || loading || !IMAGE_UPLOAD_ENABLED} aria-label={label}
              onChange={handleFileChange} style={{ display: 'none' }} />
     </div>
   );

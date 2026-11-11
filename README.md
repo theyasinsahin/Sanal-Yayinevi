@@ -1,5 +1,7 @@
 # 🪶 Betik - Sanal Yayınevi ve Kitle Fonlama Platformu
 
+WSL2 + Docker ile yerel geliştirme ve izole CI kurulumu için [geliştirme rehberi](docs/docker-development.md).
+
 Betik, yazarların kitaplarını dijital ortamda yazıp yayınlayabildiği, okurların ise bu kitapları okuyup beğendikleri eserlerin basılması için maddi destekte bulunabildiği (Crowdfunding) modern bir platformdur.
 
 ![Project Status](https://img.shields.io/badge/Status-Development-orange)

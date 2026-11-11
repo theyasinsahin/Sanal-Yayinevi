@@ -286,6 +286,10 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 // fonksiyonu kullanır. Böylece iki farklı giriş noktasında Google
 // doğrulama/kullanıcı oluşturma mantığı birbirinden sapmaz.
 export const authenticateWithGoogleCredential = async (idToken, { requireNonce = false } = {}) => {
+  if (process.env.BETIK_DOCKER_DEV === 'true'
+    && (process.env.DEV_EXTERNAL_INTEGRATIONS !== 'true' || !process.env.GOOGLE_CLIENT_ID)) {
+    throw new Error('Google girişi bu geliştirme ortamında kapalı.');
+  }
   // 1. Google'dan token'ı doğrula
   const ticket = await client.verifyIdToken({
     idToken,

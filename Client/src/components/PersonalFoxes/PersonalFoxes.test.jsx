@@ -44,6 +44,8 @@ test('the eligible viewer sees both supplied assets in decorative, non-interacti
   expect(assets.map(item => item.getAttribute('src')).sort()).toEqual(['/images/fox/plane-fox.png', '/images/fox/standing-fox.png']);
   for (const image of assets) {
     expect(image).toHaveAttribute('draggable', 'false');
+    // The decorative wrapper is intentionally excluded from accessible role queries.
+    // eslint-disable-next-line testing-library/no-node-access
     expect(image.parentElement).toHaveAttribute('aria-hidden', 'true');
   }
 });

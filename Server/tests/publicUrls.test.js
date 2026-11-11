@@ -12,7 +12,8 @@ beforeAll(async () => {
   await connect(); await Promise.all([Book.init(), Chapter.init(), Session.init()]);
   api = new ApolloServer({ schema, plugins: [{ async requestDidStart() { return { async executionDidStart() { return { willResolveField() { return () => {}; } }; } }; } }] });
   await api.start();
-});
+  // Replica-set startup and index creation can exceed the assertion timeout on cold Docker hosts.
+}, 30000);
 afterAll(async () => { await api.stop(); await closeDatabase(); });
 afterEach(clearDatabase);
 beforeEach(async () => {

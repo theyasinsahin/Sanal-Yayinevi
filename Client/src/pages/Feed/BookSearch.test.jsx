@@ -1,4 +1,4 @@
-import React, { act } from 'react';
+import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MockedProvider } from '@apollo/client/testing';
@@ -53,12 +53,12 @@ test.each([
   await screen.findByRole('link', { name: otherBook.title });
   const input = screen.getByRole('searchbox', { name: /Kitap, yazar|Bir sonraki kitabını bul/ });
   expect(input).toHaveAttribute('placeholder', 'Kitap, yazar veya alıntı ara...');
-  await act(async () => userEvent.type(input, term));
+  await userEvent.type(input, term);
   await waitFor(() => expect(screen.getAllByTestId('book-card')).toHaveLength(1));
   expect(screen.getByRole('link', { name: quotedBook.title })).toHaveAttribute('href', quotedBook.publicPath);
   expect(screen.queryByRole('link', { name: otherBook.title })).not.toBeInTheDocument();
   expect(screen.queryByText(quoteText)).not.toBeInTheDocument();
-  await act(async () => userEvent.clear(input));
+  await userEvent.clear(input);
   await screen.findByRole('link', { name: otherBook.title });
   expect(screen.getAllByTestId('book-card')).toHaveLength(2);
 });
