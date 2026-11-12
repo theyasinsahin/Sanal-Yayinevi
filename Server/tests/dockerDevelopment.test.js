@@ -31,11 +31,11 @@ test('production mode and external payment keys are rejected', () => {
   expect(() => assertDockerDevelopment({ ...valid(), IYZICO_API_KEY: 'synthetic' })).toThrow();
 });
 
-test('a legacy production Google client is disabled without blocking local reading', () => {
+test('an explicitly enabled existing Google client is preserved', () => {
   const env = { ...valid(), DEV_EXTERNAL_INTEGRATIONS: 'true',
     GOOGLE_CLIENT_ID: '620840983651-ue12o2dcdbr9o7iv0dkmhj4ed6vstno4.apps.googleusercontent.com' };
   expect(() => configureDockerDevelopment(env)).not.toThrow();
-  expect(env.GOOGLE_CLIENT_ID).toBeUndefined();
+  expect(env.GOOGLE_CLIENT_ID).toBe('620840983651-ue12o2dcdbr9o7iv0dkmhj4ed6vstno4.apps.googleusercontent.com');
 });
 
 test('external credentials are removed unless manually enabled', () => {

@@ -113,6 +113,11 @@ Temel kurulumda DEV_EXTERNAL_INTEGRATIONS=false olduğu için Google, SMTP ve
 Cloudinary kapalıdır. Eksik ayarlar canlı hesaplara düşmez.
 Gerçek entegrasyon kontrolleri otomatik testlerden ayrıdır.
 
+DEV_EXTERNAL_INTEGRATIONS=true olduğunda dosyada açıkça tanımladığınız Google
+ve Cloudinary kimlikleri kullanılır. Mevcut hesaba ait kimlikler de kullanılabilir;
+bu tercih aynı sağlayıcı hesabını paylaşır. Eksik kimlikler Docker ortamında
+üretim varsayılanlarına tamamlanmaz. Üretimde mevcut sağlayıcı ayarları korunur.
+
 1. Ayrı geliştirme Gmail hesabında iki adımlı doğrulama ve uygulama parolası
    hazırlayın. EMAIL_USER, EMAIL_PASS ve CONTACT_EMAIL yalnız bu hesaba ait olsun.
 2. Ayrı Google projesinde web OAuth istemcisi oluşturun. JavaScript origin'leri

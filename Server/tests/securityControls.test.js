@@ -69,11 +69,12 @@ test('a verified Google login loads the real profile and saved-library documents
 });
 
 test('shared rate windows accept only the allowed number of concurrent attempts and hide identities', async () => {
-  const results = await Promise.allSettled(Array.from({ length: 30 }, () => consumeRate('synthetic', 'private@example.test', 5, 60000)));
+  const now = Date.now();
+  const results = await Promise.allSettled(Array.from({ length: 30 }, () => consumeRate('synthetic', 'private@example.test', 5, 60000, now)));
   expect(results.filter(result => result.status === 'fulfilled')).toHaveLength(5);
   expect(results.filter(result => result.reason?.extensions?.code === 'RATE_LIMITED')).toHaveLength(25);
   expect(JSON.stringify(await SecurityRateBucket.find().lean())).not.toContain('private@example.test');
-  await consumeRate('synthetic', 'private@example.test', 5, 60000, Date.now() + 120000);
+  await consumeRate('synthetic', 'private@example.test', 5, 60000, now + 120000);
 });
 
 test('legacy public list queries are bounded and provide stable pagination', async () => {
@@ -85,11 +86,16 @@ test('legacy public list queries are bounded and provide stable pagination', asy
   expect(new Set([...first.data.getAllUsers, ...second.data.getAllUsers].map(user => user.id)).size).toBe(110);
 });
 
-test('login alias batching is charged per attempt and a changed alias does not bypass the IP limit', async () => {
-  for (let i = 0; i < 10; i++) await post({ query: 'mutation { login(email: "synthetic@example.test", password: "wrong") { token } }' });
-  const response = await post({ query: 'mutation { renamed: login(email: "synthetic@example.test", password: "wrong") { token } }' });
-  const body = await response.json();
-  expect(body.errors.some(error => error.extensions.code === 'RATE_LIMITED')).toBe(true);
+test('login attempts are charged per account and a changed alias does not bypass the limit', async () => {
+  // HTTP attempts must stay in one quota window across real quarter-hour boundaries.
+  const now = Date.now();
+  const clock = jest.spyOn(Date, 'now').mockReturnValue(now);
+  try {
+    for (let i = 0; i < 10; i++) await post({ query: 'mutation { login(email: "synthetic@example.test", password: "wrong") { token } }' });
+    const response = await post({ query: 'mutation { renamed: login(email: "synthetic@example.test", password: "wrong") { token } }' });
+    const body = await response.json();
+    expect(body.errors.some(error => error.extensions.code === 'RATE_LIMITED')).toBe(true);
+  } finally { clock.mockRestore(); }
 });
 
 test('HTTP GraphQL returns security headers, denies batches, introspection and simple GET requests', async () => {
