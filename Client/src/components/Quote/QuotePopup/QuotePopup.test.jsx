@@ -16,8 +16,9 @@ beforeEach(() => {
   repost = jest.fn().mockResolvedValue({ data: {} });
   useLazyQuery.mockReturnValue([check]);
   useMutation.mockImplementation(query => [query === CREATE_QUOTE_MUTATION ? create : repost, { loading: false }]);
-  source = document.createElement('div'); source.dataset.quoteSource = ''; source.textContent = text;
-  document.body.appendChild(source); selectedNode = source.firstChild;
+  source = document.createElement('div'); source.dataset.quoteSource = '';
+  selectedNode = document.createTextNode(text);
+  source.appendChild(selectedNode); document.body.appendChild(source);
   jest.spyOn(window, 'getSelection').mockReturnValue({ toString: () => text, rangeCount: 1, removeAllRanges: jest.fn(), getRangeAt: () => ({ startContainer: selectedNode, endContainer: selectedNode, startOffset: 2, endOffset: 34, getBoundingClientRect: () => ({ left: 20, width: 60, top: 100 }) }) });
 });
 afterEach(() => { source.remove(); jest.restoreAllMocks(); });

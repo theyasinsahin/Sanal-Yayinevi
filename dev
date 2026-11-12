@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$(realpath "$0")")"
+export BETIK_WORKSPACE_PATH="$(pwd -P)"
+export LOCAL_UID="$(id -u)"
+export LOCAL_GID="$(id -g)"
+export DOCKER_GID="$(stat -c %g /var/run/docker.sock 2>/dev/null || printf 1000)"
+mkdir -p artifacts
+development() {
+  docker compose -p betik-dev --env-file docker/.env.local -f compose.yaml "$@"
+}
+if [[ "${1:-help}" != help && "${1:-help}" != --help && "${1:-help}" != -h ]]; then
+  endpoint="${DOCKER_HOST:-$(docker context inspect --format '{{.Endpoints.docker.Host}}')}"
+  case "$endpoint" in
+    unix://*) ;;
+    *) echo 'Use the local Docker Desktop Unix socket; remote Docker targets are disabled.' >&2; exit 1 ;;
+  esac
+fi
+tests() {
+  docker compose -p "betik-tests-$LOCAL_UID" -f compose.test.yaml "$@"
+}
+android() {
+  docker compose -p betik-android -f compose.android.yaml --profile android "$@"
+}
+case "${1:-help}" in
+  init) python3 docker/bootstrap.py ;;
+  doctor)
+    python3 docker/bootstrap.py --check
+    docker version --format 'Docker server: {{.Server.Version}}'
+    docker compose version
+    development config --quiet
+    tests config --quiet
+    ;;
+  up)
+    python3 docker/bootstrap.py
+    development up --build -d --wait server client
+    ;;
+  down) development down ;;
+  logs) shift; development logs --tail=100 -f "$@" ;;
+  seed) development run --rm --interactive=false seed ;;
+  db) development exec mongo mongosh betik_dev ;;
+  check)
+    tests build checks browser
+    tests run --rm --interactive=false checks
+    tests run --rm --interactive=false browser
+    ;;
+  test)
+    target="${2:-unit}"
+    if [[ $# -gt 1 ]]; then shift 2; else shift; fi
+    case "$target" in
+      server|client|lint|unit) tests build checks; tests run --rm --interactive=false checks bash docker/checks.sh "$target" "$@" ;;
+      e2e) tests build browser; tests run --rm --interactive=false browser bash docker/checks.sh browser "$@" ;;
+      *) echo 'Use: ./dev test server|client|lint|unit|e2e' >&2; exit 2 ;;
+    esac
+    ;;
+  android)
+    action="${2:-doctor}"
+    mkdir -p artifacts/android
+    case "$action" in
+      setup) android build android; android run --rm android setup ;;
+      doctor|versions) android run --rm --interactive=false android "$action" ;;
+      build)
+        android build android
+        android run --rm --interactive=false android build "${3:-emulator}"
+        ;;
+      import-debug-key)
+        [[ -f "${3:-}" ]] || { echo 'Provide the existing debug.keystore file path.' >&2; exit 2; }
+        android run --rm -T android import-debug-key < "$3"
+        ;;
+      *) echo 'Use: ./dev android setup|doctor|versions|build [emulator|usb]|import-debug-key [path]' >&2; exit 2 ;;
+    esac
+    ;;
+  help|--help|-h)
+    printf '%s\n' './dev init | doctor | up | down | logs [service] | seed | db | check | test [target] | android [action]'
+    ;;
+  *) echo 'Unknown command. Use ./dev help.' >&2; exit 2 ;;
+esac

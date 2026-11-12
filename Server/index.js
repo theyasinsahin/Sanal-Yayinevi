@@ -43,6 +43,10 @@ const startServer = async () => {
     const { port: PORT } = validateServerEnvironment();
     const app = express();
     configureHttpSecurity(app);
+    const revision = process.env.RENDER_GIT_COMMIT;
+    if (/^[a-f0-9]{40}$/.test(revision || '')) {
+      app.use((_req, res, next) => { res.setHeader('X-App-Revision', revision); next(); });
+    }
     app.use(requestShield());
     app.use(compressResponses());
 

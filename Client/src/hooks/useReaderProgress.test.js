@@ -22,43 +22,43 @@ test('hydration waits for the server and does not overwrite a valid local positi
   const original = { lastChapterId: 'second', completedChapterIds: [], updatedAt: '2026-01-01T00:00:00Z' };
   localStorage.setItem(progressStorageKey('book', 'reader'), JSON.stringify(original));
   result.loading = true;
-  const hook = show(); await settle(1000);
-  expect(hook.result.current.ready).toBe(false); expect(fetch).not.toHaveBeenCalled();
+  const view = show(); await settle(1000);
+  expect(view.result.current.ready).toBe(false); expect(fetch).not.toHaveBeenCalled();
   expect(JSON.parse(localStorage.getItem(progressStorageKey('book', 'reader')))).toEqual(original);
   result = { ...result, loading: false, data: { getReadingProgress: { lastChapterId: 'third', completedChapters: [], lastReadAt: '2026-02-01T00:00:00Z' } } };
-  hook.rerender(); await settle(250);
-  expect(hook.result.current.currentChapterIndex).toBe(2);
+  view.rerender(); await settle(250);
+  expect(view.result.current.currentChapterIndex).toBe(2);
   expect(JSON.parse(fetch.mock.calls[0][1].body).variables).toEqual({ bookId: 'book', chapterId: 'third', completedChapterIds: ['first', 'second'] });
-  hook.unmount();
+  view.unmount();
 });
 
 test('a failed initial query allows local reading without replacing an unknown server position', async () => {
   result.error = new Error('offline');
-  const hook = show(); await settle(1000);
-  expect(hook.result.current.ready).toBe(true); expect(hook.result.current.syncError).toBe(true);
+  const view = show(); await settle(1000);
+  expect(view.result.current.ready).toBe(true); expect(view.result.current.syncError).toBe(true);
   expect(fetch).not.toHaveBeenCalled(); expect(localStorage.getItem(progressStorageKey('book', 'reader'))).toBeNull();
   result = { ...result, error: null, data: { getReadingProgress: { lastChapterId: 'third', completedChapters: [], lastReadAt: '2026-02-01T00:00:00Z' } } };
-  hook.rerender(); await settle(250);
-  expect(hook.result.current.currentChapterIndex).toBe(2);
+  view.rerender(); await settle(250);
+  expect(view.result.current.currentChapterIndex).toBe(2);
   expect(JSON.parse(fetch.mock.calls[0][1].body).variables.chapterId).toBe('third');
-  hook.unmount();
+  view.unmount();
 });
 
 test('failed writes remain pending locally and an explicit retry clears the pending flag', async () => {
   fetch.mockRejectedValueOnce(new Error('offline'));
-  const hook = show(); await settle(250);
-  expect(hook.result.current.syncError).toBe(true);
+  const view = show(); await settle(250);
+  expect(view.result.current.syncError).toBe(true);
   expect(JSON.parse(localStorage.getItem(progressStorageKey('book', 'reader'))).pending).toBe(true);
-  await act(async () => { await hook.result.current.retry(); });
-  expect(hook.result.current.syncError).toBe(false);
+  await act(async () => { await view.result.current.retry(); });
+  expect(view.result.current.syncError).toBe(false);
   expect(JSON.parse(localStorage.getItem(progressStorageKey('book', 'reader'))).pending).toBe(false);
-  hook.unmount();
+  view.unmount();
 });
 
 test('an account switch cannot change the credentials of an outgoing progress save', async () => {
-  const hook = show();
-  act(() => hook.result.current.setCurrentChapterIndex(2));
+  const view = show();
+  act(() => view.result.current.setCurrentChapterIndex(2));
   localStorage.setItem('token', 'other-account-token');
-  hook.unmount(); await settle();
+  view.unmount(); await settle();
   expect(fetch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ keepalive: true, headers: expect.objectContaining({ authorization: 'Bearer reader-token' }) }));
 });

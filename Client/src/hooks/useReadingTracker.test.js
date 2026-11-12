@@ -18,46 +18,46 @@ const advance = async ms => { await act(async () => { jest.advanceTimersByTime(m
 const show = (active = true, wrapper) => renderHook(() => useReadingTracker({ isActive: active, userId: 'reader', bookId: 'book', chapterId: 'chapter', onIdleWarning: () => {}, onIdleResume: () => {} }), { wrapper });
 
 test('React rerenders with inline callbacks do not cancel the heartbeat', async () => {
-  const hook = show(); await advance(0); await advance(5000); hook.rerender(); await advance(10000);
+  const view = show(); await advance(0); await advance(5000); view.rerender(); await advance(10000);
   expect(start).toHaveBeenCalledTimes(1);
   expect(report).toHaveBeenCalledWith(expect.objectContaining({ variables: { sessionId: 'token', sequence: 1, seconds: 15, chapterId: 'chapter' } }));
-  hook.unmount();
+  view.unmount();
 });
 
 test('Strict Mode does not create two competing sessions', async () => {
-  const hook = show(true, ({ children }) => <React.StrictMode>{children}</React.StrictMode>);
+  const view = show(true, ({ children }) => <React.StrictMode>{children}</React.StrictMode>);
   await advance(0); await advance(15000);
   expect(start).toHaveBeenCalledTimes(1);
   expect(report).toHaveBeenCalledTimes(1);
-  hook.unmount();
+  view.unmount();
 });
 
 test('a hidden tab does not submit reading seconds', async () => {
-  const hook = show(); await advance(0);
+  const view = show(); await advance(0);
   jest.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
   await advance(60000);
   expect(report).not.toHaveBeenCalled();
-  hook.unmount();
+  view.unmount();
 });
 
 test('inactive readers do not start sessions', async () => {
-  const hook = show(false); await advance(60000);
+  const view = show(false); await advance(60000);
   expect(start).not.toHaveBeenCalled(); expect(report).not.toHaveBeenCalled();
-  hook.unmount();
+  view.unmount();
 });
 
 test('leaving the reader saves a partial minute with an authenticated keepalive request', async () => {
   localStorage.setItem('token', 'test-token');
-  const hook = show(); await advance(0); await advance(10000); hook.unmount(); await advance(0);
+  const view = show(); await advance(0); await advance(10000); view.unmount(); await advance(0);
   expect(fetch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ keepalive: true, headers: expect.objectContaining({ authorization: 'Bearer test-token' }) }));
   expect(JSON.parse(fetch.mock.calls[0][1].body).variables).toMatchObject({ seconds: 10, sequence: 1 });
 });
 
 test('changing chapters keeps the session and sends the new chapter ID', async () => {
-  const hook = renderHook(({ chapterId }) => useReadingTracker({ isActive: true, userId: 'reader', bookId: 'book', chapterId }), { initialProps: { chapterId: 'first' } });
+  const view = renderHook(({ chapterId }) => useReadingTracker({ isActive: true, userId: 'reader', bookId: 'book', chapterId }), { initialProps: { chapterId: 'first' } });
   await advance(0); await advance(15000);
-  hook.rerender({ chapterId: 'second' }); await advance(15000);
+  view.rerender({ chapterId: 'second' }); await advance(15000);
   expect(start).toHaveBeenCalledTimes(1);
   expect(report.mock.calls.map(([request]) => [request.variables.sequence, request.variables.chapterId])).toEqual([[1, 'first'], [2, 'second']]);
-  hook.unmount();
+  view.unmount();
 });

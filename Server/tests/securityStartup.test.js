@@ -18,6 +18,7 @@ test('the actual server entry point starts with isolated credentials and serves 
       cwd: process.cwd(), stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true,
       env: { PATH: process.env.PATH, SystemRoot: process.env.SystemRoot, TEMP: process.env.TEMP,
         NODE_ENV: 'development', BETIK_ISOLATED_PRINT_SANDBOX: 'true',
+        RENDER_GIT_COMMIT: 'a'.repeat(40),
         MONGO_URI: getTestDatabaseUri(`betik_print_sandbox_${randomBytes(12).toString('hex')}`),
         PORT: String(port), JWT_SECRET: 'isolated-startup-synthetic-signing-secret', CLIENT_URL: 'http://localhost:3000',
         PRINT_SYSTEM_ENABLED: 'false', PRINT_PAYMENTS_MODE: 'DISABLED',
@@ -34,6 +35,7 @@ test('the actual server entry point starts with isolated credentials and serves 
     expect(response?.status).toBe(200);
     expect((await response.json()).data.healthCheck).toContain('running');
     expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(response.headers.get('x-app-revision')).toBe('a'.repeat(40));
     expect(response.headers.get('access-control-allow-origin')).toBe('http://localhost:3000');
     expect(response.headers.get('content-security-policy')).toContain("default-src 'none'");
     expect(response.headers.get('x-powered-by')).toBeNull();

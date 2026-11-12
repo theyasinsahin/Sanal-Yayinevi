@@ -142,8 +142,8 @@ describe('book editor autosave integration', () => {
     expect(screen.getByText('Yayınlamak için en az bir bölüme metin ekleyin.')).toBeInTheDocument();
     if (chapters.length) {
       edit('<p>Bir hikâye.</p>');
-      expect(screen.getByRole('button', { name: /Yayınla/ })).toBeEnabled();
     }
+    expect(screen.getByRole('button', { name: /Yayınla/ })).toHaveProperty('disabled', chapters.length === 0);
   });
 
   test('publishing happens only after the current chapter is saved', async () => {

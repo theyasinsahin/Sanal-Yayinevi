@@ -3,6 +3,7 @@ import { useMutation } from '@apollo/client';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Email, Lock, Login as LoginIcon } from '@mui/icons-material';
 import { GoogleLogin } from '@react-oauth/google';
+import { GOOGLE_LOGIN_ENABLED } from '../../../config/integrations';
 
 // --- IMPORTS ---
 import { useAuth } from '../../../context/AuthContext';
@@ -110,19 +111,19 @@ const LoginPage = () => {
               form-POST eder, backend doğrulayıp bizi /auth/callback'e
               token ile geri yönlendirir. Bu akışta onSuccess ÇAĞRILMAZ —
               sonuç URL üzerinden GoogleCallback sayfasında işlenir. */}
-          <div className="google-auth-wrapper">
+          {GOOGLE_LOGIN_ENABLED && <div className="google-auth-wrapper">
             {googleNonce ? <GoogleLogin locale="tr"
               nonce={googleNonce}
               ux_mode="redirect"
               login_uri={GOOGLE_LOGIN_URI}
               onError={() => setCustomError("Google penceresi açılamadı veya iptal edildi.")}
             /> : <p role="status">Tarayıcı oturum depolaması kapalı. E-posta ile devam edebilirsiniz.</p>}
-          </div>
+          </div>}
 
           {/* AYIRICI ÇİZGİ */}
-          <div className="auth-divider">
+          {GOOGLE_LOGIN_ENABLED && <div className="auth-divider">
             <span className="divider-text">VEYA E-POSTA İLE</span>
-          </div>
+          </div>}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="auth-form">

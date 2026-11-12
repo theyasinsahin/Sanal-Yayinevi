@@ -8,7 +8,7 @@ const { chromium } = require('@playwright/test');
 const build = path.resolve(__dirname, '../build');
 const origin = 'https://sanal-yayinevi-pi.vercel.app';
 const expected = `${origin}/auth/google/callback`;
-const sdk = `window.google={accounts:{id:{initialize(options){window.__googleCallbackUnderTest=options.login_uri},renderButton(){},cancel(){},disableAutoSelect(){}}}};`;
+const sdk = `window.google={accounts:{id:{initialize(options){window.__googleCallbackUnderTest=options.login_uri},renderButton(container){const frame=document.createElement('iframe');frame.src='https://accounts.google.com/gsi/button';container.append(frame)},cancel(){},disableAutoSelect(){}}}};`;
 
 (async () => {
   assert.ok(fs.existsSync(path.join(build, 'index.html')), 'Run npm run build first.');
@@ -19,6 +19,9 @@ const sdk = `window.google={accounts:{id:{initialize(options){window.__googleCal
       const url = new URL(route.request().url());
       if (url.hostname === 'accounts.google.com' && url.pathname === '/gsi/client') {
         return route.fulfill({ contentType: 'application/javascript', body: sdk });
+      }
+      if (url.hostname === 'accounts.google.com' && url.pathname === '/gsi/button') {
+        return route.fulfill({ contentType: 'text/html', body: '<!doctype html><button>Google</button>' });
       }
       if (url.origin === origin) {
         const file = ['/login', '/register'].includes(url.pathname) ? path.join(build, 'index.html') : path.resolve(build, `.${decodeURIComponent(url.pathname)}`);
@@ -33,10 +36,16 @@ const sdk = `window.google={accounts:{id:{initialize(options){window.__googleCal
     });
     for (const pathname of ['/login', '/register']) {
       const page = await context.newPage();
+      const googleRequest = page.waitForRequest(request => {
+        const url = new URL(request.url());
+        return url.hostname === 'accounts.google.com' && url.pathname === '/gsi/button';
+      });
       await page.goto(`${origin}${pathname}`);
       await page.waitForFunction(() => Boolean(window.__googleCallbackUnderTest));
       const actual = await page.evaluate(() => window.__googleCallbackUnderTest);
       assert.equal(actual, expected, `${pathname} must send Google POSTs to the website proxy.`);
+      const headers = await (await googleRequest).allHeaders();
+      assert.equal(headers.referer, `${origin}/`, `${pathname} must provide only the origin for Google verification.`);
       process.stdout.write(`${pathname}: ${actual}\n`);
       await page.close();
     }

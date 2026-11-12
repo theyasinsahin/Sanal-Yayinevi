@@ -32,7 +32,8 @@ test('sessions without a cover preserve their content and readable links without
   show(); const card = screen.getByRole('article');
   expect(within(card).queryByRole('img')).not.toBeInTheDocument();
   const heading = within(card).getByRole('heading', { name: session.title });
-  expect(heading.closest('a')).toHaveAttribute('href', session.publicPath);
+  expect(heading).toBeInTheDocument();
+  expect(within(card).getByRole('link', { name: new RegExp(session.title) })).toHaveAttribute('href', session.publicPath);
 });
 
 test('sessions with a cover display the uploaded photo', () => {
