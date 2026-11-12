@@ -66,13 +66,21 @@ test.afterAll(async () => {
   await database?.stop();
 });
 
+async function openLogin(page) {
+  await page.goto('/login');
+  // Navigation can finish before the lazy login route and its nonce effect mount.
+  await expect(page.getByRole('heading', { name: "Betik'e Giriş", exact: true })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => JSON.parse(sessionStorage.getItem('betik:google-login-nonce'))?.nonce))
+    .toMatch(/^[a-f0-9]{64}$/);
+  return page.evaluate(() => JSON.parse(sessionStorage.getItem('betik:google-login-nonce')).nonce);
+}
+
 test('Google form callback stays logged in with real HTTP, WebSocket and ephemeral MongoDB', async ({ page, context }) => {
   await page.route('**/*', route => {
     const url = new URL(route.request().url());
     return url.hostname === '127.0.0.1' && ['3100', '5001'].includes(url.port) ? route.continue() : route.abort();
   });
-  await page.goto('/login');
-  const nonce = await page.evaluate(() => JSON.parse(sessionStorage.getItem('betik:google-login-nonce')).nonce);
+  const nonce = await openLogin(page);
   const csrf = 'synthetic-browser-google-csrf-token';
   await context.addCookies([{ name: 'g_csrf_token', value: csrf, url: 'http://127.0.0.1:5001' }]);
   await page.evaluate(({ nonce, csrf }) => {
@@ -99,8 +107,7 @@ test('same-origin auth proxy preserves the CSRF cookie that a different-host cal
     const url = new URL(route.request().url());
     return ['127.0.0.1', 'localhost'].includes(url.hostname) && ['3100', '5001'].includes(url.port) ? route.continue() : route.abort();
   });
-  await page.goto('/login');
-  const nonce = await page.evaluate(() => JSON.parse(sessionStorage.getItem('betik:google-login-nonce')).nonce);
+  const nonce = await openLogin(page);
   const csrf = 'synthetic-frontend-only-google-csrf';
   await context.addCookies([{ name: 'g_csrf_token', value: csrf, url: 'http://127.0.0.1:3100' }]);
   const submit = action => page.evaluate(({ action, nonce, csrf }) => {
@@ -116,7 +123,7 @@ test('same-origin auth proxy preserves the CSRF cookie that a different-host cal
   expect((await rejected).status()).toBe(403);
   await expect(page.locator('body')).toContainText('GOOGLE_CSRF_FAILED');
 
-  await page.goto('/login');
+  await openLogin(page);
   let forwardedCookie;
   await page.route('http://127.0.0.1:3100/auth/google/callback', async route => {
     const headers = await route.request().allHeaders();
