@@ -1,0 +1,23 @@
+const { start, SB } = require('../lib.cjs');
+const one = t => t.replace(/\n+/g, ' | ');
+const U = '/kitap/stage2-basili-deneme-docker-author';
+(async () => {
+  const D = await start({ role: 'admin', tag: 'admin' }); const d = D.page;
+  await D.go('/admin/data/Comment?record=6af860cbfbba96dbf14e6453', 1500);
+  const save = async () => { D.clear(); await D.clickText('DEĞİŞİKLİKLERİ KAYDET', 'main'); await d.waitForTimeout(1500); return { muts: D.muts().map(m => m.slice(0, 260)), err: D.gql().filter(g => g.includes('!!')), toast: (await D.toasts()).slice(0, 1), invalid: await d.locator('main :invalid').count() }; };
+  await D.step('save without reason', async () => { await d.locator('main input[type=checkbox]').last().check(); return save(); });
+  await D.step('archive with reason', async () => { await d.locator('main textarea').last().fill('Stage 2 moderasyon testi'); return save(); });
+  await D.step('comment hidden on site', async () => { await D.go(U, 1200); const t = one(await D.text('main', 3000)); return t.slice(t.indexOf('Okur yorumları')).slice(0, 160); });
+  await D.step('restore', async () => { await D.go('/admin/data/Comment?record=6af860cbfbba96dbf14e6453', 1500); await d.locator('main input[type=checkbox]').last().uncheck(); await d.locator('main textarea').last().fill('Stage 2 geri alma'); return save(); });
+  await D.step('audit log', async () => { await D.go('/admin/data/AdminAudit', 1500); const t = one(await D.text('main', 3000)); return t.slice(t.indexOf('kayıt ·')).slice(0, 500); });
+  await D.step('schema view', async () => { await D.go('/admin/data/Comment', 1000); await D.clickText('Şema ve alanlar', 'main'); await d.waitForTimeout(900); await D.shot('admin/schema_comment'); const t = one(await D.text('main', 3000)); return t.slice(t.indexOf('Şema ve alanlar') + 16).slice(0, 500); });
+  await D.step('admin powers: book detail + comments + session + profile', async () => { await D.go('/kitap/docker-ornek-hikaye-dev-author', 1200); const bd = (await D.ui('main', 40)).split(' | ').filter(x => /button/.test(x)).map(x => x.replace(/button:\w+ /, '')).join(','); const del = await d.locator('.comment-item .delete-icon-btn').count(); await D.go('/oturum/stage2-ozel-oturum', 1200); const sess = one(await D.text('main', 250)); await D.go('/yazar/dev_reader', 1000); const prof = (await D.ui('main', 12)).slice(0, 260); await D.go('/dashboard/000000000000000000000201', 1200); const dash = one(await D.text('main', 150)); return { bd, commentDeleteBtns: del, sess, prof, dash }; });
+  await D.end();
+  const P = await start({ role: 'publisher', tag: 'publisher' }); const p = P.page;
+  await P.step('publisher portal', async () => { const u = await P.go('/publisher', 1500); await P.shot('publisher/portal', { full: true }); return { u, t: one(await P.text('main', 1500)).slice(0, 1100), ui: (await P.ui('main', 30)).slice(0, 600), ops: [...new Set(P.gql())].filter(o => /publish/i.test(o)), nav: (await p.locator('nav.navigation-bar a').evaluateAll(a => [...new Set(a.map(x => x.innerText.trim()))])).join(',') }; });
+  await P.step('publisher → /admin', async () => P.go('/admin'));
+  await P.end();
+  const R = await start({ role: 'reader', tag: 'guards' });
+  await R.step('member → /admin, /publisher, other dashboard, other print', async () => ({ admin: await R.go('/admin'), pub: await R.go('/publisher'), dash: await R.go('/dashboard/000000000000000000000201', 1200) + ' :: ' + one(await R.text('body', 160)), print: await R.go('/print/6af85920fbba96dbf14e42be', 1200) + ' :: ' + one(await R.text('main', 200)) }));
+  await R.end();
+})();

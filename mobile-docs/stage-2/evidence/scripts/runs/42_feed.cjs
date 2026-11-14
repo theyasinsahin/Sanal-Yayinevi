@@ -1,0 +1,20 @@
+const { start, SB } = require('../lib.cjs');
+const one = t => t.replace(/\n+/g, ' | ');
+(async () => {
+  const R = await start({ role: 'reader', tag: 'feed' }); const r = R.page;
+  await R.go('/'); 
+  await R.step('landing search', async () => { const i = r.getByPlaceholder(/Kitap, yazar veya alıntı ara/).first(); await i.fill('stage2'); R.clear(); await i.press('Enter'); await r.waitForTimeout(1500); return { url: r.url().slice(21), ops: [...new Set(R.gql())] }; });
+  await R.go('/feed');
+  const titles = () => r.locator('main [class*=book-card i] h3, main [class*=book-card i] [class*=title i]').allInnerTexts().then(a => [...new Set(a)]);
+  await R.step('initial', async () => ({ titles: await titles(), vars: R.events.filter(e => e.op === 'GetBookFeed').length }));
+  await R.step('search debounce', async () => { const i = r.getByPlaceholder(/Kitap, yazar veya alıntı ara/).first(); R.clear(); const t0 = Date.now(); await i.pressSequentially('çağ ışık', { delay: 50 }); await r.waitForTimeout(1500); const calls = R.events.filter(e => e.op === 'GetBookFeed'); const res = { calls: calls.length, firstAfterMs: calls[0] && calls[0].at - t0, titles: await titles(), url: r.url().slice(21) }; await i.fill('CAG ISIK'); await r.waitForTimeout(1300); res.folded = await titles(); await i.fill('zzzzqq'); await r.waitForTimeout(1300); await R.shot('discovery/feed_empty_search'); res.none = one(await R.text('main', 2000)).slice(-160); await i.fill(''); await r.waitForTimeout(1000); return res; });
+  await R.step('filter format=Roman', async () => { R.clear(); await r.locator('main select').first().selectOption({ label: 'Roman' }); await r.waitForTimeout(1200); const t = await titles(); const chips = one(await R.text('main', 1500)).match(/listeleniyor[^|]*|Filtreleri[^|]*|temizle[^|]*/gi); await r.locator('main select').first().selectOption({ index: 0 }); await r.waitForTimeout(800); return { t, chips, url: r.url().slice(21) }; });
+  await R.step('sort options', async () => { const out = {}; for (const s of ['En Popüler', 'En Eski', 'En Son Güncellenen', 'Hedefe en yakın', 'En Yeni']) { await r.getByLabel(s, { exact: true }).check({ force: true }).catch(async () => R.clickText(s, 'main')); await r.waitForTimeout(900); out[s] = (await titles()).map(x => x.slice(0, 8)).join('>'); } return out; });
+  await R.step('support filter', async () => { await R.clickText('Desteği açık kitaplar', 'main'); await r.waitForTimeout(1000); const t = one(await R.text('main', 2500)).slice(-200); await R.clickText('Tüm kitaplar', 'main'); await r.waitForTimeout(600); return t; });
+  await R.step('for-you tab', async () => { R.clear(); await R.clickText('Senin için', 'main'); await r.waitForTimeout(1500); await R.shot('discovery/for_you'); return { ops: [...new Set(R.gql())], t: one(await R.text('main', 2500)).slice(-500), modal: (await R.modal()).slice(0, 300) }; });
+  await R.step('for-you ui', async () => (await R.ui('main', 120)).split(' | ').filter(x => !/select|radio/.test(x)).slice(-12).join(' | '));
+  await R.end();
+  const G = await start({ role: 'guest', tag: 'feed-guest' });
+  await G.step('guest for-you', async () => { await G.go('/feed'); await G.clickText('Senin için', 'main'); await G.page.waitForTimeout(1200); return { url: G.page.url().slice(21), t: one(await G.text('main', 2500)).slice(-250), modal: (await G.modal()).slice(0, 200) }; });
+  await G.end();
+})();

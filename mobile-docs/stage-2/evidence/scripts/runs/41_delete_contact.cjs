@@ -1,0 +1,20 @@
+const { start, SB } = require('../lib.cjs'); const fs = require('fs');
+const one = t => t.replace(/\n+/g, ' | ');
+const mails = () => { const d = SB + '/data/mail'; return fs.readdirSync(d).sort().map(f => JSON.parse(fs.readFileSync(d + '/' + f))); };
+const PW3 = '<disposable-password>', EM = 'stage2new@betik-dev.invalid';
+(async () => {
+  let S = await start({ role: 'stage2', tag: 'delete' }); let s = S.page;
+  await S.go('/profile'); await S.clickText('AYARLAR', 'main'); await s.waitForTimeout(400); await S.clickText('HESABI SİL', 'main'); await s.waitForTimeout(400); await S.clickText('HESABI SİL', 'main', 1); await s.waitForTimeout(500);
+  await S.step('delete wrong phrase', async () => { await s.getByPlaceholder('hesabımı sil').fill('sil'); const dis = await s.locator('main button').filter({ hasText: 'KALICI OLARAK' }).isDisabled(); return { disabled: dis }; });
+  await S.step('delete confirm', async () => { await s.getByPlaceholder('hesabımı sil').fill('hesabımı sil'); S.clear(); await S.clickText('KALICI OLARAK SİL', 'main'); await s.waitForTimeout(2000); return { muts: S.muts(), url: s.url().slice(21), toast: (await S.toasts()).slice(0, 1) }; });
+  await S.end();
+  const G = await start({ role: 'guest', tag: 'contact' }); const g = G.page;
+  await G.step('login deleted account', async () => { const u = await G.login({ email: EM, password: PW3, name: 'deleted' }); return { u, toast: (await G.toasts()).slice(0, 1) }; });
+  await G.go('/contact');
+  await G.step('contact empty', async () => { G.clear(); await g.locator('main button[type=submit]').click(); await g.waitForTimeout(500); return { ops: G.muts().length, invalid: await g.locator('main :invalid').count(), fields: await g.locator('main form input, main form textarea').evaluateAll(a => a.map(e => e.name + ':' + e.type + (e.maxLength > 0 ? ' max' + e.maxLength : '') + (e.required ? ' req' : ''))) }; });
+  await G.step('contact send', async () => { const f = g.locator('main form'); await f.locator('input').nth(0).fill('Deneme Kişi'); await f.locator('input[type=email]').fill('ziyaretci@betik-dev.invalid'); await f.locator('input').nth(2).fill('Stage 2 iletişim testi'); await f.locator('textarea').fill('Bu mesaj yerel posta kutusuna düşmeli.'); G.clear(); await g.locator('main button[type=submit]').click(); await g.waitForTimeout(2500); await G.shot('community/contact_sent'); const m = mails().pop(); return { muts: G.muts().map(x => x.slice(0, 120)), t: one(await G.text('main', 500)).slice(0, 260), toast: (await G.toasts()).slice(0, 1), mail: m.to + ' | ' + m.subject }; });
+  await G.step('newsletter no consent', async () => { const f = g.locator('footer form'); await f.locator('input[type=email]').fill('bulten@betik-dev.invalid'); G.clear(); await f.locator('button[type=submit]').click(); await g.waitForTimeout(700); return { muts: G.muts().length, invalid: await f.locator(':invalid').count() }; });
+  await G.step('newsletter subscribe', async () => { const f = g.locator('footer form'); await f.locator('input[type=checkbox]').check(); G.clear(); await f.locator('button[type=submit]').click(); await g.waitForTimeout(2500); await G.shot('community/newsletter_subscribed'); const m = mails().pop(); const link = ((m.text || '').match(/http\S+newsletter\S+/) || [''])[0]; return { muts: G.muts().map(x => x.slice(0, 120)), footer: one(await g.locator('footer').innerText()).slice(-220), mail: m.to + ' | ' + m.subject, link: link.replace(/token=[^&\s]+/, 'token=<t>') }; });
+  await G.step('newsletter link page', async () => { const m = mails().pop(); const link = ((m.text || '').match(/http\S+newsletter\S+/) || [''])[0]; if (!link) return 'no link'; await G.go(link.replace('http://localhost:3055', '')); await G.shot('community/newsletter_manage'); const t = one(await G.text('main', 400)); const ui = await G.ui('main', 10); const b = g.locator('main button').first(); if (await b.count()) { G.clear(); await b.click(); await g.waitForTimeout(1500); } return { t, ui, muts: G.muts().map(x => x.replace(/"token":"[^"]*"/, '"token":"<t>"').slice(0, 120)), after: one(await G.text('main', 300)) }; });
+  await G.end();
+})();

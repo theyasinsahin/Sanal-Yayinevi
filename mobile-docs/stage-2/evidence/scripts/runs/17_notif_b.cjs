@@ -1,0 +1,13 @@
+const { start, SB } = require('../lib.cjs');
+const B = '/kitap/docker-ornek-hikaye-dev-author';
+const short = u => u.replace('http://localhost:3055', '');
+(async () => {
+  const s = await start({ role: 'author', tag: 'notif-b' }); const p = s.page; await s.go(B);
+  await s.step('open bell', async () => { await p.getByRole('button', { name: 'Bildirimler' }).first().click(); await p.waitForTimeout(1000); return (await p.locator('.notif-dropdown').innerText()).replace(/\n/g, ' | ').slice(0, 1200); });
+  await s.step('notif item html', async () => (await p.locator('.notif-item').first().evaluate(e => e.outerHTML)).replace(/<svg.*?<\/svg>/gs, '<svg/>').slice(0, 500));
+  await s.step('click mention/comment notification', async () => { const it = p.locator('.notif-item').filter({ hasText: /yorum|bahset|etiket/i }).first(); const txt = (await it.innerText()).replace(/\n/g, ' / '); await it.click(); await p.waitForTimeout(1500); return { txt, url: short(p.url()), hl: await p.locator('.comment-item').evaluateAll(a => a.map(c => c.className)) }; });
+  await s.step('overlay closes panel', async () => { await p.getByRole('button', { name: 'Bildirimler' }).first().click(); await p.waitForTimeout(600); const open1 = await p.locator('.notif-dropdown').isVisible(); await p.locator('.notif-overlay').click({ position: { x: 5, y: 400 } }); await p.waitForTimeout(400); return { open1, afterOverlay: await p.locator('.notif-dropdown').isVisible().catch(() => false), badge: await p.locator('.notif-bell-wrapper').first().innerText() }; });
+  await s.step('reply', async () => { await p.locator('.comment-item .action-link').nth(1).click(); await p.waitForTimeout(500); const html = await p.locator('.comment-item').first().evaluate(e => e.parentElement.outerHTML.replace(/<svg.*?<\/svg>/gs, '').slice(-900)); console.log('  REPLY DOM:', html); const box = p.locator('textarea').nth(1); await box.fill('Teşekkürler! @dev_reader'); s.clear(); await box.locator('xpath=ancestor::*[self::form or contains(@class,"reply")][1]').locator('button').last().click(); await p.waitForTimeout(1200); const t = await s.text('main', 5000); await s.shot('comments/thread_with_reply'); return { muts: s.muts(), section: t.slice(t.indexOf('Yorumlar')).replace(/\n/g, ' | ').slice(0, 500) }; });
+  await s.step('delete own reply', async () => { s.clear(); const c = p.locator('.comment-item').filter({ hasText: 'Teşekkürler' }).last(); await c.locator('.delete-icon-btn').last().click(); await p.waitForTimeout(1000); return { dialogs: s.dialogs(), muts: s.muts(), toasts: await s.toasts(), modal: await s.modal() }; });
+  await s.end();
+})();

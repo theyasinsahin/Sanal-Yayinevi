@@ -1,0 +1,22 @@
+const { start, SB } = require('../lib.cjs');
+const short = u => u.replace('http://localhost:3055', '');
+(async () => {
+  const A = await start({ role: 'author', tag: 'msg-author' }), R = await start({ role: 'reader', tag: 'msg-reader' }); const a = A.page, r = R.page;
+  await A.go('/messages', 2000); console.log('A ws:', A.ws().slice(0, 8)); console.log('A list:', (await A.text('main', 300)).replace(/\n/g, ' | '));
+  await R.go('/messages', 1500); await r.locator('main button').filter({ hasText: 'Docker author' }).first().click(); await r.waitForTimeout(1000);
+  A.clear();
+  await R.step('send message 2', async () => { const inp = r.getByPlaceholder('Mesaj yaz...'); await inp.fill('İkinci mesaj — canlı test'); R.clear(); await inp.press('Enter'); await r.waitForTimeout(1000); return { muts: R.muts() }; });
+  await A.step('author live', async () => { for (let i = 0; i < 12; i++) { const t = await A.text('main', 600); if (t.includes('canlı test')) return { afterSec: i, list: t.replace(/\n/g, ' | ').slice(0, 200) }; await a.waitForTimeout(1000); } return { no: true, ws: A.ws().slice(-6), ops: A.gql(), list: (await A.text('main', 300)).replace(/\n/g, ' | '), navBadge: (await a.locator('nav').innerText()).replace(/\n/g, '|').slice(-60) }; });
+  await A.step('author opens chat', async () => { await a.locator('main button').filter({ hasText: 'Docker reader' }).first().click(); await a.waitForTimeout(1200); return { url: short(a.url()), chat: (await a.locator('.chat-messages').innerText()).replace(/\n/g, ' | ') }; });
+  await A.step('author replies', async () => { const inp = a.getByPlaceholder('Mesaj yaz...'); await inp.fill('Selam! Yanıt.'); A.clear(); await a.locator('main button[type=submit]').click(); await a.waitForTimeout(900); return { muts: A.muts().map(m => m.slice(0, 150)) }; });
+  await R.step('reader live', async () => { for (let i = 0; i < 12; i++) { const t = await r.locator('.chat-messages').innerText(); if (t.includes('Selam! Yanıt.')) return { afterSec: i }; await r.waitForTimeout(1000); } return { no: true, ws: R.ws().slice(-5) }; });
+  await R.shot('messaging/chat_reader'); await A.shot('messaging/chat_author');
+  await R.step('bubble menu', async () => { await r.locator('.bubble-row--own .bubble-menu-btn').last().click({ force: true }); await r.waitForTimeout(400); await R.shot('messaging/bubble_menu'); const m = await r.locator('.bubble-menu-wrapper').last().innerText(); return m.replace(/\n/g, ' | '); });
+  await R.step('delete own message', async () => { R.clear(); await R.clickText('Sil', '.chat-messages'); await r.waitForTimeout(1000); return { dialogs: R.dialogs(), muts: R.muts(), chat: (await r.locator('.chat-messages').innerText()).replace(/\n/g, ' | ') }; });
+  await A.step('author sees deletion live', async () => { await a.waitForTimeout(3000); return (await a.locator('.chat-messages').innerText()).replace(/\n/g, ' | '); });
+  await R.step('other bubble has menu?', async () => r.locator('.bubble-row:not(.bubble-row--own) .bubble-menu-btn').count());
+  await R.step('empty/whitespace send', async () => { const inp = r.getByPlaceholder('Mesaj yaz...'); await inp.fill('   '); return { disabled: await r.locator('main button[type=submit]').isDisabled() }; });
+  await R.step('long message 3000', async () => { const inp = r.getByPlaceholder('Mesaj yaz...'); await inp.fill('x'.repeat(3000)); R.clear(); await inp.press('Enter'); await r.waitForTimeout(1000); return { muts: R.muts().map(m => m.slice(0, 60) + (m.includes('!!') ? m.slice(m.indexOf('!!')) : '')), toasts: await R.toasts(), val: (await inp.inputValue()).length }; });
+  await R.step('recipient search', async () => { const sInp = r.getByPlaceholder('Mesaj göndereceğin kişiyi ara'); await sInp.fill('dev'); R.clear(); await r.waitForTimeout(1200); await R.shot('messaging/recipient_search'); return { ops: R.gql(), list: (await r.locator('main').innerText()).replace(/\n/g, ' | ').slice(0, 400) }; });
+  await A.end(); await R.end();
+})();

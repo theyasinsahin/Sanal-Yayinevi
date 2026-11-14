@@ -1,0 +1,22 @@
+const { start, SB } = require('../lib.cjs');
+const one = t => t.replace(/\n+/g, ' | ');
+const U = '/kitap/stage2-basili-deneme-docker-author';
+(async () => {
+  const R = await start({ role: 'reader', tag: 'printed' }); const r = R.page; await R.go(U);
+  await R.step('rate without score', async () => { R.clear(); await R.clickText('OKUDUM, KİTAPLIĞIMA EKLE', 'main'); await r.waitForTimeout(600); return { muts: R.muts().length, invalid: await r.locator('main select:invalid').count() }; });
+  await R.step('rate 4 + review', async () => { await r.locator('main select').first().selectOption({ label: '4 / 5' }); await r.locator('textarea[id^=reading-review], textarea[name^=reading-review]').fill('Akıcı bir kitap.'); R.clear(); await R.clickText('OKUDUM, KİTAPLIĞIMA EKLE', 'main'); await r.waitForTimeout(1300); const t = one(await R.text('main', 1500)); return { muts: R.muts(), toast: (await R.toasts()).slice(0, 1), block: t.slice(t.indexOf('Okudum ve'), t.indexOf('Kitap hakkında')).slice(0, 400) }; });
+  await R.step('comment', async () => { await r.locator('textarea[id=printed-comment], textarea[name=printed-comment]').fill('Basılı kitaba yorum.'); R.clear(); await R.clickText('YORUM GÖNDER', 'main'); await r.waitForTimeout(1000); return R.muts(); });
+  await R.step('printed quote', async () => { await R.clickText('Alıntı paylaş', 'main').catch(() => {}); await r.waitForTimeout(400); await r.locator('textarea[id=printed-quote], textarea[name=printed-quote]').fill('Basılı kitaptan elle girilen alıntı metni.'); await r.locator('input[id=printed-page-number], input[name=printed-page-number]').fill('42'); R.clear(); await r.locator('textarea[id=printed-quote], textarea[name=printed-quote]').locator('xpath=ancestor::form[1]').locator('button[type=submit]').click(); await r.waitForTimeout(1200); const t = one(await R.text('main', 3000)); await R.shot('printed/detail_with_review_quote', { full: true }); return { muts: R.muts(), tail: t.slice(t.indexOf('Kitaptan alıntılar')).slice(0, 300) }; });
+  await R.step('shelf on profile', async () => { await R.go('/profile'); await R.clickText('OKUDUĞUM BASILI KİTAPLAR', 'main'); await r.waitForTimeout(900); await R.shot('profile/printed_shelf'); const t = one(await R.text('main', 1200)); return t.slice(t.indexOf('AYARLAR') + 8).slice(0, 300); });
+  await R.step('my contributions', async () => { await R.go('/printed-books'); await R.clickText('Basılı Kitap Katkılarım', 'main'); await r.waitForTimeout(700); await R.shot('printed/my_submissions'); const t = one(await R.text('main', 900)); return t.slice(t.indexOf('Katkılarım')).slice(0, 300); });
+  await R.end();
+  const A = await start({ role: 'author', tag: 'printed-claim' }); const a = A.page; await A.go(U);
+  await A.step('claim', async () => { await A.clickText('Hak talebinde bulunun', 'main'); await a.waitForTimeout(400); const t0 = one(await A.text('main', 2500)); const blk = t0.slice(t0.indexOf('Bu kitabın yazarı')).slice(0, 350); await a.locator('textarea[id=claim-evidence], textarea[name=claim-evidence]').fill('Kitabın yazarıyım; yayın sözleşmem mevcut.'); await a.locator('main input[type=url]').first().fill('https://example.org/sozlesme'); A.clear(); await a.locator('textarea[id=claim-evidence], textarea[name=claim-evidence]').locator('xpath=ancestor::form[1]').locator('button[type=submit]').click(); await a.waitForTimeout(1200); const t = one(await A.text('main', 2500)); return { blk, muts: A.muts().map(m => m.slice(0, 200)), after: t.slice(t.indexOf('Bu kitabın yazarı')).slice(0, 200), toast: (await A.toasts()).slice(0, 1) }; });
+  await A.end();
+  const D = await start({ role: 'admin', tag: 'printed-admin' }); const d = D.page; await D.go('/admin/printed-books');
+  await D.step('claim queue + approve', async () => { const t = one(await D.text('main', 900)); const blk = t.slice(t.indexOf('Yazar hak talepleri')).slice(0, 350); D.clear(); await D.clickText('ONAYLA', 'main'); await d.waitForTimeout(1200); return { blk, muts: D.muts().map(m => m.slice(0, 160)) }; });
+  await D.end();
+  const A2 = await start({ role: 'author', tag: 'printed-claim' });
+  await A2.step('author after claim approved', async () => { await A2.go(U); const ui = await A2.ui('main', 20); await A2.go('/profile'); const t = one(await A2.text('main', 900)); return { ui: ui.slice(0, 500), profile: t.slice(t.indexOf('AYARLAR')).slice(0, 300) }; });
+  await A2.end();
+})();

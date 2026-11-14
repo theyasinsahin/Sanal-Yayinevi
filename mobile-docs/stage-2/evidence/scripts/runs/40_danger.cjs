@@ -1,0 +1,20 @@
+const { start, SB } = require('../lib.cjs');
+const one = t => t.replace(/\n+/g, ' | ');
+const PW3 = '<disposable-password>', EM = 'stage2new@betik-dev.invalid';
+(async () => {
+  let S = await start({ role: 'stage2', tag: 'danger' }); let s = S.page;
+  const openTab = async (t) => { await S.go('/profile'); await S.clickText('AYARLAR', 'main'); await s.waitForTimeout(400); await S.clickText(t, 'main'); await s.waitForTimeout(500); };
+  const zone = async () => { const t = one(await S.text('main', 5000)); return t.slice(t.indexOf('Tehlikeli')).slice(0, 700); };
+  await openTab('HESABI SİL');
+  await S.step('deactivate click', async () => { s.__dismiss = true; await S.clickText('DEVRE DIŞI BIRAK', 'main'); await s.waitForTimeout(800); await S.shot('settings/deactivate_confirm'); const d1 = S.dialogs(); s.__dismiss = false; return { d1, zone: await zone(), modal: (await S.modal()).slice(0, 300), inputs: await s.locator('main input, [class*=modal i] input').evaluateAll(a => a.map(e => e.type + ':' + (e.placeholder || e.getAttribute('aria-label') || e.id))) }; });
+  await S.step('deactivate confirm', async () => { const pw = s.locator('input[type=password]').last(); if (await pw.count()) await pw.fill(PW3); S.clear(); const cands = ['Evet', 'Onayla', 'DEVRE DIŞI BIRAK']; for (const c of cands) { try { await S.clickText(c, 'body', c === 'DEVRE DIŞI BIRAK' ? 0 : 0); break; } catch {} } await s.waitForTimeout(2000); return { dialogs: S.dialogs(), muts: S.muts(), url: s.url().slice(21), toast: (await S.toasts()).slice(0, 1) }; });
+  await S.end();
+  const P = await start({ role: 'publisher', tag: 'danger-pub' });
+  await P.step('deactivated profile as other', async () => { const u = await P.go('/yazar/stage2_user'); await P.shot('profile/deactivated_user'); return { u, t: one(await P.text('body', 200)) }; });
+  await P.end();
+  S = await start({ role: 'guest', tag: 'danger' }); s = S.page;
+  await S.step('login reactivates', async () => { const u = await S.login({ email: EM, password: PW3, name: 'stage2' }); return { u, toast: (await S.toasts()).slice(0, 1), t: one(await S.text('main', 100)) }; });
+  await openTab('HESABI SİL');
+  await S.step('delete click', async () => { s.__dismiss = true; await S.clickText('HESABI SİL', 'main', 1); await s.waitForTimeout(800); await S.shot('settings/delete_confirm'); const d1 = S.dialogs(); s.__dismiss = false; return { d1, zone: await zone(), modal: (await S.modal()).slice(0, 400), inputs: await s.locator('main input, [class*=modal i] input').evaluateAll(a => a.map(e => e.type + ':' + (e.placeholder || e.getAttribute('aria-label') || e.id))), btns: (await s.locator('main button:not(.settings-nav-btn), [class*=modal i] button').allInnerTexts()).slice(-5) }; });
+  await S.end();
+})();

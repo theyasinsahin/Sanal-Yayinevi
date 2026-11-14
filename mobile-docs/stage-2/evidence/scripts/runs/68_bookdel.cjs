@@ -1,0 +1,8 @@
+const { start, SB } = require('../lib.cjs');
+const one = t => t.replace(/\n+/g, ' | ');
+(async () => {
+  const A = await start({ role: 'author', tag: 'bookdel' }); const a = A.page;
+  await A.step('unpublish seed story (Taslağa Çek) and republish', async () => { await A.go('/kitap/docker-ornek-hikaye-dev-author', 1200); A.clear(); await A.clickText('Taslağa Çek', 'main'); await a.waitForTimeout(1500); const d = A.dialogs(); const m = A.muts().map(x => x.slice(0, 90)); const btns = (await a.locator('main button').allInnerTexts()).filter(t => /yayın|taslak|tamamla/i.test(t)); const G = await start({ role: 'guest', tag: 'bookdel-g' }); await G.go('/kitap/docker-ornek-hikaye-dev-author'); const guest = one(await G.text('main', 50)); await G.end(); A.clear(); await A.clickText('Yayınla', 'main').catch(() => {}); await a.waitForTimeout(1500); return { d, m, btns, guestSees: guest, republish: A.muts().map(x => x.slice(0, 90)), d2: A.dialogs().slice(-1) }; });
+  await A.step('delete draft book', async () => { const u = await A.go('/book-detail/000000000000000000000202', 1200); const ui = (await a.locator('main button').allInnerTexts()).join(','); a.__dismiss = true; await a.locator('main button').filter({ hasText: /^SİL$|^Sil$/ }).click(); await a.waitForTimeout(600); const d1 = A.dialogs().slice(-1); const modal = (await A.modal()).slice(0, 200); a.__dismiss = false; A.clear(); if (modal) await A.clickText('Sil', '[class*=modal i]', 0).catch(() => {}); else await a.locator('main button').filter({ hasText: /^SİL$|^Sil$/ }).click(); await a.waitForTimeout(1800); return { u, ui: ui.slice(0, 200), d1, modal, muts: A.muts(), url: a.url().slice(21), toast: (await A.toasts()).slice(0, 1) }; });
+  await A.end();
+})();

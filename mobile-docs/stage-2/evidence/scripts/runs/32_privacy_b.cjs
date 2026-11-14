@@ -1,0 +1,16 @@
+const { start, SB } = require('../lib.cjs');
+const one = t => t.replace(/\n+/g, ' | ');
+(async () => {
+  const R = await start({ role: 'reader', tag: 'privacy' }), P = await start({ role: 'publisher', tag: 'privacy-pub' }); const r = R.page, p = P.page;
+  await R.go('/profile'); await R.clickText('AYARLAR', 'main'); await r.waitForTimeout(500);
+  await R.step('font size', async () => { await R.clickText('GÖRÜNÜM', 'main'); await r.waitForTimeout(400); const out = {}; for (const [i, n] of [[0, 'small'], [2, 'large'], [1, 'medium']]) { await r.locator('input[name=fontSize]').nth(i).check({ force: true }); await r.waitForTimeout(400); out[n] = await r.evaluate(() => { const s = [...document.querySelectorAll('main *')].find(e => e.children.length === 0 && e.innerText === 'Her hikâye bir okurla büyür.'); return getComputedStyle(s).fontSize + ' var=' + getComputedStyle(document.documentElement).getPropertyValue('--reading-font-size') + ' ls=' + Object.keys(localStorage).filter(k => !/token|user|progress|reading:/.test(k)).map(k => k + '=' + localStorage.getItem(k).slice(0, 30)).join(','); }); if (n === 'large') { await R.shot('settings/font_large'); await R.go('/kitap/docker-ornek-hikaye-dev-author/oku'); out.readerLarge = await r.locator('.paragraph-content p').first().evaluate(e => getComputedStyle(e).fontSize + ' var=' + getComputedStyle(document.documentElement).getPropertyValue('--reading-font-size')); await R.go('/profile'); await R.clickText('AYARLAR', 'main'); await R.clickText('GÖRÜNÜM', 'main'); await r.waitForTimeout(300); out.checkedAfterNav = await r.locator('input[name=fontSize]').evaluateAll(a => a.map(x => x.checked)); } } return out; });
+  await R.clickText('GİZLİLİK', 'main'); await r.waitForTimeout(500);
+  const tog = async (label) => { R.clear(); await r.locator(`input[aria-label="${label}"]`).click({ force: true }); await r.waitForTimeout(900); return R.muts(); };
+  await R.step('profile → private', async () => tog('Herkese Açık Profil'));
+  await R.step('follow list hidden', async () => tog('Takip Listesini Göster'));
+  await R.step('messages → Kimse', async () => { R.clear(); await r.locator('input[name=allowMessages]').nth(2).click({ force: true }); await r.waitForTimeout(900); return R.muts(); });
+  await P.step('publisher views private profile', async () => { const u = await P.go('/yazar/dev_reader'); await P.shot('profile/private_profile_as_non_follower'); return { u, t: one(await P.text('main', 400)), ui: (await P.ui('main', 15)).slice(0, 300) }; });
+  await P.step('publisher message attempt', async () => { if (!(await p.locator('main button').filter({ hasText: /MESAJ/i }).count())) return 'no message button'; P.clear(); await P.clickText('MESAJ GÖNDER', 'main'); await p.waitForTimeout(1200); return { url: p.url().slice(21), toasts: await P.toasts(), errs: P.gql().filter(g => g.includes('!!')) }; });
+  await R.step('revert', async () => { await tog('Herkese Açık Profil'); await tog('Takip Listesini Göster'); await r.locator('input[name=allowMessages]').nth(0).click({ force: true }); await r.waitForTimeout(600); await R.clickText('BİLDİRİMLER', 'main'); await r.waitForTimeout(400); return tog('Kitaba Beğeni'); });
+  await R.end(); await P.end();
+})();
