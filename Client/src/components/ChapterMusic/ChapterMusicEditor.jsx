@@ -29,23 +29,25 @@ export default function ChapterMusicEditor({ chapterId, music, onChange, disable
     } catch (failure) { if (mounted.current) setError(failure.message); }
     finally { pending.current = false; if (mounted.current) setBusy(false); }
   };
-  return <section className="chapter-music-editor" aria-label="Bölüm müziği düzenle" aria-busy={busy}>
-    <h3>Bölüm müziği</h3>
-    <p>Tek MP3 · En fazla 15 MiB ve 10 dakika. Okuyucu müziği kendisi başlatır.</p>
-    {music?.url && <><ChapterAudio key={music.url} music={music} />
-      <button type="button" disabled={busy || disabled} onClick={() => update(true)}>Müziği kaldır</button></>}
-    <fieldset disabled={busy || disabled}>
-      <legend>{music ? 'Müziği değiştir' : 'Müzik ekle'}</legend>
-      <label>MP3 dosyası<input ref={inputRef} type="file" accept=".mp3,audio/mpeg" onChange={event => {
-        const chosen = event.target.files?.[0]; setError(''); setFile(null); setRights(false);
-        if (!chosen) return;
-        try { validateMusicFile(chosen); setFile(chosen); } catch (failure) { setError(failure.message); }
-      }} /></label>
-      <label>Müzik başlığı (isteğe bağlı)<input type="text" maxLength={160} value={title} onChange={event => setTitle(event.target.value)} /></label>
-      <label><input type="checkbox" checked={rights} onChange={event => setRights(event.target.checked)} /> Bu müziği paylaşmak için gerekli haklara ve izinlere sahibim.</label>
-      <button type="button" disabled={!file || !rights} onClick={() => update(false)}>Müziği yükle</button>
-    </fieldset>
-    {busy && <p role="status">Müzik işleniyor...</p>}
-    {error && <p role="alert">{error}</p>}
-  </section>;
+  return <details className="chapter-music-editor" aria-label="Bölüm müziği düzenle" aria-busy={busy}>
+    <summary>Bölüm müziği <span>{music?.url ? 'Müzik ekli' : 'Müzik ekle'}</span></summary>
+    <div className="chapter-music-editor-content">
+      <p>Tek MP3 · En fazla 15 MiB ve 10 dakika. Okuyucu müziği kendisi başlatır.</p>
+      {music?.url && <><ChapterAudio key={music.url} music={music} />
+        <button type="button" disabled={busy || disabled} onClick={() => update(true)}>Müziği kaldır</button></>}
+      <fieldset disabled={busy || disabled}>
+        <legend>{music ? 'Müziği değiştir' : 'Müzik ekle'}</legend>
+        <label>MP3 dosyası<input ref={inputRef} type="file" accept=".mp3,audio/mpeg" onChange={event => {
+          const chosen = event.target.files?.[0]; setError(''); setFile(null); setRights(false);
+          if (!chosen) return;
+          try { validateMusicFile(chosen); setFile(chosen); } catch (failure) { setError(failure.message); }
+        }} /></label>
+        <label>Müzik başlığı (isteğe bağlı)<input type="text" maxLength={160} value={title} onChange={event => setTitle(event.target.value)} /></label>
+        <label><input type="checkbox" checked={rights} onChange={event => setRights(event.target.checked)} /> Bu müziği paylaşmak için gerekli haklara ve izinlere sahibim.</label>
+        <button type="button" disabled={!file || !rights} onClick={() => update(false)}>Müziği yükle</button>
+      </fieldset>
+      {busy && <p role="status">Müzik işleniyor...</p>}
+      {error && <p role="alert">{error}</p>}
+    </div>
+  </details>;
 }

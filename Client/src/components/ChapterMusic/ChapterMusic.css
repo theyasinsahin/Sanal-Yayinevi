@@ -1,5 +1,9 @@
-.chapter-music-editor { margin: 12px 20px; padding: 16px; border: 1px solid var(--border-color, #ccc); border-radius: 8px; }
-.chapter-music-editor h3 { margin: 0 0 8px; }
+.chapter-music-editor { flex: 0 0 auto; margin: 8px 20px; border: 1px solid var(--border-color, #ccc); border-radius: 8px; }
+.chapter-music-editor > summary { display: flex; justify-content: space-between; gap: 12px; padding: 8px 12px; cursor: pointer; font-weight: 600; }
+.chapter-music-editor > summary:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+.chapter-music-editor > summary span { color: var(--color-text-secondary, #666); font-size: .85rem; font-weight: 400; }
+.chapter-music-editor-content { padding: 0 12px 12px; }
+.chapter-music-editor-content > p:first-child { margin-top: 0; }
 .chapter-music-editor fieldset { display: flex; flex-wrap: wrap; gap: 12px; min-width: 0; margin-top: 12px; }
 .chapter-music-editor label { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 .chapter-music-editor input[type="file"], .chapter-music-editor input[type="text"] { max-width: 100%; min-width: 0; }
@@ -7,7 +11,8 @@
 .chapter-audio audio { width: 280px; max-width: 100%; height: 40px; }
 .chapter-audio label { display: flex; align-items: center; gap: 6px; }
 @media (max-width: 600px) {
-  .chapter-music-editor { margin: 8px; padding: 12px; }
+  .chapter-music-editor { margin: 8px; }
+  .chapter-music-editor-content { padding: 0 10px 10px; }
   .chapter-music-editor fieldset { flex-direction: column; }
   .chapter-audio audio { width: 100%; }
 }

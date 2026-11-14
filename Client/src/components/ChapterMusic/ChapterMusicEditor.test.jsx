@@ -9,12 +9,24 @@ jest.mock('./api', () => ({
 
 beforeEach(() => jest.clearAllMocks());
 
+const expandEditor = () => fireEvent.click(screen.getByText('Bölüm müziği', { selector: 'summary' }));
+
+test('keeps music controls collapsed until requested', () => {
+  render(<ChapterMusicEditor chapterId="a" onChange={jest.fn()} />);
+  const editor = screen.getByLabelText('Bölüm müziği düzenle');
+  expect(editor).not.toHaveAttribute('open');
+  expandEditor();
+  expect(editor).toHaveAttribute('open');
+  expect(screen.getByLabelText('MP3 dosyası')).toBeInTheDocument();
+});
+
 test('requires rights confirmation and preserves the request chapter across selection changes', async () => {
   let finish;
   changeChapterMusic.mockImplementation(() => new Promise(resolve => { finish = resolve; }));
   readMusicDuration.mockResolvedValue(30);
   const onChange = jest.fn();
   const { rerender } = render(<ChapterMusicEditor key="a" chapterId="a" onChange={onChange} />);
+  expandEditor();
   fireEvent.change(screen.getByLabelText('MP3 dosyası'), { target: { files: [new File(['music'], 'song.mp3')] } });
   expect(screen.getByRole('button', { name: 'Müziği yükle' })).toBeDisabled();
   fireEvent.click(screen.getByRole('checkbox'));
@@ -29,6 +41,7 @@ test('requires rights confirmation and preserves the request chapter across sele
 test('shows upload errors and keeps the selected file for retry', async () => {
   readMusicDuration.mockRejectedValue(new Error('MP3 süresi en fazla 10 dakika olmalıdır.'));
   render(<ChapterMusicEditor chapterId="a" onChange={jest.fn()} />);
+  expandEditor();
   fireEvent.change(screen.getByLabelText('MP3 dosyası'), { target: { files: [new File(['music'], 'song.mp3')] } });
   fireEvent.click(screen.getByRole('checkbox'));
   fireEvent.click(screen.getByRole('button', { name: 'Müziği yükle' }));
@@ -43,6 +56,7 @@ test('removes existing music without requiring a new rights confirmation', async
   jest.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
   jest.spyOn(HTMLMediaElement.prototype, 'load').mockImplementation(() => {});
   const { unmount } = render(<ChapterMusicEditor chapterId="a" music={{ url: 'https://example.com/song.mp3' }} onChange={onChange} />);
+  expandEditor();
   fireEvent.click(screen.getByRole('button', { name: 'Müziği kaldır' }));
   await waitFor(() => expect(onChange).toHaveBeenCalledWith('a', null));
   expect(changeChapterMusic).toHaveBeenCalledWith('a', null, '');
@@ -57,6 +71,7 @@ test('failed removal retains the preview and allows retry', async () => {
   jest.spyOn(HTMLMediaElement.prototype, 'load').mockImplementation(() => {});
   const onChange = jest.fn();
   const { unmount } = render(<ChapterMusicEditor chapterId="a" music={{ url: 'https://example.com/song.mp3' }} onChange={onChange} />);
+  expandEditor();
   fireEvent.click(screen.getByRole('button', { name: 'Müziği kaldır' }));
   expect(await screen.findByRole('alert')).toHaveTextContent('Bağlantı kesildi.');
   expect(screen.getByLabelText('Bölüm müziğini dinle')).toHaveAttribute('src', 'https://example.com/song.mp3');
@@ -68,6 +83,7 @@ test('failed removal retains the preview and allows retry', async () => {
 
 test('limits the title to the backend limit', () => {
   render(<ChapterMusicEditor chapterId="a" onChange={jest.fn()} />);
+  expandEditor();
   expect(screen.getByLabelText('Müzik başlığı (isteğe bağlı)')).toHaveAttribute('maxlength', '160');
 });
 
@@ -77,11 +93,13 @@ test('a completed upload for an unmounted editor leaves the next editor untouche
   changeChapterMusic.mockImplementation(() => new Promise(resolve => { finish = resolve; }));
   const onChange = jest.fn();
   const { rerender } = render(<ChapterMusicEditor key="a" chapterId="a" onChange={onChange} />);
+  expandEditor();
   fireEvent.change(screen.getByLabelText('MP3 dosyası'), { target: { files: [new File(['music'], 'old.mp3')] } });
   fireEvent.click(screen.getByRole('checkbox'));
   fireEvent.click(screen.getByRole('button', { name: 'Müziği yükle' }));
   await waitFor(() => expect(changeChapterMusic).toHaveBeenCalled());
   rerender(<ChapterMusicEditor key="b" chapterId="b" onChange={onChange} />);
+  expandEditor();
   fireEvent.change(screen.getByLabelText('Müzik başlığı (isteğe bağlı)'), { target: { value: 'Yeni bölüm' } });
   finish({ url: 'https://example.com/old.mp3' });
   await waitFor(() => expect(onChange).toHaveBeenCalledWith('a', { url: 'https://example.com/old.mp3' }));
@@ -100,6 +118,7 @@ test('successful upload publishes the preview, resets consent, and supports remo
     return <ChapterMusicEditor chapterId="chapter" music={currentMusic} onChange={(id, next) => setCurrentMusic(next)} />;
   }
   const { unmount } = render(<Editor />);
+  expandEditor();
   const file = new File(['music'], 'new.mp3', { type: 'audio/mpeg' });
   fireEvent.change(screen.getByLabelText('MP3 dosyası'), { target: { files: [file] } });
   fireEvent.change(screen.getByLabelText('Müzik başlığı (isteğe bağlı)'), { target: { value: 'Yeni müzik' } });
