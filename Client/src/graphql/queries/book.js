@@ -169,6 +169,7 @@ export const GET_BOOK_BY_ID = gql`
         id
         title
         content
+        music { url title duration publicId }
         isHidden canReadContent accessStatus wordCount
         createdAt
         pageCount
@@ -209,7 +210,7 @@ export const GET_BOOK_READER_DATA = gql`
 
 export const GET_READING_CHAPTER = gql`
   query GetReadingChapter($bookId: ID!, $chapterId: ID!) {
-    getReadingChapter(bookId: $bookId, chapterId: $chapterId) { id title content isHidden canReadContent accessStatus wordCount pageCount }
+    getReadingChapter(bookId: $bookId, chapterId: $chapterId) { music { url title duration publicId } id title content isHidden canReadContent accessStatus wordCount pageCount }
   }
 `;
 

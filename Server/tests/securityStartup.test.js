@@ -69,13 +69,18 @@ test('missing startup settings fail promptly and test processes never load local
 
 test('occupied ports and standalone print databases report their cause and release startup handles', async () => {
   const mongo = await MongoMemoryServer.create();
+  await connect();
   const reservation = createServer();
   try {
     // Match the regular entry point's wildcard bind (Windows permits a separate
     // IPv6 wildcard listener beside an IPv4 loopback-only reservation).
     reservation.listen(0); await once(reservation, 'listening');
     const env = testEnv({ MONGO_URI: mongo.getUri(), PORT: String(reservation.address().port) });
-    for (const [overrides, expected] of [[{}, 'PORT_IN_USE'], [{ PRINT_SYSTEM_ENABLED: 'true' }, 'MONGO_REPLICA_SET_REQUIRED']]) {
+    for (const [overrides, expected] of [
+      [{ MONGO_URI: getTestDatabaseUri('occupied_port') }, 'PORT_IN_USE'],
+      [{ PRINT_SYSTEM_ENABLED: 'true' }, 'MONGO_REPLICA_SET_REQUIRED'],
+      [{ PRINT_SYSTEM_ENABLED: 'false' }, 'MONGO_REPLICA_SET_REQUIRED'],
+    ]) {
       const error = await promisify(execFile)(process.execPath, ['index.js'], {
         env: { ...env, ...overrides }, windowsHide: true, timeout: 20000,
       }).catch(error => error);
@@ -100,5 +105,6 @@ test('occupied ports and standalone print databases report their cause and relea
   } finally {
     await new Promise(resolve => reservation.close(resolve));
     await mongo.stop();
+    await closeDatabase();
   }
 }, 60000);

@@ -1,4 +1,5 @@
-const docker = process.env.REACT_APP_DOCKER_DEV === 'true';
+export const DOCKER_DEV = process.env.REACT_APP_DOCKER_DEV === 'true';
+const docker = DOCKER_DEV;
 const external = !docker || process.env.REACT_APP_DEV_INTEGRATIONS === 'true';
 const legacyGoogle = '620840983651-ue12o2dcdbr9o7iv0dkmhj4ed6vstno4.apps.googleusercontent.com';
 const legacyCloud = 'dw1sepw7z';

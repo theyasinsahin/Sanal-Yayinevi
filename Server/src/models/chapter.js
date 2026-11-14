@@ -15,6 +15,16 @@ const ChapterSchema = new mongoose.Schema({
   },
   title: String,
   content: String,
+  music: {
+    type: new mongoose.Schema({
+      url: { type: String, required: true },
+      title: { type: String, required: true, maxlength: 160 },
+      duration: { type: Number, required: true, min: 0, max: 600 },
+      publicId: { type: String, required: true },
+    }, { _id: false }),
+    default: undefined,
+  },
+  musicVersion: { type: Number, default: 0, select: true },
   isHidden: { type: Boolean, default: false },
   wordCount: { type: Number, min: 0 },
   pageCount: { type: Number, default: 0 },

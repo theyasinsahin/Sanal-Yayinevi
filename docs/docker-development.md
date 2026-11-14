@@ -17,6 +17,11 @@ Ubuntu terminalinde proje klasöründen:
     ./dev doctor
     ./dev up
 
+Yeni veritabanı ilk açılışta sınıflandırma seçenekleri ve rozetlerle birlikte
+hazırlanır. Mevcut ortamda eksik kayıtları tamamlamak için `./dev seed`, salt
+okunur kontrol için `./dev verify` kullanın. [Başlangıç verileri ve regresyon
+kontrolleri](fresh-database.md).
+
 Arayüz http://localhost:3000, API http://localhost:5000 adresindedir.
 MongoDB hosta açılmaz. Servisler hazır olana kadar up komutu bekler.
 İlk açılış bağımlılık ve imaj indirmeleri nedeniyle daha uzun sürebilir.
@@ -112,6 +117,11 @@ Parolayı yalnız açılan terminalde yazın. Proje için sudo grubu verilmez.
 Temel kurulumda DEV_EXTERNAL_INTEGRATIONS=false olduğu için Google, SMTP ve
 Cloudinary kapalıdır. Eksik ayarlar canlı hesaplara düşmez.
 Gerçek entegrasyon kontrolleri otomatik testlerden ayrıdır.
+
+Bu durumda kayıt/parola e-postaları yalnız `artifacts/development/mail/` altında
+özel `.eml` dosyalarına kaydedilir; gerçek gönderim yapılmaz. Kodu görmek için
+en yeni dosyayı metin olarak açın. Kitap oluştururken "Yerel örnek kapağı kullan"
+seçeneğiyle Cloudinary olmadan devam edebilirsiniz.
 
 DEV_EXTERNAL_INTEGRATIONS=true olduğunda dosyada açıkça tanımladığınız Google
 ve Cloudinary kimlikleri kullanılır. Mevcut hesaba ait kimlikler de kullanılabilir;

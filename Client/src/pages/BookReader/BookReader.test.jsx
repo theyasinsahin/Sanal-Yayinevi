@@ -27,7 +27,7 @@ const show = (path, options = {}) => render(<MockedProvider mocks={[
   { request: { query: GET_BOOK_READER_DATA, variables: { id: 'book' } }, result: { data: { getBookById: { ...(options.book || book), chapters: (options.book || book).chapters.map(({ content, ...chapter }) => chapter) } } } },
   ...(options.book || book).chapters.map(chapter => ({
     request: { query: GET_READING_CHAPTER, variables: { bookId: 'book', chapterId: chapter.id } },
-    maxUsageCount: 10, result: options.chapterResult || { data: { getReadingChapter: chapter } },
+    maxUsageCount: 10, delay: options.chapterDelay || 0, result: options.chapterResult || { data: { getReadingChapter: chapter } },
   })),
   { request: { query: INCREMENT_BOOK_VIEW_MUTATION, variables: { id: 'book' } }, result: { data: { incrementBookViews: { id: 'book', stats: { views: 1 } } } } },
   { request: { query: GET_BOOKMARK, variables: { bookId: 'book' } }, delay: options.delay || 0, result: { data: { getBookmark: options.bookmark || null } } },
@@ -194,4 +194,56 @@ test('a hidden chapter keeps its title and length but exposes no content, sharin
   expect(screen.getByRole('button', { name: 'Okuyuculara kapalı' })).toBeDisabled();
   expect(screen.getByRole('link', { name: 'Kitaba destek ol' })).toHaveAttribute('href', '/donate/book');
   expect(screen.queryByText('İlk bölümün metni.')).not.toBeInTheDocument();
+});
+
+
+describe('chapter music', () => {
+  beforeEach(() => {
+    jest.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
+    jest.spyOn(HTMLMediaElement.prototype, 'load').mockImplementation(() => {});
+  });
+  afterEach(() => jest.restoreAllMocks());
+  const withMusic = () => ({ ...book, chapters: book.chapters.map(chapter => ({ ...chapter,
+    canReadContent: true, accessStatus: 'READABLE',
+    music: { url: `https://example.com/${chapter.id}.mp3`, title: chapter.title, duration: 30, publicId: chapter.id },
+  })) });
+
+  test('waits for loaded content, stops old audio on navigation, and resets looping for the next chapter', async () => {
+    const { unmount } = show('/book-reader/book', { book: withMusic(), chapterDelay: 100 });
+    await screen.findByRole('heading', { name: 'İlk Bölüm' });
+    expect(screen.queryByLabelText('Bölüm müziğini dinle')).not.toBeInTheDocument();
+    const first = await screen.findByLabelText('Bölüm müziğini dinle');
+    expect(first).toHaveAttribute('src', 'https://example.com/first.mp3');
+    expect(first).toHaveAttribute('preload', 'none');
+    expect(first.autoplay).toBe(false);
+    first.currentTime = 25;
+    fireEvent.click(screen.getByLabelText('Tekrarla'));
+    fireEvent.click(screen.getByText('İkinci Bölüm', { selector: '.chapter-title' }));
+    expect(screen.queryByLabelText('Bölüm müziğini dinle')).not.toBeInTheDocument();
+    expect(first.pause).toHaveBeenCalled();
+    expect(first.currentTime).toBe(0);
+    expect(first).not.toHaveAttribute('src');
+    const second = await screen.findByLabelText('Bölüm müziğini dinle');
+    expect(second).toHaveAttribute('src', 'https://example.com/second.mp3');
+    expect(second.loop).toBe(false);
+    second.currentTime = 12;
+    unmount();
+    expect(second.currentTime).toBe(0);
+    expect(second).not.toHaveAttribute('src');
+  });
+
+  test.each(['REGISTRATION_REQUIRED', 'UNAVAILABLE'])('hides audio on a %s chapter even if its result contains music', async accessStatus => {
+    const musicBook = withMusic();
+    musicBook.chapters[1] = { ...musicBook.chapters[1], canReadContent: false, accessStatus };
+    show('/book-reader/book?chapter=second', { book: musicBook });
+    await screen.findByRole('heading', { name: 'İkinci Bölüm' });
+    await waitFor(() => expect(screen.queryByText('Bölüm yükleniyor...')).not.toBeInTheDocument());
+    expect(screen.queryByLabelText('Bölüm müziğini dinle')).not.toBeInTheDocument();
+  });
+
+  test('readable chapters without music have no audio controls', async () => {
+    show('/book-reader/book');
+    await screen.findByRole('article');
+    expect(screen.queryByLabelText('Bölüm müziğini dinle')).not.toBeInTheDocument();
+  });
 });

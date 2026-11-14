@@ -29,7 +29,12 @@ x-server-env: &server-env
   PRINT_PAYMENTS_MODE: SANDBOX
   PRINT_SANDBOX_WEBHOOK_SECRET: ${PRINT_SANDBOX_WEBHOOK_SECRET:?Run ./dev init}
   PRINT_ADDRESS_ENCRYPTION_KEY: ${PRINT_ADDRESS_ENCRYPTION_KEY:?Run ./dev init}
+  CHAPTER_MUSIC_ENABLED: ${CHAPTER_MUSIC_ENABLED:-true}
+  CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+  CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+  CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
   DEV_EXTERNAL_INTEGRATIONS: ${DEV_EXTERNAL_INTEGRATIONS:-false}
+  DEV_MAIL_DIRECTORY: ${BETIK_WORKSPACE_PATH}/artifacts/development/mail
   EMAIL_USER: ${EMAIL_USER:-}
   EMAIL_PASS: ${EMAIL_PASS:-}
   CONTACT_EMAIL: ${CONTACT_EMAIL:-}
@@ -81,6 +86,7 @@ services:
       - ./Server:${BETIK_WORKSPACE_PATH}/Server:ro
       - server-modules:${BETIK_WORKSPACE_PATH}/Server/node_modules
       - npm-cache:/home/node/.npm
+      - ./artifacts/development/mail:${BETIK_WORKSPACE_PATH}/artifacts/development/mail
     environment: *server-env
     command: ["npm", "--prefix", "Server", "run", "dev"]
     ports:

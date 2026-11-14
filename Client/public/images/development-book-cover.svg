@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="450" viewBox="0 0 300 450" role="img" aria-labelledby="title desc">
+  <title id="title">Yerel örnek kitap kapağı</title>
+  <desc id="desc">Betik geliştirme ortamında kullanılabilen örnek kapak.</desc>
+  <rect width="300" height="450" rx="12" fill="#172554"/>
+  <rect x="24" y="24" width="252" height="402" rx="6" fill="none" stroke="#93c5fd" stroke-width="2"/>
+  <path d="M85 120h55l10 9 10-9h55v102h-55l-10 9-10-9H85z" fill="none" stroke="#bfdbfe" stroke-width="4"/>
+  <path d="M150 129v102" stroke="#bfdbfe" stroke-width="4"/>
+  <g fill="#eff6ff" text-anchor="middle" font-family="sans-serif">
+    <text x="150" y="287" font-size="26">Örnek Kitap</text>
+    <text x="150" y="322" font-size="15">Yerel geliştirme kapağı</text>
+    <text x="150" y="395" font-size="18">Betik</text>
+  </g>
+</svg>

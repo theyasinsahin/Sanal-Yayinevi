@@ -97,3 +97,19 @@ test('legacy chapters remain public and the retired content warning is excluded 
   await Term.create({ kind: 'WARNING', slug: 'istismar', name: 'İstismar', isActive: true });
   expect((await getClassificationOptions()).contentWarnings).toEqual([]);
 });
+
+test('chapter music uses the same visibility gate as chapter content', async () => {
+  const music = { url: 'https://res.cloudinary.com/test/video/upload/music.mp3', title: 'Private track', duration: 12, publicId: 'chapter_music/test' };
+  await Chapter.updateOne({ _id: hidden._id }, { $set: { music } });
+  const query = 'query($id:ID!){getChapterById(id:$id){music{url title duration publicId}}}';
+  for (const user of [null, reader]) {
+    const result = await run(query, { id: hidden.id }, user);
+    expect(result.errors).toBeUndefined();
+    expect(result.data.getChapterById.music).toBeNull();
+  }
+  for (const user of [owner, admin]) {
+    const result = await run(query, { id: hidden.id }, user);
+    expect(result.errors).toBeUndefined();
+    expect(result.data.getChapterById.music).toEqual(music);
+  }
+});

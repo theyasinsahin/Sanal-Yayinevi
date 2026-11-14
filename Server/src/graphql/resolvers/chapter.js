@@ -102,6 +102,7 @@ export default {
 
   // FIELD RESOLVERS
   Chapter: {
+    music: async (chapter, args, context) => await chapterReadable(chapter, args, context) ? chapter.music || null : null,
     isHidden: chapter => chapter.isHidden === true,
     accessStatus: chapterStatus,
     canReadContent: chapterReadable,

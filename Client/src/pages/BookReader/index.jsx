@@ -1,3 +1,4 @@
+import ChapterAudio from '../../components/ChapterMusic/ChapterAudio';
 import HiddenChapterNotice from '../../components/Books/HiddenChapterNotice';
 import { isChapterLocked, chapterLengthLabel } from '../../utils/chapterVisibility';
 import { bookPath, readerPath } from '../../utils/publicPaths';
@@ -381,6 +382,8 @@ const BookReaderContent = ({ resolvedId, resolvedChapterId } = {}) => {
               {!currentChapter.isHidden && <SocialShareButton type="CHAPTER" id={currentChapter.id} label="Bölümü paylaş" />}
             </div>
 
+            {!locked && !registrationRequired && chapterReady && !chapterLoading && !chapterError && loadedChapter?.music?.url &&
+              <ChapterAudio key={`${chapterId}:${loadedChapter.music.url}`} music={loadedChapter.music} />}
             {/* Bölüm İçeriği */}
             {registrationRequired ? <RegistrationCard intent={readingIntent(currentChapter)}>
               <button className="ui-text-link" onClick={() => {

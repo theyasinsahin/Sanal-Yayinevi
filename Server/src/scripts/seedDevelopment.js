@@ -8,6 +8,7 @@ import User from '../models/user.js';
 import Book from '../models/book.js';
 import Chapter from '../models/chapter.js';
 import { assertDockerDevelopment } from '../config/dockerDevelopment.js';
+import { seedDevelopmentReferenceData } from '../services/developmentReferenceData.js';
 
 export const developmentIds = {
   admin: '000000000000000000000101',
@@ -22,6 +23,12 @@ export const developmentIds = {
 export async function seedDevelopmentData(password) {
   if (typeof password !== 'string' || password.length < 12) throw new Error('A stable development-only password of at least 12 characters is required.');
   await Promise.all([User.init(), Book.init(), Chapter.init()]);
+  const options = await seedDevelopmentReferenceData();
+  const classification = {
+    formatId: options.formats.find(term => term.slug === 'oyku')?.id || options.formats[0].id,
+    genreIds: [options.genres.find(genre => genre.slug === 'macera')?.id || options.genres[0].id],
+    classificationStatus: 'COMPLETE', classificationVersion: 1,
+  };
   const hashed = await bcrypt.hash(password, 10);
   const createdAt = new Date();
   for (const [name, role] of [['admin', 'ADMIN'], ['author', 'USER'], ['reader', 'USER'], ['publisher', 'PUBLISHER']]) {
@@ -35,6 +42,7 @@ export async function seedDevelopmentData(password) {
   await Book.updateOne({ _id: developmentIds.story }, { $setOnInsert: {
     title: 'Docker Örnek Hikâye', authorId: developmentIds.author, createdAt, updatedAt: createdAt,
     description: 'Yalnız yerel geliştirme için oluşturulmuş örnek kitap.',
+    ...classification,
     status: 'WRITING', digitalStatus: 'PUBLISHED', writingStatus: 'WRITING',
     chapters, pageCount: 3,
   } }, { upsert: true, runValidators: true, timestamps: false });
@@ -48,6 +56,8 @@ export async function seedDevelopmentData(password) {
   }
   await Book.updateOne({ _id: developmentIds.draft }, { $setOnInsert: {
     title: 'Docker Taslak Kitap', authorId: developmentIds.author, createdAt, updatedAt: createdAt,
+    description: 'Bölüm ekleme ve yayınlama denemeleri için yerel taslak.',
+    ...classification,
     status: 'DRAFT', digitalStatus: 'DRAFT', writingStatus: 'WRITING',
   } }, { upsert: true, runValidators: true, timestamps: false });
   await Book.updateOne({ _id: developmentIds.printed }, { $setOnInsert: {
@@ -55,6 +65,11 @@ export async function seedDevelopmentData(password) {
     publicationStatus: 'APPROVED', printedAuthor: 'Örnek Yazar', publisher: 'Örnek Yayıncı',
     description: 'Gerçek satış veya teslimat sunmayan geliştirme örneği.', pageCount: 100,
   } }, { upsert: true, runValidators: true, timestamps: false });
+  // Repair only the missing non-null field in the old built-in draft fixture.
+  // Existing user-entered descriptions, including an empty string, are preserved.
+  await Book.updateOne({ _id: developmentIds.draft, description: null }, {
+    $set: { description: 'Bölüm ekleme ve yayınlama denemeleri için yerel taslak.' },
+  }, { timestamps: false });
   return { users: 4, books: 3, chapters: 4 };
 }
 

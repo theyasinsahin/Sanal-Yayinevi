@@ -18,6 +18,11 @@ case "$target" in
     npm --prefix Client run lint
     ;;
   server) npm --prefix Server run test:ci -- "$@" ;;
+  fresh)
+    # Real ephemeral replica-set workflow: bootstrap -> options -> book -> chapter -> publication.
+    # No development volume or real email/provider is used.
+    npm --prefix Server run test:ci -- --runTestsByPath tests/developmentSeed.test.js tests/classification.test.js tests/dockerDevelopment.test.js tests/developmentRegistration.test.js "$@"
+    ;;
   client) npm --prefix Client run test:ci -- "$@" ;;
   unit)
     npm --prefix Server run lint
