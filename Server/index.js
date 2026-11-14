@@ -27,10 +27,11 @@ import socialShareRoutes from './src/routes/socialShareRoutes.js';
 import { compressResponses, operationTiming } from './src/config/httpPerformance.js';
 import { createLoaders } from './src/graphql/loaders.js';
 import printRoutes from './src/routes/printRoutes.js';
+import chapterMusicRoutes from './src/routes/chapterMusicRoutes.js';
 import { initializePrintFunding } from './src/services/print/common.js';
 import { startPrintWorker } from './src/services/print/worker.js';
 import { printSystemEnabled } from './src/services/print/paymentConfig.js';
-import { validateServerEnvironment, startupFailure } from './src/config/startup.js';
+import { validateServerEnvironment, startupFailure, requireDatabaseTransactions } from './src/config/startup.js';
 
 // 2. PubSub instance — tüm uygulama bu tek instance'ı kullanır
 // Dosya seviyesinde export ediyoruz ki servis ve resolver'lar import edebilsin
@@ -51,6 +52,7 @@ const startServer = async () => {
     app.use(compressResponses());
 
     await connectDB();
+    await requireDatabaseTransactions(mongoose.connection);
     await SecurityRateBucket.createIndexes();
     if (printSystemEnabled()) {
       await initializePrintFunding();
@@ -74,6 +76,7 @@ const startServer = async () => {
 
     // Verify webhook bytes and receive private PDF uploads before JSON parsing.
     app.use('/api/print', printRoutes);
+    app.use('/api/chapters', chapterMusicRoutes);
     app.use(express.json({ limit: '2mb', inflate: false }));
     app.use(express.urlencoded({ extended: false, limit: '16kb', parameterLimit: 20, inflate: false }));
     app.use('/api/payment', paymentRoutes);
@@ -192,8 +195,10 @@ const startServer = async () => {
     console.error(`Server başlatılamadı [${failure.code}].\n${failure.message}`);
     stopWorker?.();
     // A failed index build, Apollo startup or listen must release DB/WS handles.
-    await serverCleanup?.dispose().catch(() => {});
-    await server?.stop().catch(() => {});
+    // Apollo's drain plugin disposes WebSockets too. Disposing twice can hang
+    // startup failure cleanup (notably an occupied port with a real replica set).
+    if (server) await server.stop().catch(() => {});
+    else await serverCleanup?.dispose().catch(() => {});
     httpServer?.closeAllConnections();
     if (httpServer?.listening) await new Promise(resolve => httpServer.close(resolve));
     await mongoose.disconnect().catch(() => {});

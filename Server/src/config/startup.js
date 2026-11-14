@@ -1,5 +1,12 @@
 import { allowedOrigins } from '../security/httpSecurity.js';
 
+export async function requireDatabaseTransactions(connection) {
+  const hello = await connection.db.admin().command({ hello: 1 });
+  if (!hello.setName && hello.msg !== 'isdbgrid') {
+    throw Object.assign(new Error('MongoDB replica set veya mongos gerekli.'), { code: 'MONGO_REPLICA_SET_REQUIRED' });
+  }
+}
+
 export function validateServerEnvironment(env = process.env) {
   const problems = [];
   if (!env.MONGO_URI?.trim()) problems.push('MONGO_URI eksik. Server/.env içinde MongoDB bağlantısını tanımlayın.');
@@ -39,7 +46,7 @@ export function startupFailure(error) {
   if (has('MongoParseError', 'MongoInvalidArgumentError')) return { code: 'MONGO_URI_INVALID', message: 'MONGO_URI biçimi veya bağlantı seçenekleri geçersiz. MongoDB bağlantı adresini kontrol edin.' };
   if (has('CERT_HAS_EXPIRED', 'UNABLE_TO_VERIFY_LEAF_SIGNATURE', 'DEPTH_ZERO_SELF_SIGNED_CERT', 'ERR_TLS_CERT_ALTNAME_INVALID', 'UNABLE_TO_GET_ISSUER_CERT_LOCALLY')) return { code: 'MONGO_TLS_FAILED', message: 'MongoDB TLS sertifikası doğrulanamadı. Sistem saatini ve güvenilen sertifika zincirini kontrol edin.' };
   if (has('ENOTFOUND', 'EAI_AGAIN', 'ENODATA', 'ECONNREFUSED', 'ETIMEOUT', 'ETIMEDOUT', 'MongooseServerSelectionError', 'MongoServerSelectionError')) return { code: 'MONGO_UNREACHABLE', message: 'MongoDB erişilemiyor. Servis/port, DNS, güvenlik duvarı ve Atlas IP erişim listesini kontrol edin. Replica set adresleri bu makineden erişilebilir olmalı.' };
-  if (has('PRINT_STORAGE_UNAVAILABLE', 20)) return { code: 'MONGO_REPLICA_SET_REQUIRED', message: 'Basım işlemleri için MongoDB replica set veya mongos gerekli. Replica set kurun; basım kullanılmayacaksa PRINT_SYSTEM_ENABLED=false ve PRINT_PAYMENTS_MODE=DISABLED ayarlayın.' };
+  if (has('MONGO_REPLICA_SET_REQUIRED', 'PRINT_STORAGE_UNAVAILABLE', 20)) return { code: 'MONGO_REPLICA_SET_REQUIRED', message: 'Bölüm puanları, takip ve basım işlemleri için MongoDB replica set veya mongos gerekli. Basımı kapatmak bu gereksinimi kaldırmaz. Replica set yapılandırın.' };
   if (has(11000, 85, 86)) return { code: 'MONGO_INDEX_CONFLICT', message: 'MongoDB indeksleri veya mevcut kayıtlar çakışıyor. Veriyi/indeksleri silmeden çakışmayı inceleyin.' };
   return { code: 'STARTUP_FAILED', message: 'Sunucu başlatılamadı. Server klasöründe npm.cmd run doctor ile yapılandırma ve servis erişimini kontrol edin.' };
 }

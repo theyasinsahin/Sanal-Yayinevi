@@ -3,7 +3,8 @@ import mongoose from 'mongoose';
 import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { validateServerEnvironment, startupFailure } from '../config/startup.js';
-import { printSystemEnabled, iyzicoSandboxConfigured } from '../services/print/paymentConfig.js';
+import { iyzicoSandboxConfigured } from '../services/print/paymentConfig.js';
+import { usesDevelopmentMail } from '../config/dockerDevelopmentMail.js';
 
 // Read-only DB diagnostics: a separate connection has no attached models,
 // indexes, seed data or provider calls. A TCP listener briefly probes the port.
@@ -33,14 +34,13 @@ if (process.env.MONGO_URI?.trim()) {
     const hello = await connection.db.admin().command({ hello: 1 });
     console.log('[OK] MongoDB bağlantısı');
     if (!hello.setName && hello.msg !== 'isdbgrid') {
-      const message = 'MongoDB standalone çalışıyor; basım ve transaction kullanan işlemler için replica set gerekli.';
-      if (printSystemEnabled()) fail('MONGO_REPLICA_SET_REQUIRED', message);
-      else console.warn(`[UYARI] ${message}`);
+      fail('MONGO_REPLICA_SET_REQUIRED', 'MongoDB standalone çalışıyor; bölüm puanları, takip ve basım için replica set gerekli. Basımı kapatmak yeterli değildir.');
     } else console.log('[OK] MongoDB replica set / mongos');
   } catch (error) { const failure = startupFailure(error); fail(failure.code, failure.message); }
   finally { await connection?.close().catch(() => {}); }
 }
 if (process.env.PRINT_PAYMENTS_MODE === 'IYZICO_SANDBOX' && process.env.PRINT_SYSTEM_ENABLED !== 'false' && !iyzicoSandboxConfigured()) console.warn('[UYARI] Iyzico sandbox ayarları eksik; ödeme alınamaz. .env.print.example dosyasını inceleyin.');
-if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) console.warn('[UYARI] EMAIL_USER / EMAIL_PASS eksik; doğrulama ve parola sıfırlama e-postaları gönderilemez.');
+if (usesDevelopmentMail(process.env)) console.log('[OK] Docker yerel e-posta arşivi etkin; gerçek e-posta gönderilmez.');
+else if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) console.warn('[UYARI] EMAIL_USER / EMAIL_PASS eksik; doğrulama ve parola sıfırlama e-postaları gönderilemez.');
 if (!process.env.GOOGLE_CLIENT_ID) console.warn('[UYARI] GOOGLE_CLIENT_ID eksik; Google ile giriş yapılamaz.');
 console.log('Kontrol tamamlandı. Secret değerleri gösterilmedi; veritabanına veri yazılmadı.');

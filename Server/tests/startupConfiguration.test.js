@@ -1,6 +1,14 @@
-import { validateServerEnvironment, startupFailure } from '../src/config/startup.js';
+import { validateServerEnvironment, startupFailure, requireDatabaseTransactions } from '../src/config/startup.js';
 
 const valid = { MONGO_URI: 'mongodb://127.0.0.1:27017/betik_test', JWT_SECRET: 'synthetic-startup-secret-at-least-32-bytes', CLIENT_URL: 'http://localhost:3000' };
+
+test('transactions are required for core actions even when print funding is disabled', async () => {
+  const connection = hello => ({ db: { admin: () => ({ command: async () => hello }) } });
+  await expect(requireDatabaseTransactions(connection({ setName: 'rs0' }))).resolves.toBeUndefined();
+  await expect(requireDatabaseTransactions(connection({ msg: 'isdbgrid' }))).resolves.toBeUndefined();
+  await expect(requireDatabaseTransactions(connection({ isWritablePrimary: true }))).rejects.toMatchObject({ code: 'MONGO_REPLICA_SET_REQUIRED' });
+  expect(startupFailure({ code: 'MONGO_REPLICA_SET_REQUIRED' }).message).toContain('Basımı kapatmak');
+});
 
 test('startup rejects missing database and signing key together without disclosing values', () => {
   try {

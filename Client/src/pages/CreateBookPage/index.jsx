@@ -18,6 +18,7 @@ import { Input } from '../../components/UI/Input';
 import { Textarea } from '../../components/UI/Textarea';
 import ImageUpload from '../../components/ImageUpload';
 
+import { DOCKER_DEV, IMAGE_UPLOAD_ENABLED } from '../../config/integrations';
 import './CreateBook.css';
 
 const CreateBookPage = () => {
@@ -36,6 +37,9 @@ const CreateBookPage = () => {
   });
   
   const [classification, setClassification] = useState(emptyClassification);
+  const [classificationReady, setClassificationReady] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const blocked = !classificationReady || uploading || (!DOCKER_DEV && !IMAGE_UPLOAD_ENABLED && !bookData.imageUrl);
   const [errors, setErrors] = useState({});
   const focusField = name => {
     const field = formRef.current?.querySelector(`[data-field="${name}"]`);
@@ -61,6 +65,7 @@ const CreateBookPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (creating || blocked) return;
     let newErrors = {};
     if (!bookData.title.trim()) newErrors.title = "Kitap başlığı zorunludur.";
     if (!bookData.description.trim()) newErrors.description = "Açıklama zorunludur.";
@@ -124,11 +129,16 @@ const CreateBookPage = () => {
                 <div className="cover-upload-wrapper">
                   <ImageUpload 
                       disabled={creating}
+                      onLoadingChange={setUploading}
+                      onError={message => setErrors(prev => ({ ...prev, imageUrl: message }))}
                       onUploadSuccess={handleImageSuccess} 
                       label="Kapak Yükle"
                       currentImage={bookData.imageUrl}
                   />
                 </div>
+                {DOCKER_DEV && <Button type="button" variant="outline" disabled={creating || uploading} onClick={() => handleImageSuccess(new URL('/images/development-book-cover.svg', window.location.origin).href)}>Yerel örnek kapağı kullan</Button>}
+                {!IMAGE_UPLOAD_ENABLED && !bookData.imageUrl && <p role="alert">{DOCKER_DEV ? 'Kapak yükleme bu ortamda devre dışı. Devam etmek için yerel örnek kapağı seçebilirsiniz.' : 'Kapak yükleme bu ortamda devre dışı. Kitap oluşturmak için kapak zorunludur; yöneticinin görsel yükleme entegrasyonunu etkinleştirmesi gerekiyor.'}</p>}
+                {uploading && <p role="status">Kapak yükleniyor; tamamlandığında taslağı kaydedebilirsiniz.</p>}
                 {errors.imageUrl && (
                   <Typography id="cover-error" variant="caption" color="danger" className="create-field-error">
                     {errors.imageUrl}
@@ -158,7 +168,7 @@ const CreateBookPage = () => {
                 </div>
 
                 <div data-field="classification" tabIndex={-1} className={errors.classification ? 'create-field-invalid' : ''} aria-describedby={errors.classification ? 'classification-error' : undefined}>
-                <ClassificationFields value={classification} onChange={value => {
+                <ClassificationFields onReadyChange={setClassificationReady} value={classification} onChange={value => {
                   setClassification(value);
                   if (errors.classification) setErrors(prev => ({ ...prev, classification: classificationError(value) || null }));
                 }} disabled={creating} />
@@ -192,6 +202,7 @@ const CreateBookPage = () => {
                     variant="primary" 
                     size="large" 
                     className="w-full"
+                    disabled={blocked}
                     isLoading={creating}
                   >
                     Taslak Olarak Kaydet

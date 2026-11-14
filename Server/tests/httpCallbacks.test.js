@@ -51,9 +51,11 @@ test('a verified callback forwards only the allowed public session fields', asyn
   expect(user.passwordResetToken).toBeUndefined();
 });
 
-test.each([undefined, '', 'wrong-csrf-token'])('Google callback rejects absent/mismatched double-submit cookies (%s)', async csrf => {
+test.each([undefined, '', 'wrong-csrf-token'])('Google callback clears stale CSRF cookies and returns to login (%s)', async csrf => {
   const result = await post('/auth/google/callback', { credential: 'attacker-credential' }, csrf || null);
-  expect(result.status).toBe(403);
+  expect(result.status).toBe(302);
+  expect(result.headers.get('location')).toBe('https://client.example.test/login?error=google_csrf_failed');
+  expect(result.headers.get('set-cookie')).toContain('g_csrf_token=; Path=/');
   expect(authenticate).not.toHaveBeenCalled();
 });
 test.each(['Google rejected', 'ACCOUNT_DELETED'])('Google authentication failure %s redirects safely', async message => {

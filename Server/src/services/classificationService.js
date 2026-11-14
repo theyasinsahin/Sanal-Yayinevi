@@ -12,17 +12,19 @@ export function normalizeTag(value) {
   return { name, normalizedName: name.toLocaleLowerCase('tr-TR') };
 }
 export async function seedClassification() {
+  const now = new Date();
   for (const [kind, entries] of Object.entries(classificationSeed)) {
     for (const [sortOrder, [slug, name]] of entries.entries()) {
       if (['FICTION', 'KNOWLEDGE'].includes(kind)) {
         // Never overwrite an administrator's display name or inactive status.
         const existing = await Genre.findOne({ $or: [{ slug }, { name }] }).select('_id slug classificationVersion');
         if (existing && existing.slug !== slug) throw new Error(`Sınıflandırma kodu çakışması: ${name}. Mevcut kod değiştirilmedi; yönetici incelemesi gerekli.`);
-        await Genre.updateOne(existing ? { _id: existing._id } : { slug }, { $set: { slug, classificationVersion: 1, ...(existing?.classificationVersion === 1 ? {} : { group: kind }) }, $setOnInsert: { name, isActive: true, sortOrder, hexColor: '#6b7280' } }, { upsert: true });
-      } else await Term.updateOne({ kind, slug }, { $setOnInsert: { kind, slug, name, isActive: true, sortOrder } }, { upsert: true });
+        if (existing?.classificationVersion === 1) continue;
+        await Genre.updateOne(existing ? { _id: existing._id } : { slug }, { $set: { slug, classificationVersion: 1, group: kind }, $setOnInsert: { name, isActive: true, sortOrder, hexColor: '#6b7280', createdAt: now, updatedAt: now } }, { upsert: true, timestamps: false });
+      } else await Term.updateOne({ kind, slug }, { $setOnInsert: { kind, slug, name, isActive: true, sortOrder, createdAt: now, updatedAt: now } }, { upsert: true, timestamps: false });
     }
   }
-  await Term.updateOne({ kind: 'WARNING', slug: 'istismar' }, { $set: { isActive: false } });
+  await Term.updateOne({ kind: 'WARNING', slug: 'istismar', isActive: { $ne: false } }, { $set: { isActive: false } });
 }
 const ids = (values, min, max, label) => {
   if (!Array.isArray(values) || values.length < min || values.length > max || values.some(id => !mongoose.isObjectIdOrHexString(id)) || new Set(values.map(String)).size !== values.length) throw new Error(`${label}: ${min}–${max} farklı, geçerli seçim yapın.`);

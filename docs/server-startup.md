@@ -31,7 +31,7 @@ Mevcut `Server/.env` dosyasını koruyun. İlk kurulumda dosya yoksa
 Şablondaki yerel MongoDB adresi çalışan bir veritabanı oluşturmaz.
 
 - `MONGO_URI`: çalışan MongoDB bağlantısı. Basım işlemleri replica set veya
-  mongos gerektirir; standalone yeterli değildir.
+  mongos gerektirir; bölüm puanları ve takip de transaction kullandığı için standalone yeterli değildir.
 - `JWT_SECRET`: en az 32 bayt uzunluğunda, uygulamaya özel rastgele anahtar.
 - `CLIENT_URL`: istemcinin origin adresi; örneğin `http://localhost:3000`.
   Yol eklemeyin; üretimde HTTPS kullanın.
@@ -65,7 +65,7 @@ kodu 1 olur; bütün kritik kontroller başarılıysa 0 olur.
 | `MONGO_AUTH_FAILED` | Atlas Database Access kullanıcısını, parolayı ve `authSource` ayarını kontrol edin. URI parolasındaki özel karakterleri URL kodlayın. Atlas hesap parolası ile veritabanı parolası farklı olabilir. |
 | `MONGO_UNREACHABLE` | MongoDB servisi, DNS, ağ erişimi ve Atlas IP erişim listesini kontrol edin. |
 | `MONGO_TLS_FAILED` | Sistem saati ve sertifika zincirini kontrol edin. |
-| `MONGO_REPLICA_SET_REQUIRED` | Replica set/mongos kullanın. Basım kullanılmayacaksa `PRINT_SYSTEM_ENABLED=false` ve `PRINT_PAYMENTS_MODE=DISABLED` ayarlayın. |
+| `MONGO_REPLICA_SET_REQUIRED` | Replica set/mongos kullanın. Bölüm puanları ve takip işlemleri de transaction kullanır; basımı kapatmak bu gereksinimi kaldırmaz. |
 | `MONGO_INDEX_CONFLICT` | Mevcut veri ve indeksleri inceleyin; veritabanını veya indeksleri otomatik silmeyin. |
 
 SMTP ve Google ayarı uyarıları sunucunun başlamasını engellemez; ilgili

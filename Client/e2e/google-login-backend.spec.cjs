@@ -102,12 +102,12 @@ test('Google form callback stays logged in with real HTTP, WebSocket and ephemer
   expect(await page.evaluate(() => Boolean(localStorage.getItem('token')))).toBe(true);
 });
 
-test('same-origin auth proxy preserves the CSRF cookie that a different-host callback cannot receive', async ({ page, context }) => {
+test('stale and cross-host CSRF cookies recover through the same-origin auth proxy', async ({ page, context }) => {
   await page.route('**/*', route => {
     const url = new URL(route.request().url());
     return ['127.0.0.1', 'localhost'].includes(url.hostname) && ['3100', '5001'].includes(url.port) ? route.continue() : route.abort();
   });
-  const nonce = await openLogin(page);
+  let nonce = await openLogin(page);
   const csrf = 'synthetic-frontend-only-google-csrf';
   await context.addCookies([{ name: 'g_csrf_token', value: csrf, url: 'http://127.0.0.1:3100' }]);
   const submit = action => page.evaluate(({ action, nonce, csrf }) => {
@@ -120,10 +120,12 @@ test('same-origin auth proxy preserves the CSRF cookie that a different-host cal
 
   const rejected = page.waitForResponse(response => response.url() === 'http://localhost:5001/auth/google/callback');
   await submit('http://localhost:5001/auth/google/callback');
-  expect((await rejected).status()).toBe(403);
-  await expect(page.locator('body')).toContainText('GOOGLE_CSRF_FAILED');
+  expect((await rejected).status()).toBe(302);
+  await expect(page).toHaveURL(/\/login\?error=google_csrf_failed$/);
+  await expect(page.getByRole('alert')).toContainText('oturum doğrulaması yenilendi');
 
-  await openLogin(page);
+  nonce = await openLogin(page);
+  await context.addCookies([{ name: 'g_csrf_token', value: 'synthetic-stale-google-csrf', url: 'http://127.0.0.1:3100' }]);
   let forwardedCookie;
   await page.route('http://127.0.0.1:3100/auth/google/callback', async route => {
     const headers = await route.request().allHeaders();
@@ -134,6 +136,14 @@ test('same-origin auth proxy preserves the CSRF cookie that a different-host cal
     });
     await route.fulfill({ response });
   });
+  const stale = page.waitForResponse(response => response.url() === 'http://127.0.0.1:3100/auth/google/callback');
+  await submit('http://127.0.0.1:3100/auth/google/callback');
+  expect((await stale).status()).toBe(302);
+  await expect(page).toHaveURL(/\/login\?error=google_csrf_failed$/);
+  await expect(page.getByRole('alert')).toContainText('oturum doğrulaması yenilendi');
+
+  nonce = await openLogin(page);
+  await context.addCookies([{ name: 'g_csrf_token', value: csrf, url: 'http://127.0.0.1:3100' }]);
   await submit('http://127.0.0.1:3100/auth/google/callback');
   await expect(page).toHaveURL(/\/profile$/);
   await expect(page.getByRole('heading', { name: 'Google Tarayıcı Okuru', exact: true })).toBeVisible();

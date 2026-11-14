@@ -7,10 +7,12 @@ import ClassificationSummary from './ClassificationSummary';
 import ClassificationEditor from './ClassificationEditor';
 import CreateBookPage from '../../../pages/CreateBookPage';
 import { GET_CLASSIFICATION_OPTIONS, UPDATE_BOOK_CLASSIFICATION } from '../../../graphql/classification';
+import * as integrations from '../../../config/integrations';
 import { CREATE_BOOK_MUTATION } from '../../../graphql/mutations/book';
 
+jest.mock('../../../config/integrations', () => ({ __esModule: true, IMAGE_UPLOAD_ENABLED: true, DOCKER_DEV: false }));
 jest.mock('../../Layout/MainLayout', () => ({ MainLayout: ({ children }) => <main>{children}</main> }));
-jest.mock('../../ImageUpload', () => ({ onUploadSuccess }) => <button type="button" onClick={() => onUploadSuccess('https://example.test/cover.jpg')}>Kapak seç</button>);
+jest.mock('../../ImageUpload', () => ({ onUploadSuccess, onLoadingChange }) => <><button type="button" onClick={() => onUploadSuccess('https://example.test/cover.jpg')}>Kapak seç</button><button type="button" onClick={() => onLoadingChange(true)}>Yükleme başlat</button><button type="button" onClick={() => onLoadingChange(false)}>Yükleme bitir</button></>);
 const term = (id, name) => ({ id, slug: id, name, isActive: true });
 const options = { formats: [term('roman', 'Roman'), term('siir', 'Şiir')], genres: ['Fantastik', 'Gizem', 'Korku', 'Macera'].map((name, index) => ({ ...term(`genre${index}`, name), group: 'FICTION', hexColor: '#666666' })), narrativeFeatures: [term('seri-kurgu', 'Seri Kurgu')], targetAudiences: [term('genc', 'Genç')], contentWarnings: [term('siddet', 'Şiddet')] };
 const mockOptions = { request: { query: GET_CLASSIFICATION_OPTIONS }, result: { data: { getClassificationOptions: options } } };
@@ -62,6 +64,7 @@ test('missing fields are highlighted and validation moves focus to the first mis
   try {
     render(<MockedProvider mocks={[mockOptions]}><MemoryRouter><CreateBookPage /></MemoryRouter></MockedProvider>);
     await screen.findByText('Kurgu ve Hikâyeler');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Taslak Olarak Kaydet' })).toBeEnabled());
     fireEvent.click(screen.getByRole('button', { name: 'Taslak Olarak Kaydet' }));
     expect(screen.getByRole('alert')).toHaveTextContent('eksik alanları tamamlayın');
     await waitFor(() => expect(screen.getByRole('button', { name: 'Kapak seç' })).toHaveFocus());
@@ -86,4 +89,100 @@ test('editing preserves unsaved selections across unrelated rerenders and saves 
   expect(screen.getByLabelText('Eser biçimi *')).toHaveValue('siir');
   fireEvent.click(screen.getByText('Sınıflandırmayı kaydet'));
   await waitFor(() => expect(saved).toHaveBeenCalledTimes(1));
+});
+
+const existingBook = { id: 'book', format: options.formats[0], genres: [options.genres[0]] };
+function showWorkflow(workflow, mocks) {
+  render(<MockedProvider mocks={mocks}><MemoryRouter>{workflow === 'create' ? <CreateBookPage /> : <ClassificationEditor book={existingBook} />}</MemoryRouter></MockedProvider>);
+  if (workflow === 'edit') fireEvent.click(screen.getByText('Sınıflandırmayı düzenle'));
+  return { submit: screen.getByRole('button', { name: workflow === 'create' ? 'Taslak Olarak Kaydet' : 'Sınıflandırmayı kaydet' }) };
+}
+test.each(['create', 'edit'])('%s waits for mandatory options while loading', async workflow => {
+  const { submit } = showWorkflow(workflow, [{ ...mockOptions, delay: 100 }]);
+  expect(screen.getByRole('status')).toHaveTextContent('yükleniyor');
+  expect(submit).toBeDisabled();
+  expect(screen.getByLabelText('Eser biçimi *')).toBeDisabled();
+  await waitFor(() => expect(submit).toBeEnabled());
+});
+test.each(['create', 'edit'])('%s explains missing required data and recovers after retry', async workflow => {
+  const empty = { ...options, formats: [], genres: [] };
+  const { submit } = showWorkflow(workflow, [{ ...mockOptions, result: { data: { getClassificationOptions: empty } } }, mockOptions]);
+  expect(await screen.findByRole('alert')).toHaveTextContent('eser biçimleri ve tür ve konular');
+  expect(submit).toBeDisabled();
+  fireEvent.click(screen.getByRole('button', { name: 'Yeniden dene' }));
+  await waitFor(() => expect(submit).toBeEnabled());
+});
+test.each(['create', 'edit'])('%s blocks failed options and supports retry', async workflow => {
+  const { submit } = showWorkflow(workflow, [{ request: mockOptions.request, error: new Error('offline') }, mockOptions]);
+  expect(await screen.findByRole('alert')).toHaveTextContent('Seçenekler yüklenemedi');
+  expect(submit).toBeDisabled();
+  fireEvent.click(screen.getByRole('button', { name: 'Yeniden dene' }));
+  await waitFor(() => expect(submit).toBeEnabled());
+});
+test.each(['formats', 'genres'])('missing %s alone blocks mandatory classification', async key => {
+  const { submit } = showWorkflow('create', [{ ...mockOptions, result: { data: { getClassificationOptions: { ...options, [key]: [] } } } }]);
+  expect(await screen.findByRole('alert')).toHaveTextContent('henüz hazır değil');
+  expect(submit).toBeDisabled();
+});
+
+test('disabled cover integration explains the blocker and prevents creation', async () => {
+  integrations.IMAGE_UPLOAD_ENABLED = false;
+  try {
+    const { submit } = showWorkflow('create', [mockOptions]);
+    await screen.findByText('Kurgu ve Hikâyeler');
+    expect(screen.getByRole('alert')).toHaveTextContent('Kapak yükleme bu ortamda devre dışı');
+    expect(submit).toBeDisabled();
+  } finally { integrations.IMAGE_UPLOAD_ENABLED = true; }
+});
+test('creation waits for the cover upload to finish', async () => {
+  const { submit } = showWorkflow('create', [mockOptions]);
+  await waitFor(() => expect(submit).toBeEnabled());
+  fireEvent.click(screen.getByRole('button', { name: 'Yükleme başlat' }));
+  expect(screen.getByRole('status')).toHaveTextContent('Kapak yükleniyor');
+  expect(submit).toBeDisabled();
+  fireEvent.click(screen.getByRole('button', { name: 'Yükleme bitir' }));
+  expect(submit).toBeEnabled();
+});
+test('inactive mandatory selections must be replaced before editing can save', async () => {
+  const { submit } = showWorkflow('edit', [{ ...mockOptions, result: { data: { getClassificationOptions: { ...options, formats: [options.formats[1]] } } } }]);
+  expect(await screen.findByRole('alert')).toHaveTextContent('artık kullanılamıyor');
+  expect(submit).toBeDisabled();
+  fireEvent.change(screen.getByLabelText('Eser biçimi *'), { target: { value: 'siir' } });
+  await waitFor(() => expect(submit).toBeEnabled());
+});
+
+test.each([false, true])('Docker creates a book with a local cover when Cloudinary enabled=%s', async cloudEnabled => {
+  integrations.DOCKER_DEV = true;
+  integrations.IMAGE_UPLOAD_ENABLED = cloudEnabled;
+  const imageUrl = new URL('/images/development-book-cover.svg', window.location.origin).href;
+  const scroll = HTMLElement.prototype.scrollIntoView;
+  HTMLElement.prototype.scrollIntoView = jest.fn();
+  const classification = { formatId: 'roman', genreIds: ['genre0'], tags: [], narrativeFeatureIds: [], targetAudienceId: null, contentWarningIds: [] };
+  const result = jest.fn(() => ({ data: { createBook: { publicPath: '/kitap/new', id: 'new', title: 'Yerel Kitap', description: 'Tanıtım', authorId: 'author', comments: [], chapters: [] } } }));
+  try {
+    render(<MockedProvider mocks={[mockOptions, { request: { query: CREATE_BOOK_MUTATION, variables: { title: 'Yerel Kitap', description: 'Tanıtım', imageUrl, classification } }, result }]}><MemoryRouter><Routes><Route path="/" element={<CreateBookPage />} /><Route path="/dashboard/new" element={<p>Yerel kitap açıldı</p>} /></Routes></MemoryRouter></MockedProvider>);
+    await screen.findByText('Kurgu ve Hikâyeler');
+    fireEvent.change(screen.getByLabelText(/Kitap Başlığı/), { target: { value: 'Yerel Kitap' } });
+    fireEvent.change(screen.getByLabelText('Açıklama'), { target: { value: 'Tanıtım' } });
+    fireEvent.change(screen.getByLabelText('Eser biçimi *'), { target: { value: 'roman' } });
+    fireEvent.click(screen.getByLabelText('Fantastik'));
+    // A local cover is an explicit choice; mandatory cover validation still runs.
+    fireEvent.click(screen.getByRole('button', { name: 'Taslak Olarak Kaydet' }));
+    expect(screen.getByRole('button', { name: 'Kapak resmi yüklemek zorunludur.' })).toBeInTheDocument();
+    expect(result).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Kapak seç' })).toHaveFocus());
+    fireEvent.click(screen.getByRole('button', { name: 'Yerel örnek kapağı kullan' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Taslak Olarak Kaydet' }));
+    expect(await screen.findByText('Yerel kitap açıldı')).toBeInTheDocument();
+    expect(result).toHaveBeenCalledTimes(1);
+  } finally {
+    HTMLElement.prototype.scrollIntoView = scroll;
+    integrations.DOCKER_DEV = false;
+    integrations.IMAGE_UPLOAD_ENABLED = true;
+  }
+});
+test('production does not offer the development cover', async () => {
+  showWorkflow('create', [mockOptions]);
+  await screen.findByText('Kurgu ve Hikâyeler');
+  expect(screen.queryByRole('button', { name: 'Yerel örnek kapağı kullan' })).not.toBeInTheDocument();
 });

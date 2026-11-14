@@ -30,7 +30,15 @@ extend type Mutation {
 
 enum ChapterAccessStatus { READABLE REGISTRATION_REQUIRED HIDDEN UNAVAILABLE }
 
+type ChapterMusic {
+  url: String!
+  title: String!
+  duration: Float!
+  publicId: String!
+}
+
 type Chapter {
+  music: ChapterMusic
   accessStatus: ChapterAccessStatus!
   id: ID!
   bookId: ID!

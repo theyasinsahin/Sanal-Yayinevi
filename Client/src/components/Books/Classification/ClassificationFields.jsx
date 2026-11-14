@@ -15,10 +15,15 @@ export const classificationInput = value => ({ ...value, targetAudienceId: value
 export const classificationError = value => !value.formatId ? 'Bir eser biçimi seçin.' : value.genreIds.length < 1 || value.genreIds.length > 3 ? 'En az 1, en fazla 3 tür/konu seçin.' : value.tags.length > 8 ? 'En fazla 8 etiket ekleyin.' : '';
 const normalized = name => name.normalize('NFC').trim().replace(/\s+/gu, ' ').toLocaleLowerCase('tr-TR');
 
-export default function ClassificationFields({ value, onChange, disabled = false, existing = {} }) {
+export default function ClassificationFields({ value, onChange, disabled = false, existing = {}, onReadyChange }) {
   const id = useId();
   const { data, loading, error, refetch } = useQuery(GET_CLASSIFICATION_OPTIONS);
   const options = data?.getClassificationOptions;
+  const ready = !loading && !error && Boolean(options?.formats?.length && options?.genres?.length);
+  const selectionsAvailable = ready &&
+    (!value.formatId || options.formats.some(item => item.id === value.formatId)) &&
+    value.genreIds.every(selected => options.genres.some(item => item.id === selected));
+  useEffect(() => { onReadyChange?.(selectionsAvailable); }, [selectionsAvailable, onReadyChange]);
   const [search, setSearch] = useState('');
   const [tag, setTag] = useState('');
   const [tagSearch, setTagSearch] = useState('');
@@ -37,33 +42,35 @@ export default function ClassificationFields({ value, onChange, disabled = false
   const lookup = (items, selected, old = []) => items?.find(item => item.id === selected)?.name || old.find(item => item.id === selected)?.name || 'Önceki seçim (yeniden seçin)';
   const withInactive = (items, old = []) => [...items, ...old.filter(item => !items.some(active => active.id === item.id)).map(item => ({ ...item, name: `${item.name} (pasif; kaldırın)` }))];
   const checks = (items, key, label, max) => <fieldset className="classification-group"><legend>{label}{max ? ` (${value[key].length}/${max})` : ' (isteğe bağlı)'}</legend>
-    <div className="classification-options">{items.map(item => <label key={item.id}><input type="checkbox" checked={value[key].includes(item.id)} disabled={disabled || (max && value[key].length >= max && !value[key].includes(item.id))} onChange={() => toggle(key, item.id)} />{item.name}</label>)}</div>
+    <div className="classification-options">{items.map(item => <label key={item.id}><input type="checkbox" checked={value[key].includes(item.id)} disabled={disabled || !ready || (max && value[key].length >= max && !value[key].includes(item.id))} onChange={() => toggle(key, item.id)} />{item.name}</label>)}</div>
   </fieldset>;
   return <div className="classification-fields">
     {loading && <p role="status">Sınıflandırma seçenekleri yükleniyor…</p>}
-    {error && <p role="alert">Seçenekler yüklenemedi. <Button type="button" variant="link" onClick={() => refetch()}>Yeniden dene</Button></p>}
+    {error && <p role="alert">Seçenekler yüklenemedi. <Button type="button" variant="link" disabled={loading} onClick={() => refetch().catch(() => {})}>Yeniden dene</Button></p>}
+    {!loading && !error && !ready && <p role="alert">Zorunlu sınıflandırma seçenekleri henüz hazır değil: {!options?.formats?.length ? 'eser biçimleri' : ''}{!options?.formats?.length && !options?.genres?.length ? ' ve ' : ''}{!options?.genres?.length ? 'tür ve konular' : ''}. Yönetici referans verilerini hazırladıktan sonra yeniden deneyin. <Button type="button" variant="link" onClick={() => refetch().catch(() => {})}>Yeniden dene</Button></p>}
+    {ready && ((value.formatId && !options.formats.some(item => item.id === value.formatId)) || value.genreIds.some(selected => !options.genres.some(item => item.id === selected))) && <p role="alert">Önceki seçimlerden bazıları artık kullanılamıyor. Pasif biçimi yeniden seçin veya pasif türleri kaldırın.</p>}
     <label className="classification-select" htmlFor={`${id}-format`}>Eser biçimi *
-      <select id={`${id}-format`} value={value.formatId} required disabled={disabled || !options} onChange={event => set('formatId', event.target.value)}>
+      <select id={`${id}-format`} value={value.formatId} required disabled={disabled || !ready} onChange={event => set('formatId', event.target.value)}>
         <option value="">Eser biçimini seçin</option>
         {value.formatId && !options?.formats.some(item => item.id === value.formatId) && <option value={value.formatId}>{existing.format?.name || 'Önceki biçim'} (pasif; yeniden seçin)</option>}
         {options?.formats.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
       </select>
     </label>
     <fieldset className="classification-group"><legend>Tür ve konular * ({value.genreIds.length}/3)</legend>
-      <label htmlFor={`${id}-genre-search`}>Tür/konu ara</label><input id={`${id}-genre-search`} type="search" value={search} onChange={event => setSearch(event.target.value)} disabled={disabled} />
-      <div className="classification-chips">{value.genreIds.map(selected => <button key={selected} type="button" disabled={disabled} onClick={() => toggle('genreIds', selected)} aria-label={`${lookup(options?.genres, selected, existing.genres)} türünü kaldır`}>{lookup(options?.genres, selected, existing.genres)} ×</button>)}</div>
+      <label htmlFor={`${id}-genre-search`}>Tür/konu ara</label><input id={`${id}-genre-search`} type="search" value={search} onChange={event => setSearch(event.target.value)} disabled={disabled || !ready} />
+      <div className="classification-chips">{value.genreIds.map(selected => <button key={selected} type="button" disabled={disabled || !ready} onClick={() => toggle('genreIds', selected)} aria-label={`${lookup(options?.genres, selected, existing.genres)} türünü kaldır`}>{lookup(options?.genres, selected, existing.genres)} ×</button>)}</div>
       {options && [['FICTION', 'Kurgu ve Hikâyeler'], ['KNOWLEDGE', 'Bilgi ve Düşünce']].map(([group, title]) => <div key={group}><h4>{title}</h4><div className="classification-options classification-options--scroll">
-        {options.genres.filter(item => item.group === group && normalized(item.name).includes(normalized(search))).map(item => <label key={item.id}><input type="checkbox" checked={value.genreIds.includes(item.id)} disabled={disabled || (value.genreIds.length >= 3 && !value.genreIds.includes(item.id))} onChange={() => toggle('genreIds', item.id)} />{item.name}</label>)}
+        {options.genres.filter(item => item.group === group && normalized(item.name).includes(normalized(search))).map(item => <label key={item.id}><input type="checkbox" checked={value.genreIds.includes(item.id)} disabled={disabled || !ready || (value.genreIds.length >= 3 && !value.genreIds.includes(item.id))} onChange={() => toggle('genreIds', item.id)} />{item.name}</label>)}
       </div></div>)}
     </fieldset>
     <fieldset className="classification-group"><legend>Etiketler ({value.tags.length}/8, isteğe bağlı)</legend>
-      <div className="classification-tag-input"><label htmlFor={`${id}-tag`}>Etiket ara veya yeni etiket yaz<input id={`${id}-tag`} value={tag} maxLength={50} disabled={disabled} onChange={event => setTag(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); addTag(); } }} /></label><Button type="button" variant="outline" disabled={disabled || !tag.trim() || value.tags.length >= 8} onClick={() => addTag()}>Ekle</Button></div>
-      {tag && <div className="classification-chips">{tagData?.searchClassificationTags.filter(item => !value.tags.some(name => normalized(name) === normalized(item.name))).map(item => <button key={item.id} type="button" disabled={disabled} onClick={() => addTag(item.name)}>{item.name} +</button>)}</div>}
-      <div className="classification-chips">{value.tags.map(name => <button key={name} type="button" disabled={disabled} onClick={() => set('tags', value.tags.filter(item => item !== name))} aria-label={`${name} etiketini kaldır`}>{name} ×</button>)}</div>
+      <div className="classification-tag-input"><label htmlFor={`${id}-tag`}>Etiket ara veya yeni etiket yaz<input id={`${id}-tag`} value={tag} maxLength={50} disabled={disabled || !ready} onChange={event => setTag(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); addTag(); } }} /></label><Button type="button" variant="outline" disabled={disabled || !ready || !tag.trim() || value.tags.length >= 8} onClick={() => addTag()}>Ekle</Button></div>
+      {tag && <div className="classification-chips">{tagData?.searchClassificationTags.filter(item => !value.tags.some(name => normalized(name) === normalized(item.name))).map(item => <button key={item.id} type="button" disabled={disabled || !ready} onClick={() => addTag(item.name)}>{item.name} +</button>)}</div>}
+      <div className="classification-chips">{value.tags.map(name => <button key={name} type="button" disabled={disabled || !ready} onClick={() => set('tags', value.tags.filter(item => item !== name))} aria-label={`${name} etiketini kaldır`}>{name} ×</button>)}</div>
       {tagError && <p role="alert">{tagError}</p>}
     </fieldset>
     {options && checks(withInactive(options.narrativeFeatures, existing.narrativeFeatures), 'narrativeFeatureIds', 'Anlatım özellikleri')}
-    <label className="classification-select" htmlFor={`${id}-audience`}>Hedef okur kitlesi (isteğe bağlı)<select id={`${id}-audience`} disabled={disabled || !options} value={value.targetAudienceId} onChange={event => set('targetAudienceId', event.target.value)}><option value="">Belirtilmedi</option>{options && withInactive(options.targetAudiences, existing.targetAudience ? [existing.targetAudience] : []).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+    <label className="classification-select" htmlFor={`${id}-audience`}>Hedef okur kitlesi (isteğe bağlı)<select id={`${id}-audience`} disabled={disabled || !ready} value={value.targetAudienceId} onChange={event => set('targetAudienceId', event.target.value)}><option value="">Belirtilmedi</option>{options && withInactive(options.targetAudiences, existing.targetAudience ? [existing.targetAudience] : []).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
     {options && checks(withInactive(options.contentWarnings, existing.contentWarnings), 'contentWarningIds', 'İçerik uyarıları')}
     <p className="classification-hint">İçerik uyarısı belirtilmemesi, eserin her yaşa uygun olduğu anlamına gelmez. Anlatım özellikleri basım uygunluğu veya telif izni yerine geçmez.</p>
   </div>;

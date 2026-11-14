@@ -2,6 +2,7 @@ import './environment.js';
 import nodemailer from 'nodemailer';
 import { Socket } from 'node:net';
 import { GraphQLError } from 'graphql';
+import { createDevelopmentMailTransport, usesDevelopmentMail } from './dockerDevelopmentMail.js';
 
 const deliveryMessage = 'E-posta şu anda gönderilemiyor. Lütfen biraz sonra tekrar deneyin.';
 const safeCodes = new Set(['EAUTH', 'ECONNECTION', 'ETIMEDOUT', 'ESOCKET', 'EDNS', 'ETLS', 'EENVELOPE', 'EMESSAGE']);
@@ -22,6 +23,11 @@ export function mailSettings(env = process.env) {
 }
 
 export function contactRecipient(env = process.env) {
+  if (usesDevelopmentMail(env)) {
+    const transport = createDevelopmentMailTransport(env);
+    transport.close();
+    return 'contact@betik-dev.invalid';
+  }
   const address = (env.CONTACT_EMAIL || env.EMAIL_USER || '').trim();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)) throw new Error('İletişim alıcısı için CONTACT_EMAIL veya EMAIL_USER gerekli.');
   return address;
@@ -35,6 +41,10 @@ export function createMailer({ env = process.env, createTransport = nodemailer.c
     const started = Date.now();
     let transport, socket, timer;
     try {
+      if (usesDevelopmentMail(env)) {
+        transport = createDevelopmentMailTransport(env);
+        return await transport[operation](message);
+      }
       const settings = mailSettings(env);
       socket = createSocket();
       socket.on('error', () => {});

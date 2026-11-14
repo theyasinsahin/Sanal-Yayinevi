@@ -5,7 +5,7 @@ export BETIK_WORKSPACE_PATH="$(pwd -P)"
 export LOCAL_UID="$(id -u)"
 export LOCAL_GID="$(id -g)"
 export DOCKER_GID="$(stat -c %g /var/run/docker.sock 2>/dev/null || printf 1000)"
-mkdir -p artifacts
+mkdir -p artifacts/development/mail
 development() {
   docker compose -p betik-dev --env-file docker/.env.local -f compose.yaml "$@"
 }
@@ -38,6 +38,7 @@ case "${1:-help}" in
   down) development down ;;
   logs) shift; development logs --tail=100 -f "$@" ;;
   seed) development run --rm --interactive=false seed ;;
+  verify) development exec -T server node Server/src/scripts/verifyDevelopment.js ;;
   db) development exec mongo mongosh betik_dev ;;
   check)
     tests build checks browser
@@ -48,9 +49,9 @@ case "${1:-help}" in
     target="${2:-unit}"
     if [[ $# -gt 1 ]]; then shift 2; else shift; fi
     case "$target" in
-      server|client|lint|unit) tests build checks; tests run --rm --interactive=false checks bash docker/checks.sh "$target" "$@" ;;
+      server|client|lint|unit|fresh) tests build checks; tests run --rm --interactive=false checks bash docker/checks.sh "$target" "$@" ;;
       e2e) tests build browser; tests run --rm --interactive=false browser bash docker/checks.sh browser "$@" ;;
-      *) echo 'Use: ./dev test server|client|lint|unit|e2e' >&2; exit 2 ;;
+      *) echo 'Use: ./dev test server|client|lint|unit|fresh|e2e' >&2; exit 2 ;;
     esac
     ;;
   android)
@@ -71,7 +72,7 @@ case "${1:-help}" in
     esac
     ;;
   help|--help|-h)
-    printf '%s\n' './dev init | doctor | up | down | logs [service] | seed | db | check | test [target] | android [action]'
+    printf '%s\n' './dev init | doctor | up | down | logs [service] | seed | verify | db | check | test [target] | android [action]'
     ;;
   *) echo 'Unknown command. Use ./dev help.' >&2; exit 2 ;;
 esac

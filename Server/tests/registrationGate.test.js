@@ -133,3 +133,15 @@ test('legacy registration and automatic-login registration share the same rate b
   for (let i = 0; i < 5; i++) await limitOperation(context, i % 2 ? 'register' : 'registerAndLogin', { email: registration.email }, true);
   await expect(limitOperation(context, 'registerAndLogin', { email: registration.email }, true)).rejects.toMatchObject({ extensions: { code: 'RATE_LIMITED' } });
 });
+
+test('chapter music is hidden by the guest registration gate and restored for members', async () => {
+  const music = { url: 'https://res.cloudinary.com/test/video/upload/music.mp3', title: 'Member track', duration: 12, publicId: 'chapter_music/test' };
+  await Chapter.updateOne({ _id: second._id }, { $set: { music } });
+  const source = 'query($id:ID!){getChapterById(id:$id){music{url title duration publicId}}}';
+  const guest = await run(source, { id: second.id });
+  expect(guest.errors).toBeUndefined();
+  expect(guest.data.getChapterById.music).toBeNull();
+  const member = await run(source, { id: second.id }, reader);
+  expect(member.errors).toBeUndefined();
+  expect(member.data.getChapterById.music).toEqual(music);
+});

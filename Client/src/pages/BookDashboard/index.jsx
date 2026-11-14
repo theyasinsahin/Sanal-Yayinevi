@@ -1,3 +1,4 @@
+import ChapterMusicEditor from '../../components/ChapterMusic/ChapterMusicEditor';
 import { hasChapterContent } from '../../utils/chapterContent';
 import ClassificationEditor from '../../components/Books/Classification/ClassificationEditor';
 import { bookPath, readerPath } from '../../utils/publicPaths';
@@ -76,6 +77,7 @@ const BookDashboard = () => {
 
   // --- STATE ---
   const [book, setBook] = useState(null);
+  const [chapterMusic, setChapterMusic] = useState({});
   const [newChapterTitle, setNewChapterTitle] = useState('');
   const [newChapterHidden, setNewChapterHidden] = useState(false);
   const [notification, setNotification] = useState({ isVisible: false, message: '', type: '' });
@@ -429,6 +431,10 @@ const BookDashboard = () => {
               </div>
             </header>
 
+            <ChapterMusicEditor key={`${bookId}:${selectedChapter}`} chapterId={selectedChapter}
+              music={Object.prototype.hasOwnProperty.call(chapterMusic, selectedChapter) ? chapterMusic[selectedChapter] : fetchedBook?.chapters?.find(chapter => chapter.id === selectedChapter)?.music}
+              disabled={editorLocked}
+              onChange={(id, music) => setChapterMusic(previous => ({ ...previous, [id]: music }))} />
             <div className="quill-wrapper">
               <ReactQuill
                 theme="snow"

@@ -1,6 +1,7 @@
 const disabledIntegrationKeys = [
   'EMAIL_USER', 'EMAIL_PASS', 'CONTACT_EMAIL', 'GOOGLE_CLIENT_ID',
   'SMTP_HOST', 'SMTP_PORT', 'SMTP_SECURE',
+  'CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET',
 ];
 
 export function assertDockerDevelopment(env = process.env) {
