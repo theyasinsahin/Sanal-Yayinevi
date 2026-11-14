@@ -46,6 +46,10 @@ test('Google redirect failures are displayed on the login form', () => {
   show(<Login />, [], '/auth?error=google_auth_failed');
   expect(screen.getByRole('alert')).toHaveTextContent('Google ile giriş yapılamadı');
 });
+test('stale Google CSRF cookies are explained and can be retried from login', () => {
+  show(<Login />, [], '/auth?error=google_csrf_failed');
+  expect(screen.getByRole('alert')).toHaveTextContent('oturum doğrulaması yenilendi');
+});
 test('registration validates password rules before sending an email code', () => {
   show(<Register />); fillRegistration('weak');
   fireEvent.click(screen.getByRole('button', { name: 'Doğrulama Kodu Gönder' }));

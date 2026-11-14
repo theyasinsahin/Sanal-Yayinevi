@@ -30,7 +30,13 @@ router.post('/callback', async (req, res) => {
 
     const cookies = String(req.headers.cookie || '').split(';').map(value => value.trim()).filter(value => value.startsWith('g_csrf_token=')).map(value => value.slice('g_csrf_token='.length));
     const csrf = req.body?.g_csrf_token;
-    if (cookies.length !== 1 || typeof csrf !== 'string' || csrf.length < 16 || csrf.length > 512 || Buffer.byteLength(cookies[0]) !== Buffer.byteLength(csrf) || !timingSafeEqual(Buffer.from(cookies[0]), Buffer.from(csrf))) return res.status(403).json({ error: 'GOOGLE_CSRF_FAILED' });
+    const csrfValid = cookies.length === 1 && typeof csrf === 'string' && csrf.length >= 16 && csrf.length <= 512
+      && Buffer.byteLength(cookies[0]) === Buffer.byteLength(csrf)
+      && timingSafeEqual(Buffer.from(cookies[0]), Buffer.from(csrf));
+    if (!csrfValid) {
+      res.clearCookie('g_csrf_token', { path: '/' });
+      return res.redirect(`${clientUrl}/login?error=google_csrf_failed`);
+    }
     if (typeof credential !== 'string' || credential.length > 8192) return res.status(400).json({ error: 'BAD_REQUEST' });
     await consumeRate('google-callback', req.ip || req.socket.remoteAddress, 20, 15 * 60000);
     const { token, user, loginNonce, isNewAccount } = await UserService.authenticateWithGoogleCredential(credential, { requireNonce: true });

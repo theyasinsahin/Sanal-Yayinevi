@@ -50,6 +50,8 @@ const LoginPage = () => {
     const err = searchParams.get('error');
     if (err === 'google_auth_failed') {
       setCustomError('Google ile giriş yapılamadı. Lütfen tekrar deneyin.');
+    } else if (err === 'google_csrf_failed') {
+      setCustomError('Google oturum doğrulaması yenilendi. Lütfen tekrar deneyin.');
     } else if (err === 'account_deleted') {
       setCustomError('Bu e-posta adresine ait hesap silinmiş.');
     } else if (err === 'google_no_credential') {
