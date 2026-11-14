@@ -21,6 +21,7 @@ Server/node_modules/
 Server/dist/
 Server/coverage/
 Server/.env
+Server/.env.example
 Server/.env.print.local
 Server/classification-report-*.json
 
