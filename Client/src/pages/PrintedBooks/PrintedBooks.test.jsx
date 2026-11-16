@@ -8,7 +8,7 @@ import ScrollToTop from '../../components/ScrollToTop';
 import PrintedBookDetail from '../../components/Books/PrintedBookDetail';
 import AdminPrintedBooks from '../Admin/PrintedBooks';
 import { useAuth } from '../../context/AuthContext';
-import { GET_PRINTED_BOOKS, GET_MY_PRINTED_SUBMISSIONS, LOOKUP_PRINTED_BOOK, SUBMIT_PRINTED_BOOK, REQUEST_BOOK_CLAIM, CREATE_PRINTED_QUOTE, GET_PRINTED_REVIEWS, REVIEW_PRINTED_BOOK } from '../../graphql/printedBooks';
+import { GET_PRINTED_BOOKS, GET_MY_PRINTED_SUBMISSIONS, LOOKUP_PRINTED_BOOK, SUBMIT_PRINTED_BOOK, REQUEST_BOOK_CLAIM, CREATE_PRINTED_QUOTE, GET_PRINTED_REVIEWS, REVIEW_PRINTED_BOOK, GET_PRINTED_EDIT_REVIEWS, REQUEST_PRINTED_BOOK_EDIT } from '../../graphql/printedBooks';
 import { GET_QUOTES_BY_BOOK } from '../../graphql/queries/quote';
 
 jest.mock('../../context/AuthContext', () => ({ useAuth: jest.fn() }));
@@ -152,7 +152,7 @@ test('submission does not reach the server when credentials disappear just befor
 
 test('manual submissions are sent for review and do not appear as approved books immediately', async () => {
   const classification = { formatId: 'format', genreIds: ['topic'], tags: [], narrativeFeatureIds: [], targetAudienceId: null, contentWarningIds: [] };
-  const input = { classification, isbn: '', title: book.title, printedAuthor: book.printedAuthor, publisher: book.publisher, publicationYear: 2020, pageCount: 200, description: book.description, imageUrl: '', purchaseUrl: '', publicationEvidenceUrl: 'https://example.test/catalog' };
+  const input = { classification, isbn: '', title: book.title, printedAuthor: book.printedAuthor, publisher: book.publisher, publicationYear: 2020, pageCount: 200, description: book.description, imageUrl: '', purchaseUrl: '', publicationEvidenceUrl: 'https://example.test/catalog', originalTitle: '', translator: '', preparedBy: '', editionNumber: null, coverDesigner: '', pageDesigner: '', printingPlace: '' };
   const options = { request: { query: GET_CLASSIFICATION_OPTIONS }, result: { data: { getClassificationOptions: { formats: [{ id: 'format', slug: 'roman', name: 'Roman', isActive: true }], genres: [{ id: 'topic', slug: 'fantastik', name: 'Fantastik', group: 'FICTION', hexColor: '#666666', isActive: true }], narrativeFeatures: [], targetAudiences: [], contentWarnings: [] } } } };
   show(<PrintedBooks />, [options, catalog([]), mine(), mine(), { request: { query: SUBMIT_PRINTED_BOOK, variables: { input } }, result: { data: { submitPrintedBook: { id: 'pending', title: book.title, publicationStatus: 'PENDING' } } } }]);
   fireEvent.click(screen.getByRole('button', { name: 'Basılı kitap ekle' }));
@@ -200,6 +200,19 @@ test('approved author access exposes the chapter editor while retaining the prin
   await screen.findByText('Bu kitaptan henüz bir alıntı paylaşılmadı.');
 });
 
+test('a reader can propose a printed book correction while published details remain visible', async () => {
+  const reason = 'Çevirmen bilgisi yayınevi künyesinde yer alıyor.';
+  const refresh = jest.fn();
+  show(<PrintedBookDetail book={book} comments={[]} refresh={refresh} />, [quotes(), { request: { query: REQUEST_PRINTED_BOOK_EDIT, variables: { bookId: book.id, input: { translator: 'Yeni Çevirmen' }, reason } }, result: { data: { requestPrintedBookEdit: { id: 'edit', status: 'PENDING', reviewNote: '' } } } }]);
+  fireEvent.click(screen.getByText('Kitap bilgilerinde düzeltme öner'));
+  fireEvent.change(screen.getByLabelText(/Çeviren \(isteğe bağlı\)/), { target: { value: 'Yeni Çevirmen' } });
+  fireEvent.change(screen.getByLabelText(/Düzeltme gerekçesi/), { target: { value: reason } });
+  fireEvent.click(screen.getByRole('button', { name: 'Düzenleme isteği gönder', hidden: true }));
+  await waitFor(() => expect(refresh).toHaveBeenCalled());
+  expect(screen.getByText('Bilgi düzenleme isteğiniz inceleniyor.')).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: book.title })).toBeInTheDocument();
+});
+
 test.each([null, { id: 'reader' }])('approved authors are linked publicly without granting visitors editing or new claims (viewer: %p)', async user => {
   useAuth.mockReturnValue({ user });
   show(detail({ authorId: 'verified-author', author: { id: 'verified-author', username: 'onayli-yazar', fullName: 'Onaylı Yazar' } }), [quotes()]);
@@ -234,7 +247,7 @@ test.each(['PUBLIC', 'PRIVATE'])('printed quote posts the source page with %s vi
 test('admin review requires a rejection reason and approval removes the pending item after refetch', async () => {
   const pending = { ...book, submittedBy: { id: 'reader', username: 'reader', fullName: 'Reader' }, publicationEvidenceUrl: 'https://example.test/evidence' };
   const reviews = value => ({ request: { query: GET_PRINTED_REVIEWS }, result: { data: { getPrintedBookReviews: value, getBookClaimReviews: [] } } });
-  show(<AdminPrintedBooks />, [reviews([pending]), reviews([]), { request: { query: REVIEW_PRINTED_BOOK, variables: { bookId: book.id, approve: true, note: '' } }, result: { data: { reviewPrintedBook: { id: book.id, publicationStatus: 'APPROVED', reviewNote: '' } } } }]);
+  show(<AdminPrintedBooks />, [reviews([pending]), reviews([]), { request: { query: GET_PRINTED_EDIT_REVIEWS }, result: { data: { getPrintedBookEditReviews: [] } } }, { request: { query: REVIEW_PRINTED_BOOK, variables: { bookId: book.id, approve: true, note: '' } }, result: { data: { reviewPrintedBook: { id: book.id, publicationStatus: 'APPROVED', reviewNote: '' } } } }]);
   fireEvent.click(await screen.findByRole('button', { name: 'Reddet' }));
   expect(screen.getByRole('alert')).toHaveTextContent('gerekçe');
   fireEvent.click(screen.getByRole('button', { name: 'Onayla' }));

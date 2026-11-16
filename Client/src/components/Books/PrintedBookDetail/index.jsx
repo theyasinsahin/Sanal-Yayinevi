@@ -23,6 +23,7 @@ import './PrintedBookDetail.css';
 import BookShareButton from '../BookShareButton';
 import CatalogBackLink from '../CatalogBackLink';
 import PrintedReadingEditor from '../PrintedReadingEditor';
+import PrintedBookEditForm from './PrintedBookEditForm';
 
 function ClaimForm({ book, refresh }) {
   const [evidence, setEvidence] = useState('');
@@ -81,7 +82,7 @@ export default function PrintedBookDetail({ book, comments, commentsLoading, cur
     <article className="printed-detail-layout">
       <aside className="printed-detail-cover">{book.imageUrl && failedUrl !== book.imageUrl ? <img src={book.imageUrl} alt={`${book.title} kapağı`} onError={() => setFailedUrl(book.imageUrl)} /> : <div className="printed-cover-placeholder">{book.title}</div>}</aside>
       <div className="printed-detail-intro"><Badge variant="neutral">Basılı eser</Badge><h1>{book.title}</h1><p className="printed-detail-author">{book.printedAuthor}</p>
-        <dl className="printed-metadata"><div><dt>Yayınevi</dt><dd>{book.publisher}</dd></div><div><dt>Basım yılı</dt><dd>{book.publicationYear}</dd></div><div><dt>Sayfa</dt><dd>{book.pageCount}</dd></div><div><dt>ISBN</dt><dd>{book.isbn || 'Belirtilmedi'}</dd></div></dl>
+        <dl className="printed-metadata"><div><dt>Yayınevi</dt><dd>{book.publisher}</dd></div><div><dt>Basım yılı</dt><dd>{book.publicationYear}</dd></div><div><dt>Sayfa</dt><dd>{book.pageCount}</dd></div><div><dt>ISBN</dt><dd>{book.isbn || 'Belirtilmedi'}</dd></div>{[['originalTitle', 'Orijinal adı'], ['translator', 'Çeviren'], ['preparedBy', 'Yayına hazırlayan'], ['editionNumber', 'Baskı'], ['coverDesigner', 'Kapak tasarımı'], ['pageDesigner', 'Sayfa uygulama'], ['printingPlace', 'Baskı yeri']].map(([key, label]) => book[key] ? <div key={key}><dt>{label}</dt><dd>{key === 'editionNumber' ? `${book[key]}. baskı` : book[key]}</dd></div> : null)}</dl>
         <div className="printed-actions">{approved && book.purchaseUrl && <a className="btn btn-primary btn-medium" href={book.purchaseUrl} target="_blank" rel="noopener noreferrer">Satın alma sayfası ↗</a>}{approved && book.chapters?.length > 0 && <Link className="ui-text-link" to={readerPath(book)}>Yazarın paylaştığı bölümleri oku</Link>}{book.canEditContent && <Link className="ui-text-link" to={`/dashboard/${book.id}`}>Bölüm ekle / düzenle</Link>}</div>
         {book.author && <p className="printed-detail-hint">Betik'te onaylanan yazar: <Link to={profilePath(book.author)} className="ui-text-link">{book.author.fullName || book.author.username}</Link></p>}
       </div>
@@ -92,6 +93,7 @@ export default function PrintedBookDetail({ book, comments, commentsLoading, cur
     {approved && <PrintedReadingEditor key={`${book.id}:${user?.id || 'guest'}`} bookId={book.id} />}
     {!approved && <p className="ui-notice ui-notice--warning" role="status">{book.publicationStatus === 'PENDING' ? 'Bu istek Betik incelemesinde. Henüz herkese açık katalogda yer almıyor.' : `İsteğiniz için düzenleme gerekiyor. ${book.reviewNote || ''} Bilgileri düzelterek basılı kitaplar sayfasından yeniden istek gönderebilirsiniz.`}</p>}
     <section className="printed-panel"><h2>Kitap hakkında</h2><p className="printed-description">{book.description}</p></section>
+    {approved && user && <PrintedBookEditForm key={book.id} book={book} refresh={refresh} />}
     {approved && user && !book.authorId && <ClaimForm book={book} refresh={refresh} />}
     {approved && <>
       <section id="comments" className="printed-panel"><h2>Okur yorumları</h2>{<form onSubmit={event => { event.preventDefault(); onCommentSubmit(); }}><MentionInput as={Textarea} label="Yorumunuz" name="printed-comment" value={commentText} onChange={onCommentChange} required maxLength={5000} disabled={commentSending} /><Button type="submit" isLoading={commentSending}>Yorum gönder</Button></form>}{commentsLoading ? <p role="status">Yorumlar yükleniyor…</p> : <CommentList comments={comments} currentUserId={currentUserId} bookId={book.id} />}</section>

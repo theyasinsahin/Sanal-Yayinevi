@@ -10,6 +10,10 @@ Open Library'nin sabit `https://openlibrary.org/isbn/{ISBN}.json` adresi künye 
 
 Başvuru sahibi, tanıtım ve basılı baskı bilgileriyle birlikte yayınevi/katalog bağlantısını gönderir. Kapak ve satın alma bağlantıları isteğe bağlıdır. Kullanıcı kaynaklı bağlantılar sunucuda getirilmez; HTTPS adresleri kabul edilir. Başvuru `publicationStatus=PENDING`, `status=DRAFT` olarak kaydedilir ve içerik/yazarlık yetkisi verilmez. Yönetici onayında `APPROVED/PUBLISHED` olur; ret gerekçesi zorunludur. Bekleyen/reddedilen kayıtlara yalnızca başvuran ve yönetici erişebilir. İnceleme belgeleri ve başvuran bilgileri herkese açık kitap alanlarından gizlenir.
 
+Orijinal ad, çeviren, yayına hazırlayan, baskı sayısı, kapak tasarımı, sayfa uygulama ve baskı yeri isteğe bağlı künye alanlarıdır. Dolu alanlar kitap detayında görünür; eski kayıtlarda boş kalabilir. Baskı sayısı 1–1000 arasında tam sayı olarak kaydedilir.
+
+Giriş yapan kullanıcılar yayımlanmış bir basılı kitabın künye ve tanıtım bilgileri için gerekçeli düzenleme isteği gönderebilir. İstek ayrı `PrintedBookEditRequest` kaydında tutulur; onaydan önce yayımlanmış kitap değişmez. Bir kullanıcının aynı kitap için bir bekleyen isteği olabilir. Yönetici eski ve önerilen değerleri karşılaştırır; onay sırasında arada değişmiş alan, ISBN çakışması ve mevcut alıntıların sayfa sınırları denetlenir. Onay veya gerekçeli ret, başvurana bildirilir; onaylanan alanlar denetim kaydına yazılır.
+
 ISBN belirli bir baskı/formatın kimliğidir; telif veya dijital yayın hakkı kanıtı değildir. Bandrol ise fiziksel nüshaya uygulanan güvenlik etiketidir. Bu sürümde ISBN ve insan incelemesi kullanılır; Bakanlığın bandrol sorgulama hizmetine özel bir API entegrasyonu yapılmaz. Kaynaklar: [Uluslararası ISBN Ajansı](https://www.isbn-international.org/content/what-isbn/10), [Kültür ve Turizm Bakanlığı](https://telifhaklari.ktb.gov.tr/TR-332476/bandrol-yeni.html).
 
 ## Yorumlar, alıntılar ve içerik yetkisi
@@ -22,8 +26,8 @@ Başvuru, inceleme ve hak onayı işlemleri bildirimlerle birlikte MongoDB trans
 
 ## API ve doğrulama
 
-Sorgular: `getPrintedBooks`, `lookupPrintedBook`, `getMyPrintedSubmissions`, `getPrintedBookReviews`, `getBookClaimReviews`. Mutasyonlar: `submitPrintedBook`, `reviewPrintedBook`, `requestBookClaim`, `reviewBookClaim`. Yönetim sorguları ve inceleme mutasyonları sunucuda `ADMIN` rolü gerektirir. Katalog 12 kayıtlık sayfalarla, inceleme kuyrukları ilk 100 bekleyen kayıtla döner; incelendikçe sıradaki kayıtlar görünür.
+Sorgular: `getPrintedBooks`, `lookupPrintedBook`, `getMyPrintedSubmissions`, `getPrintedBookReviews`, `getBookClaimReviews`, `getPrintedBookEditReviews`. Mutasyonlar: `submitPrintedBook`, `reviewPrintedBook`, `requestBookClaim`, `reviewBookClaim`, `requestPrintedBookEdit`, `reviewPrintedBookEdit`. Yönetim sorguları ve inceleme mutasyonları sunucuda `ADMIN` rolü gerektirir. Katalog 12 kayıtlık sayfalarla, inceleme kuyrukları ilk 100 bekleyen kayıtla döner; incelendikçe sıradaki kayıtlar görünür.
 
-MongoDB replica set gerekir; mevcut takip onayı sistemi de aynı gereksinime sahiptir. Yeni `Book` ve `BookClaim` indeksleri dağıtımda oluşturulmalıdır; üretimde `autoIndex` kapalıysa kontrollü indeks oluşturma dağıtım sürecine eklenmelidir. Bu çalışma üretim veritabanında işlem veya veri taşıması yapmaz.
+MongoDB replica set gerekir; mevcut takip onayı sistemi de aynı gereksinime sahiptir. Yeni `Book`, `BookClaim` ve `PrintedBookEditRequest` indeksleri dağıtımda oluşturulmalıdır; üretimde `autoIndex` kapalıysa kontrollü indeks oluşturma dağıtım sürecine eklenmelidir. Bu çalışma üretim veritabanında işlem veya veri taşıması yapmaz.
 
 `Server/tests/printedBooks.test.js` ISBN, görünürlük, özel kanıt alanları, yorum/alıntı, eşzamanlı başvurular, hak talepleri ve içerik yetkilerini gerçek geçici replica set üzerinde doğrular. `Client/src/pages/PrintedBooks/PrintedBooks.test.jsx` katalog, başvuru, elle giriş, hak talebi, alıntı ve yönetim incelemesini doğrular.

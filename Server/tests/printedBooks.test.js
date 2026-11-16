@@ -7,6 +7,7 @@ import schema from '../src/graphql/schema.js';
 import { connect, clearDatabase, closeDatabase } from './db.js';
 import Book from '../src/models/book.js';
 import BookClaim from '../src/models/bookClaim.js';
+import PrintedBookEditRequest from '../src/models/printedBookEditRequest.js';
 import User from '../src/models/user.js';
 import Chapter from '../src/models/chapter.js';
 import Comment from '../src/models/comment.js';
@@ -22,7 +23,7 @@ import { canEditBookContent, normalizeIsbn } from '../src/utils/printedBooks.js'
 
 const input = { isbn: '9780140328721', title: 'Basılı Eser', printedAuthor: 'Kitabın Yazarı', publisher: 'Bir Yayınevi', publicationYear: 2020, pageCount: 200, description: 'Bu eser fiziksel olarak basılmış bir kitabın tanıtımıdır.', publicationEvidenceUrl: 'https://example.test/catalog/book', purchaseUrl: 'https://example.test/buy' };
 let user, other, admin;
-beforeAll(async () => { await connect(); await Promise.all([Book.init(), BookClaim.init(), Notification.init()]); });
+beforeAll(async () => { await connect(); await Promise.all([Book.init(), BookClaim.init(), PrintedBookEditRequest.init(), Notification.init()]); });
 afterAll(closeDatabase);
 beforeEach(async () => {
   const format = await Term.create({ kind: 'FORMAT', slug: 'roman', name: 'Roman' });
@@ -47,6 +48,7 @@ const bookAst = parse(rawClientBookQuery), seenFragments = new Set();
 bookAst.definitions = bookAst.definitions.filter(definition => { const key = definition.name?.value; if (seenFragments.has(key)) return false; seenFragments.add(key); return true; });
 const clientBookQuery = print(bookAst);
 const clientReviewQuery = clientDocument('printedBooks.js', 'GET_PRINTED_REVIEWS');
+const clientEditReviewQuery = clientDocument('printedBooks.js', 'GET_PRINTED_EDIT_REVIEWS');
 // Apollo's field instrumentation observes resolver results as well as GraphQL
 // execution. A raw Mongoose Query cannot safely be observed twice.
 const fieldInstrumentation = {
@@ -230,4 +232,50 @@ test('ISBN lookup is optional and provider failure preserves manual entry', asyn
   expect(fetchMock.mock.calls[0][0]).toBe('https://openlibrary.org/isbn/9780140328721.json');
   fetchMock.mockRejectedValueOnce(new Error('timeout'));
   expect(await printed.lookupPrintedBook(input.isbn, user)).toEqual({ isbn: input.isbn, found: false });
+});
+
+test('optional print credits persist and appear in the full book query', async () => {
+  const book = await printed.submitPrintedBook({ ...input, originalTitle: 'Original Work', translator: 'Çevirmen', preparedBy: 'Editör', editionNumber: 3, coverDesigner: 'Kapakçı', pageDesigner: 'Dizgici', printingPlace: 'İstanbul' }, user);
+  const result = await apolloQuery(clientBookQuery, user, { id: book.id });
+  expect(result.getBookById).toMatchObject({ originalTitle: 'Original Work', translator: 'Çevirmen', preparedBy: 'Editör', editionNumber: 3, coverDesigner: 'Kapakçı', pageDesigner: 'Dizgici', printingPlace: 'İstanbul' });
+  await expect(printed.submitPrintedBook({ ...input, isbn: '', editionNumber: -1 }, user)).rejects.toThrow('Baskı sayısı');
+});
+
+test('edit requests stay private and leave published metadata unchanged until approval', async () => {
+  const book = await approved();
+  await expect(printed.requestPrintedBookEdit({ bookId: book.id, input: { originalTitle: 'Original Work' }, reason: 'Kaynakta orijinal ad belirtiliyor.' }, null)).rejects.toThrow('Giriş');
+  const request = await printed.requestPrintedBookEdit({ bookId: book.id, input: { originalTitle: 'Original Work', translator: 'Çevirmen' }, reason: 'Künyedeki eksik bilgiler tamamlandı.' }, other);
+  const adminQueue = await apolloQuery(clientEditReviewQuery, admin);
+  expect(adminQueue.getPrintedBookEditReviews[0]).toMatchObject({ id: request.id, requester: { id: other.id }, book: { id: book.id }, changes: expect.arrayContaining([expect.objectContaining({ field: 'translator', after: 'Çevirmen' })]) });
+  expect((await Book.findById(book.id)).originalTitle).toBe('');
+  expect((await apolloQuery(clientBookQuery, other, { id: book.id })).getBookById.myEditRequest).toMatchObject({ id: request.id, status: 'PENDING' });
+  expect((await apolloQuery(clientBookQuery, user, { id: book.id })).getBookById.myEditRequest).toBeNull();
+  await expect(printed.requestPrintedBookEdit({ bookId: book.id, input: { printingPlace: 'Ankara' }, reason: 'Baskı yeri eksik bırakılmış.' }, other)).rejects.toThrow('bekleyen');
+  await expect(printed.reviewPrintedBookEdit({ requestId: request.id, approve: true }, other)).rejects.toThrow('yönetici');
+  await printed.reviewPrintedBookEdit({ requestId: request.id, approve: true }, admin);
+  expect((await Book.findById(book.id)).toObject()).toMatchObject({ originalTitle: 'Original Work', translator: 'Çevirmen', title: input.title });
+  expect((await PrintedBookEditRequest.findById(request.id)).status).toBe('APPROVED');
+});
+
+test('edit review detects stale metadata and rejection permits a new request', async () => {
+  const book = await approved();
+  const request = await printed.requestPrintedBookEdit({ bookId: book.id, input: { pageCount: 250 }, reason: 'Sayfa sayısı katalogda farklı görünüyor.' }, other);
+  await Book.updateOne({ _id: book.id }, { pageCount: 230 });
+  await expect(printed.reviewPrintedBookEdit({ requestId: request.id, approve: true }, admin)).rejects.toThrow('değişmiş');
+  await printed.reviewPrintedBookEdit({ requestId: request.id, approve: false, note: 'Güncel baskı ile uyuşmuyor.' }, admin);
+  const retry = await printed.requestPrintedBookEdit({ bookId: book.id, input: { pageCount: 240 }, reason: 'Yeni katalog kaynağına göre sayfa sayısı.' }, other);
+  expect(retry.status).toBe('PENDING');
+});
+
+test('edit approval protects unique ISBNs and existing printed quote pages', async () => {
+  const book = await approved();
+  const second = await printed.submitPrintedBook({ ...input, isbn: '9780804429573' }, other);
+  await printed.reviewPrintedBook({ bookId: second.id, approve: true }, admin);
+  const isbnRequest = await printed.requestPrintedBookEdit({ bookId: book.id, input: { isbn: '080442957X' }, reason: 'ISBN bilgisi düzeltilmeli.' }, user);
+  await expect(printed.reviewPrintedBookEdit({ requestId: isbnRequest.id, approve: true }, admin)).rejects.toThrow('ISBN');
+  await printed.reviewPrintedBookEdit({ requestId: isbnRequest.id, approve: false, note: 'ISBN başka bir baskıya ait.' }, admin);
+  await quotes.createQuote(other._id, { bookId: book.id, text: 'Kitabın son sayfalarından alınan bir cümle.', pageNumber: 190 });
+  const pagesRequest = await printed.requestPrintedBookEdit({ bookId: book.id, input: { pageCount: 180 }, reason: 'Sayfa sayısı yeniden incelenmeli.' }, user);
+  await expect(printed.reviewPrintedBookEdit({ requestId: pagesRequest.id, approve: true }, admin)).rejects.toThrow('alıntılar');
+  expect((await Book.findById(book.id)).pageCount).toBe(200);
 });
