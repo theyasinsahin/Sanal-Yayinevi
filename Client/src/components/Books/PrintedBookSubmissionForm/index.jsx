@@ -7,7 +7,7 @@ import { Button } from '../../UI/Button';
 import { LOOKUP_PRINTED_BOOK, SUBMIT_PRINTED_BOOK } from '../../../graphql/printedBooks';
 import { useAuth } from '../../../context/AuthContext';
 
-const initial = { isbn: '', title: '', printedAuthor: '', publisher: '', publicationYear: '', pageCount: '', description: '', imageUrl: '', purchaseUrl: '', publicationEvidenceUrl: '' };
+const initial = { isbn: '', title: '', printedAuthor: '', publisher: '', publicationYear: '', pageCount: '', description: '', imageUrl: '', purchaseUrl: '', publicationEvidenceUrl: '', originalTitle: '', translator: '', preparedBy: '', editionNumber: '', coverDesigner: '', pageDesigner: '', printingPlace: '' };
 export default function PrintedBookSubmissionForm({ onSubmitted, onClose }) {
   const { ensureSession } = useAuth();
   const [classification, setClassification] = useState(emptyClassification);
@@ -34,7 +34,7 @@ export default function PrintedBookSubmissionForm({ onSubmitted, onClose }) {
     try {
       const invalid = classificationError(classification);
       if (invalid) throw new Error(invalid);
-      await submit({ variables: { input: { ...form, classification: classificationInput(classification), publicationYear: Number(form.publicationYear), pageCount: Number(form.pageCount) } } });
+      await submit({ variables: { input: { ...form, classification: classificationInput(classification), publicationYear: Number(form.publicationYear), pageCount: Number(form.pageCount), editionNumber: form.editionNumber ? Number(form.editionNumber) : null } } });
       onSubmitted();
     } catch (failure) { setError(failure.message); }
   }
@@ -53,6 +53,13 @@ export default function PrintedBookSubmissionForm({ onSubmitted, onClose }) {
         <Input label="Yayınevi / Basım adı" name="publisher" value={form.publisher} onChange={change} disabled={busy} required minLength={2} maxLength={200} />
         <Input label="Bu baskının yılı" name="publicationYear" type="number" value={form.publicationYear} onChange={change} disabled={busy} required min={1400} max={new Date().getFullYear()} />
         <Input label="Basılı sayfa sayısı" name="pageCount" type="number" value={form.pageCount} onChange={change} disabled={busy} required min={1} max={50000} />
+        <Input label="Orijinal adı (isteğe bağlı)" name="originalTitle" value={form.originalTitle} onChange={change} disabled={busy} maxLength={200} />
+        <Input label="Çeviren (isteğe bağlı)" name="translator" value={form.translator} onChange={change} disabled={busy} maxLength={300} />
+        <Input label="Yayına hazırlayan (isteğe bağlı)" name="preparedBy" value={form.preparedBy} onChange={change} disabled={busy} maxLength={300} />
+        <Input label="Kaçıncı baskı (isteğe bağlı)" name="editionNumber" type="number" value={form.editionNumber} onChange={change} disabled={busy} min={1} max={1000} />
+        <Input label="Kapak tasarımı (isteğe bağlı)" name="coverDesigner" value={form.coverDesigner} onChange={change} disabled={busy} maxLength={300} />
+        <Input label="Sayfa uygulama (isteğe bağlı)" name="pageDesigner" value={form.pageDesigner} onChange={change} disabled={busy} maxLength={300} />
+        <Input label="Baskı yeri (isteğe bağlı)" name="printingPlace" value={form.printingPlace} onChange={change} disabled={busy} maxLength={200} />
         <Input label="Kapak görseli bağlantısı (isteğe bağlı)" name="imageUrl" type="url" value={form.imageUrl} onChange={change} disabled={busy} placeholder="https://…" maxLength={1500} />
       </div>
       <ClassificationFields value={classification} onChange={setClassification} disabled={busy} />

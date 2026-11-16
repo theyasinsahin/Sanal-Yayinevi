@@ -4,6 +4,13 @@ extend type Book {
   kind: String!
   isbn: String
   printedAuthor: String
+  originalTitle: String
+  translator: String
+  preparedBy: String
+  editionNumber: Int
+  coverDesigner: String
+  pageDesigner: String
+  printingPlace: String
   publisher: String
   publicationYear: Int
   publicationStatus: BookReviewStatus
@@ -13,6 +20,38 @@ extend type Book {
   submittedBy: User
   canEditContent: Boolean!
   myClaim: BookClaim
+  myEditRequest: PrintedBookEditRequest
+}
+
+type PrintedBookEditChange { field: String!, before: String, after: String }
+type PrintedBookEditRequest {
+  id: ID!
+  book: Book
+  requester: User
+  changes: [PrintedBookEditChange!]!
+  reason: String!
+  status: BookReviewStatus!
+  reviewNote: String!
+  createdAt: DateTime!
+}
+
+input PrintedBookEditInput {
+  isbn: String
+  title: String
+  printedAuthor: String
+  publisher: String
+  publicationYear: Int
+  pageCount: Int
+  description: String
+  imageUrl: String
+  purchaseUrl: String
+  originalTitle: String
+  translator: String
+  preparedBy: String
+  editionNumber: Int
+  coverDesigner: String
+  pageDesigner: String
+  printingPlace: String
 }
 
 type BookClaim {
@@ -42,6 +81,13 @@ input PrintedBookInput {
   isbn: String
   title: String!
   printedAuthor: String!
+  originalTitle: String
+  translator: String
+  preparedBy: String
+  editionNumber: Int
+  coverDesigner: String
+  pageDesigner: String
+  printingPlace: String
   publisher: String!
   publicationYear: Int!
   pageCount: Int!
@@ -56,10 +102,13 @@ extend type Query {
   getMyPrintedSubmissions: [Book!]!
   getPrintedBookReviews: [Book!]!
   getBookClaimReviews: [BookClaim!]!
+  getPrintedBookEditReviews: [PrintedBookEditRequest!]!
 }
 extend type Mutation {
   submitPrintedBook(input: PrintedBookInput!): Book!
   reviewPrintedBook(bookId: ID!, approve: Boolean!, note: String): Book!
   requestBookClaim(bookId: ID!, evidence: String!, evidenceUrl: String): BookClaim!
   reviewBookClaim(claimId: ID!, approve: Boolean!, note: String): BookClaim!
+  requestPrintedBookEdit(bookId: ID!, input: PrintedBookEditInput!, reason: String!): PrintedBookEditRequest!
+  reviewPrintedBookEdit(requestId: ID!, approve: Boolean!, note: String): PrintedBookEditRequest!
 }

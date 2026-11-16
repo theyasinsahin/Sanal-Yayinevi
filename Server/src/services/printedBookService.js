@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import { validateClassification, classificationFilter } from './classificationService.js';
 import Book from '../models/book.js';
 import BookClaim from '../models/bookClaim.js';
+import Quote from '../models/quote.js';
+import PrintedBookEditRequest from '../models/printedBookEditRequest.js';
 import User from '../models/user.js';
 import Notification from '../models/notification.js';
 import { normalizeIsbn } from '../utils/printedBooks.js';
@@ -29,6 +31,37 @@ const webUrl = (value, required = false) => {
   } catch { throw new Error('Bağlantılar geçerli bir https:// adresi olmalıdır.'); }
 };
 const reviewNote = (approve, note) => approve ? (note ? text(note, 'İnceleme notu', 1, 1000) : '') : text(note, 'Ret gerekçesi', 5, 1000);
+const optionalTextFields = {
+  originalTitle: ['Orijinal ad', 200], translator: ['Çeviren', 300],
+  preparedBy: ['Yayına hazırlayan', 300], coverDesigner: ['Kapak tasarımı', 300],
+  pageDesigner: ['Sayfa uygulama', 300], printingPlace: ['Baskı yeri', 200],
+};
+const optionalText = (value, field) => value == null || value === '' ? '' : text(value, optionalTextFields[field][0], 1, optionalTextFields[field][1]);
+const optionalMetadata = input => Object.fromEntries(Object.keys(optionalTextFields).map(field => [field, optionalText(input[field], field)]));
+function editionNumber(value) {
+  if (value == null || value === '') return undefined;
+  if (!Number.isInteger(value) || value < 1 || value > 1000) throw new Error('Baskı sayısı 1–1000 arasında olmalıdır.');
+  return value;
+}
+function editValue(field, value) {
+  if (field in optionalTextFields) return optionalText(value, field);
+  if (field === 'editionNumber') return editionNumber(value);
+  if (field === 'isbn') return value?.trim() ? normalizeIsbn(value) : undefined;
+  if (field === 'title') return text(value, 'Kitap adı', 1, 200);
+  if (field === 'printedAuthor') return text(value, 'Yazar adı', 2, 300);
+  if (field === 'publisher') return text(value, 'Yayınevi', 2, 200);
+  if (field === 'description') return text(value, 'Tanıtım', 20, 5000);
+  if (field === 'imageUrl' || field === 'purchaseUrl') return webUrl(value);
+  if (field === 'publicationYear') {
+    if (!Number.isInteger(value) || value < 1400 || value > new Date().getFullYear()) throw new Error('Geçerli bir basım yılı girin.');
+    return value;
+  }
+  if (field === 'pageCount') {
+    if (!Number.isInteger(value) || value < 1 || value > 50000) throw new Error('Sayfa sayısı 1–50000 arasında olmalıdır.');
+    return value;
+  }
+  throw new Error('Düzenlenemeyen kitap alanı.');
+}
 const notice = (userId, title, message, bookId, session) => Notification.create([{ userId, type: 'BOOK_REVIEW', title, message, icon: '📚', meta: { bookId } }], { session });
 async function notifyAdmins(bookId, title, session) {
   const admins = await User.find({ role: 'ADMIN', isDeleted: false, isActive: { $ne: false } }).session(session).select('_id');
@@ -45,6 +78,7 @@ export async function submitPrintedBook(input, user) {
     kind: 'PRINTED', publicationStatus: 'PENDING', status: 'DRAFT', submittedBy: userId,
     ...(isbn ? { isbn } : {}), title: text(input.title, 'Kitap adı', 1, 200),
     printedAuthor: text(input.printedAuthor, 'Yazar adı', 2, 300), publisher: text(input.publisher, 'Yayınevi', 2, 200),
+    ...optionalMetadata(input), editionNumber: editionNumber(input.editionNumber),
     description: text(input.description, 'Tanıtım', 20, 5000), publicationYear: input.publicationYear, pageCount: input.pageCount,
     imageUrl: webUrl(input.imageUrl), purchaseUrl: webUrl(input.purchaseUrl), publicationEvidenceUrl: webUrl(input.publicationEvidenceUrl, true),
   };
@@ -65,6 +99,71 @@ export async function submitPrintedBook(input, user) {
     if (error.code === 11000) throw new Error('Bu ISBN ile bir kitap zaten kayıtlı. Mevcut kitap için hak talebinde bulunabilirsiniz.');
     throw error;
   }
+}
+
+export async function requestPrintedBookEdit({ bookId, input, reason }, user) {
+  const requesterId = requireUser(user);
+  const explanation = text(reason, 'Düzenleme gerekçesi', 10, 1000);
+  const book = await Book.findOne({ _id: bookId, kind: 'PRINTED', publicationStatus: 'APPROVED', isDeleted: false });
+  if (!book) throw new Error('Yayımlanmış basılı kitap bulunamadı.');
+  const changes = {}, before = {};
+  for (const [field, raw] of Object.entries(input)) {
+    const value = editValue(field, raw);
+    if ((book[field] ?? null) !== (value ?? null)) {
+      changes[field] = value ?? null;
+      before[field] = book[field] ?? null;
+    }
+  }
+  if (!Object.keys(changes).length) throw new Error('En az bir bilgi değişikliği yapın.');
+  await PrintedBookEditRequest.init();
+  try {
+    return await mongoose.connection.transaction(async session => {
+      const [request] = await PrintedBookEditRequest.create([{ bookId, requesterId, changes, before, reason: explanation }], { session });
+      await notifyAdmins(bookId, 'Basılı kitap bilgi düzenleme isteği', session);
+      return request;
+    });
+  } catch (error) {
+    if (error.code === 11000) throw new Error('Bu kitap için zaten bekleyen bir düzenleme isteğiniz var.');
+    throw error;
+  }
+}
+
+export async function reviewPrintedBookEdit({ requestId, approve, note }, user) {
+  requireAdmin(user);
+  const review = reviewNote(approve, note);
+  await AdminAudit.init();
+  try {
+    return await mongoose.connection.transaction(async session => {
+      const actor = await requireCurrentAdmin({ user }, session);
+      const request = await PrintedBookEditRequest.findOne({ _id: requestId, status: 'PENDING' }).session(session);
+      if (!request) throw new Error('Bekleyen düzenleme isteği bulunamadı veya zaten incelendi.');
+      if (approve) {
+        const book = await Book.findOne({ _id: request.bookId, kind: 'PRINTED', publicationStatus: 'APPROVED', isDeleted: false }).session(session);
+        if (!book) throw new Error('Kitap artık yayında değil.');
+        for (const [field, oldValue] of Object.entries(request.before)) {
+          if ((book[field] ?? null) !== oldValue) throw new Error('Kitap bilgileri istekten sonra değişmiş. İsteği yeniden değerlendirin.');
+        }
+        if (request.changes.pageCount != null && await Quote.exists({ bookId: book._id, isDeleted: false, pageNumber: { $gt: request.changes.pageCount } }).session(session)) {
+          throw new Error('Yeni sayfa sayısından sonraki sayfalara bağlı alıntılar var.');
+        }
+        for (const [field, value] of Object.entries(request.changes)) book[field] = value ?? undefined;
+        await book.save({ session });
+        await AdminAudit.create([{ actorId: actor._id, resource: 'Book', recordId: book.id, action: 'UPDATE', reason: (review || 'Basılı kitap bilgi düzenleme isteği onaylandı.').slice(0, 500), fields: Object.keys(request.changes) }], { session });
+      }
+      Object.assign(request, { status: approve ? 'APPROVED' : 'REJECTED', reviewNote: review, reviewedBy: actor._id, reviewedAt: new Date() });
+      await request.save({ session });
+      await notice(request.requesterId, approve ? 'Kitap bilgileri güncellendi' : 'Kitap düzenleme isteği sonuçlandı', approve ? 'Önerdiğin kitap bilgileri yayımlandı.' : review, request.bookId, session);
+      return request;
+    });
+  } catch (error) {
+    if (error.code === 11000) throw new Error('Bu ISBN başka bir kitapta kayıtlı.');
+    throw error;
+  }
+}
+
+export async function getEditReviews(user) {
+  await requireCurrentAdmin({ user });
+  return PrintedBookEditRequest.find({ status: 'PENDING' }).sort({ createdAt: 1 }).limit(100);
 }
 
 export async function getPrintedBooks({ page = 1, search = '', classification }) {

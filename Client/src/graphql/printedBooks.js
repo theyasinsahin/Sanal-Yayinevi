@@ -7,9 +7,11 @@ export const PRINTED_BOOK_FIELDS = gql`
     ...WorkClassificationFields
     publicPath
     kind isbn printedAuthor publisher publicationYear publicationStatus purchaseUrl
+    originalTitle translator preparedBy editionNumber coverDesigner pageDesigner printingPlace
     publicationEvidenceUrl reviewNote canEditContent
     submittedBy { id }
     myClaim { id status reviewNote }
+    myEditRequest { id status reviewNote }
   }
 `;
 export const GET_PRINTED_BOOKS = gql`
@@ -68,5 +70,25 @@ export const REVIEW_BOOK_CLAIM = gql`
 export const CREATE_PRINTED_QUOTE = gql`
   mutation CreatePrintedQuote($bookId: ID!, $text: String!, $pageNumber: Int!, $note: String, $isSpoiler: Boolean, $visibility: QuoteVisibility = PUBLIC) {
     createQuote(bookId: $bookId, text: $text, pageNumber: $pageNumber, note: $note, isSpoiler: $isSpoiler, visibility: $visibility) { id text pageNumber visibility }
+  }
+`;
+export const REQUEST_PRINTED_BOOK_EDIT = gql`
+  mutation RequestPrintedBookEdit($bookId: ID!, $input: PrintedBookEditInput!, $reason: String!) {
+    requestPrintedBookEdit(bookId: $bookId, input: $input, reason: $reason) { id status reviewNote }
+  }
+`;
+export const GET_PRINTED_EDIT_REVIEWS = gql`
+  query GetPrintedEditReviews {
+    getPrintedBookEditReviews {
+      id reason status createdAt
+      changes { field before after }
+      requester { id username fullName }
+      book { id publicPath title isbn }
+    }
+  }
+`;
+export const REVIEW_PRINTED_BOOK_EDIT = gql`
+  mutation ReviewPrintedBookEdit($requestId: ID!, $approve: Boolean!, $note: String) {
+    reviewPrintedBookEdit(requestId: $requestId, approve: $approve, note: $note) { id status reviewNote }
   }
 `;
