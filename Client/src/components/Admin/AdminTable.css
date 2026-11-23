@@ -2,8 +2,8 @@
   overflow-x: auto;
   background: var(--paper-light);
   border-radius: var(--radius-md);
-  border: 1px solid #E5E7EB;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  border: 1px solid var(--rule);
+  box-shadow: var(--shadow-sm);
 }
 
 .admin-table {
@@ -13,18 +13,18 @@
 }
 
 .admin-table th {
-  background-color: #F9FAFB;
+  background-color: var(--paper);
   text-align: left;
   padding: 1rem;
   font-weight: 600;
-  color: #374151;
-  border-bottom: 1px solid #E5E7EB;
+  color: var(--ink);
+  border-bottom: 1px solid var(--rule);
 }
 
 .admin-table td {
   padding: 1rem;
-  border-bottom: 1px solid var(--bg-app);
-  color: #4B5563;
+  border-bottom: 1px solid var(--paper);
+  color: var(--ink);
   vertical-align: middle;
 }
 
@@ -33,5 +33,21 @@
 }
 
 .admin-table tr:hover {
-  background-color: #F9FAFB;
+  background-color: var(--paper);
 }
+/* Tasarım katmanı: tablo başlıkları dergi etiketi gibi, sayılar hizalı */
+.admin-table th {
+  font-size: var(--fs-caption);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--wine);
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+.admin-table td {
+  border-bottom-color: var(--rule);
+  color: var(--ink-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-table tr:hover { background-color: var(--wine-soft); }

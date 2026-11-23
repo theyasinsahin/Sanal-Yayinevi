@@ -8,8 +8,8 @@
   background: var(--paper-light);
   padding: 1.5rem;
   border-radius: var(--radius-md);
-  border: 1px solid #E5E7EB;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  border: 1px solid var(--rule);
+  box-shadow: var(--shadow-sm);
 }
 
 .activity-feed {
@@ -23,7 +23,7 @@
   align-items: flex-start;
   gap: 1rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid var(--bg-app);
+  border-bottom: 1px solid var(--paper);
 }
 
 .activity-item:last-child {
@@ -47,9 +47,13 @@
 }
 
 /* Tailwind benzeri sınıflar (Eğer Tailwind kullanmıyorsan manuel ekle) */
-.text-indigo-600 { color: var(--primary-hover); }
-.text-pink-600 { color: #DB2777; }
-.text-green-600 { color: #059669; }
-.bg-green-100 { background-color: #D1FAE5; }
-.bg-blue-100 { background-color: #DBEAFE; }
-.text-blue-600 { color: #2563EB; }
+.text-indigo-600 { color: var(--ember-deep); }
+.text-pink-600 { color: var(--ember-deep); }
+.text-green-600 { color: var(--success); }
+.bg-green-100 { background-color: var(--success-soft); }
+.bg-blue-100 { background-color: var(--wine-soft); }
+.text-blue-600 { color: var(--wine); }
+/* Tasarım katmanı: istatistik kartları */
+.admin-stat-card { border-top: 3px solid var(--wine); border-radius: 0 0 var(--radius-md) var(--radius-md); }
+.admin-stat-card .typography.h3,
+.admin-stat-card .typography.h2 { font-family: var(--font-display); color: var(--ink-strong); font-variant-numeric: tabular-nums; }

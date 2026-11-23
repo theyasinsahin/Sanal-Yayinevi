@@ -1,13 +1,13 @@
 .admin-wrapper {
   display: flex;
   min-height: 100vh;
-  background-color: var(--bg-app);
+  background-color: var(--paper);
 }
 
 .admin-sidebar {
   width: 260px;
-  background-color: var(--text-main); /* Dark Theme */
-  color: #9CA3AF;
+  background-color: var(--ink); /* Dark Theme */
+  color: var(--ink-soft);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -18,7 +18,7 @@
   display: flex;
   align-items: center;
   padding: 0 1.5rem;
-  border-bottom: 1px solid #1F2937;
+  border-bottom: 1px solid var(--ink-strong);
 }
 
 .admin-nav {
@@ -35,7 +35,7 @@
   gap: 0.75rem;
   padding: 0.75rem 1rem;
   border-radius: var(--radius-sm);
-  color: #D1D5DB;
+  color: var(--ink-faint);
   text-decoration: none;
   font-weight: 500;
   transition: all 0.2s;
@@ -48,17 +48,17 @@
 }
 
 .admin-link:hover {
-  background-color: #1F2937;
+  background-color: var(--ink-strong);
   color: var(--paper-light);
 }
 
 .admin-link.active {
-  background-color: #2563EB;
+  background-color: var(--ember);
   color: var(--paper-light);
 }
 
 .admin-link.logout:hover {
-  background-color: #DC2626;
+  background-color: var(--danger);
 }
 
 .admin-content {
@@ -71,7 +71,7 @@
 .admin-header {
   height: 64px;
   background-color: var(--paper-light);
-  border-bottom: 1px solid #E5E7EB;
+  border-bottom: 1px solid var(--rule);
   display: flex;
   align-items: center;
   padding: 0 2rem;
@@ -89,4 +89,50 @@
   .admin-bottom-actions { display: flex; }
   .admin-header { min-height: 64px; height: auto; padding: 1rem; }
   .admin-page-body { padding: 1rem; }
+}
+
+/* =====================================================================
+   TASARIM KATMANI — yönetim paneli: sakin, yoğun, güven veren
+   Dergi süsü yok; yalnızca palet, tipografi ve net hiyerarşi.
+   ===================================================================== */
+.admin-wrapper { background-color: var(--paper); }
+
+.admin-sidebar {
+  background-color: var(--wine);
+  color: var(--on-wine-strong);
+}
+
+.admin-logo {
+  border-bottom: 1px solid var(--on-wine-line);
+  color: var(--on-wine);
+  font-family: var(--font-display);
+}
+
+.admin-link {
+  border-radius: var(--radius-md);
+  color: var(--on-wine-strong);
+}
+
+.admin-link:hover {
+  background-color: var(--on-wine-fill-strong);
+  color: var(--on-wine);
+}
+
+.admin-link.active {
+  background-color: var(--paper-light);
+  color: var(--wine);
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--ember);
+}
+
+.admin-link:focus-visible { outline: 2px solid var(--paper-light); outline-offset: 2px; }
+
+.admin-header {
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+.admin-header h1,
+.admin-header .typography {
+  font-family: var(--font-display);
+  color: var(--wine);
 }

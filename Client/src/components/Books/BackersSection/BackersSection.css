@@ -24,14 +24,14 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  border: 2px solid var(--color-background-primary);
-  background: var(--color-background-info);
+  border: 2px solid var(--paper-light);
+  background: var(--wine-soft);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-text-info);
+  color: var(--wine);
   overflow: hidden;
   margin-left: -10px;
   transition: margin-left 0.2s ease, transform 0.15s ease;
@@ -53,15 +53,15 @@
 }
 
 .backer-avatar--more {
-  background: var(--color-background-secondary);
-  color: var(--color-text-secondary);
+  background: var(--paper-deep);
+  color: var(--ink-soft);
   font-size: 11px;
   font-weight: 600;
-  border: 2px solid var(--color-border-secondary);
+  border: 2px solid var(--rule);
 }
 
 .backer-avatar--skeleton {
-  background: var(--color-background-secondary);
+  background: var(--paper-deep);
   animation: backers-pulse 1.5s ease-in-out infinite;
 }
 
@@ -86,7 +86,7 @@
 
 .backers-modal {
   background: var(--paper-light);
-  border-radius: var(--border-radius-lg, 12px);
+  border-radius: var(--radius-lg, 12px);
   width: 100%;
   max-width: 400px;
   max-height: 70vh;
@@ -117,7 +117,7 @@
   cursor: pointer;
   color: var(--ink-soft);
   padding: 4px 8px;
-  border-radius: var(--border-radius-md, 6px);
+  border-radius: var(--radius-md, 6px);
   line-height: 1;
   transition: background 0.15s;
 }

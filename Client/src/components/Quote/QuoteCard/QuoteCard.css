@@ -1,6 +1,6 @@
 .quote-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  background: var(--paper-light);
+  border: 1px solid var(--rule);
   border-radius: 16px;
   padding: 24px;
   display: flex;
@@ -64,7 +64,7 @@
 
 .quote-card-icon {
   font-size: 2rem !important;
-  color: var(--color-primary);
+  color: var(--wine);
   opacity: 0.3;
   position: absolute;
 }
@@ -79,7 +79,7 @@
 .quote-card-text {
   font-size: 1rem;
   line-height: 1.7;
-  color: var(--text-primary);
+  color: var(--ink-strong);
   font-style: italic;
   margin: 0;
   padding: 8px 16px;
@@ -87,12 +87,12 @@
 
 .quote-card-note {
   font-size: 0.85rem;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   font-style: italic;
   padding: 8px 12px;
-  border-left: 3px solid var(--color-primary);
+  border-left: 3px solid var(--wine);
   margin: 0;
-  background: var(--bg-muted);
+  background: var(--paper-deep);
   border-radius: 0 8px 8px 0;
 }
 
@@ -103,11 +103,11 @@
   text-decoration: none;
   padding: 8px;
   border-radius: 8px;
-  background: var(--bg-muted);
+  background: var(--paper-deep);
   transition: background 0.15s;
 }
 
-.quote-card-source:hover { background: var(--bg-hover); }
+.quote-card-source:hover { background: var(--wine-soft); }
 
 .quote-card-book-cover {
   width: 36px;
@@ -126,12 +126,12 @@
 .quote-card-book-title {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--ink-strong);
 }
 
 .quote-card-chapter {
   font-size: 0.75rem;
-  color: var(--text-muted);
+  color: var(--ink-soft);
 }
 
 .quote-card-footer {
@@ -141,7 +141,7 @@
   flex-wrap: wrap;
   row-gap: 10px;
   padding-top: 12px;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--rule);
 }
 
 .quote-card-user {
@@ -149,7 +149,7 @@
   align-items: center;
   gap: 8px;
   text-decoration: none;
-  color: var(--text-primary);
+  color: var(--ink-strong);
   font-size: 0.82rem;
   font-weight: 500;
   min-width: 0;
@@ -173,11 +173,11 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--bg-muted);
+  background: var(--paper-deep);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   flex-shrink: 0;
 }
 
@@ -191,7 +191,7 @@
 
 .quote-card-time {
   font-size: 0.75rem;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   white-space: nowrap;
 }
 
@@ -202,7 +202,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   font-size: 0.82rem;
   padding: 4px 8px;
   border-radius: 6px;
@@ -219,20 +219,20 @@
   align-items: center;
   gap: 5px;
   font-size: 0.78rem;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   margin-bottom: -4px;
 }
 
 .quote-card-repost-user {
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--ink-strong);
   text-decoration: none;
 }
 .quote-card-repost-user:hover { text-decoration: underline; }
 
 .quote-card-repost-comment {
   font-size: 0.85rem;
-  color: var(--text-primary);
+  color: var(--ink-strong);
   font-style: italic;
   margin: 0;
   padding: 6px 10px;
@@ -243,14 +243,14 @@
 
 .quote-card-original-user {
   font-size: 0.75rem;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
 .quote-card-original-user a {
-  color: var(--color-primary);
+  color: var(--wine);
   text-decoration: none;
   font-weight: 500;
 }
@@ -262,7 +262,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   font-size: 0.82rem;
   padding: 4px 8px;
   border-radius: 6px;
@@ -273,7 +273,7 @@
 .quote-card-action-btn.reposted { color: var(--success); }
 
 .quote-card-repost-input {
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--rule);
   padding-top: 12px;
   display: flex;
   flex-direction: column;
@@ -282,17 +282,17 @@
 
 .quote-card-textarea {
   width: 100%;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--rule);
   border-radius: 8px;
   padding: 8px 10px;
   font-size: 0.85rem;
   resize: none;
   outline: none;
   font-family: inherit;
-  background: var(--bg-muted);
+  background: var(--paper-deep);
 }
 
-.quote-card-textarea:focus { border-color: var(--color-primary); }
+.quote-card-textarea:focus { border-color: var(--wine); }
 
 .quote-card-repost-actions {
   display: flex;
@@ -302,12 +302,12 @@
 
 .quote-card-cancel-btn {
   padding: 6px 14px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--rule);
   border-radius: 6px;
   background: none;
   cursor: pointer;
   font-size: 0.82rem;
-  color: var(--text-muted);
+  color: var(--ink-soft);
 }
 
 .quote-card-repost-btn {
@@ -330,7 +330,7 @@
 
 /* --- YORUMLAR --- */
 .quote-card-comments {
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--rule);
   padding-top: 12px;
   display: flex;
   flex-direction: column;
@@ -345,18 +345,18 @@
 
 .quote-card-comment-field {
   flex: 1;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--rule);
   border-radius: 20px;
   padding: 8px 14px;
   font-size: 0.85rem;
   outline: none;
   font-family: inherit;
-  background: var(--bg-muted);
+  background: var(--paper-deep);
   transition: border-color 0.15s;
 }
 
 .quote-card-comment-field:focus {
-  border-color: var(--color-primary);
+  border-color: var(--wine);
   background: var(--paper-light);
 }
 
@@ -368,7 +368,7 @@
   height: 34px;
   border-radius: 50%;
   border: none;
-  background: var(--color-primary);
+  background: var(--wine);
   color: var(--paper-light);
   cursor: pointer;
   transition: background 0.15s, opacity 0.15s;
@@ -386,7 +386,7 @@
 
 .quote-card-no-comments {
   font-size: 0.82rem;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   text-align: center;
   margin: 0;
   padding: 8px 0;
@@ -397,7 +397,7 @@
   flex-direction: column;
   gap: 4px;
   padding: 10px 12px;
-  background: var(--bg-muted);
+  background: var(--paper-deep);
   border-radius: 10px;
 }
 
@@ -419,11 +419,11 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: var(--bg-muted);
+  background: var(--paper-deep);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   font-size: 12px;
   flex-shrink: 0;
 }
@@ -431,7 +431,7 @@
 .quote-card-comment-username {
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--ink-strong);
   text-decoration: none;
 }
 
@@ -441,7 +441,7 @@
 
 .quote-card-comment-time {
   font-size: 0.72rem;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   margin-left: auto;
 }
 
@@ -449,7 +449,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   display: flex;
   align-items: center;
   padding: 2px;
@@ -464,7 +464,7 @@
 
 .quote-card-comment-content {
   font-size: 0.85rem;
-  color: var(--text-primary);
+  color: var(--ink-strong);
   margin: 0;
   padding-left: 30px;
   line-height: 1.5;

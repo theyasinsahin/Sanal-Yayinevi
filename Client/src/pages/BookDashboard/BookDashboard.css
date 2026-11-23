@@ -28,7 +28,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  border-bottom: 1px solid var(--bg-app);
+  border-bottom: 1px solid var(--paper);
 }
 .book-cover-mini img { width: 40px; height: 60px; object-fit: cover; border-radius: 4px; }
 .book-details-mini { overflow: hidden; min-width: 0; }
@@ -65,7 +65,7 @@
   color: var(--ink);
   margin-bottom: 2px;
 }
-.chapter-row:hover { background-color: var(--bg-app); }
+.chapter-row:hover { background-color: var(--paper); }
 .chapter-row.active { background-color: var(--wine-soft); color: var(--wine); font-weight: 500; }
 .chapter-row-content { display: flex; align-items: center; gap: 0.5rem; overflow: hidden; min-width: 0; }
 .folder-icon { color: var(--ink-soft); flex-shrink: 0; }
@@ -135,10 +135,10 @@
 .editor-save-status { min-width: 0; }
 .editor-topbar-actions { display: flex; gap: .5rem; align-items: center; justify-content: flex-end; flex-shrink: 0; }
 .editor-chapter-actions { position: relative; }
-.editor-chapter-actions > summary { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--rule-strong); border-radius: 6px; cursor: pointer; list-style: none; font: 700 1.5rem/1 var(--font-sans); }
+.editor-chapter-actions > summary { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--rule-strong); border-radius: 6px; cursor: pointer; list-style: none; font: 700 1.5rem/1 var(--font-ui); }
 .editor-chapter-actions > summary::-webkit-details-marker { display: none; }
 .editor-chapter-actions > summary:focus-visible { outline: 2px solid var(--wine); outline-offset: 2px; }
-.editor-chapter-actions-menu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 30; display: flex; flex-direction: column; gap: .5rem; width: 240px; max-width: calc(100vw - 32px); padding: .5rem; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg-surface); box-shadow: var(--shadow-lg); }
+.editor-chapter-actions-menu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 30; display: flex; flex-direction: column; gap: .5rem; width: 240px; max-width: calc(100vw - 32px); padding: .5rem; border: 1px solid var(--rule); border-radius: 8px; background: var(--paper-light); box-shadow: var(--shadow-lg); }
 .editor-chapter-actions:not([open]) > .editor-chapter-actions-menu { display: none; }
 .editor-chapter-actions-menu .btn { width: 100%; min-height: 44px; text-transform: none; }
 .editor-save-status .ui-badge { white-space: normal; line-height: 1.4; }
@@ -148,7 +148,7 @@
   min-width: 0;
   overflow-y: auto;
   padding: 2rem;
-  background-color: var(--bg-surface);
+  background-color: var(--paper-light);
   display: flex;
   justify-content: center;
 }

@@ -1,5 +1,5 @@
 .donation-page {
-  background-color: var(--bg-app);
+  background-color: var(--paper);
 
   min-height: calc(100vh - var(--navbar-height));
   
@@ -16,7 +16,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   text-decoration: none;
   font-weight: 500;
   margin-bottom: 2rem;
@@ -24,7 +24,7 @@
 }
 
 .back-link:hover {
-  color: var(--text-main);
+  color: var(--ink);
 }
 
 /* GRID LAYOUT */
@@ -40,7 +40,7 @@
   background: var(--paper-light);
   padding: 2rem;
   border-radius: 16px;
-  border: 1px solid #E5E7EB;
+  border: 1px solid var(--rule);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
@@ -52,7 +52,7 @@
 }
 
 .icon-bg {
-  background-color: #ECFDF5;
+  background-color: var(--ember-soft);
   padding: 12px;
   border-radius: var(--radius-md);
   display: flex;
@@ -61,10 +61,10 @@
 }
 
 .book-summary-box {
-  background-color: #F9FAFB;
+  background-color: var(--paper);
   padding: 1rem;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--bg-app);
+  border: 1px solid var(--paper);
   margin-bottom: 2rem;
 }
 
@@ -76,7 +76,7 @@
 .input-label {
   display: block;
   font-weight: 500;
-  color: #374151;
+  color: var(--ink);
   margin-bottom: 0.75rem;
 }
 
@@ -90,32 +90,32 @@
   flex: 1;
   padding: 0.5rem;
   background-color: var(--paper-light);
-  border: 1px solid #D1D5DB;
+  border: 1px solid var(--rule-strong);
   border-radius: var(--radius-sm);
   cursor: pointer;
   font-weight: 500;
-  color: #374151;
+  color: var(--ink);
   transition: all 0.2s;
 }
 
 .amount-chip:hover {
-  border-color: #10B981;
-  color: #10B981;
+  border-color: var(--success);
+  color: var(--success);
 }
 
 .amount-chip.active {
-  background-color: #ECFDF5;
-  border-color: #10B981;
-  color: #065F46;
+  background-color: var(--ember-soft);
+  border-color: var(--ember);
+  color: var(--ember-deep);
   font-weight: 600;
 }
 
 .error-box {
-  background-color: #FEF2F2;
+  background-color: var(--danger-soft);
   padding: 0.75rem;
   border-radius: var(--radius-sm);
   margin-bottom: 1rem;
-  border: 1px solid #FECACA;
+  border: 1px solid var(--danger);
 }
 
 .security-note {
@@ -124,7 +124,7 @@
   gap: 0.5rem;
   justify-content: center;
   margin-top: 1.5rem;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   opacity: 0.8;
 }
 
@@ -133,7 +133,7 @@
   background: var(--paper-light);
   min-height: 500px;
   border-radius: 16px;
-  border: 1px solid #E5E7EB;
+  border: 1px solid var(--rule);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -153,7 +153,7 @@
 }
 
 .placeholder-icon {
-  background-color: var(--bg-app);
+  background-color: var(--paper);
   padding: 1.5rem;
   border-radius: 50%;
   margin-bottom: 1.5rem;
@@ -180,4 +180,14 @@
   .iyzico-wrapper {
     min-height: 300px;
   }
+}
+/* Tasarım katmanı: destek sayfası */
+.donation-page {
+  padding-top: calc(var(--navbar-height) + clamp(1.5rem, 4vw, 3rem));
+  background-color: var(--paper);
+}
+
+.amount-chip {
+  border-radius: var(--radius-full);
+  font-variant-numeric: tabular-nums;
 }

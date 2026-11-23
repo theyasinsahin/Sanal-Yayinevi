@@ -30,7 +30,7 @@
 
 /* --- BİLGİ KUTUSU --- */
 .info-box {
-  background-color: var(--bg-app); /* Açık gri */
+  background-color: var(--paper); /* Açık gri */
   border: 1px solid var(--rule);
   border-radius: var(--radius-sm);
   padding: 1rem;
@@ -40,7 +40,7 @@
 }
 
 .info-box strong {
-  color: var(--text-main);
+  color: var(--ink);
   font-weight: 600;
 }
 
@@ -79,11 +79,11 @@
 .mb-4 { margin-bottom: 1rem; }
 .mb-6 { margin-bottom: 1.5rem; }
 .text-sm { font-size: 0.875rem; }
-.text-gray-500 { color: var(--text-muted); }
+.text-gray-500 { color: var(--ink-soft); }
 .text-center { text-align: center; }
 .p-4 { padding: 1rem; }
 .rounded { border-radius: 0.375rem; }
-.bg-gray-100 { background-color: var(--bg-app); }
+.bg-gray-100 { background-color: var(--paper); }
 
 /* --- ANİMASYONLAR --- */
 @keyframes fadeIn {

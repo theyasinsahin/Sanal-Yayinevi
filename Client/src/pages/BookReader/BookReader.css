@@ -3,10 +3,10 @@
   min-height: 100vh;
   background: linear-gradient(
     180deg,
-    var(--aged-paper) 0%,
-    var(--parchment) 100%
+    var(--paper-deep) 0%,
+    var(--paper-deep) 100%
   );
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   position: relative;
   display: flex;
   padding-top: var(--navbar-height, 80px);
@@ -27,7 +27,7 @@
 /* Progress Bar Doluluk - Senin ana renginle dolar */
 .reading-progress-fill {
   height: 100%;
-  background-color: var(--ash-gray); /* Temadaki mürekkep rengi */
+  background-color: var(--ink-soft); /* Temadaki mürekkep rengi */
   width: 0%;
   transition: width 0.1s ease-out; /* Akıcı ilerleme efekti */
   
@@ -57,7 +57,7 @@
   left: 0;
   top: var(--navbar-height, 80px);
   background-color: var(--paper-light);
-  border-right: 2px solid var(--fog);
+  border-right: 2px solid var(--paper-deep);
   overflow-y: auto;
   z-index: 100;
   box-shadow: var(--shadow-md);
@@ -70,7 +70,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   font-size: 0.85rem;
   padding: 0.4rem 0;
   margin-bottom: 1rem;
@@ -79,7 +79,7 @@
 }
 
 .sidebar-back-btn:hover {
-  color: var(--text-default);
+  color: var(--ink);
 }
 
 /* Paper texture on sidebar */
@@ -96,23 +96,23 @@
 /* Sidebar Header */
 .sidebar-header {
   padding: 2rem 1.5rem 1rem;
-  border-bottom: 2px solid var(--fog);
+  border-bottom: 2px solid var(--paper-deep);
   position: relative;
   z-index: 1;
 }
 
 .sidebar-header h3 {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--ink-black);
+  color: var(--ink-strong);
   margin: 0 0 0.5rem;
 }
 
 .book-progress {
-  font-family: var(--font-sans);
+  font-family: var(--font-ui);
   font-size: 0.875rem;
-  color: var(--graphite);
+  color: var(--ink);
   font-weight: 600;
 }
 
@@ -120,7 +120,7 @@
 .progress-bar {
   width: 100%;
   height: 6px;
-  background-color: var(--fog);
+  background-color: var(--paper-deep);
   border-radius: 3px;
   margin-top: 0.75rem;
   overflow: hidden;
@@ -128,7 +128,7 @@
 
 .progress-fill {
   height: 100%;
-  background-color: var(--ink-black);
+  background-color: var(--ink-strong);
   transition: width 0.3s ease;
   border-radius: 3px;
 }
@@ -152,12 +152,12 @@
 }
 
 .chapter-item:hover {
-  background-color: var(--cream);
+  background-color: var(--paper);
 }
 
 .chapter-item.active {
-  background-color: var(--aged-paper);
-  border-left-color: var(--ink-black);
+  background-color: var(--paper-deep);
+  border-left-color: var(--ink-strong);
 }
 
 .chapter-item.completed {
@@ -171,7 +171,7 @@
   width: 20px;
   height: 20px;
   min-width: 20px;
-  border: 2px solid var(--graphite);
+  border: 2px solid var(--ink);
   border-radius: 3px;
   display: flex;
   align-items: center;
@@ -183,14 +183,14 @@
 }
 
 .chapter-checkbox:hover {
-  border-color: var(--ink-black);
+  border-color: var(--ink-strong);
 }
 
 .chapter-checkbox:disabled { opacity: .45; cursor: not-allowed; }
 
 .chapter-checkbox.checked {
-  background-color: var(--ink-black);
-  border-color: var(--ink-black);
+  background-color: var(--ink-strong);
+  border-color: var(--ink-strong);
 }
 
 .chapter-checkbox.checked svg {
@@ -211,20 +211,20 @@
 }
 
 .chapter-number {
-  font-family: var(--font-sans);
+  font-family: var(--font-ui);
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--ash-gray);
+  color: var(--ink-soft);
   font-weight: 700;
   margin-bottom: 0.25rem;
 }
 
 .chapter-title {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: 0.9375rem;
   font-weight: 600;
-  color: var(--ink-black);
+  color: var(--ink-strong);
   line-height: 1.4;
 }
 
@@ -254,7 +254,7 @@
   flex-wrap: wrap;
   padding: .75rem 1.25rem;
   background: var(--paper-light);
-  border-bottom: 1px solid var(--fog);
+  border-bottom: 1px solid var(--paper-deep);
   transition: opacity 0.3s ease;
 }
 
@@ -266,7 +266,7 @@
   width: 44px;
   height: 44px;
   background-color: var(--paper-light);
-  border: 2px solid var(--fog);
+  border: 2px solid var(--paper-deep);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -277,16 +277,16 @@
 }
 
 .control-btn:hover {
-  background-color: var(--ink-black);
-  border-color: var(--ink-black);
+  background-color: var(--ink-strong);
+  border-color: var(--ink-strong);
   color: var(--paper-light);
   transform: scale(1.1);
 }
 
 .control-btn.active {
-  background-color: var(--ink-black);
+  background-color: var(--ink-strong);
   color: var(--paper-light);
-  border-color: var(--ink-black);
+  border-color: var(--ink-strong);
 }
 
 /* === CHAPTER READING MODE === */
@@ -311,23 +311,23 @@
 
 .title-page-ornament {
   font-size: 3rem;
-  color: var(--ash-gray);
+  color: var(--ink-soft);
   opacity: 0.3;
   margin: 2rem 0;
 }
 
 .title-page-section h1 {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: 3rem;
   font-weight: 700;
-  color: var(--ink-black);
+  color: var(--ink-strong);
   margin: 1rem 0;
   line-height: 1.2;
 }
 
 .title-page-author {
   font-size: 1rem;
-  color: var(--graphite);
+  color: var(--ink);
   font-style: italic;
   margin: 0.5rem 0;
 }
@@ -335,19 +335,19 @@
 .title-page-author-name {
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--ink-black);
+  color: var(--ink-strong);
   margin: 0.5rem 0 2rem;
 }
 
 .title-page-genre {
   display: inline-block;
   padding: 0.5rem 1.5rem;
-  border-top: 1px solid var(--fog);
-  border-bottom: 1px solid var(--fog);
+  border-top: 1px solid var(--paper-deep);
+  border-bottom: 1px solid var(--paper-deep);
   font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  color: var(--graphite);
+  color: var(--ink);
   margin: 2rem 0;
 }
 
@@ -360,15 +360,15 @@
   text-align: center;
   margin: 4rem 0 3rem;
   padding-bottom: 1.5rem;
-  border-bottom: 2px solid var(--fog);
+  border-bottom: 2px solid var(--paper-deep);
   position: relative;
 }
 
 .chapter-header h2 {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: 2rem;
   font-weight: 700;
-  color: var(--ink-black);
+  color: var(--ink-strong);
   margin: 0;
 }
 
@@ -378,9 +378,9 @@
   bottom: -1rem;
   left: 50%;
   transform: translateX(-50%);
-  background-color: var(--aged-paper);
+  background-color: var(--paper-deep);
   padding: 0 1rem;
-  color: var(--ash-gray);
+  color: var(--ink-soft);
   opacity: 0.4;
   font-size: 1.25rem;
 }
@@ -388,7 +388,7 @@
 .chapter-content {
   font-size: var(--reading-font-size, 18px);
   line-height: 1.9;
-  color: var(--ink-black);
+  color: var(--ink-strong);
   text-align: justify;
   hyphens: auto;
 }
@@ -409,7 +409,7 @@
   line-height: 0.85;
   margin: 0.05em 0.15em 0 0;
   font-weight: 700;
-  color: var(--ink-black);
+  color: var(--ink-strong);
 }
 
 .chapter-content strong {
@@ -427,7 +427,7 @@
   align-items: center;
   margin: 4rem 0 2rem;
   padding: 1.5rem 0;
-  border-top: 2px solid var(--fog);
+  border-top: 2px solid var(--paper-deep);
 }
 
 .chapter-nav-btn {
@@ -436,20 +436,20 @@
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
   background-color: var(--paper-light);
-  border: 2px solid var(--fog);
+  border: 2px solid var(--paper-deep);
   border-radius: var(--radius-md);
-  font-family: var(--font-sans);
+  font-family: var(--font-ui);
   font-size: 0.9375rem;
   font-weight: 600;
-  color: var(--ink-black);
+  color: var(--ink-strong);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .chapter-nav-btn:hover:not(:disabled) {
-  background-color: var(--ink-black);
+  background-color: var(--ink-strong);
   color: var(--paper-light);
-  border-color: var(--ink-black);
+  border-color: var(--ink-strong);
   transform: translateY(-2px);
 }
 
@@ -462,7 +462,7 @@
 .end-marker {
   text-align: center;
   padding: 4rem 0;
-  color: var(--ash-gray);
+  color: var(--ink-soft);
   font-size: 2rem;
   font-weight: 700;
   letter-spacing: 0.5rem;
@@ -481,8 +481,8 @@
 .reader-loading .spinner {
   width: 50px;
   height: 50px;
-  border: 3px solid var(--fog);
-  border-top-color: var(--ink-black);
+  border: 3px solid var(--paper-deep);
+  border-top-color: var(--ink-strong);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -504,7 +504,7 @@
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
   background: var(--paper-light);
   color: var(--ink-strong);
-  font-family: var(--font-sans);
+  font-family: var(--font-ui);
   box-sizing: border-box;
 }
 .reader-quote-help p { margin: .4rem 0 0; font-size: .875rem; line-height: 1.6; }
@@ -512,11 +512,11 @@
 .reader-chapters-toggle, .reader-quote-help-toggle, .reader-sidebar-close {
   min-height: 44px;
   padding: .55rem .75rem;
-  border: 1px solid var(--fog);
+  border: 1px solid var(--paper-deep);
   border-radius: 8px;
-  color: var(--ink-black);
+  color: var(--ink-strong);
   background: var(--paper-light);
-  font: 600 .85rem var(--font-sans);
+  font: 600 .85rem var(--font-ui);
   cursor: pointer;
 }
 .book-reader .chapter-title, .book-reader .chapter-header h2 { overflow-wrap: anywhere; }
@@ -603,12 +603,12 @@
 }
 
 .chapters-sidebar::-webkit-scrollbar-thumb {
-  background: var(--ash-gray);
+  background: var(--ink-soft);
   border-radius: 3px;
 }
 
 .chapters-sidebar::-webkit-scrollbar-thumb:hover {
-  background: var(--graphite);
+  background: var(--ink);
 }
 
 /* =====================================================================

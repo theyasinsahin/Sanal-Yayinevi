@@ -19,13 +19,13 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--color-background-info);
+  background: var(--wine-soft);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 10px;
   font-weight: 500;
-  color: var(--color-text-info);
+  color: var(--wine);
   flex-shrink: 0;
   overflow: hidden;
   margin-bottom: 2px;
@@ -66,8 +66,8 @@
 
 .bubble--other {
   background: var(--paper-light);
-  border: 0.5px solid var(--color-border-tertiary);
-  color: var(--color-text-primary);
+  border: 0.5px solid var(--rule);
+  color: var(--ink-strong);
   border-bottom-left-radius: 4px;
 }
 
@@ -86,7 +86,7 @@
 }
 
 .bubble--other .bubble-text--with-attachment {
-  border-top-color: var(--color-border-tertiary);
+  border-top-color: var(--rule);
 }
 
 /* --- SAAT --- */
@@ -104,7 +104,7 @@
 }
 
 .bubble--other .bubble-time {
-  color: var(--color-text-tertiary);
+  color: var(--ink-faint);
 }
 
 /* --- KİTAP EKİ --- */
@@ -121,8 +121,8 @@
 }
 
 .bubble--other .bubble-book-card {
-  background: var(--color-background-primary);
-  border: 0.5px solid var(--color-border-tertiary);
+  background: var(--paper-light);
+  border: 0.5px solid var(--rule);
 }
 
 .bubble-book-card:hover {
@@ -130,7 +130,7 @@
 }
 
 .bubble--other .bubble-book-card:hover {
-  background: var(--color-background-secondary);
+  background: var(--paper-deep);
 }
 
 .bubble-book-cover {
@@ -157,7 +157,7 @@
 }
 
 .bubble--other .bubble-book-label {
-  color: var(--color-text-tertiary);
+  color: var(--ink-faint);
 }
 
 .bubble-book-link {
@@ -185,9 +185,9 @@
 }
 
 .bubble--other .bubble-quote-card {
-  background: var(--color-background-primary);
+  background: var(--paper-light);
   border-left-color: var(--wine);
-  border: 0.5px solid var(--color-border-tertiary);
+  border: 0.5px solid var(--rule);
   border-left: 2px solid var(--wine);
 }
 
@@ -212,7 +212,7 @@
 }
 
 .bubble--other .bubble-quote-text {
-  color: var(--color-text-primary);
+  color: var(--ink-strong);
 }
 
 .bubble-quote-source {
@@ -221,7 +221,7 @@
 }
 
 .bubble--other .bubble-quote-source {
-  color: var(--color-text-tertiary);
+  color: var(--ink-faint);
 }
 
 /* --- MENÜ --- */
@@ -236,9 +236,9 @@
   border: none;
   font-size: 16px;
   cursor: pointer;
-  color: var(--color-text-tertiary);
+  color: var(--ink-faint);
   padding: 2px 6px;
-  border-radius: var(--border-radius-md);
+  border-radius: var(--radius-md);
   line-height: 1;
   opacity: 0;
   transition: opacity 0.1s;
@@ -249,17 +249,17 @@
 }
 
 .bubble-menu-btn:hover {
-  background: var(--color-background-secondary);
-  color: var(--color-text-primary);
+  background: var(--paper-deep);
+  color: var(--ink-strong);
 }
 
 .bubble-menu {
   position: absolute;
   bottom: calc(100% + 4px);
   right: 0;
-  background: var(--paper-background);
-  border: 0.5px solid var(--color-border-secondary);
-  border-radius: var(--border-radius-md);
+  background: var(--paper);
+  border: 0.5px solid var(--rule);
+  border-radius: var(--radius-md);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   z-index: 10;
@@ -275,20 +275,20 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  color: var(--color-text-primary);
+  color: var(--ink-strong);
   transition: background 0.1s;
 }
 
 .bubble-menu button:hover {
-  background: var(--color-background-secondary);
+  background: var(--paper-deep);
 }
 
 .bubble-menu-delete {
-  color: var(--color-text-danger) !important;
+  color: var(--danger) !important;
 }
 
 .bubble-menu-delete:hover {
-  background: var(--color-background-danger) !important;
+  background: var(--danger-soft) !important;
 }
 
 /* --- DÜZENLEME --- */
@@ -307,7 +307,7 @@
   background: rgba(255, 255, 255, 0.15);
   color: var(--on-wine);
   resize: none;
-  font-family: var(--font-sans);
+  font-family: var(--font-ui);
   width: 100%;
   min-width: 180px;
 }

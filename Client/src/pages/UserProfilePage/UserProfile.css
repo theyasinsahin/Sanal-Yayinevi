@@ -8,7 +8,7 @@
   align-items: flex-start;
   padding-top: 6rem;
   padding-bottom: 4rem;
-  background-color: var(--bg-app);
+  background-color: var(--paper);
 }
 
 /* Kağıt dokusu */
@@ -26,8 +26,8 @@
 .profile-header-card {
   position: relative;
   z-index: 1;
-  background-color: var(--bg-surface);
-  border: 2px solid var(--text-main);
+  background-color: var(--paper-light);
+  border: 2px solid var(--ink);
   border-radius: 4px;
   padding: 2.5rem 2.5rem 2rem;
   margin-bottom: 2.5rem;
@@ -53,10 +53,10 @@
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  border: 4px solid var(--bg-app);
-  outline: 2px solid var(--text-main);
+  border: 4px solid var(--paper);
+  outline: 2px solid var(--ink);
   overflow: hidden;
-  background-color: var(--bg-app);
+  background-color: var(--paper);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -81,7 +81,7 @@
   align-items: center;
   justify-content: center;
   background-color: var(--paper-deep);
-  color: var(--text-muted);
+  color: var(--ink-soft);
 }
 
 .avatar-placeholder {
@@ -94,8 +94,8 @@
   align-items: center;
   gap: 0.35rem;
   padding: 0.2rem 0.65rem;
-  background-color: var(--text-main);
-  color: var(--bg-surface);
+  background-color: var(--ink);
+  color: var(--paper-light);
   border-radius: 4px;
   font-family: var(--font-ui);
   font-size: 0.7rem;
@@ -122,10 +122,10 @@
 
 .name-section h2 {
   margin: 0;
-  font-family: var(--font-main);
+  font-family: var(--font-ui);
   font-size: 2rem;
   font-weight: 800;
-  color: var(--text-main);
+  color: var(--ink);
   line-height: 1.15;
   letter-spacing: -0.02em;
 }
@@ -133,7 +133,7 @@
 .username-text {
   font-family: var(--font-ui);
   font-size: 0.95rem;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   font-weight: 500;
 }
 
@@ -197,10 +197,10 @@
 
 /* Bio */
 .bio-text {
-  font-family: var(--font-main);
+  font-family: var(--font-ui);
   font-size: var(--reading-font-size, 18px);
   line-height: 1.65;
-  color: var(--text-main);
+  color: var(--ink);
   font-style: italic;
   margin: 0 0 0.75rem;
   max-width: 580px;
@@ -219,7 +219,7 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.875rem;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   font-weight: 500;
 }
 
@@ -229,7 +229,7 @@
   align-items: center;
   gap: 1.75rem;
   padding-top: 1.25rem;
-  border-top: 1px solid var(--accent-start);
+  border-top: 1px solid var(--rule);
   flex-wrap: wrap;
 }
 
@@ -241,10 +241,10 @@
 }
 
 .stat-value {
-  font-family: var(--font-main);
+  font-family: var(--font-ui);
   font-size: 1.6rem;
   font-weight: 700;
-  color: var(--text-main);
+  color: var(--ink);
   line-height: 1;
 }
 
@@ -253,14 +253,14 @@
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   font-weight: 600;
 }
 
 .stat-divider {
   width: 1px;
   height: 28px;
-  background-color: var(--accent-start);
+  background-color: var(--rule);
   transform: skew(-15deg);
   flex-shrink: 0;
 }
@@ -273,7 +273,7 @@
   gap: 0.75rem;
   margin-top: 0.75rem;
   font-size: 0.82rem;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   font-family: var(--font-ui);
 }
 
@@ -312,7 +312,7 @@
 }
 
 .profile-funding-link:focus-visible {
-  outline: 2px solid var(--text-main);
+  outline: 2px solid var(--ink);
   outline-offset: 3px;
 }
 
@@ -357,7 +357,7 @@
   font-family: var(--font-ui);
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   cursor: pointer;
   transition: color 0.2s ease, border-color 0.2s ease;
   text-transform: uppercase;
@@ -366,16 +366,16 @@
 }
 
 .tab-btn:hover {
-  color: var(--text-main);
+  color: var(--ink);
 }
 
 .tab-btn.active {
-  color: var(--text-main);
-  border-bottom-color: var(--text-main);
+  color: var(--ink);
+  border-bottom-color: var(--ink);
 }
 
 .draft-count-badge {
-  background: var(--color-warning);
+  background: var(--warning);
   color: var(--paper-light);
   font-size: 0.62rem;
   font-weight: 700;
@@ -391,10 +391,10 @@
 }
 
 .section-title {
-  font-family: var(--font-main);
+  font-family: var(--font-ui);
   font-size: 1.75rem;
   font-weight: 700;
-  border-bottom: 1px solid var(--accent-start);
+  border-bottom: 1px solid var(--rule);
   padding-bottom: 0.5rem;
   margin-bottom: 1.5rem;
   display: inline-block;
@@ -402,7 +402,7 @@
 
 /* Empty State */
 .empty-state {
-  border: 2px dashed var(--accent-start);
+  border: 2px dashed var(--rule);
   border-radius: 4px;
   padding: 4rem;
   display: flex;
@@ -411,7 +411,7 @@
   justify-content: center;
   gap: 1rem;
   text-align: center;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   background-color: rgba(0,0,0,0.02);
 }
 
@@ -446,7 +446,7 @@
   width: 40px;
   height: 40px;
   border: 4px solid var(--paper-light);
-  border-top-color: var(--text-main);
+  border-top-color: var(--ink);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -533,7 +533,7 @@
 }
 
 .stat-item-profile.clickable:hover {
-  background-color: var(--bg-muted);
+  background-color: var(--paper-deep);
   transform: scale(1.05);
 }
 
@@ -553,7 +553,7 @@
 }
 
 .follow-modal-content {
-  background: var(--bg-card);
+  background: var(--paper-light);
   width: 100%;
   max-width: 400px;
   border-radius: 16px;
@@ -572,7 +572,7 @@
 
 .follow-modal-header {
   padding: 20px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--rule);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -582,7 +582,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -592,8 +592,8 @@
 }
 
 .close-modal-btn:hover {
-  background-color: var(--bg-muted);
-  color: var(--text-main);
+  background-color: var(--paper-deep);
+  color: var(--ink);
 }
 
 .follow-modal-list {
@@ -618,20 +618,20 @@
 }
 
 .follow-user-item:hover {
-  background-color: var(--bg-muted);
+  background-color: var(--paper-deep);
 }
 
 .follow-user-avatar {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background-color: var(--bg-muted);
+  background-color: var(--paper-deep);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   flex-shrink: 0;
-  color: var(--text-muted);
+  color: var(--ink-soft);
 }
 
 .follow-user-avatar img {
@@ -652,13 +652,13 @@
 
 .follow-user-name {
   font-weight: 600;
-  color: var(--text-main);
+  color: var(--ink);
   font-size: 0.95rem;
 }
 
 .follow-user-username {
   font-size: 0.85rem;
-  color: var(--text-muted);
+  color: var(--ink-soft);
 }
 
 @media (max-width: 640px) {
@@ -802,8 +802,8 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0;
     padding-top: 0;
-    border-top: 1px solid var(--accent-start);
-    border-bottom: 1px solid var(--accent-start);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
   }
 
   .stat-item-profile {
@@ -815,11 +815,11 @@
   }
 
   .stat-item-profile:nth-of-type(odd) {
-    border-right: 1px solid var(--accent-start);
+    border-right: 1px solid var(--rule);
   }
 
   .stat-item-profile:nth-of-type(-n + 2) {
-    border-bottom: 1px solid var(--accent-start);
+    border-bottom: 1px solid var(--rule);
   }
 
   /* DOM içinde divider elemanları da bulunduğu için mobilde tamamen kaldırıyoruz */

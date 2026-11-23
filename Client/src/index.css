@@ -141,76 +141,7 @@
   --skeleton-base: var(--paper-deep);
   --accent-start: var(--rule);
 
-  /* === GEÇİŞ KATMANI (eski adlar → yeni tokenlar) ===
-     Sayfalar yeni dile taşındıkça bu aliaslar kaldırılacak. */
-  --ink-black: var(--ink-strong);
-  --charcoal: var(--ink-strong);
-  --graphite: var(--ink);
-  --ash-gray: var(--ink-soft);
-  --silver-gray: var(--ink-faint);
-  --light-smoke: var(--ink-faint);
-  --fog: var(--paper-deep);
-  --paper-white: var(--paper-light);
-  --cream: var(--paper);
-  --aged-paper: var(--paper-deep);
-  --parchment: var(--paper-deep);
-  --vintage-beige: var(--paper-deep);
-  --sepia-light: var(--ember-soft);
-  --sepia-medium: var(--paper-deep);
-  --sepia-dark: var(--ink-soft);
-
-  --primary: var(--ember);
-  --primary-hover: var(--ember-deep);
-  --secondary: var(--wine);
-  --accent: var(--wine);
-
-  --bg-app: var(--paper);
-  --bg-surface: var(--paper-light);
-  --bg-elevated: var(--paper-deep);
-  --text-main: var(--ink);
-  --text-muted: var(--ink-soft);
-  --text-subtle: var(--ink-faint);
-  --text-heading: var(--wine);
-
-  /* Eski bileşenlerin yedek değerle kullandığı (hiç tanımlanmamış) adlar */
-  --bg-card: var(--paper-light);
-  --bg-hover: var(--wine-soft);
-  --bg-muted: var(--paper-deep);
-  --border-color: var(--rule);
-  --color-background-primary: var(--paper-light);
-  --color-background-secondary: var(--paper-deep);
-  --color-border-primary: var(--rule-strong);
-  --color-border-secondary: var(--rule);
-  --color-border-tertiary: var(--rule);
-  --color-primary: var(--wine);
-  --color-text-primary: var(--ink-strong);
-  --color-text-secondary: var(--ink-soft);
-  --text-primary: var(--ink-strong);
-  --text-secondary: var(--ink-soft);
-  --border-radius-lg: var(--radius-lg);
-  --border-radius-md: var(--radius-md);
-  --border-radius-xl: var(--radius-xl);
-  --bg-body: var(--paper);
-  --bg-input: var(--paper-light);
-  --paper-background: var(--paper);
-  --color-background-danger: var(--danger-soft);
-  --color-background-info: var(--wine-soft);
-  --color-text-danger: var(--danger);
-  --color-text-info: var(--wine);
-  --color-text-success: var(--success);
-  --color-text-tertiary: var(--ink-faint);
-  --color-warning: var(--warning);
-  --primary-color: var(--ember);
-  --text-default: var(--ink);
-  --font-main: var(--font-ui);
-
-  --font-serif: var(--font-display);
-  --font-sans: var(--font-ui);
-  --font-handwriting: var(--font-display);
-
-  --text-shadow-subtle: none;
-  --text-shadow-heading: none;
-
+  /* Bileşen geçiş kısayolları */
   --transition-fast: var(--dur-fast) var(--ease-out);
   --transition-base: var(--dur-base) var(--ease-out);
   --transition-slow: var(--dur-slow) var(--ease-cinema);
@@ -420,30 +351,6 @@ code {
   color: var(--on-wine);
 }
 
-/* Kağıt yüzey */
-.paper-texture,
-.paper-surface {
-  position: relative;
-  background-color: var(--paper-light);
-}
-
-.paper-texture::before,
-.paper-surface::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: inherit;
-  opacity: var(--texture-opacity);
-  background-image: var(--paper-grain);
-  background-size: 160px 160px;
-}
-
-.aged-paper {
-  background-color: var(--paper-deep);
-  box-shadow: var(--shadow-paper);
-}
-
 /* Kaydırınca beliren içerik (hooks/useReveal.js) */
 .reveal {
   opacity: 0;
@@ -457,40 +364,6 @@ code {
 .reveal.is-revealed {
   opacity: 1;
   transform: none;
-}
-
-.drop-cap::first-letter {
-  float: left;
-  font-family: var(--font-display);
-  font-size: 4.2em;
-  line-height: 0.82;
-  margin: 0.08em 0.12em 0 0;
-  font-weight: 600;
-  color: var(--wine);
-}
-
-.hand-underline {
-  text-decoration: underline;
-  text-decoration-color: var(--ember);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 0.25em;
-}
-
-/* Eski süs sınıfları: son aşamada kaldırılacak, şimdilik sade */
-.torn-edge-top,
-.ink-splatter,
-.corner-ornament {
-  position: relative;
-}
-
-.bookmark-ribbon {
-  position: absolute;
-  top: 0;
-  right: 2rem;
-  width: 14px;
-  height: 44px;
-  background: var(--ember);
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
 }
 
 ::selection {

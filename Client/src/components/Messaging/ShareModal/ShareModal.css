@@ -10,9 +10,9 @@
 }
 
 .share-modal {
-  background: var(--color-background-primary, var(--bg-card));
-  border: 1px solid var(--color-border-secondary, var(--border-color));
-  border-radius: var(--border-radius-xl, 16px);
+  background: var(--paper-light, var(--paper-light));
+  border: 1px solid var(--rule, var(--rule));
+  border-radius: var(--radius-xl, 16px);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
   width: 100%;
   max-width: 420px;
@@ -27,7 +27,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--color-border-tertiary, var(--border-color));
+  border-bottom: 1px solid var(--rule, var(--rule));
 }
 
 .share-modal-close {
@@ -35,30 +35,30 @@
   border: none;
   font-size: 16px;
   cursor: pointer;
-  color: var(--color-text-secondary, var(--text-muted));
+  color: var(--ink-soft, var(--ink-soft));
   padding: 4px 8px;
-  border-radius: var(--border-radius-md, 8px);
+  border-radius: var(--radius-md, 8px);
   line-height: 1;
 }
 
 .share-modal-close:hover {
-  background: var(--color-background-secondary, var(--bg-muted));
-  color: var(--color-text-primary, var(--text-primary));
+  background: var(--paper-deep, var(--paper-deep));
+  color: var(--ink-strong, var(--ink-strong));
 }
 
 /* Önizleme */
 .share-preview {
   padding: 10px 1.25rem;
-  border-bottom: 1px solid var(--color-border-tertiary, var(--border-color));
+  border-bottom: 1px solid var(--rule, var(--rule));
 }
 
 .share-preview-book {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: var(--color-background-secondary, var(--bg-muted));
-  border: 1px solid var(--color-border-tertiary, var(--border-color));
-  border-radius: var(--border-radius-md, 8px);
+  background: var(--paper-deep, var(--paper-deep));
+  border: 1px solid var(--rule, var(--rule));
+  border-radius: var(--radius-md, 8px);
   padding: 8px 12px;
 }
 
@@ -71,9 +71,9 @@
 }
 
 .share-preview-quote {
-  background: var(--color-background-secondary, var(--bg-muted));
-  border-left: 3px solid var(--color-border-secondary, var(--color-primary));
-  border-radius: 0 var(--border-radius-md, 8px) var(--border-radius-md, 8px) 0;
+  background: var(--paper-deep, var(--paper-deep));
+  border-left: 3px solid var(--rule, var(--wine));
+  border-radius: 0 var(--radius-md, 8px) var(--radius-md, 8px) 0;
   padding: 8px 12px;
   display: flex;
   flex-direction: column;
@@ -83,17 +83,17 @@
 /* Arama */
 .share-modal-search {
   padding: 10px 1.25rem;
-  border-bottom: 1px solid var(--color-border-tertiary, var(--border-color));
+  border-bottom: 1px solid var(--rule, var(--rule));
 }
 
 .share-modal-search input {
   width: 100%;
   font-size: 13px;
   padding: 8px 12px;
-  border: 1px solid var(--color-border-tertiary, var(--border-color));
-  border-radius: var(--border-radius-md, 8px);
-  background: var(--color-background-secondary, var(--bg-muted));
-  color: var(--color-text-primary, var(--text-primary));
+  border: 1px solid var(--rule, var(--rule));
+  border-radius: var(--radius-md, 8px);
+  background: var(--paper-deep, var(--paper-deep));
+  color: var(--ink-strong, var(--ink-strong));
   outline: none;
   box-sizing: border-box;
   font-family: inherit;
@@ -101,8 +101,8 @@
 }
 
 .share-modal-search input:focus {
-  border-color: var(--color-primary);
-  background: var(--color-background-primary, var(--bg-card));
+  border-color: var(--wine);
+  background: var(--paper-light, var(--paper-light));
 }
 
 /* Liste */
@@ -120,7 +120,7 @@
   padding: 10px 1.25rem;
   cursor: pointer;
   transition: background 0.1s;
-  border-bottom: 1px solid var(--color-border-tertiary, var(--border-color));
+  border-bottom: 1px solid var(--rule, var(--rule));
 }
 
 .share-modal-item:last-child {
@@ -128,24 +128,24 @@
 }
 
 .share-modal-item:hover {
-  background: var(--color-background-secondary, var(--bg-muted));
+  background: var(--paper-deep, var(--paper-deep));
 }
 
 .share-modal-item.selected {
-  background: var(--color-background-secondary, var(--bg-muted));
+  background: var(--paper-deep, var(--paper-deep));
 }
 
 .share-modal-avatar {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: var(--color-background-info);
+  background: var(--wine-soft);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-text-info, var(--color-primary));
+  color: var(--wine, var(--wine));
   flex-shrink: 0;
   overflow: hidden;
 }
@@ -166,7 +166,7 @@
 
 .share-modal-check {
   font-size: 14px;
-  color: var(--color-text-success);
+  color: var(--success);
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -179,17 +179,17 @@
 /* Mesaj input */
 .share-modal-message {
   padding: 10px 1.25rem;
-  border-top: 1px solid var(--color-border-tertiary, var(--border-color));
+  border-top: 1px solid var(--rule, var(--rule));
 }
 
 .share-modal-message input {
   width: 100%;
   font-size: 13px;
   padding: 8px 12px;
-  border: 1px solid var(--color-border-tertiary, var(--border-color));
-  border-radius: var(--border-radius-md, 8px);
-  background: var(--color-background-secondary, var(--bg-muted));
-  color: var(--color-text-primary, var(--text-primary));
+  border: 1px solid var(--rule, var(--rule));
+  border-radius: var(--radius-md, 8px);
+  background: var(--paper-deep, var(--paper-deep));
+  color: var(--ink-strong, var(--ink-strong));
   outline: none;
   box-sizing: border-box;
   font-family: inherit;
@@ -197,8 +197,8 @@
 }
 
 .share-modal-message input:focus {
-  border-color: var(--color-primary);
-  background: var(--color-background-primary, var(--bg-card));
+  border-color: var(--wine);
+  background: var(--paper-light, var(--paper-light));
 }
 
 /* Footer */
@@ -207,5 +207,5 @@
   justify-content: flex-end;
   gap: 8px;
   padding: 1rem 1.25rem;
-  border-top: 1px solid var(--color-border-tertiary, var(--border-color));
+  border-top: 1px solid var(--rule, var(--rule));
 }

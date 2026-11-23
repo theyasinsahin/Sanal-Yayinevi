@@ -8,9 +8,9 @@
   padding-bottom: 4rem;
   background: linear-gradient(
     135deg,
-    var(--cream) 0%,
-    var(--aged-paper) 50%,
-    var(--parchment) 100%
+    var(--paper) 0%,
+    var(--paper-deep) 50%,
+    var(--paper-deep) 100%
   );
   position: relative;
   overflow: hidden;
@@ -68,7 +68,7 @@
   bottom: 3rem;
   right: 3rem;
   font-size: 10rem;
-  color: var(--fog);
+  color: var(--paper-deep);
   opacity: 0.15;
   transform: rotate(-15deg);
   pointer-events: none;
@@ -79,7 +79,7 @@
   background-color: var(--paper-light);
   padding: 3rem;
   border-radius: 8px;
-  border: 2px solid var(--fog);
+  border: 2px solid var(--paper-deep);
   box-shadow: 
     var(--shadow-lg),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
@@ -131,7 +131,7 @@
   height: 0;
   border-style: solid;
   border-width: 0 25px 25px 0;
-  border-color: transparent var(--cream) transparent transparent;
+  border-color: transparent var(--paper) transparent transparent;
   filter: drop-shadow(-2px 2px 3px rgba(26, 26, 26, 0.15));
   z-index: 2;
 }
@@ -150,11 +150,11 @@
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  border: 3px double var(--ink-black);
+  border: 3px double var(--ink-strong);
   background: radial-gradient(
     circle at 30% 30%,
-    var(--cream) 0%,
-    var(--aged-paper) 100%
+    var(--paper) 0%,
+    var(--paper-deep) 100%
   );
   display: flex;
   align-items: center;
@@ -171,13 +171,13 @@
   content: '';
   position: absolute;
   inset: 8px;
-  border: 1px solid var(--ink-black);
+  border: 1px solid var(--ink-strong);
   border-radius: 50%;
   opacity: 0.5;
 }
 
 .auth-icon-circle svg {
-  color: var(--ink-black);
+  color: var(--ink-strong);
   font-size: 2.25rem;
   position: relative;
   z-index: 1;
@@ -185,10 +185,10 @@
 
 /* Title */
 .auth-header h2 {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: 2rem;
   font-weight: 700;
-  color: var(--ink-black);
+  color: var(--ink-strong);
   margin-bottom: 0.5rem;
   text-shadow: 1px 1px 0 rgba(26, 26, 26, 0.05);
   position: relative;
@@ -202,8 +202,8 @@
   height: 2px;
   background: repeating-linear-gradient(
     90deg,
-    var(--ink-black) 0px,
-    var(--ink-black) 4px,
+    var(--ink-strong) 0px,
+    var(--ink-strong) 4px,
     transparent 4px,
     transparent 8px
   );
@@ -212,8 +212,8 @@
 }
 
 .auth-header p {
-  font-family: var(--font-serif);
-  color: var(--graphite);
+  font-family: var(--font-display);
+  color: var(--ink);
   text-align: center;
   font-style: italic;
   font-size: 0.9375rem;
@@ -246,11 +246,11 @@
   --color-strength-medium: var(--color-warning-text);
   --color-strength-good: var(--color-success-text);
   --color-strength-strong: var(--color-success-text);
-  --color-strength-track: var(--fog);
-  --color-strength-text-muted: var(--text-muted);
-  --color-strength-rule-fail: var(--text-muted);
+  --color-strength-track: var(--paper-deep);
+  --color-strength-text-muted: var(--ink-soft);
+  --color-strength-rule-fail: var(--ink-soft);
   --color-rule-pass-icon: var(--color-success-text);
-  --color-rule-fail-icon: var(--silver-gray);
+  --color-rule-fail-icon: var(--ink-faint);
 }
 .auth-form .auth-secondary-action { margin-top: 0.75rem; min-height: 44px; text-transform: none; }
 .auth-result { display: grid; gap: 1.5rem; text-align: center; }
@@ -269,7 +269,7 @@
   margin-top: 2rem;
   text-align: center;
   padding-top: 1.5rem;
-  border-top: 1px solid var(--fog);
+  border-top: 1px solid var(--paper-deep);
   position: relative;
 }
 
@@ -282,14 +282,14 @@
   transform: translateX(-50%);
   background-color: var(--paper-light);
   padding: 0 1rem;
-  color: var(--ash-gray);
+  color: var(--ink-soft);
   opacity: 0.5;
   font-size: 0.75rem;
 }
 
 .auth-footer p {
-  font-family: var(--font-serif);
-  color: var(--graphite);
+  font-family: var(--font-display);
+  color: var(--ink);
   font-size: 0.9375rem;
 }
 
@@ -331,7 +331,7 @@
   top: 50%;
   left: 0;
   right: 0;
-  border-top: 1px solid var(--fog);
+  border-top: 1px solid var(--paper-deep);
   z-index: 0;
 }
 
@@ -341,9 +341,9 @@
   display: inline-block;
   background-color: var(--paper-light);
   padding: 0 10px;
-  font-family: var(--font-sans);
+  font-family: var(--font-ui);
   font-size: 0.875rem;
-  color: var(--graphite);
+  color: var(--ink);
 }
 
 /* CHECKBOX & TERMS */
@@ -358,7 +358,7 @@
   width: 20px;
   height: 20px;
   margin: 0.2rem 0 0;
-  border: 2px solid var(--graphite);
+  border: 2px solid var(--ink);
   border-radius: 3px;
   cursor: pointer;
   transition: all var(--transition-base);
@@ -369,8 +369,8 @@
 }
 
 .terms-checkbox:checked {
-  background-color: var(--ink-black);
-  border-color: var(--ink-black);
+  background-color: var(--ink-strong);
+  border-color: var(--ink-strong);
 }
 
 .terms-checkbox:checked::after {
@@ -385,15 +385,15 @@
 }
 
 .terms-checkbox:hover {
-  border-color: var(--ink-black);
+  border-color: var(--ink-strong);
   transform: scale(1.05);
 }
-.terms-checkbox:focus-visible { outline: 2px solid var(--text-main); outline-offset: 3px; }
+.terms-checkbox:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 .terms-label {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: 0.9375rem;
-  color: var(--graphite);
+  color: var(--ink);
   cursor: pointer;
   user-select: none;
   line-height: 1.6;
@@ -423,7 +423,7 @@
 .auth-card .signature-line {
   margin-top: 2rem;
   padding-top: 1.5rem;
-  border-top: 1px solid var(--fog);
+  border-top: 1px solid var(--paper-deep);
   position: relative;
 }
 
@@ -434,9 +434,9 @@
   left: 0;
   background-color: var(--paper-light);
   padding: 0 0.5rem;
-  font-family: var(--font-handwriting);
+  font-family: var(--font-display);
   font-size: 0.875rem;
-  color: var(--ash-gray);
+  color: var(--ink-soft);
 }
 
 /* Ornamental corners */
@@ -444,7 +444,7 @@
 .auth-card .corner-ornament-br {
   position: absolute;
   font-size: 1.5rem;
-  color: var(--fog);
+  color: var(--paper-deep);
   opacity: 0.4;
   pointer-events: none;
 }

@@ -106,7 +106,7 @@ const AccountSettings = ({ profile, onUpdate, showToast }) => {
 
         <div className="settings-row" style={{ alignItems: 'flex-start', flexDirection: 'column', gap: '0.35rem', border: 'none', paddingBottom: '1rem' }}>
           <span className="settings-row-label">Mevcut e-posta</span>
-          <span className="settings-row-sublabel" style={{ fontWeight: 600, color: 'var(--text-main)' }}>
+          <span className="settings-row-sublabel" style={{ fontWeight: 600, color: 'var(--ink)' }}>
             {profile.email}
           </span>
         </div>

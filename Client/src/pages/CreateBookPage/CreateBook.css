@@ -70,7 +70,7 @@
      büyük kısmını kaplıyordu. aspect-ratio ile yükseklik artık her zaman
      genişliğe göre (2:3, kapak oranı) orantılı hesaplanıyor. */
   aspect-ratio: 2 / 3;
-  background-color: var(--bg-app);
+  background-color: var(--paper);
   border-radius: var(--radius-md);
   border: 2px dashed var(--rule-strong);
   overflow: hidden;
