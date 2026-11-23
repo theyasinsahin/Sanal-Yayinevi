@@ -1,0 +1,10 @@
+ios PASS F-AUTH-03a | Unconfigured build: the Google button is on login and register and explains the missing configuration | 
+ios PASS F-AUTH-03b | Real backend: a token Google never issued is refused with the website message; no session, no user | 
+ios PASS F-AUTH-03c | Cancel at Google: nothing reaches the backend | 
+ios NOTE GOOGLE_PLUGIN_OUTCOME ios: GoogleSignInFailure(Google ile giriş bu uygulama sürümünde henüz yapılandırılmadı. Şimdilik e-posta adresinizle giriş yapabilirsiniz.)
+ios PASS F-AUTH-03d | Native plugin with non-existent client ids fails cleanly (iOS: URL-scheme guard, no SDK crash) | 
+android PASS F-AUTH-03a | Unconfigured build: the Google button is on login and register and explains the missing configuration | 
+android PASS F-AUTH-03b | Real backend: a token Google never issued is refused with the website message; no session, no user | 
+android PASS F-AUTH-03c | Cancel at Google: nothing reaches the backend | 
+android NOTE GOOGLE_PLUGIN_OUTCOME android: TimeoutException after 0:00:25.000000: Future not completed
+android PASS F-AUTH-03d | Native plugin with non-existent client ids fails cleanly (iOS: URL-scheme guard, no SDK crash) | 

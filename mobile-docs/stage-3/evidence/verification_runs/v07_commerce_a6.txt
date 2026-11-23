@@ -1,0 +1,21 @@
+exit=0
+PASS SETUP | Register supporter and claimant; author completes a published book 
+PASS F-PRINTED-02/03 | Submit a printed book: client rules, server accepts, listed as under review 
+PASS F-ADM-05a | Admin approves the printed book in the review queue 
+PASS F-PRINTED-01/04/05 | Catalogue lists the book; detail; rate and review; update; remove; add again 
+PASS F-QUOTE-09 | Quote from the printed book with a page number (range checked) 
+PASS F-PRINTED-06 | Printed shelf on the profile lists the rated book 
+PASS F-PRINTED-07/F-ADM-05b | Author claim: validation, submit, admin approves, claimant gets chapter tools 
+PASS F-FUND-06/11 | Author: print application form, cover PDF upload, save frozen version, submit 
+PASS F-ADM-07 | Admin approves with quote, confirmed pages, two PDFs and verified amounts 
+PASS F-ADM-08 | Admin opens the sandbox campaign (confirmation required) 
+PASS F-FUND-01/02 | Book detail shows the campaign card and the support link; free interest toggles 
+PASS F-FUND-03/04/09 | Checkout: 1 copy + 100 TL, address, consents → reservation (amount in kuruş, idempotency key) → simulated success 
+PASS F-FUND-04f/10 | New basket: failed payment; another: cancelled from history 
+PASS F-FUND-05 | Funding history lists captured, failed and cancelled payments with their states 
+PASS F-ADM-10a/12 | Admin: full refund of a captured payment while the campaign is active; maintenance run; supporter sees "İade edildi" 
+PASS F-ADM-09/10b | Target reached → maintenance settles the campaign (SUCCEEDED) → admin steps production to PRINTED → pre-order CONFIRMED → PACKAGING 
+PASS F-ADM-11 | Admin creates a new sample tariff version 
+PASS F-ADM-08a | Campaign audit trail lists settlement and production steps 
+PASS F-PUB-01 | Publisher catalogue: publisher sees books and campaign filter; member is redirected 
+19/19 passed

@@ -1,0 +1,10 @@
+exit=0
+PASS SETUP | Published book with a reader comment 
+PASS F-ADM-guard | Member and publisher cannot open admin screens; the server refuses admin queries 
+PASS F-ADM-01 | Overview: pending counts and per-resource totals 
+PASS F-ADM-02/04 | Data browser: comments list, search, status filter; schema view 
+PASS F-ADM-03/J-14 | Record editor: reason required; hide the comment (gone from the book page); restore 
+PASS F-ADM-03c | Optimistic lock: a change saved elsewhere meanwhile → conflict message and reload 
+PASS F-ADM-14 | Audit trail lists the moderation actions with their reasons 
+PASS F-ADM-13 | Admin powers in regular screens: delete + classification on another author's book (not the author's status buttons, as on the website); author dashboard opens 
+8/8 passed

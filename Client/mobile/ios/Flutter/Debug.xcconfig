@@ -1,0 +1,5 @@
+#include "Generated.xcconfig"
+// Google sign-in URL scheme. Inert placeholder until tool/configure_google_sign_in.sh
+// generates GoogleSignIn.xcconfig (not committed), which overrides it.
+GOOGLE_REVERSED_CLIENT_ID = betik-google-sign-in-unconfigured
+#include? "GoogleSignIn.xcconfig"

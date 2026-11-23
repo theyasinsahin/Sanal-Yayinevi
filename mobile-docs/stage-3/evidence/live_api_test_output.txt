@@ -1,0 +1,13 @@
++0: (setUpAll)
++0: live backend login returns a 24-hour JWT and me confirms the role
++1: live backend wrong password is a failure with the generic message; guests get UNAUTHENTICATED on member operations
++2: live backend feed, book detail and date encodings
++3: live backend dynamic documents: leaderboard with own rank, follow action
++4: live backend author: create draft → chapter HTML survives the server sanitiser → page count → reader contract
++5: live backend comments: create, flat list with parentId, reply flattening, delete
++6: live backend real WebSocket: a chat message reaches the other participant through onNewMessage
++7: live backend funding: payment mode, overview shape, money in minor units
++8: live backend roles: admin and publisher operations are refused for a member and work for the role
++9: live backend logout revokes the token on the server (all devices)
++10: (tearDownAll)
++10: All tests passed!

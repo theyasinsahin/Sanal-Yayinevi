@@ -1,0 +1,290 @@
+exit=0
+PASS F-NAV-05 | Unknown path shows the not-found page and its buttons work 
+PASS F-NAV-02 | Guest drawer opens from the menu button and navigates 
+PASS F-COM-01 | About page content and discover buttons 
+PASS F-COM-04/07 | Newsletter: validation, subscribe, mail, confirm via link 
+PASS F-COM-02/06 | Contact form: validation, send, mail delivered to the sink; contact info block 
+PASS F-COM-03 | Legal pages render and link to contact 
+PASS F-AUTH-01 | Login form: validation and refused credentials 
+PASS F-AUTH-02/07 | Register: validation, strength meter, terms, code mail, wrong code, success → profile 
+PASS F-AUTH-06 | Logout from the member drawer ends the session server-side 
+PASS F-AUTH-04/05 | Forgot password → mail → paste link → reset → old password refused, new accepted 
+PASS F-AUTH-09 | Guards: guest → login with returnTo; member cannot open admin/publisher; returnTo honoured 
+PASS F-NAV-04 | Website slug URLs and legacy id URLs resolve to app screens 
+12/12 passed
+exit=0
+PASS F-NAV-05 | Unknown path shows the not-found page and its buttons work 
+PASS F-NAV-02 | Guest drawer opens from the menu button and navigates 
+PASS F-COM-01 | About page content and discover buttons 
+PASS F-COM-04/07 | Newsletter: validation, subscribe, mail, confirm via link 
+PASS F-COM-02/06 | Contact form: validation, send, mail delivered to the sink; contact info block 
+PASS F-COM-03 | Legal pages render and link to contact 
+PASS F-AUTH-01 | Login form: validation and refused credentials 
+PASS F-AUTH-02/07 | Register: validation, strength meter, terms, code mail, wrong code, success → profile 
+PASS F-AUTH-06 | Logout from the member drawer ends the session server-side 
+PASS F-AUTH-04/05 | Forgot password → mail → paste link → reset → old password refused, new accepted 
+PASS F-AUTH-09 | Guards: guest → login with returnTo; member cannot open admin/publisher; returnTo honoured 
+PASS F-NAV-04 | Website slug URLs and legacy id URLs resolve to app screens 
+12/12 passed
+exit=0
+PASS SETUP | Author publishes a three-chapter book through the API 
+PASS F-AUTH-10 | Guest actions open the sign-up prompt with the matching copy 
+PASS F-DISC-03g | Guest "Senin için" tab shows the registration card 
+PASS F-DISC-02 | Feed: search finds the book, empty state, clear, sort and funding filters 
+PASS F-DISC-02c | Feed: classification filter (format) narrows and restores the list 
+PASS F-DISC-04/03/07 | Genre onboarding saves preferences; recommendations list; "Tercihlerim" edit 
+PASS F-BOOK-01/02 | Card → detail shows metadata, author link opens the profile 
+PASS F-BOOK-03 | Like toggles in the UI and on the server 
+PASS F-BOOK-04 | Save to library: toast, server state, profile library, undo 
+PASS F-BOOK-05 | Follow book toggles label and server state 
+PASS F-BOOK-07/F-SHARE-01 | Share sheet loads share data; copy link and copy text put the share URL on the clipboard 
+PASS F-COMM-02/06 | Add a comment with an @mention picked from the suggestion list 
+PASS F-COMM-04 | Like and unlike a comment 
+PASS F-COMM-03 | Reply to a comment (one level), prefilled @user 
+PASS F-COMM-05 | Delete own comment: cancel keeps it, confirm removes it 
+PASS F-NOT-01/02 | Author sees the mention notification; tapping it opens the book at the comment 
+PASS F-BOOK-08/09/10 | Author controls: complete, back to draft (guest 404), publish, edit classification, delete with confirm 
+17/17 passed
+exit=0
+PASS SETUP | Author publishes a three-chapter book through the API 
+PASS F-AUTH-10 | Guest actions open the sign-up prompt with the matching copy 
+PASS F-DISC-03g | Guest "Senin için" tab shows the registration card 
+PASS F-DISC-02 | Feed: search finds the book, empty state, clear, sort and funding filters 
+PASS F-DISC-02c | Feed: classification filter (format) narrows and restores the list 
+PASS F-DISC-04/03/07 | Genre onboarding saves preferences; recommendations list; "Tercihlerim" edit 
+PASS F-BOOK-01/02 | Card → detail shows metadata, author link opens the profile 
+PASS F-BOOK-03 | Like toggles in the UI and on the server 
+PASS F-BOOK-04 | Save to library: toast, server state, profile library, undo 
+PASS F-BOOK-05 | Follow book toggles label and server state 
+PASS F-BOOK-07/F-SHARE-01 | Share sheet loads share data; copy link and copy text put the share URL on the clipboard 
+PASS F-COMM-02/06 | Add a comment with an @mention picked from the suggestion list 
+PASS F-COMM-04 | Like and unlike a comment 
+PASS F-COMM-03 | Reply to a comment (one level), prefilled @user 
+PASS F-COMM-05 | Delete own comment: cancel keeps it, confirm removes it 
+PASS F-NOT-01/02 | Author sees the mention notification; tapping it opens the book at the comment 
+PASS F-BOOK-08/09/10 | Author controls: complete, back to draft (guest 404), publish, edit classification, delete with confirm 
+17/17 passed
+exit=0
+PASS SETUP | Author publishes the test book 
+PASS F-READ-10 | Guest: first chapter readable, next chapter gated with the sign-up card; member controls prompt 
+PASS F-READ-13 | Chapter HTML: headings, inline formats, quote, lists, image, empty paragraph 
+PASS F-READ-06 | Bookmark on the 2nd <p> stores paragraphIndex 1 (not the element position); survives reopening; moves; removes 
+PASS F-READ-07 | Paragraph comments: open panel, send, count badge, stored index, delete, close 
+PASS F-READ-08a | Touch selection shorter than 10 characters: "Alıntıla" explains the minimum 
+PASS F-READ-08b | Long-press and drag selects a passage → "Alıntıla" → sheet → saved quote with chapter location 
+PASS F-READ-08c | Selecting the same passage again reports the duplicate 
+PASS F-READ-09 | Copy protection: "Kopyala" puts the notice with the book link on the clipboard, not the text 
+PASS F-READ-16 | Scroll progress bar follows scrolling in a long chapter 
+PASS F-READ-03/04 | Chapter navigation: complete & continue stores progress; previous; last chapter "Tamamla"; end marker 
+PASS F-READ-02/15 | Chapter drawer: counts, select a chapter, manual read checkbox unchecks on the server 
+PASS F-READ-01 | Reopening resumes at the last opened chapter (server progress) 
+PASS F-READ-12 | Share chapter opens the share sheet with a chapter link 
+PASS F-READ-11 | Opening the reader counts a view 
+PASS F-READ-05 | Reading time: the session heartbeat sequence advances while reading on the device 
+PASS F-READ-03h | A hidden chapter in the middle does not block the reader: notice, then "Sonraki Bölüm" 
+PASS F-READ-10h | Hidden chapter: reader sees the notice, author sees the content with the label 
+18/18 passed
+exit=1
+PASS SETUP | Author publishes the test book 
+PASS F-READ-10 | Guest: first chapter readable, next chapter gated with the sign-up card; member controls prompt 
+PASS F-READ-13 | Chapter HTML: headings, inline formats, quote, lists, image, empty paragraph 
+PASS F-READ-06 | Bookmark on the 2nd <p> stores paragraphIndex 1 (not the element position); survives reopening; moves; removes 
+PASS F-READ-07 | Paragraph comments: open panel, send, count badge, stored index, delete, close 
+PASS F-READ-08a | Touch selection shorter than 10 characters: "Alıntıla" explains the minimum 
+FAIL F-READ-08b | Long-press and drag selects a passage → "Alıntıla" → sheet → saved quote with chapter location | Timed out waiting for Found 0 widgets with text "Alıntı kaydedildi!": [] / Visible: Beğendiğiniz satırları saklayın | Bir kelimeye basılı tutup seçim tutamaçlarını sürükleyin. 10–1000 karakter seçtiğinizde açılan menüden “Alıntıla”ya dokunun; not ve görünürlük seçerek kaydedebilirsiniz. | Bölüm 1 / 3 | Biçimli Bölüm | BÖLÜMÜ PAYLAŞ | ❦ | Büyük Başlık | Paragraf sıfır: İstanbul sabahı sisli ve sessizdi, martılar bile uyuyordu. | Alt Başlık | Paragraf bir: kalın, italik, altı çizili, üstü çizili ve bağlantı içerir. | Alıntı bloğu: bir kitap donmuş denizi kıran baltadır. | 1. | Birinci madde | 2. | İkinci madde | • | Madde işareti | Paragraf dört: son paragraf, çğıöşü ÇĞİÖŞÜ harfleriyle biter. | ÖNCEKİ BÖLÜM | TAMAMLA VE DEVAM ET | Okuma Doğrulama 9094591 | Bölümler (3)
+PASS F-READ-08c | Selecting the same passage again reports the duplicate 
+PASS F-READ-09 | Copy protection: "Kopyala" puts the notice with the book link on the clipboard, not the text 
+PASS F-READ-16 | Scroll progress bar follows scrolling in a long chapter 
+PASS F-READ-03/04 | Chapter navigation: complete & continue stores progress; previous; last chapter "Tamamla"; end marker 
+PASS F-READ-02/15 | Chapter drawer: counts, select a chapter, manual read checkbox unchecks on the server 
+PASS F-READ-01 | Reopening resumes at the last opened chapter (server progress) 
+PASS F-READ-12 | Share chapter opens the share sheet with a chapter link 
+PASS F-READ-11 | Opening the reader counts a view 
+PASS F-READ-05 | Reading time: the session heartbeat sequence advances while reading on the device 
+PASS F-READ-03h | A hidden chapter in the middle does not block the reader: notice, then "Sonraki Bölüm" 
+PASS F-READ-10h | Hidden chapter: reader sees the notice, author sees the content with the label 
+17/18 passed
+exit=0
+PASS F-WRITE-01/02/03 | Create book: validation list, cover picked → cropped → uploaded (sandbox Cloudinary), classification, draft saved → dashboard 
+PASS F-WRITE-04/09 | Dashboard: empty state, publish blocked, add chapter (title required), add hidden chapter 
+PASS F-WRITE-05a | Editor: toolbar heading/bold/italic/list + typing through the text-input channel → autosave HTML is Quill-compatible 
+PASS F-WRITE-05b | Editor: undo removes the last edit, redo restores it, both are saved 
+SKIP F-WRITE-05k | Real system keyboard typing in the editor | system keyboard cannot be shown under the integration-test binding; verified manually on Android
+PASS F-WRITE-05c | Copy and paste inside the editor through the selection toolbar (long-press, toolbar buttons) 
+PASS F-WRITE-05d | Read-edit-save-read: leave dashboard, the reader shows the formatted text, reopening the editor keeps it unchanged 
+PASS F-WRITE-05e | Website-created rich chapter: opens editable, an appended paragraph keeps headings/quote/lists/image/link 
+PASS F-WRITE-05f | Chapter with markup the editor cannot write back opens read-only and is not rewritten 
+PASS F-WRITE-06/08/07 | Hide/show from the chapter menu; publish from the bar; share chapter from the menu 
+PASS F-WRITE-04d | Delete a chapter: cancel keeps it, confirm removes it 
+PASS F-BOOK-09/F-WRITE-02e | Edit classification from the dashboard: genre limit, save, server updated 
+PASS F-WRITE-10 | "Okuyucu Modu" opens the reader for the book 
+PASS F-WRITE-guard | Another member opening the dashboard gets no editor; server refuses writes 
+14/14 passed
+exit=0
+PASS F-WRITE-01/02/03 | Create book: validation list, cover picked → cropped → uploaded (sandbox Cloudinary), classification, draft saved → dashboard 
+PASS F-WRITE-04/09 | Dashboard: empty state, publish blocked, add chapter (title required), add hidden chapter 
+PASS F-WRITE-05a | Editor: toolbar heading/bold/italic/list + typing through the text-input channel → autosave HTML is Quill-compatible 
+PASS F-WRITE-05b | Editor: undo removes the last edit, redo restores it, both are saved 
+SKIP F-WRITE-05k | Real system keyboard typing in the editor | system keyboard cannot be shown under the integration-test binding; verified manually on Android
+PASS F-WRITE-05c | Copy and paste inside the editor through the selection toolbar (long-press, toolbar buttons) 
+PASS F-WRITE-05d | Read-edit-save-read: leave dashboard, the reader shows the formatted text, reopening the editor keeps it unchanged 
+PASS F-WRITE-05e | Website-created rich chapter: opens editable, an appended paragraph keeps headings/quote/lists/image/link 
+PASS F-WRITE-05f | Chapter with markup the editor cannot write back opens read-only and is not rewritten 
+PASS F-WRITE-06/08/07 | Hide/show from the chapter menu; publish from the bar; share chapter from the menu 
+PASS F-WRITE-04d | Delete a chapter: cancel keeps it, confirm removes it 
+PASS F-BOOK-09/F-WRITE-02e | Edit classification from the dashboard: genre limit, save, server updated 
+PASS F-WRITE-10 | "Okuyucu Modu" opens the reader for the book 
+PASS F-WRITE-guard | Another member opening the dashboard gets no editor; server refuses writes 
+14/14 passed
+exit=0
+PASS SETUP | Register two disposable members, publish a book, author quotes it 
+PASS F-PROF-01/02 | Own profile: edit name, bio, avatar (upload); username rule enforced 
+PASS F-PROF-05 | Share profile copies the profile share link 
+PASS F-PROF-07 | Profile quotes tab groups quotes by book 
+PASS F-SET-03 | Privacy: private profile + messages closed → saved; another member sees the restricted profile 
+PASS F-SET-04 | Notification preferences: toggle one flag, save, stored; save button only when changed 
+PASS F-SET-05 | Author settings: invalid weekly goal refused, valid values saved 
+PASS F-SET-06/F-NAV-11 | Appearance: large reading size saved on the device and used by the reader 
+PASS F-FOLLOW-01 | B sends a follow request, withdraws it, sends it again 
+PASS F-NOT-03/F-FOLLOW-02 | A rejects in the notifications panel; B asks again; A accepts → B follows A 
+PASS F-FOLLOW-03 | B is notified that the request was accepted; tapping opens A's profile 
+PASS F-PROF-04/F-MSG-02/03/04 | B messages A from the profile: chat opens, send, stored, A sees unread 
+PASS F-MSG-05 | Real-time: a message A sends arrives in B's open chat without refreshing 
+PASS F-MSG-06 | Delete own message from the bubble menu 
+PASS F-MSG-01/08/09 | Share the book into the conversation; book bubble opens the book; list shows preview 
+PASS F-QUOTE-02/03/07 | Search quotes, card content, open detail 
+PASS F-QUOTE-04 | Like / unlike a quote 
+PASS F-QUOTE-06 | Quote comments: add, count, delete 
+PASS F-QUOTE-05/10 | Repost with a comment, appears in the feed as a repost; undo repost 
+PASS F-PROF-03/F-FOLLOW-04 | A opens the followers list and removes B 
+PASS F-NOT-01/02 | Notifications list (like, comment-free), opening marks read, tapping a quote-like opens the quote 
+PASS F-SET-02 | Change password: wrong current refused, mismatch caught, success signs out, new password works 
+PASS F-SET-01 | Change e-mail: info mail, signed out, sign-in with the new address 
+PASS F-SET-07 | Deactivate (B): inline confirm, signed out, profile hidden from others, sign-in reactivates 
+PASS F-SET-08 | Delete account (B): phrase required, deleted, sign-in refused 
+PASS F-AUTH-08 | Session persists in the Keychain/Keystore across an app restart; logout clears it 
+26/26 passed
+exit=0
+PASS SETUP | Register two disposable members, publish a book, author quotes it 
+PASS F-PROF-01/02 | Own profile: edit name, bio, avatar (upload); username rule enforced 
+PASS F-PROF-05 | Share profile copies the profile share link 
+PASS F-PROF-07 | Profile quotes tab groups quotes by book 
+PASS F-SET-03 | Privacy: private profile + messages closed → saved; another member sees the restricted profile 
+PASS F-SET-04 | Notification preferences: toggle one flag, save, stored; save button only when changed 
+PASS F-SET-05 | Author settings: invalid weekly goal refused, valid values saved 
+PASS F-SET-06/F-NAV-11 | Appearance: large reading size saved on the device and used by the reader 
+PASS F-FOLLOW-01 | B sends a follow request, withdraws it, sends it again 
+PASS F-NOT-03/F-FOLLOW-02 | A rejects in the notifications panel; B asks again; A accepts → B follows A 
+PASS F-FOLLOW-03 | B is notified that the request was accepted; tapping opens A's profile 
+PASS F-PROF-04/F-MSG-02/03/04 | B messages A from the profile: chat opens, send, stored, A sees unread 
+PASS F-MSG-05 | Real-time: a message A sends arrives in B's open chat without refreshing 
+PASS F-MSG-06 | Delete own message from the bubble menu 
+PASS F-MSG-01/08/09 | Share the book into the conversation; book bubble opens the book; list shows preview 
+PASS F-QUOTE-02/03/07 | Search quotes, card content, open detail 
+PASS F-QUOTE-04 | Like / unlike a quote 
+PASS F-QUOTE-06 | Quote comments: add, count, delete 
+PASS F-QUOTE-05/10 | Repost with a comment, appears in the feed as a repost; undo repost 
+PASS F-PROF-03/F-FOLLOW-04 | A opens the followers list and removes B 
+PASS F-NOT-01/02 | Notifications list (like, comment-free), opening marks read, tapping a quote-like opens the quote 
+PASS F-SET-02 | Change password: wrong current refused, mismatch caught, success signs out, new password works 
+PASS F-SET-01 | Change e-mail: info mail, signed out, sign-in with the new address 
+PASS F-SET-07 | Deactivate (B): inline confirm, signed out, profile hidden from others, sign-in reactivates 
+PASS F-SET-08 | Delete account (B): phrase required, deleted, sign-in refused 
+PASS F-AUTH-08 | Session persists in the Keychain/Keystore across an app restart; logout clears it 
+26/26 passed
+exit=0
+PASS SETUP | Register two disposable members 
+PASS F-SESS-02 | Request creation access: short reason refused, request stored as PENDING 
+PASS F-ADM-06 | Admin approves A and rejects B with a note 
+PASS F-SESS-14/02r | A refreshes the status and sees approval; B sees the rejection note and can re-apply 
+PASS F-SESS-03/01 | Create an open session with tags; it appears in the list 
+PASS F-SESS-04/06 | Open detail, post an entry with a mention of B 
+PASS F-SESS-07 | Live: B's entry posted elsewhere appears in A's open session 
+PASS F-SESS-08 | Like B's entry and undo 
+PASS F-SESS-09 | Delete own entry from the options menu 
+PASS F-SESS-13 | Share session copies a session share link 
+PASS F-SESS-11 | Edit session cover: upload, save, stored 
+PASS F-SESS-12/F-NOT-02 | B gets the session mention notification; it opens the session at the entry 
+PASS F-SESS-05 | Private session: code rule on create; other member must enter the code; wrong code refused 
+PASS F-SESS-10 | Owner closes the session: cancel keeps it, confirm closes; closed sessions take no entries 
+PASS F-SESS-guest | Guest sees the list and an open session read-only with a sign-in prompt 
+15/15 passed
+exit=0
+PASS SETUP | Register two disposable members 
+PASS F-SESS-02 | Request creation access: short reason refused, request stored as PENDING 
+PASS F-ADM-06 | Admin approves A and rejects B with a note 
+PASS F-SESS-14/02r | A refreshes the status and sees approval; B sees the rejection note and can re-apply 
+PASS F-SESS-03/01 | Create an open session with tags; it appears in the list 
+PASS F-SESS-04/06 | Open detail, post an entry with a mention of B 
+PASS F-SESS-07 | Live: B's entry posted elsewhere appears in A's open session 
+PASS F-SESS-08 | Like B's entry and undo 
+PASS F-SESS-09 | Delete own entry from the options menu 
+PASS F-SESS-13 | Share session copies a session share link 
+PASS F-SESS-11 | Edit session cover: upload, save, stored 
+PASS F-SESS-12/F-NOT-02 | B gets the session mention notification; it opens the session at the entry 
+PASS F-SESS-05 | Private session: code rule on create; other member must enter the code; wrong code refused 
+PASS F-SESS-10 | Owner closes the session: cancel keeps it, confirm closes; closed sessions take no entries 
+PASS F-SESS-guest | Guest sees the list and an open session read-only with a sign-in prompt 
+15/15 passed
+exit=0
+PASS SETUP | Register supporter and claimant; author completes a published book 
+PASS F-PRINTED-02/03 | Submit a printed book: client rules, server accepts, listed as under review 
+PASS F-ADM-05a | Admin approves the printed book in the review queue 
+PASS F-PRINTED-01/04/05 | Catalogue lists the book; detail; rate and review; update; remove; add again 
+PASS F-QUOTE-09 | Quote from the printed book with a page number (range checked) 
+PASS F-PRINTED-06 | Printed shelf on the profile lists the rated book 
+PASS F-PRINTED-07/F-ADM-05b | Author claim: validation, submit, admin approves, claimant gets chapter tools 
+PASS F-FUND-06/11 | Author: print application form, cover PDF upload, save frozen version, submit 
+PASS F-ADM-07 | Admin approves with quote, confirmed pages, two PDFs and verified amounts 
+PASS F-ADM-08 | Admin opens the sandbox campaign (confirmation required) 
+PASS F-FUND-01/02 | Book detail shows the campaign card and the support link; free interest toggles 
+PASS F-FUND-03/04/09 | Checkout: 1 copy + 100 TL, address, consents → reservation (amount in kuruş, idempotency key) → simulated success 
+PASS F-FUND-04f/10 | New basket: failed payment; another: cancelled from history 
+PASS F-FUND-05 | Funding history lists captured, failed and cancelled payments with their states 
+PASS F-ADM-10a/12 | Admin: full refund of a captured payment while the campaign is active; maintenance run; supporter sees "İade edildi" 
+PASS F-ADM-09/10b | Target reached → maintenance settles the campaign (SUCCEEDED) → admin steps production to PRINTED → pre-order CONFIRMED → PACKAGING 
+PASS F-ADM-11 | Admin creates a new sample tariff version 
+PASS F-ADM-08a | Campaign audit trail lists settlement and production steps 
+PASS F-PUB-01 | Publisher catalogue: publisher sees books and campaign filter; member is redirected 
+19/19 passed
+exit=0
+PASS SETUP | Register supporter and claimant; author completes a published book 
+PASS F-PRINTED-02/03 | Submit a printed book: client rules, server accepts, listed as under review 
+PASS F-ADM-05a | Admin approves the printed book in the review queue 
+PASS F-PRINTED-01/04/05 | Catalogue lists the book; detail; rate and review; update; remove; add again 
+PASS F-QUOTE-09 | Quote from the printed book with a page number (range checked) 
+PASS F-PRINTED-06 | Printed shelf on the profile lists the rated book 
+PASS F-PRINTED-07/F-ADM-05b | Author claim: validation, submit, admin approves, claimant gets chapter tools 
+PASS F-FUND-06/11 | Author: print application form, cover PDF upload, save frozen version, submit 
+PASS F-ADM-07 | Admin approves with quote, confirmed pages, two PDFs and verified amounts 
+PASS F-ADM-08 | Admin opens the sandbox campaign (confirmation required) 
+PASS F-FUND-01/02 | Book detail shows the campaign card and the support link; free interest toggles 
+PASS F-FUND-03/04/09 | Checkout: 1 copy + 100 TL, address, consents → reservation (amount in kuruş, idempotency key) → simulated success 
+PASS F-FUND-04f/10 | New basket: failed payment; another: cancelled from history 
+PASS F-FUND-05 | Funding history lists captured, failed and cancelled payments with their states 
+PASS F-ADM-10a/12 | Admin: full refund of a captured payment while the campaign is active; maintenance run; supporter sees "İade edildi" 
+PASS F-ADM-09/10b | Target reached → maintenance settles the campaign (SUCCEEDED) → admin steps production to PRINTED → pre-order CONFIRMED → PACKAGING 
+PASS F-ADM-11 | Admin creates a new sample tariff version 
+PASS F-ADM-08a | Campaign audit trail lists settlement and production steps 
+PASS F-PUB-01 | Publisher catalogue: publisher sees books and campaign filter; member is redirected 
+19/19 passed
+exit=0
+PASS SETUP | Published book with a reader comment 
+PASS F-ADM-guard | Member and publisher cannot open admin screens; the server refuses admin queries 
+PASS F-ADM-01 | Overview: pending counts and per-resource totals 
+PASS F-ADM-02/04 | Data browser: comments list, search, status filter; schema view 
+PASS F-ADM-03/J-14 | Record editor: reason required; hide the comment (gone from the book page); restore 
+PASS F-ADM-03c | Optimistic lock: a change saved elsewhere meanwhile → conflict message and reload 
+PASS F-ADM-14 | Audit trail lists the moderation actions with their reasons 
+PASS F-ADM-13 | Admin powers in regular screens: delete + classification on another author's book (not the author's status buttons, as on the website); author dashboard opens 
+8/8 passed
+exit=1
+PASS SETUP | Published book with a reader comment 
+PASS F-ADM-guard | Member and publisher cannot open admin screens; the server refuses admin queries 
+PASS F-ADM-01 | Overview: pending counts and per-resource totals 
+PASS F-ADM-02/04 | Data browser: comments list, search, status filter; schema view 
+FAIL F-ADM-03/J-14 | Record editor: reason required; hide the comment (gone from the book page); restore | Bad state: No element
+FAIL F-ADM-03c | Optimistic lock: a change saved elsewhere meanwhile → conflict message and reload | Bad state: No element
+PASS F-ADM-14 | Audit trail lists the moderation actions with their reasons 
+PASS F-ADM-13 | Admin powers in regular screens: delete + classification on another author's book (not the author's status buttons, as on the website); author dashboard opens 
+6/8 passed

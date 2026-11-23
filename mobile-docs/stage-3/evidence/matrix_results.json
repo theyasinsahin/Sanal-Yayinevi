@@ -1,0 +1,727 @@
+{
+ "F-AUTH-01": [
+  "VERIFIED",
+  "V1 iOS+Android (form, refused, returnTo)",
+  null
+ ],
+ "F-AUTH-02": [
+  "VERIFIED",
+  "V1 iOS+Android: code mail from the sink, short/wrong code refused, success → profile, user row",
+  "Resend after the 60 s cooldown not waited for"
+ ],
+ "F-AUTH-04": [
+  "VERIFIED",
+  "V1 iOS+Android: reset mail delivered to the sink",
+  "Mail link opens the website until association files exist (BLK-05); the app's paste-the-link screen was used"
+ ],
+ "F-AUTH-05": [
+  "VERIFIED",
+  "V1 iOS+Android: pasted link and /reset-password/<token>; mismatch/invalid/reused link refused; old password refused, new accepted",
+  "https link → app needs association files (BLK-05)"
+ ],
+ "F-AUTH-06": [
+  "VERIFIED",
+  "V1 iOS+Android (drawer → server-side revocation checked)",
+  null
+ ],
+ "F-AUTH-07": [
+  "VERIFIED",
+  "V1 iOS+Android (meter Zayıf → Güçlü on device)",
+  null
+ ],
+ "F-AUTH-08": [
+  "VERIFIED",
+  "V5 iOS (Keychain) + Android (Keystore): restart keeps the session, logout clears storage",
+  "Natural 24 h expiry not waited for (unit-tested)"
+ ],
+ "F-AUTH-09": [
+  "VERIFIED",
+  "V1 iOS+Android",
+  null
+ ],
+ "F-AUTH-10": [
+  "PARTIALLY VERIFIED",
+  "V2/V3 iOS+Android: like, save, follow, bookmark, read prompts with the right copy; nothing stored",
+  "Automatic replay of the action after a real sign-up not driven on a device"
+ ],
+ "F-NAV-01": [
+  "VERIFIED",
+  "V1–V8 (badges, app bar on every run)",
+  null
+ ],
+ "F-NAV-02": [
+  "VERIFIED",
+  "V1 iOS+Android: guest and member drawers opened and used",
+  null
+ ],
+ "F-NAV-03": [
+  "VERIFIED",
+  "V1 iOS+Android: drawer links, newsletter on Hakkımızda, contact info",
+  "No footer on mobile (by design)"
+ ],
+ "F-NAV-04": [
+  "VERIFIED",
+  "V1 iOS+Android: /kitap/<slug>, /kitap/<slug>/oku, /yazar/<username>, /book-detail/<id>, unknown slug; Android OS deep links betik:///login and betik:///dashboard/<id> (manual)",
+  "https links need association files (BLK-05)"
+ ],
+ "F-NAV-05": [
+  "VERIFIED",
+  "V1 iOS+Android",
+  null
+ ],
+ "F-NAV-06": [
+  "PARTIALLY VERIFIED",
+  "Loading and error views seen on device (e.g. the recommendations error before fix V-05)",
+  "Offline / server-down states not provoked on a device"
+ ],
+ "F-NAV-07": [
+  "VERIFIED",
+  "Toasts asserted in V1–V8 on both platforms",
+  null
+ ],
+ "F-NAV-11": [
+  "VERIFIED",
+  "V5 iOS+Android: size saved under app_font_size, reader uses 20 px",
+  null
+ ],
+ "F-NOT-01": [
+  "VERIFIED",
+  "V2/V5 iOS+Android: badge rises, list, opening marks read (server)",
+  "No push (BLK-04)"
+ ],
+ "F-NOT-02": [
+  "PARTIALLY VERIFIED",
+  "Tapped on device: comment mention (V2), follow accepted (V5), quote like (V5), session mention → entry (V6); all types unit-tested",
+  "NEW_CHAPTER, PRINT_UPDATE, BADGE_EARNED, POINTS targets not tapped"
+ ],
+ "F-NOT-03": [
+  "VERIFIED",
+  "V5 iOS+Android: reject, then accept; follower stored",
+  null
+ ],
+ "F-DISC-01": [
+  "VERIFIED",
+  "V1/V2 iOS+Android",
+  null
+ ],
+ "F-DISC-02": [
+  "VERIFIED",
+  "V2 iOS+Android: search, empty state, clear, sort, funding coupling, format filter",
+  "Cursor paging needs more data"
+ ],
+ "F-DISC-03": [
+  "VERIFIED",
+  "V2 iOS+Android after fix V-05 (list loads)",
+  null
+ ],
+ "F-DISC-04": [
+  "VERIFIED",
+  "V2 iOS+Android: onboarding and edit stored in userpreferences",
+  null
+ ],
+ "F-DISC-05": [
+  "VERIFIED",
+  "V2 iOS+Android (+ widget test for a missing page count)",
+  null
+ ],
+ "F-DISC-07": [
+  "VERIFIED",
+  "V2 iOS+Android: 'Tercihlerim' shown, 'Düzenle' edits",
+  null
+ ],
+ "F-BOOK-03": [
+  "VERIFIED",
+  "V2 iOS+Android: like/unlike/like, persisted",
+  null
+ ],
+ "F-BOOK-04": [
+  "VERIFIED",
+  "V2 iOS+Android: savedBooks",
+  null
+ ],
+ "F-BOOK-05": [
+  "VERIFIED",
+  "V2 iOS+Android: isFollowingBook",
+  null
+ ],
+ "F-BOOK-06": [
+  "PARTIALLY VERIFIED",
+  "KİTABI OKU on device (V2/V3)",
+  "DESTEK OL button itself not tapped (checkout reached through the funding panel)"
+ ],
+ "F-BOOK-07": [
+  "VERIFIED",
+  "V2 iOS+Android: copy link / copy text with /share/book/…",
+  "System share sheet ('Diğer uygulamalar') not driven"
+ ],
+ "F-BOOK-08": [
+  "VERIFIED",
+  "V2 iOS+Android: publish (cancel keeps draft), complete, back to draft, delete",
+  null
+ ],
+ "F-BOOK-09": [
+  "VERIFIED",
+  "V4 iOS+Android: classification editor saved",
+  null
+ ],
+ "F-BOOK-10": [
+  "VERIFIED",
+  "V2 iOS+Android: delete with confirm; book then not found",
+  null
+ ],
+ "F-COMM-02": [
+  "VERIFIED",
+  "V2 iOS+Android",
+  null
+ ],
+ "F-COMM-03": [
+  "VERIFIED",
+  "V2 iOS+Android: reply stored with parentId",
+  null
+ ],
+ "F-COMM-04": [
+  "VERIFIED",
+  "V2 iOS+Android",
+  null
+ ],
+ "F-COMM-05": [
+  "VERIFIED",
+  "V2 iOS+Android: cancel keeps, confirm deletes",
+  null
+ ],
+ "F-COMM-06": [
+  "VERIFIED",
+  "V2 iOS+Android after fix V-03: live suggestion list, selection inserts @user",
+  null
+ ],
+ "F-READ-03": [
+  "VERIFIED",
+  "V3 iOS+Android: complete & continue, previous, revisit label, last chapter; hidden chapter in the middle after fix V-08",
+  null
+ ],
+ "F-READ-04": [
+  "VERIFIED",
+  "V3 iOS+Android: completedChapters on the server",
+  "Offline → online transition not simulated on a device"
+ ],
+ "F-READ-05": [
+  "VERIFIED",
+  "V3 iOS+Android: reading session created, heartbeat sequence advances",
+  "Background/foreground and idle stop not measured"
+ ],
+ "F-READ-06": [
+  "VERIFIED",
+  "V3 iOS+Android: tapped; paragraphIndex 1 for the 2nd <p> after an h1; restored; moved; removed",
+  null
+ ],
+ "F-READ-07": [
+  "VERIFIED",
+  "V3 iOS+Android: panel, add, stored index, count, delete",
+  null
+ ],
+ "F-READ-08": [
+  "VERIFIED",
+  "V3 iOS+Android: real long-press + drag selection → Alıntıla → sheet → quote with chapter id/index; <10 chars refused; duplicate detected",
+  "Simulator/emulator touch, not a physical device"
+ ],
+ "F-READ-09": [
+  "VERIFIED",
+  "V3 iOS+Android: menu has only Alıntıla/Kopyala; Kopyala copies the notice",
+  "Screenshots not prevented (same as the website)"
+ ],
+ "F-READ-10": [
+  "VERIFIED",
+  "V3 iOS+Android: guest gate (J-05 sheet), gated chapters marked, hidden chapter notice; author sees hidden text",
+  null
+ ],
+ "F-READ-11": [
+  "VERIFIED",
+  "V3 iOS+Android: views counted",
+  null
+ ],
+ "F-READ-12": [
+  "VERIFIED",
+  "V3 iOS+Android: /share/chapter/…",
+  null
+ ],
+ "F-READ-15": [
+  "VERIFIED",
+  "V3 iOS+Android: unchecking updates the server",
+  null
+ ],
+ "F-READ-16": [
+  "VERIFIED",
+  "V3 iOS+Android: 60-paragraph chapter, 0 → >0.9",
+  null
+ ],
+ "F-WRITE-01": [
+  "VERIFIED",
+  "V4 iOS+Android after fix V-06: validation, cover upload (stand-in), classification, draft row",
+  "Real Cloudinary not configured (BLK-03)"
+ ],
+ "F-WRITE-02": [
+  "VERIFIED",
+  "V4 iOS+Android",
+  null
+ ],
+ "F-WRITE-03": [
+  "PARTIALLY VERIFIED",
+  "V4/V5/V6 iOS+Android: pick (test seam) → validate → centre-crop → JPEG → multipart POST with preset to a local Cloudinary stand-in → URL saved by the server (cover, avatar, session cover)",
+  "Real Cloudinary account and the system photo picker not exercised (BLK-03)"
+ ],
+ "F-WRITE-04": [
+  "VERIFIED",
+  "V4 iOS+Android: add (title rule), hidden add, select, delete with confirm",
+  "New chapter opens at once (website leaves it unselected)"
+ ],
+ "F-WRITE-05": [
+  "VERIFIED",
+  "V4 iOS+Android: toolbar + typing → Quill HTML; undo/redo; copy/paste via toolbar (fix V-07); website chapter round trip; read-only for incompatible markup; Android Gboard typing (manual run)",
+  "Rich paste from other apps, iOS soft-keyboard typing, editor image insertion via the picker, opening app-saved chapters in the website editor: not tested"
+ ],
+ "F-WRITE-06": [
+  "VERIFIED",
+  "V4 iOS+Android: isHidden toggled on the server",
+  null
+ ],
+ "F-WRITE-07": [
+  "VERIFIED",
+  "V4 iOS+Android: /share/chapter/…",
+  null
+ ],
+ "F-WRITE-08": [
+  "VERIFIED",
+  "V4 iOS+Android: publish and complete from the bar",
+  null
+ ],
+ "F-WRITE-09": [
+  "VERIFIED",
+  "V4 iOS+Android",
+  null
+ ],
+ "F-WRITE-10": [
+  "VERIFIED",
+  "V4 iOS+Android",
+  null
+ ],
+ "F-SESS-02": [
+  "VERIFIED",
+  "V6 iOS+Android: short reason refused, PENDING stored, rejection note shown",
+  null
+ ],
+ "F-SESS-03": [
+  "VERIFIED",
+  "V6 iOS+Android: title rule, tags, OPEN and PRIVATE created",
+  null
+ ],
+ "F-SESS-04": [
+  "VERIFIED",
+  "V6 iOS+Android",
+  null
+ ],
+ "F-SESS-05": [
+  "VERIFIED",
+  "V6 iOS+Android: code length rule, wrong code refused, right code → post",
+  null
+ ],
+ "F-SESS-06": [
+  "VERIFIED",
+  "V6 iOS+Android",
+  null
+ ],
+ "F-SESS-07": [
+  "VERIFIED",
+  "V6 iOS+Android: entry posted elsewhere appears live",
+  null
+ ],
+ "F-SESS-08": [
+  "VERIFIED",
+  "V6 iOS+Android: likedBy toggled",
+  null
+ ],
+ "F-SESS-09": [
+  "VERIFIED",
+  "V6 iOS+Android",
+  null
+ ],
+ "F-SESS-10": [
+  "VERIFIED",
+  "V6 iOS+Android: cancel keeps, confirm closes; closed session takes no entries",
+  null
+ ],
+ "F-SESS-11": [
+  "VERIFIED",
+  "V6 iOS+Android: cover via the upload stand-in, stored",
+  "Real Cloudinary not configured (BLK-03)"
+ ],
+ "F-SESS-12": [
+  "VERIFIED",
+  "V6 iOS+Android: mention notification → session with ?entry=",
+  null
+ ],
+ "F-SESS-13": [
+  "VERIFIED",
+  "V6 iOS+Android: /share/session/…",
+  null
+ ],
+ "F-SESS-14": [
+  "VERIFIED",
+  "V6 iOS+Android",
+  null
+ ],
+ "F-PROF-01": [
+  "VERIFIED",
+  "V5 iOS+Android: own, other, private-as-other",
+  null
+ ],
+ "F-PROF-02": [
+  "VERIFIED",
+  "V5 iOS+Android: name, bio, avatar; username rule (fix V-09)",
+  null
+ ],
+ "F-PROF-03": [
+  "VERIFIED",
+  "V5 iOS+Android",
+  null
+ ],
+ "F-PROF-04": [
+  "VERIFIED",
+  "V5 iOS+Android",
+  null
+ ],
+ "F-PROF-05": [
+  "VERIFIED",
+  "V5 iOS+Android: /share/profile/…",
+  null
+ ],
+ "F-PROF-06": [
+  "PARTIALLY VERIFIED",
+  "D 04, 17",
+  "The profile's DESTEKLERİM button itself not tapped"
+ ],
+ "F-PROF-07": [
+  "VERIFIED",
+  "V5 iOS+Android",
+  null
+ ],
+ "F-FOLLOW-01": [
+  "VERIFIED",
+  "V5 iOS+Android: request, withdraw, request",
+  null
+ ],
+ "F-FOLLOW-02": [
+  "VERIFIED",
+  "V5 iOS+Android",
+  null
+ ],
+ "F-FOLLOW-03": [
+  "VERIFIED",
+  "V5 iOS+Android: accepted notification → profile, 'Takibi bırak'",
+  null
+ ],
+ "F-FOLLOW-04": [
+  "VERIFIED",
+  "V5 iOS+Android",
+  null
+ ],
+ "F-SET-01": [
+  "VERIFIED",
+  "V5 iOS+Android: info mail to the new address, signed out, sign-in with the new address",
+  null
+ ],
+ "F-SET-02": [
+  "VERIFIED",
+  "V5 iOS+Android: mismatch, wrong current refused (stays signed in), success signs out, new password works",
+  null
+ ],
+ "F-SET-03": [
+  "VERIFIED",
+  "V5 iOS+Android: private profile + messages closed seen by another member; reverted",
+  null
+ ],
+ "F-SET-04": [
+  "VERIFIED",
+  "V5 iOS+Android",
+  null
+ ],
+ "F-SET-05": [
+  "VERIFIED",
+  "V5 iOS+Android: invalid goal refused; note, goal, genre stored",
+  null
+ ],
+ "F-SET-06": [
+  "VERIFIED",
+  "V5 iOS+Android",
+  null
+ ],
+ "F-SET-07": [
+  "VERIFIED",
+  "V5 iOS+Android: profile hidden from others; sign-in reactivates",
+  null
+ ],
+ "F-SET-08": [
+  "VERIFIED",
+  "V5 iOS+Android: phrase required; deleted; sign-in refused",
+  null
+ ],
+ "F-QUOTE-02": [
+  "VERIFIED",
+  "V5 iOS+Android",
+  null
+ ],
+ "F-QUOTE-03": [
+  "VERIFIED",
+  "V5 iOS+Android",
+  null
+ ],
+ "F-QUOTE-04": [
+  "VERIFIED",
+  "V5 iOS+Android",
+  null
+ ],
+ "F-QUOTE-05": [
+  "VERIFIED",
+  "V5 iOS+Android: repost stored, undone",
+  "Repost card in the feed not asserted (feed ordering)"
+ ],
+ "F-QUOTE-06": [
+  "VERIFIED",
+  "V5 iOS+Android",
+  null
+ ],
+ "F-QUOTE-07": [
+  "VERIFIED",
+  "V5 iOS+Android",
+  null
+ ],
+ "F-QUOTE-09": [
+  "VERIFIED",
+  "V7 iOS+Android: page range checked, pageNumber stored",
+  null
+ ],
+ "F-QUOTE-10": [
+  "VERIFIED",
+  "V5 iOS+Android: repost comment stored",
+  null
+ ],
+ "F-MSG-02": [
+  "VERIFIED",
+  "V5 iOS+Android (from profile)",
+  null
+ ],
+ "F-MSG-03": [
+  "VERIFIED",
+  "V5 iOS+Android",
+  null
+ ],
+ "F-MSG-04": [
+  "VERIFIED",
+  "V5 iOS+Android",
+  null
+ ],
+ "F-MSG-06": [
+  "VERIFIED",
+  "V5 iOS+Android",
+  null
+ ],
+ "F-MSG-08": [
+  "VERIFIED",
+  "V5 iOS+Android: book shared into a conversation",
+  "Quote sharing into chat not driven"
+ ],
+ "F-MSG-09": [
+  "VERIFIED",
+  "V5 iOS+Android: book bubble → book",
+  "Quote bubble not driven"
+ ],
+ "F-SHARE-01": [
+  "VERIFIED",
+  "V2–V6 iOS+Android: book, chapter, profile, session links copied",
+  "System share sheet not driven"
+ ],
+ "F-SCORE-02": [
+  "PARTIALLY VERIFIED",
+  "V3: reading-time reports accepted on device",
+  "Point awards not asserted per rule"
+ ],
+ "F-PRINTED-02": [
+  "VERIFIED",
+  "V7 iOS+Android: client rules, invalid ISBN message, https rule, PENDING row",
+  "ISBN lookup against Open Library not called (external)"
+ ],
+ "F-PRINTED-03": [
+  "VERIFIED",
+  "V7 iOS+Android",
+  null
+ ],
+ "F-PRINTED-04": [
+  "VERIFIED",
+  "V7 iOS+Android",
+  null
+ ],
+ "F-PRINTED-05": [
+  "VERIFIED",
+  "V7 iOS+Android: rate, review, remove, add again",
+  null
+ ],
+ "F-PRINTED-06": [
+  "VERIFIED",
+  "V7 iOS+Android",
+  null
+ ],
+ "F-PRINTED-07": [
+  "VERIFIED",
+  "V7 iOS+Android: rule, submit, admin approves, chapter tools appear",
+  null
+ ],
+ "F-COM-01": [
+  "VERIFIED",
+  "V1 iOS+Android",
+  null
+ ],
+ "F-COM-02": [
+  "VERIFIED",
+  "V1 iOS+Android: mail in the sink",
+  null
+ ],
+ "F-COM-03": [
+  "VERIFIED",
+  "V1 iOS+Android",
+  null
+ ],
+ "F-COM-04": [
+  "VERIFIED",
+  "V1 iOS+Android: confirmation mail",
+  null
+ ],
+ "F-COM-06": [
+  "VERIFIED",
+  "V1 iOS+Android",
+  "Sandbox has no published e-mail/phone, so the 'not published' texts were seen"
+ ],
+ "F-COM-07": [
+  "VERIFIED",
+  "V1 iOS+Android: mailed link → confirm → subscription active",
+  null
+ ],
+ "F-PUB-01": [
+  "VERIFIED",
+  "V7 iOS+Android: publisher catalogue and campaign filter; member redirected",
+  null
+ ],
+ "F-ADM-01": [
+  "VERIFIED",
+  "V8 iOS+Android",
+  null
+ ],
+ "F-ADM-02": [
+  "VERIFIED",
+  "V8 iOS+Android: list, status filter, search field",
+  null
+ ],
+ "F-ADM-03": [
+  "VERIFIED",
+  "V8 iOS+Android: reason rule, hide/restore a comment (gone from the book page), stale revision → conflict + reload",
+  null
+ ],
+ "F-ADM-04": [
+  "VERIFIED",
+  "V8 iOS+Android",
+  null
+ ],
+ "F-ADM-05": [
+  "VERIFIED",
+  "V7 iOS+Android: printed approval and claim approval",
+  "Reject paths not driven"
+ ],
+ "F-ADM-06": [
+  "VERIFIED",
+  "V6 iOS+Android: approve and reject with a note",
+  null
+ ],
+ "F-ADM-13": [
+  "VERIFIED",
+  "V8 iOS+Android: delete + classification on another author's book (no status buttons, as on the website); author dashboard opens",
+  null
+ ],
+ "F-ADM-14": [
+  "VERIFIED",
+  "V8 iOS+Android: reasons listed",
+  null
+ ],
+ "F-FUND-01": [
+  "VERIFIED",
+  "V7 iOS+Android: campaign card and support link on the book page; free interest toggled and stored",
+  null
+ ],
+ "F-FUND-02": [
+  "VERIFIED",
+  "V7 iOS+Android: campaign card with target, collected amount, status",
+  null
+ ],
+ "F-FUND-03": [
+  "VERIFIED",
+  "V7 iOS+Android: 1 copy + 100 TL, address, consents → reservation stored in kuruş with idempotency key (sandbox mock provider)",
+  "Sandbox (PRINT_PAYMENTS_MODE=SANDBOX) only; the iyzico sandbox and live payments were not used"
+ ],
+ "F-FUND-04": [
+  "VERIFIED",
+  "V7 iOS+Android: simulated success, simulated failure and cancel from the payment card; states stored",
+  "iyzico hosted payment page not exercised (no sandbox keys; never live)"
+ ],
+ "F-FUND-05": [
+  "VERIFIED",
+  "V7 iOS+Android: history lists captured, failed, cancelled and refunded payments",
+  null
+ ],
+ "F-FUND-06": [
+  "VERIFIED",
+  "V7 iOS+Android: application form, cover PDF picked (test hook for the picker) and uploaded to POST /api/print/assets, saved, submitted",
+  "System document picker UI itself not driven (test override)"
+ ],
+ "F-FUND-09": [
+  "VERIFIED",
+  "V7 iOS+Android: idempotency key stored with the reservation; new basket after a failure creates a new payment",
+  null
+ ],
+ "F-FUND-10": [
+  "VERIFIED",
+  "V7 iOS+Android: pending payment cancelled from history",
+  null
+ ],
+ "F-FUND-11": [
+  "VERIFIED",
+  "V7 iOS+Android: saved application version is frozen with its hash and shown",
+  null
+ ],
+ "F-ADM-07": [
+  "VERIFIED",
+  "V7 iOS+Android: admin approves with quote, confirmed pages, two PDFs and amounts; DB state checked",
+  "Reject / revision-request paths not driven"
+ ],
+ "F-ADM-08": [
+  "VERIFIED",
+  "V7 iOS+Android: open campaign with confirmation; audit trail shows CAMPAIGN_SETTLED and PRODUCTION_UPDATED",
+  "Manual close path not driven (campaign settled by maintenance)"
+ ],
+ "F-ADM-09": [
+  "VERIFIED",
+  "V7 iOS+Android: production stepped PRINTER_APPROVED → STARTED → PRINTING → PRINTED after the campaign settled",
+  null
+ ],
+ "F-ADM-10": [
+  "VERIFIED",
+  "V7 iOS+Android: full refund of a captured payment while ACTIVE (supporter sees İade edildi); pre-order CONFIRMED → PACKAGING",
+  "retryPrintRefund not driven (sandbox refunds never fail)"
+ ],
+ "F-ADM-11": [
+  "VERIFIED",
+  "V7 iOS+Android: new sample tariff version created",
+  null
+ ],
+ "F-ADM-12": [
+  "VERIFIED",
+  "V7 iOS+Android: maintenance run settles refunds and the campaign (SUCCEEDED)",
+  null
+ ]
+}

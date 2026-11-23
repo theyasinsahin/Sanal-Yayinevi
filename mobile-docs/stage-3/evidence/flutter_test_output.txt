@@ -1,0 +1,213 @@
+00:00 +0: loading /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/reader_writer_logic_test.dart
+00:00 +0: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: configuration client id format
+00:00 +1: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +2: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +3: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +4: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +5: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +6: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +7: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +8: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +9: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +11: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +12: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +13: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +14: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +15: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +16: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +17: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +18: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +19: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +20: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +21: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +22: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +23: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +23: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/integration/live_api_test.dart: live backend login returns a 24-hour JWT and me confirms the role
+  Skip: BETIK_TEST_API / BETIK_TEST_PASSWORD not set
+00:00 +23 ~1: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +23 ~1: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/integration/live_api_test.dart: live backend wrong password is a failure with the generic message; guests get UNAUTHENTICATED on member operations
+  Skip: BETIK_TEST_API / BETIK_TEST_PASSWORD not set
+00:00 +23 ~2: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +23 ~2: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/integration/live_api_test.dart: live backend feed, book detail and date encodings
+  Skip: BETIK_TEST_API / BETIK_TEST_PASSWORD not set
+00:00 +23 ~3: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +23 ~3: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/integration/live_api_test.dart: live backend dynamic documents: leaderboard with own rank, follow action
+  Skip: BETIK_TEST_API / BETIK_TEST_PASSWORD not set
+00:00 +23 ~4: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +23 ~4: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/integration/live_api_test.dart: live backend author: create draft → chapter HTML survives the server sanitiser → page count → reader contract
+  Skip: BETIK_TEST_API / BETIK_TEST_PASSWORD not set
+00:00 +23 ~5: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +23 ~5: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/integration/live_api_test.dart: live backend comments: create, flat list with parentId, reply flattening, delete
+  Skip: BETIK_TEST_API / BETIK_TEST_PASSWORD not set
+00:00 +23 ~6: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +23 ~6: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/integration/live_api_test.dart: live backend real WebSocket: a chat message reaches the other participant through onNewMessage
+  Skip: BETIK_TEST_API / BETIK_TEST_PASSWORD not set
+00:00 +23 ~7: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +23 ~7: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/integration/live_api_test.dart: live backend funding: payment mode, overview shape, money in minor units
+  Skip: BETIK_TEST_API / BETIK_TEST_PASSWORD not set
+00:00 +23 ~8: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +23 ~8: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/integration/live_api_test.dart: live backend roles: admin and publisher operations are refused for a member and work for the role
+  Skip: BETIK_TEST_API / BETIK_TEST_PASSWORD not set
+00:00 +23 ~9: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +23 ~9: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/integration/live_api_test.dart: live backend logout revokes the token on the server (all devices)
+  Skip: BETIK_TEST_API / BETIK_TEST_PASSWORD not set
+00:00 +23 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +24 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +25 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +26 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +27 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +28 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +29 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +30 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +31 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +32 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +33 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +34 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +35 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +36 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +37 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +38 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +39 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +40 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +41 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +42 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +43 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +44 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +45 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +46 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +47 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +48 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +49 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +50 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +51 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +52 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +53 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +54 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +55 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +56 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +57 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +58 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +59 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +60 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +61 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +62 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +63 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +64 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +65 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +66 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +67 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +68 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +69 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +70 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +71 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +72 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +73 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +74 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +75 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +76 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +77 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +78 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +79 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +80 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +81 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +82 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +83 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +84 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +85 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +86 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +87 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +88 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +89 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +90 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +91 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +92 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +93 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +94 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +95 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: login: empty form is rejected locally; a refused login shows the generic Turkish message
+00:00 +96 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +97 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +98 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +99 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +100 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +101 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +102 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +103 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +104 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +105 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +106 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +107 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +108 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +109 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +110 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +111 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +112 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +113 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +114 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +115 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +116 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +117 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +118 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +119 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +120 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +121 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +122 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +123 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +124 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +125 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +126 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +127 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +128 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +129 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +130 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +131 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +132 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +133 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +134 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +135 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +136 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +137 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +138 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +139 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +140 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +141 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +142 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +143 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +144 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +145 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +146 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +147 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +148 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +149 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +150 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +151 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +152 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +153 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +154 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +155 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +156 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +157 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +158 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +159 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +160 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +161 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +162 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +163 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +164 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +165 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +166 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +167 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +168 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +169 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: success signs in and goes to the profile (or returnTo)
+00:00 +170 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: guest gate: a member-only action opens the sign-up prompt and remembers the origin
+00:00 +171 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: guest gate: a member-only action opens the sign-up prompt and remembers the origin
+00:00 +172 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: guest gate: a member-only action opens the sign-up prompt and remembers the origin
+00:00 +173 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: guest gate: a member-only action opens the sign-up prompt and remembers the origin
+00:00 +174 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: guest gate: a member-only action opens the sign-up prompt and remembers the origin
+00:00 +175 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: guest gate: a member-only action opens the sign-up prompt and remembers the origin
+00:00 +176 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: guest gate: a member-only action opens the sign-up prompt and remembers the origin
+00:00 +177 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/widget_test.dart: guest gate: a member-only action opens the sign-up prompt and remembers the origin
+00:00 +178 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens register: cancel leaves the form untouched without an error
+00:00 +179 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens login: a rejected token shows the website message
+00:01 +180 ~10: /Users/fixie/Projects/Sanal-Yayinevi/Client/mobile/test/google_sign_in_test.dart: screens logout also forgets the Google account (account chooser next time)
+00:01 +181 ~10: All tests passed!

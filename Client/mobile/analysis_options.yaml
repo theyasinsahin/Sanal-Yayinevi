@@ -1,0 +1,17 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+
+linter:
+  rules:
+    # Style preference only: `if (x != null) x` reads more clearly than `?x`
+    # in the long collection literals this codebase builds for GraphQL
+    # variables. No correctness rule is disabled.
+    use_null_aware_elements: false
+
+formatter:
+  page_width: 140

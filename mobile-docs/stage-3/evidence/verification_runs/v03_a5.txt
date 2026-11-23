@@ -1,0 +1,20 @@
+exit=0
+PASS SETUP | Author publishes the test book 
+PASS F-READ-10 | Guest: first chapter readable, next chapter gated with the sign-up card; member controls prompt 
+PASS F-READ-13 | Chapter HTML: headings, inline formats, quote, lists, image, empty paragraph 
+PASS F-READ-06 | Bookmark on the 2nd <p> stores paragraphIndex 1 (not the element position); survives reopening; moves; removes 
+PASS F-READ-07 | Paragraph comments: open panel, send, count badge, stored index, delete, close 
+PASS F-READ-08a | Touch selection shorter than 10 characters: "Alıntıla" explains the minimum 
+PASS F-READ-08b | Long-press and drag selects a passage → "Alıntıla" → sheet → saved quote with chapter location 
+PASS F-READ-08c | Selecting the same passage again reports the duplicate 
+PASS F-READ-09 | Copy protection: "Kopyala" puts the notice with the book link on the clipboard, not the text 
+PASS F-READ-16 | Scroll progress bar follows scrolling in a long chapter 
+PASS F-READ-03/04 | Chapter navigation: complete & continue stores progress; previous; last chapter "Tamamla"; end marker 
+PASS F-READ-02/15 | Chapter drawer: counts, select a chapter, manual read checkbox unchecks on the server 
+PASS F-READ-01 | Reopening resumes at the last opened chapter (server progress) 
+PASS F-READ-12 | Share chapter opens the share sheet with a chapter link 
+PASS F-READ-11 | Opening the reader counts a view 
+PASS F-READ-05 | Reading time: the session heartbeat sequence advances while reading on the device 
+PASS F-READ-03h | A hidden chapter in the middle does not block the reader: notice, then "Sonraki Bölüm" 
+PASS F-READ-10h | Hidden chapter: reader sees the notice, author sees the content with the label 
+18/18 passed

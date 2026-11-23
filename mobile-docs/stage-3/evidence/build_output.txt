@@ -1,0 +1,4 @@
+Running Gradle task 'assembleDebug'...                             15.7s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+Xcode build done.                                           39.0s
+✓ Built build/ios/iphoneos/Runner.app (29.5MB)

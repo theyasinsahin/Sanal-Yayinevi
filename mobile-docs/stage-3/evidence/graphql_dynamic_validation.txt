@@ -1,0 +1,8 @@
+ok   FollowAction/requestFollowUser
+ok   FollowAction/cancelFollowRequest
+ok   FollowAction/unfollowUser
+ok   RemoveFollower
+ok   Leaderboard/guest
+ok   Leaderboard/member
+
+6 variants, 0 failed
