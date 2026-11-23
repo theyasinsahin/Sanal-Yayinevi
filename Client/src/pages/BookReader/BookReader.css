@@ -56,7 +56,7 @@
   position: fixed;
   left: 0;
   top: var(--navbar-height, 80px);
-  background-color: var(--paper-var(--paper-light));
+  background-color: var(--paper-light);
   border-right: 2px solid var(--fog);
   overflow-y: auto;
   z-index: 100;
@@ -178,7 +178,7 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  background-color: var(--paper-var(--paper-light));
+  background-color: var(--paper-light);
   margin-top: 2px;
 }
 
@@ -194,7 +194,7 @@
 }
 
 .chapter-checkbox.checked svg {
-  color: var(--paper-var(--paper-light));
+  color: var(--paper-light);
   font-size: 0.875rem;
 }
 
@@ -253,7 +253,7 @@
   justify-content: flex-end;
   flex-wrap: wrap;
   padding: .75rem 1.25rem;
-  background: var(--paper-var(--paper-light));
+  background: var(--paper-light);
   border-bottom: 1px solid var(--fog);
   transition: opacity 0.3s ease;
 }
@@ -265,7 +265,7 @@
 .control-btn {
   width: 44px;
   height: 44px;
-  background-color: var(--paper-var(--paper-light));
+  background-color: var(--paper-light);
   border: 2px solid var(--fog);
   border-radius: 50%;
   display: flex;
@@ -279,13 +279,13 @@
 .control-btn:hover {
   background-color: var(--ink-black);
   border-color: var(--ink-black);
-  color: var(--paper-var(--paper-light));
+  color: var(--paper-light);
   transform: scale(1.1);
 }
 
 .control-btn.active {
   background-color: var(--ink-black);
-  color: var(--paper-var(--paper-light));
+  color: var(--paper-light);
   border-color: var(--ink-black);
 }
 
@@ -435,7 +435,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background-color: var(--paper-var(--paper-light));
+  background-color: var(--paper-light);
   border: 2px solid var(--fog);
   border-radius: var(--radius-md);
   font-family: var(--font-sans);
@@ -448,7 +448,7 @@
 
 .chapter-nav-btn:hover:not(:disabled) {
   background-color: var(--ink-black);
-  color: var(--paper-var(--paper-light));
+  color: var(--paper-light);
   border-color: var(--ink-black);
   transform: translateY(-2px);
 }
@@ -515,7 +515,7 @@
   border: 1px solid var(--fog);
   border-radius: 8px;
   color: var(--ink-black);
-  background: var(--paper-var(--paper-light));
+  background: var(--paper-light);
   font: 600 .85rem var(--font-sans);
   cursor: pointer;
 }

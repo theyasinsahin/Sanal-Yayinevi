@@ -180,8 +180,8 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #1D9E75;
-  color: #E1F5EE;
+  background: var(--wine);
+  color: var(--on-wine);
   border: none;
   font-size: 16px;
   cursor: pointer;

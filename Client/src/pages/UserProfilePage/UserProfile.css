@@ -80,7 +80,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #e5e5e5;
+  background-color: var(--paper-deep);
   color: var(--text-muted);
 }
 
@@ -97,7 +97,7 @@
   background-color: var(--text-main);
   color: var(--bg-surface);
   border-radius: 4px;
-  font-family: sans-serif;
+  font-family: var(--font-ui);
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -131,7 +131,7 @@
 }
 
 .username-text {
-  font-family: sans-serif;
+  font-family: var(--font-ui);
   font-size: 0.95rem;
   color: var(--text-muted);
   font-weight: 500;
@@ -162,8 +162,8 @@
   bottom: 130%;
   left: 50%;
   transform: translateX(-50%);
-  background-color: #333;
-  color: #fff;
+  background-color: var(--wine);
+  color: var(--paper-light);
   padding: 5px 9px;
   border-radius: 6px;
   font-size: 11px;
@@ -183,7 +183,7 @@
   transform: translateX(-50%);
   border-width: 5px;
   border-style: solid;
-  border-color: #333 transparent transparent transparent;
+  border-color: var(--wine) transparent transparent transparent;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.2s ease;
@@ -249,7 +249,7 @@
 }
 
 .stat-label {
-  font-family: sans-serif;
+  font-family: var(--font-ui);
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -274,7 +274,7 @@
   margin-top: 0.75rem;
   font-size: 0.82rem;
   color: var(--text-muted);
-  font-family: sans-serif;
+  font-family: var(--font-ui);
 }
 
 .mini-stats-row svg {
@@ -342,7 +342,7 @@
   display: flex;
   gap: 0;
   margin-bottom: 2rem;
-  border-bottom: 2px solid #e5e5e5;
+  border-bottom: 1px solid var(--rule-strong);
 }
 
 .tab-btn {
@@ -354,7 +354,7 @@
   border: none;
   border-bottom: 3px solid transparent;
   margin-bottom: -2px;
-  font-family: sans-serif;
+  font-family: var(--font-ui);
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-muted);
@@ -375,7 +375,7 @@
 }
 
 .draft-count-badge {
-  background: var(--color-warning, #f59e0b);
+  background: var(--color-warning);
   color: var(--paper-light);
   font-size: 0.62rem;
   font-weight: 700;
@@ -445,7 +445,7 @@
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #e5e5e5;
+  border: 4px solid var(--paper-light);
   border-top-color: var(--text-main);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -533,7 +533,7 @@
 }
 
 .stat-item-profile.clickable:hover {
-  background-color: var(--bg-muted, #f3f4f6);
+  background-color: var(--bg-muted);
   transform: scale(1.05);
 }
 
@@ -553,7 +553,7 @@
 }
 
 .follow-modal-content {
-  background: var(--bg-card, #ffffff);
+  background: var(--bg-card);
   width: 100%;
   max-width: 400px;
   border-radius: 16px;
@@ -572,7 +572,7 @@
 
 .follow-modal-header {
   padding: 20px;
-  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -582,7 +582,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -592,8 +592,8 @@
 }
 
 .close-modal-btn:hover {
-  background-color: var(--bg-muted, #f3f4f6);
-  color: var(--text-main, #111827);
+  background-color: var(--bg-muted);
+  color: var(--text-main);
 }
 
 .follow-modal-list {
@@ -618,20 +618,20 @@
 }
 
 .follow-user-item:hover {
-  background-color: var(--bg-muted, #f9fafb);
+  background-color: var(--bg-muted);
 }
 
 .follow-user-avatar {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background-color: var(--bg-muted, #e5e7eb);
+  background-color: var(--bg-muted);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   flex-shrink: 0;
-  color: var(--text-muted, #9ca3af);
+  color: var(--text-muted);
 }
 
 .follow-user-avatar img {
@@ -652,13 +652,13 @@
 
 .follow-user-name {
   font-weight: 600;
-  color: var(--text-main, #111827);
+  color: var(--text-main);
   font-size: 0.95rem;
 }
 
 .follow-user-username {
   font-size: 0.85rem;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted);
 }
 
 @media (max-width: 640px) {
@@ -990,4 +990,78 @@
   .contact-item {
     font-size: 0.78rem;
   }
+}
+
+/* =====================================================================
+   TASARIM KATMANI — yazar sayfası: dergi portresi
+   ===================================================================== */
+.profile-page {
+  padding-top: calc(var(--navbar-height) + clamp(1.5rem, 4vw, 3rem));
+  background-color: var(--paper);
+}
+
+.profile-header-card {
+  border: 1px solid var(--rule);
+  border-top: 4px solid var(--wine);
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  background-color: var(--paper-light);
+  box-shadow: var(--shadow-lg);
+  animation: profile-in var(--dur-cinema) var(--ease-cinema) both;
+}
+
+@keyframes profile-in {
+  from { opacity: 0; transform: translate3d(0, 16px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+
+.avatar-wrapper-lg {
+  border-color: var(--paper-light);
+  outline: 2px solid var(--wine);
+  box-shadow: var(--shadow-md);
+}
+
+.name-section h2 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--wine);
+}
+
+.username-text { color: var(--ember-deep); font-weight: 600; }
+
+.bio-text {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--ink);
+}
+
+.profile-stats-row { border-top-color: var(--rule-strong); }
+
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  font-weight: 600;
+  color: var(--ember);
+}
+
+.stat-label { color: var(--ink-soft); }
+
+.tab-btn {
+  color: var(--ink-soft);
+  letter-spacing: 0.1em;
+}
+
+.tab-btn:hover { color: var(--wine); }
+
+.tab-btn.active {
+  color: var(--wine);
+  border-bottom-color: var(--ember);
+}
+
+.draft-count-badge { background: var(--ember); color: var(--on-ember); }
+
+.profile-page .section-title {
+  font-family: var(--font-display);
+  color: var(--wine);
 }

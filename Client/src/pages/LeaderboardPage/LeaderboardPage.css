@@ -14,7 +14,7 @@
   display: flex;
   gap: 6px;
   margin-top: 16px;
-  background: var(--bg-muted, #f3f4f6);
+  background: var(--bg-muted);
   padding: 4px;
   border-radius: 12px;
 }
@@ -27,13 +27,13 @@
   cursor: pointer;
   font-size: 0.85rem;
   font-weight: 500;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted);
   transition: all 0.2s;
 }
 
 .leaderboard-tab.active {
   background: var(--paper-light);
-  color: var(--color-primary, #2563eb);
+  color: var(--color-primary);
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
@@ -54,16 +54,16 @@
   gap: 6px;
   padding: 16px;
   border-radius: 16px;
-  background: var(--bg-card, #fff);
-  border: 2px solid var(--border-color, #e5e7eb);
+  background: var(--bg-card);
+  border: 2px solid var(--border-color);
   min-width: 120px;
   box-sizing: border-box;
 }
 
-.podium-item.podium-first { transform: translateY(-16px); border-color: #f59e0b; }
-.podium-item.rank-gold { border-color: #f59e0b; }
-.podium-item.rank-silver { border-color: #9ca3af; }
-.podium-item.rank-bronze { border-color: #b45309; }
+.podium-item.podium-first { transform: translateY(-16px); border-color: var(--ember); }
+.podium-item.rank-gold { border-color: var(--ember); }
+.podium-item.rank-silver { border-color: var(--rule-strong); }
+.podium-item.rank-bronze { border-color: var(--wine); }
 
 .podium-medal { font-size: 1.8rem; }
 
@@ -78,7 +78,7 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: #e5e7eb;
+  background: var(--paper-deep);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -87,7 +87,7 @@
 .podium-username {
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--text-primary, #1a1a2e);
+  color: var(--text-primary);
   text-decoration: none;
   /* Uzun kullanıcı adları (@yildizfatma680609 gibi) kartı genişletip
      komşu kartların taşmasına sebep oluyordu; artık kart genişliğinde
@@ -102,7 +102,7 @@
 
 .podium-points {
   font-size: 0.75rem;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted);
   font-weight: 500;
 }
 
@@ -114,14 +114,14 @@
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: var(--bg-card, #fff);
-  border: 1px solid var(--border-color, #e5e7eb);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   transition: box-shadow 0.15s;
 }
 
 .leaderboard-row:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
-.leaderboard-row.is-me { border-color: var(--color-primary, #2563eb); background: #eff6ff; }
+.leaderboard-row.is-me { border-color: var(--color-primary); background: var(--wine-soft); }
 
 .leaderboard-rank { font-size: 1.2rem; min-width: 36px; text-align: center; flex-shrink: 0; }
 
@@ -156,7 +156,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #e5e7eb;
+  background: var(--paper-deep);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -166,7 +166,7 @@
 .leaderboard-fullname {
   font-size: 0.88rem;
   font-weight: 600;
-  color: var(--text-primary, #1a1a2e);
+  color: var(--text-primary);
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -175,7 +175,7 @@
 
 .leaderboard-username {
   font-size: 0.78rem;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted);
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -185,13 +185,13 @@
 .leaderboard-points {
   font-size: 0.88rem;
   font-weight: 700;
-  color: var(--color-primary, #2563eb);
+  color: var(--color-primary);
   flex-shrink: 0;
 }
 
 .leaderboard-skeleton {
   height: 68px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, var(--paper-deep) 25%, var(--paper) 50%, var(--paper-deep) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 12px;
@@ -203,8 +203,8 @@
   gap: 12px;
   padding: 12px 16px;
   margin-top: 8px;
-  background: #eff6ff;
-  border: 2px dashed var(--color-primary, #2563eb);
+  background: var(--wine-soft);
+  border: 2px dashed var(--color-primary);
   border-radius: 12px;
 }
 
@@ -212,7 +212,7 @@
   flex: 1;
   font-size: 0.88rem;
   font-weight: 600;
-  color: var(--color-primary, #2563eb);
+  color: var(--color-primary);
 }
 
 /* ============================================================
@@ -265,4 +265,46 @@
   .leaderboard-header {
     margin-bottom: 28px;
   }
+}
+/* Tasarım katmanı: şeref kürsüsü */
+.leaderboard-page { padding: calc(var(--navbar-height) + clamp(1.5rem, 4vw, 3rem)) 0 5rem; }
+
+.leaderboard-header {
+  align-items: flex-start;
+  margin-bottom: 2.5rem;
+}
+
+.leaderboard-tabs {
+  margin-top: 0;
+  padding: 0.3rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-full);
+  background: var(--paper-light);
+}
+
+.leaderboard-tab {
+  min-height: 38px;
+  border-radius: var(--radius-full);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.leaderboard-tab:hover { color: var(--wine); background: var(--wine-soft); }
+
+.leaderboard-tab.active {
+  background: var(--wine);
+  color: var(--on-wine);
+  box-shadow: none;
+}
+
+.podium-item {
+  border-width: 1px;
+  border-radius: var(--radius-lg);
+  background: var(--paper-light);
+  box-shadow: var(--shadow-md);
+}
+
+.podium-item.podium-first {
+  border-top: 4px solid var(--ember);
+  box-shadow: var(--shadow-lg);
 }

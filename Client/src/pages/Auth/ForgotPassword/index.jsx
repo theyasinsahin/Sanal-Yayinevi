@@ -11,6 +11,7 @@ import { Typography } from '../../../components/UI/Typography';
 import { Button } from '../../../components/UI/Button';
 import { Input } from '../../../components/UI/Input';
 import '../AuthPages.css';
+import AuthQuotePanel from '../../../components/Auth/AuthQuotePanel';
 
 const ForgotPasswordPage = () => {
   const { search } = useLocation();
@@ -34,7 +35,8 @@ const ForgotPasswordPage = () => {
   return (
     <MainLayout>
       <div className="auth-page-wrapper">
-        <Container maxWidth="lg">
+        <Container maxWidth="6xl" className="auth-stage">
+          <AuthQuotePanel variant="forgot" />
           <div className="auth-card">
             <div className="auth-header">
               <Typography variant="h3" weight="bold" className="text-center mb-2">

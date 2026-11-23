@@ -102,3 +102,9 @@
     display: flex;
   }
 }
+/* Tasarım katmanı: mektuplaşma masası */
+.messages-layout { border: 1px solid var(--rule); border-radius: var(--radius-lg); background: var(--paper-light); box-shadow: var(--shadow-md); overflow: hidden; }
+.messages-sidebar { border-right: 1px solid var(--rule-strong); background: var(--paper-light); }
+.messages-main { background: var(--paper); }
+.messages-empty-state { font-family: var(--font-display); font-style: italic; color: var(--ink-soft); }
+.messages-empty-icon { color: var(--ember); }

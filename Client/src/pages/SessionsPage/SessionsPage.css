@@ -222,7 +222,7 @@ min-height: calc(100vh - var(--navbar-height));
 }
 
 .sessions-modal {
-  background: var(--paper-var(--paper-light));
+  background: var(--paper-light);
   border-radius: var(--border-radius-lg, 12px);
   width: 100%;
   max-width: 500px;

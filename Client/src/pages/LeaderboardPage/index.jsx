@@ -6,13 +6,13 @@ import React, { useState } from 'react';
 import { useSubscription } from '@apollo/client';
 import { LEADERBOARD_UPDATED } from '../../components/Score/ScoreUpdates';
 import { notifyScoreChanged } from '../../utils/scoreUpdates';
-import { EmojiEvents, Person } from '@mui/icons-material';
+import { Person } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { GET_LEADERBOARD, GET_USER_RANK } from '../../graphql/queries/score';
 import { useAuth } from '../../context/AuthContext';
 import { MainLayout } from '../../components/Layout/MainLayout';
+import { PageMasthead } from '../../components/UI/PageMasthead';
 import { Container } from '../../components/UI/Container';
-import { Typography } from '../../components/UI/Typography';
 import './LeaderboardPage.css';
 
 const PERIODS = [
@@ -77,10 +77,12 @@ const LeaderboardPage = () => {
       <div className="leaderboard-page">
         <Container maxWidth="2xl">
 
+          <PageMasthead
+            eyebrow="Aktiflik tablosu"
+            title={<>Okurların <em>şeref kürsüsü</em></>}
+            description="En çok puan kazanan okuyucular"
+          />
           <div className="leaderboard-header">
-            <EmojiEvents style={{ fontSize: '2.5rem', color: '#f59e0b' }} />
-            <Typography variant="h3" weight="bold">Aktiflik Tablosu</Typography>
-            <Typography variant="body" color="muted">En çok puan kazanan okuyucular</Typography>
 
             {/* Period tabs */}
             <div className="leaderboard-tabs">

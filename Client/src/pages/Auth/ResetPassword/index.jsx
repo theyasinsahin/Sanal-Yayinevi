@@ -13,6 +13,7 @@ import '../AuthPages.css';
 
 import PasswordStrengthIndicator from '../../../components/UI/PasswordStrengthIndicator';
 import { validatePassword } from '../../../utils/PasswordValidation';
+import AuthQuotePanel from '../../../components/Auth/AuthQuotePanel';
 
 const ResetPasswordPage = () => {
   const { token } = useParams();
@@ -51,7 +52,8 @@ const ResetPasswordPage = () => {
   return (
     <MainLayout>
       <div className="auth-page-wrapper">
-        <Container maxWidth="lg">
+        <Container maxWidth="6xl" className="auth-stage">
+          <AuthQuotePanel variant="reset" />
           <div className="auth-card">
             <div className="auth-header">
               <Typography variant="h3" weight="bold" className="text-center mb-2">

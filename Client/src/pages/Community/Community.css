@@ -22,7 +22,24 @@
 .community-form label { display: grid; gap: .4rem; }
 .community-form input, .community-form textarea { width: 100%; padding: .8rem; color: var(--text-main); background: var(--bg-app); border: var(--border-medium); border-radius: var(--radius-sm); font: inherit; }
 .community-form textarea { min-height: 180px; resize: vertical; }
-.community-page :focus-visible, .footer :focus-visible { outline: 3px solid var(--text-main); outline-offset: 4px; }
+.community-page :focus-visible { outline: 2px solid var(--ember-deep); outline-offset: 4px; }
 .newsletter-consent { font-size: .85rem; line-height: 1.6; }
 @media (max-width: 640px) { .community-contact { grid-template-columns: 1fr; padding: 1.25rem; gap: 2rem; } .community-page { padding-left: 1rem; padding-right: 1rem; } }
 @media (prefers-reduced-motion: reduce) { .community-card:hover { transform: none; } }
+
+/* Tasarım katmanı: topluluk sayfaları dergi içeriği gibi */
+.community-page header { position: relative; padding-bottom: 1.5rem; }
+.community-page header::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; border-top: 1px solid var(--wine); border-bottom: 1px solid var(--rule); }
+.community-page h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); line-height: 1; letter-spacing: -0.035em; }
+.community-eyebrow { font-family: var(--font-ui); font-size: var(--fs-caption); font-weight: 600; letter-spacing: var(--tracking-eyebrow); color: var(--ember-deep); }
+.community-page header p:not(.community-eyebrow) { font-family: var(--font-display); font-size: var(--fs-lead); font-style: italic; color: var(--ink); }
+.community-card, .community-empty, .community-document section, .community-contact { border: 1px solid var(--rule); border-radius: var(--radius-lg); background: var(--paper-light); box-shadow: var(--shadow-sm); }
+.community-card { border-top: 3px solid var(--ember); border-radius: 0 0 var(--radius-lg) var(--radius-lg); transition: transform var(--dur-base) var(--ease-cinema), box-shadow var(--dur-base) var(--ease-out); }
+.community-card h2 { color: var(--wine); }
+.community-avatar { box-shadow: 0 0 0 2px var(--paper-light), 0 0 0 3px var(--wine); }
+.community-cta a { border-radius: var(--radius-full); background: var(--ember); color: var(--on-ember); font-weight: 600; }
+.community-cta a:hover { background: var(--ember-deep); color: var(--on-ember); }
+.community-document section h2 { font-size: var(--fs-h3); }
+.community-document nav a { font-weight: 600; }
+.community-form input, .community-form textarea { border: 1px solid var(--rule-strong); border-radius: var(--radius-md); background: var(--paper-light); }
+.community-form input:focus, .community-form textarea:focus { outline: none; border-color: var(--ember-deep); box-shadow: 0 0 0 3px var(--ember-focus); }

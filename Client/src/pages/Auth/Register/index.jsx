@@ -31,6 +31,7 @@ import { MainLayout } from '../../../components/Layout/MainLayout';
 
 import { GOOGLE_LOGIN_URI } from '../../../config/api';
 import { googleLoginNonce } from '../../../utils/googleLoginNonce';
+import AuthQuotePanel from '../../../components/Auth/AuthQuotePanel';
 
 const RegisterPage = () => {
   const [googleNonce] = useState(googleLoginNonce);
@@ -145,7 +146,8 @@ const RegisterPage = () => {
   return (
     <MainLayout>
       <div className="auth-page-wrapper">
-        <Container maxWidth="lg">
+        <Container maxWidth="6xl" className="auth-stage">
+          <AuthQuotePanel variant="register" />
           <div className="auth-card">
             
             <div className="auth-header">

@@ -56,7 +56,7 @@
 .conv-item:hover {
   background: var(--color-background-secondary);
 }
-.conv-item:focus-visible { outline: 2px solid #1D9E75; outline-offset: -2px; }
+.conv-item:focus-visible { outline: 2px solid var(--ember-deep); outline-offset: -2px; }
 .conv-item:disabled { cursor: wait; opacity: .7; }
 .conv-section-title { padding: .75rem 1rem .25rem; margin: 0; font-size: 13px; }
 .conv-list-feedback { padding: .5rem 1rem; font-size: 13px; }
@@ -64,7 +64,7 @@
 
 .conv-item--active {
   background: var(--color-background-secondary);
-  border-left: 2px solid #1D9E75;
+  border-left: 2px solid var(--ember);
   padding-left: calc(1rem - 2px);
 }
 
@@ -154,8 +154,8 @@
   height: 18px;
   padding: 0 5px;
   border-radius: 99px;
-  background: #1D9E75;
-  color: #E1F5EE;
+  background: var(--ember);
+  color: var(--on-ember);
   display: flex;
   align-items: center;
   justify-content: center;

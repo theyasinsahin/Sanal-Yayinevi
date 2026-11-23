@@ -2,54 +2,42 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { MainLayout } from '../../components/Layout/MainLayout';
 import { Container } from '../../components/UI/Container';
-import { Typography } from '../../components/UI/Typography';
-import { Button } from '../../components/UI/Button';
+import { Book3D } from '../../components/UI/Book3D';
 import './NotFoundPage.css';
 
-const NotFoundPage = () => {
-  return (
-    <MainLayout>
-      <div className="notfound-page">
-        <Container maxWidth="lg">
-          <div className="notfound-content">
+const NotFoundPage = () => (
+  <MainLayout>
+    <div className="notfound-page">
+      <Container maxWidth="6xl">
+        <div className="notfound-content">
 
-            <div className="notfound-ornament">❦</div>
-
-            <div className="notfound-number">
-              <span className="notfound-quote">❝</span>
-              404
-              <span className="notfound-quote notfound-quote--close">❞</span>
+          {/* Raftan düşen kitap: sayfa kayıp */}
+          <div className="notfound-visual" aria-hidden="true">
+            <span className="notfound-number">404</span>
+            <div className="notfound-book">
+              <Book3D alt="" size="lg" angle={-32} tilt={false} />
             </div>
+          </div>
 
-            <Typography variant="h2" weight="bold" className="notfound-title">
-              Bu Sayfa Kitapta Yok
-            </Typography>
-
-            <Typography variant="body" color="muted" className="notfound-subtitle">
+          <div className="notfound-text">
+            <p className="eyebrow">Sayfa bulunamadı</p>
+            <h1 className="notfound-title">
+              Bu sayfa <em>kitapta yok.</em>
+            </h1>
+            <p className="notfound-subtitle">
               Aradığınız sayfa ya hiç yazılmadı, ya kaldırıldı ya da
               rafın başka bir köşesine taşınmış olabilir.
-            </Typography>
-
+            </p>
             <div className="notfound-actions">
-              <Link to="/" style={{ textDecoration: 'none' }}>
-                <Button variant="primary" size="large">
-                  Ana Sayfaya Dön
-                </Button>
-              </Link>
-              <Link to="/feed" style={{ textDecoration: 'none' }}>
-                <Button variant="outline" size="large">
-                  Kitapları Keşfet
-                </Button>
-              </Link>
+              <Link to="/" className="btn btn-primary btn-large">Ana Sayfaya Dön</Link>
+              <Link to="/feed" className="btn btn-outline btn-large">Kitapları Keşfet</Link>
             </div>
-
-            <div className="notfound-stamp">Sayfa Bulunamadı</div>
-
           </div>
-        </Container>
-      </div>
-    </MainLayout>
-  );
-};
+
+        </div>
+      </Container>
+    </div>
+  </MainLayout>
+);
 
 export default NotFoundPage;

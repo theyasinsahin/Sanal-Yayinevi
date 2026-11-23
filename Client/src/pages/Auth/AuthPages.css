@@ -76,7 +76,7 @@
 
 /* Card Design - Vintage Paper Document */
 .auth-card {
-  background-color: var(--paper-var(--paper-light));
+  background-color: var(--paper-light);
   padding: 3rem;
   border-radius: 8px;
   border: 2px solid var(--fog);
@@ -280,7 +280,7 @@
   top: -0.625rem;
   left: 50%;
   transform: translateX(-50%);
-  background-color: var(--paper-var(--paper-light));
+  background-color: var(--paper-light);
   padding: 0 1rem;
   color: var(--ash-gray);
   opacity: 0.5;
@@ -339,7 +339,7 @@
   position: relative;
   z-index: 1;
   display: inline-block;
-  background-color: var(--paper-var(--paper-light));
+  background-color: var(--paper-light);
   padding: 0 10px;
   font-family: var(--font-sans);
   font-size: 0.875rem;
@@ -364,7 +364,7 @@
   transition: all var(--transition-base);
   flex-shrink: 0;
   appearance: none;
-  background-color: var(--paper-var(--paper-light));
+  background-color: var(--paper-light);
   position: relative;
 }
 
@@ -379,7 +379,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: var(--paper-var(--paper-light));
+  color: var(--paper-light);
   font-size: 0.875rem;
   font-weight: 700;
 }
@@ -432,7 +432,7 @@
   position: absolute;
   top: -0.75rem;
   left: 0;
-  background-color: var(--paper-var(--paper-light));
+  background-color: var(--paper-light);
   padding: 0 0.5rem;
   font-family: var(--font-handwriting);
   font-size: 0.875rem;
@@ -529,4 +529,115 @@
     border: 2px solid black;
     box-shadow: none;
   }
+}
+
+/* =====================================================================
+   TASARIM KATMANI — bordo sahne + kağıt form kartı
+   ===================================================================== */
+.auth-page-wrapper {
+  align-items: center;
+  padding-top: calc(var(--navbar-height) + clamp(1.5rem, 4vw, 3rem));
+  background: var(--paper);
+}
+
+.auth-page-wrapper::before,
+.auth-page-wrapper::after { display: none; }
+
+.auth-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 480px);
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: stretch;
+}
+
+.auth-stage > .auth-card { margin: 0; }
+
+.auth-card {
+  padding: clamp(1.75rem, 4vw, 3rem);
+  border: 1px solid var(--rule);
+  border-top: 4px solid var(--ember);
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  background-color: var(--paper-light);
+  box-shadow: var(--shadow-lg);
+  animation: auth-card-in var(--dur-cinema) var(--ease-cinema) 120ms both;
+}
+
+.auth-card::before,
+.auth-card::after,
+.auth-card .corner-ornament-br,
+.auth-card .corner-ornament-tl { display: none; }
+
+@keyframes auth-card-in {
+  from { opacity: 0; transform: translate3d(0, 18px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+
+.auth-header { margin-bottom: 2rem; }
+
+.auth-icon-circle {
+  width: 64px;
+  height: 64px;
+  border: 0;
+  background: var(--wine-soft);
+  box-shadow: none;
+}
+
+.auth-icon-circle::before { border-color: var(--rule-strong); opacity: 1; }
+.auth-icon-circle svg { color: var(--wine); font-size: 1.9rem; }
+
+.auth-header h2,
+.auth-header .typography.h3 {
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 3vw, 2.4rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--wine);
+  text-shadow: none;
+}
+
+.auth-header h2::after,
+.auth-header .typography.h3::after {
+  width: 48px;
+  height: 2px;
+  background: var(--ember);
+  opacity: 1;
+}
+
+.auth-header p,
+.auth-header .typography.body {
+  font-family: var(--font-display);
+  color: var(--ink);
+}
+
+.auth-form > .btn[type="submit"] { width: 100%; }
+
+.auth-divider::before { background: var(--rule-strong); }
+
+.divider-text {
+  background: var(--paper-light);
+  color: var(--ink-soft);
+  font-size: var(--fs-caption);
+  letter-spacing: 0.12em;
+}
+
+.auth-footer::before { background: var(--rule); }
+
+.terms-checkbox {
+  border: 1.5px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+}
+
+.terms-checkbox:checked {
+  border-color: var(--ember);
+  background-color: var(--ember);
+}
+
+.terms-checkbox:focus-visible { outline-color: var(--ember-deep); }
+
+@media (max-width: 900px) {
+  .auth-stage { grid-template-columns: minmax(0, 1fr); max-width: 32rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-card { animation: none; }
 }

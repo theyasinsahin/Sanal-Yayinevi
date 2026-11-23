@@ -59,13 +59,13 @@
 }
 
 .bubble--own {
-  background: #1D9E75;
-  color: #E1F5EE;
+  background: var(--wine);
+  color: var(--on-wine);
   border-bottom-right-radius: 4px;
 }
 
 .bubble--other {
-  background: var(--paper-var(--paper-light));
+  background: var(--paper-light);
   border: 0.5px solid var(--color-border-tertiary);
   color: var(--color-text-primary);
   border-bottom-left-radius: 4px;
@@ -167,7 +167,7 @@
 }
 
 .bubble--other .bubble-book-link {
-  color: #1D9E75;
+  color: var(--wine);
 }
 
 /* --- ALINTIKAR --- */
@@ -186,9 +186,9 @@
 
 .bubble--other .bubble-quote-card {
   background: var(--color-background-primary);
-  border-left-color: #1D9E75;
+  border-left-color: var(--wine);
   border: 0.5px solid var(--color-border-tertiary);
-  border-left: 2px solid #1D9E75;
+  border-left: 2px solid var(--wine);
 }
 
 .bubble-quote-label {
@@ -200,7 +200,7 @@
 }
 
 .bubble--other .bubble-quote-label {
-  color: #1D9E75;
+  color: var(--wine);
 }
 
 .bubble-quote-text {
@@ -257,7 +257,7 @@
   position: absolute;
   bottom: calc(100% + 4px);
   right: 0;
-  background: var(--paper-background, #ffffff);
+  background: var(--paper-background);
   border: 0.5px solid var(--color-border-secondary);
   border-radius: var(--border-radius-md);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -305,7 +305,7 @@
   border-radius: 8px;
   border: 0.5px solid rgba(255, 255, 255, 0.4);
   background: rgba(255, 255, 255, 0.15);
-  color: #E1F5EE;
+  color: var(--on-wine);
   resize: none;
   font-family: var(--font-sans);
   width: 100%;
@@ -344,12 +344,12 @@
 
 .bubble-edit-save {
   background: rgba(255, 255, 255, 0.9);
-  color: #1D9E75;
+  color: var(--wine);
   font-weight: 500;
 }
 
 .bubble-edit-save:hover:not(:disabled) {
-  background: #fff;
+  background: var(--paper-light);
 }
 
 .bubble-edit-save:disabled {
