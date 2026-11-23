@@ -76,7 +76,7 @@ min-height: calc(100vh - var(--navbar-height));
 }
 
 .session-card-main { display: flex; flex: 1; flex-direction: column; color: inherit; text-decoration: none; min-width: 0; }
-.session-card-main:focus-visible { outline: 3px solid var(--color-border-primary, #c9a84c); outline-offset: -3px; }
+.session-card-main:focus-visible { outline: 3px solid var(--color-border-primary); outline-offset: -3px; }
 .session-card-cover { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: var(--color-background-secondary); }
 .session-card-body { padding: 1.25rem; display: flex; flex-direction: column; gap: 0.65rem; }
 .session-card-footer-meta { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; width: 100%; }
@@ -211,7 +211,7 @@ min-height: calc(100vh - var(--navbar-height));
 .sessions-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.3); /* Daha yumuşak, modern bir backdrop gölgesi */
+  background: var(--wine-scrim); /* Daha yumuşak, modern bir backdrop gölgesi */
   backdrop-filter: blur(4px); /* Arka planı hafifçe flulaştırarak odaklanmayı artırır */
   display: flex;
   align-items: center;
@@ -222,7 +222,7 @@ min-height: calc(100vh - var(--navbar-height));
 }
 
 .sessions-modal {
-  background: var(--paper-white, #ffffff);
+  background: var(--paper-var(--paper-light));
   border-radius: var(--border-radius-lg, 12px);
   width: 100%;
   max-width: 500px;
@@ -232,7 +232,7 @@ min-height: calc(100vh - var(--navbar-height));
   flex-direction: column;
   box-sizing: border-box;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  border: 1px solid var(--color-border-secondary, #e2e8f0);
+  border: 1px solid var(--color-border-secondary);
   animation: sessions-slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -241,7 +241,7 @@ min-height: calc(100vh - var(--navbar-height));
   align-items: center;
   justify-content: space-between;
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--color-border-tertiary, #f1f5f9);
+  border-bottom: 1px solid var(--color-border-tertiary);
   flex-shrink: 0;
 }
 
@@ -250,7 +250,7 @@ min-height: calc(100vh - var(--navbar-height));
   border: none;
   font-size: 14px;
   cursor: pointer;
-  color: var(--color-text-secondary, #64748b);
+  color: var(--color-text-secondary);
   width: 28px;
   height: 28px;
   display: flex;
@@ -261,8 +261,8 @@ min-height: calc(100vh - var(--navbar-height));
 }
 
 .sessions-modal-close:hover {
-  background: var(--color-background-secondary, #f8fafc);
-  color: var(--color-text-primary, #0f172a);
+  background: var(--color-background-secondary);
+  color: var(--color-text-primary);
 }
 
 .sessions-modal-body {
@@ -278,8 +278,8 @@ min-height: calc(100vh - var(--navbar-height));
   justify-content: flex-end;
   gap: 10px;
   padding: 1.25rem 1.5rem;
-  border-top: 1px solid var(--color-border-tertiary, #f1f5f9);
-  background: var(--color-background-secondary, #f8fafc); /* Footer alanını belirginleştirdik */
+  border-top: 1px solid var(--color-border-tertiary);
+  background: var(--color-background-secondary); /* Footer alanını belirginleştirdik */
   flex-shrink: 0;
 }
 .sessions-modal-footer > .ui-notice { flex-basis: 100%; margin: 0; }
@@ -294,7 +294,7 @@ min-height: calc(100vh - var(--navbar-height));
 .sessions-label {
   font-size: 13px;
   font-weight: 600; /* Daha okunaklı olması için kalınlaştırdık */
-  color: var(--color-text-primary, #1e293b);
+  color: var(--color-text-primary);
 }
 
 /* Textarea bileşeni için iyileştirme (Eğer custom component içini ezmek gerekirse) */
@@ -303,8 +303,8 @@ min-height: calc(100vh - var(--navbar-height));
   font-size: 14px;
   padding: 10px 12px;
   border-radius: var(--border-radius-md, 8px);
-  border: 1px solid var(--color-border-secondary, #cbd5e1);
-  color: var(--color-text-primary, #0f172a);
+  border: 1px solid var(--color-border-secondary);
+  color: var(--color-text-primary);
   resize: vertical;
   font-family: var(--font-sans, inherit);
   line-height: 1.5;
@@ -313,18 +313,18 @@ min-height: calc(100vh - var(--navbar-height));
 
 .sessions-field textarea:focus {
   outline: none;
-  border-color: var(--color-border-primary, #3b82f6);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--color-border-primary);
+  box-shadow: 0 0 0 3px var(--wine-soft);
 }
 
 /* Oturum Tipi Seçici - Modern Segmented Control Görünümü */
 .sessions-type-selector {
   display: flex;
   gap: 4px;
-  background: var(--color-background-secondary, #f1f5f9);
+  background: var(--color-background-secondary);
   padding: 4px;
   border-radius: 8px;
-  border: 1px solid var(--color-border-tertiary, #e2e8f0);
+  border: 1px solid var(--color-border-tertiary);
 }
 
 .sessions-type-btn {
@@ -333,7 +333,7 @@ min-height: calc(100vh - var(--navbar-height));
   border-radius: 6px;
   border: none;
   background: transparent;
-  color: var(--color-text-secondary, #64748b);
+  color: var(--color-text-secondary);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -341,12 +341,12 @@ min-height: calc(100vh - var(--navbar-height));
 }
 
 .sessions-type-btn:hover {
-  color: var(--color-text-primary, #0f172a);
+  color: var(--color-text-primary);
 }
 
 .sessions-type-btn--active {
-  background: var(--color-background-primary, #ffffff);
-  color: var(--color-text-primary, #0f172a);
+  background: var(--color-background-primary);
+  color: var(--color-text-primary);
   font-weight: 600;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
 }
@@ -484,4 +484,73 @@ min-height: calc(100vh - var(--navbar-height));
   .session-card {
     padding: 0;
   }
+}
+
+/* Tasarım katmanı: oturum kartları dergi köşesi gibi */
+.sessions-page {
+  padding-top: calc(var(--navbar-height) + clamp(1.5rem, 4vw, 3rem));
+}
+
+.sessions-page .page-masthead__aside { max-width: 26rem; }
+
+.session-card {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  background-color: var(--paper-light);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-cinema), border-color var(--dur-fast);
+}
+
+.session-card:hover {
+  border-color: var(--rule-strong);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+.session-card-cover {
+  transition: transform var(--dur-cinema) var(--ease-cinema);
+}
+
+.session-card:hover .session-card-cover { transform: scale(1.03); }
+
+.session-card-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  line-height: 1.2;
+  color: var(--wine);
+}
+
+.session-card-desc {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--ink);
+}
+
+.session-card-tag {
+  border-radius: var(--radius-full);
+  background: var(--wine-soft);
+  color: var(--wine);
+  font-weight: 600;
+}
+
+.sessions-modal {
+  border-top: 4px solid var(--ember);
+  border-radius: var(--radius-lg);
+  background: var(--paper-light);
+  box-shadow: var(--shadow-xl);
+}
+
+.sessions-modal-overlay {
+  background: var(--wine-scrim);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.sessions-empty {
+  border: 1px dashed var(--rule-strong);
+  border-radius: var(--radius-lg);
+  background: var(--paper-light);
+  font-family: var(--font-display);
+  font-style: italic;
 }

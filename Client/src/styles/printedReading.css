@@ -8,6 +8,6 @@
 .printed-reading-book img { width: 64px; height: 94px; object-fit: cover; border-radius: .3rem; }
 .printed-reading-book h3 { margin: 0 0 .4rem; }
 .printed-reading-stars { color: var(--color-text-primary); margin: .8rem 0; }
-.printed-reading-stars span[aria-hidden] { color: #b67b08; letter-spacing: .08em; }
+.printed-reading-stars span[aria-hidden] { color: var(--ember); letter-spacing: .08em; }
 .printed-reading-review { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
 .printed-reading-actions { display: flex; gap: .8rem; align-items: center; flex-wrap: wrap; margin-top: 1rem; }

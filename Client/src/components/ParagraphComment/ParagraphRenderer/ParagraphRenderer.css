@@ -14,7 +14,7 @@
 }
 
 .paragraph-block.has-bookmark {
-  border-left-color: #f59e0b;
+  border-left-color: var(--ember);
 }
 
 .paragraph-bookmark-indicator {
@@ -22,7 +22,7 @@
   align-items: center;
   gap: 5px;
   font-size: 0.72rem;
-  color: #f59e0b;
+  color: var(--ember-deep);
   font-weight: 600;
   margin-bottom: 4px;
   opacity: 0.85;
@@ -43,19 +43,19 @@
   border: none;
   cursor: pointer;
   font-size: 0.95rem;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--ink-soft);
   padding: 4px 8px;
   border-radius: 6px;
   transition: all 0.15s;
 }
 
 .paragraph-bookmark-btn:hover {
-  color: #f59e0b;
-  background: rgba(245,158,11,0.1);
+  color: var(--ember-deep);
+  background: var(--ember-soft);
 }
 
 .paragraph-bookmark-btn.active {
-  color: #f59e0b;
+  color: var(--ember-deep);
 }
 
 .paragraph-content {
@@ -75,7 +75,7 @@
   border: none;
   cursor: pointer;
   font-size: 0.95rem;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--ink-soft);
   padding: 4px 8px;
   border-radius: 6px;
   transition: all 0.15s;
@@ -84,17 +84,17 @@
 
 .paragraph-comment-trigger:hover,
 .paragraph-comment-trigger.active {
-  color: #2563eb;
-  background: rgba(37,99,235,0.1);
+  color: var(--wine);
+  background: var(--wine-soft);
 }
 
 .paragraph-comment-trigger.has-comments {
-  color: rgba(0, 0, 0, 0.7);
+  color: var(--ink);
 }
 
 .paragraph-comment-trigger.has-comments:hover,
 .paragraph-comment-trigger.has-comments.active {
-  color: #2563eb;
+  color: var(--wine);
 }
 
 .paragraph-comment-count {

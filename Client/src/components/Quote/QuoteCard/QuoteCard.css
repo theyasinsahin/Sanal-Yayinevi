@@ -1,6 +1,6 @@
 .quote-card {
-  background: var(--bg-card, #fff);
-  border: 1px solid var(--border-color, #e5e7eb);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   padding: 24px;
   display: flex;
@@ -32,24 +32,24 @@
   gap: 4px;
   cursor: pointer;
   border-radius: 8px;
-  background: rgba(245, 158, 11, 0.08);
-  border: 1px dashed #f59e0b;
+  background: var(--ember-soft);
+  border: 1px dashed var(--ember);
   transition: background 0.2s;
 }
 
-.spoiler-overlay:hover { background: rgba(245, 158, 11, 0.15); }
+.spoiler-overlay:hover { background: var(--ember-soft); }
 
 .spoiler-icon { font-size: 1.4rem; }
 
 .spoiler-label {
   font-size: 0.82rem;
   font-weight: 600;
-  color: #f59e0b;
+  color: var(--ember-deep);
 }
 
 .spoiler-hint {
   font-size: 0.72rem;
-  color: #9ca3af;
+  color: var(--ink-soft);
 }
 
 .quote-card:hover {
@@ -64,7 +64,7 @@
 
 .quote-card-icon {
   font-size: 2rem !important;
-  color: var(--color-primary, #2563eb);
+  color: var(--color-primary);
   opacity: 0.3;
   position: absolute;
 }
@@ -79,7 +79,7 @@
 .quote-card-text {
   font-size: 1rem;
   line-height: 1.7;
-  color: var(--text-primary, #1a1a2e);
+  color: var(--text-primary);
   font-style: italic;
   margin: 0;
   padding: 8px 16px;
@@ -87,12 +87,12 @@
 
 .quote-card-note {
   font-size: 0.85rem;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted);
   font-style: italic;
   padding: 8px 12px;
-  border-left: 3px solid var(--color-primary, #2563eb);
+  border-left: 3px solid var(--color-primary);
   margin: 0;
-  background: var(--bg-muted, #f9fafb);
+  background: var(--bg-muted);
   border-radius: 0 8px 8px 0;
 }
 
@@ -103,11 +103,11 @@
   text-decoration: none;
   padding: 8px;
   border-radius: 8px;
-  background: var(--bg-muted, #f9fafb);
+  background: var(--bg-muted);
   transition: background 0.15s;
 }
 
-.quote-card-source:hover { background: var(--bg-hover, #f3f4f6); }
+.quote-card-source:hover { background: var(--bg-hover); }
 
 .quote-card-book-cover {
   width: 36px;
@@ -126,12 +126,12 @@
 .quote-card-book-title {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--text-primary, #1a1a2e);
+  color: var(--text-primary);
 }
 
 .quote-card-chapter {
   font-size: 0.75rem;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted);
 }
 
 .quote-card-footer {
@@ -141,7 +141,7 @@
   flex-wrap: wrap;
   row-gap: 10px;
   padding-top: 12px;
-  border-top: 1px solid var(--border-color, #e5e7eb);
+  border-top: 1px solid var(--border-color);
 }
 
 .quote-card-user {
@@ -149,7 +149,7 @@
   align-items: center;
   gap: 8px;
   text-decoration: none;
-  color: var(--text-primary, #1a1a2e);
+  color: var(--text-primary);
   font-size: 0.82rem;
   font-weight: 500;
   min-width: 0;
@@ -173,11 +173,11 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--bg-muted, #e5e7eb);
+  background: var(--bg-muted);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-muted, #9ca3af);
+  color: var(--text-muted);
   flex-shrink: 0;
 }
 
@@ -191,7 +191,7 @@
 
 .quote-card-time {
   font-size: 0.75rem;
-  color: var(--text-muted, #9ca3af);
+  color: var(--text-muted);
   white-space: nowrap;
 }
 
@@ -202,15 +202,15 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted);
   font-size: 0.82rem;
   padding: 4px 8px;
   border-radius: 6px;
   transition: all 0.15s;
 }
 
-.quote-card-like-btn:hover { background: #fef2f2; color: #ef4444; }
-.quote-card-like-btn.liked { color: #ef4444; }
+.quote-card-like-btn:hover { background: var(--danger-soft); color: var(--danger); }
+.quote-card-like-btn.liked { color: var(--danger); }
 
 /* QuoteCard.css'e ekle */
 
@@ -219,38 +219,38 @@
   align-items: center;
   gap: 5px;
   font-size: 0.78rem;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted);
   margin-bottom: -4px;
 }
 
 .quote-card-repost-user {
   font-weight: 600;
-  color: var(--text-primary, #1a1a2e);
+  color: var(--text-primary);
   text-decoration: none;
 }
 .quote-card-repost-user:hover { text-decoration: underline; }
 
 .quote-card-repost-comment {
   font-size: 0.85rem;
-  color: var(--text-primary, #1a1a2e);
+  color: var(--text-primary);
   font-style: italic;
   margin: 0;
   padding: 6px 10px;
-  border-left: 3px solid #f59e0b;
-  background: #fffbeb;
+  border-left: 3px solid var(--ember);
+  background: var(--ember-soft);
   border-radius: 0 6px 6px 0;
 }
 
 .quote-card-original-user {
   font-size: 0.75rem;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
 .quote-card-original-user a {
-  color: var(--color-primary, #2563eb);
+  color: var(--color-primary);
   text-decoration: none;
   font-weight: 500;
 }
@@ -262,18 +262,18 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted);
   font-size: 0.82rem;
   padding: 4px 8px;
   border-radius: 6px;
   transition: all 0.15s;
 }
 
-.quote-card-action-btn:hover { background: #f3f4f6; color: #1a1a2e; }
-.quote-card-action-btn.reposted { color: #10b981; }
+.quote-card-action-btn:hover { background: var(--paper-deep); color: var(--ink-strong); }
+.quote-card-action-btn.reposted { color: var(--success); }
 
 .quote-card-repost-input {
-  border-top: 1px solid var(--border-color, #e5e7eb);
+  border-top: 1px solid var(--border-color);
   padding-top: 12px;
   display: flex;
   flex-direction: column;
@@ -282,17 +282,17 @@
 
 .quote-card-textarea {
   width: 100%;
-  border: 1px solid var(--border-color, #e5e7eb);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 8px 10px;
   font-size: 0.85rem;
   resize: none;
   outline: none;
   font-family: inherit;
-  background: var(--bg-muted, #f9fafb);
+  background: var(--bg-muted);
 }
 
-.quote-card-textarea:focus { border-color: var(--color-primary, #2563eb); }
+.quote-card-textarea:focus { border-color: var(--color-primary); }
 
 .quote-card-repost-actions {
   display: flex;
@@ -302,12 +302,12 @@
 
 .quote-card-cancel-btn {
   padding: 6px 14px;
-  border: 1px solid var(--border-color, #e5e7eb);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   background: none;
   cursor: pointer;
   font-size: 0.82rem;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted);
 }
 
 .quote-card-repost-btn {
@@ -315,8 +315,8 @@
   align-items: center;
   gap: 4px;
   padding: 6px 14px;
-  background: #10b981;
-  color: white;
+  background: var(--success);
+  color: var(--paper-light);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -325,12 +325,12 @@
   transition: background 0.15s;
 }
 
-.quote-card-repost-btn:hover:not(:disabled) { background: #059669; }
+.quote-card-repost-btn:hover:not(:disabled) { background: var(--success); }
 .quote-card-repost-btn:disabled { opacity: 0 }
 
 /* --- YORUMLAR --- */
 .quote-card-comments {
-  border-top: 1px solid var(--border-color, #e5e7eb);
+  border-top: 1px solid var(--border-color);
   padding-top: 12px;
   display: flex;
   flex-direction: column;
@@ -345,19 +345,19 @@
 
 .quote-card-comment-field {
   flex: 1;
-  border: 1px solid var(--border-color, #e5e7eb);
+  border: 1px solid var(--border-color);
   border-radius: 20px;
   padding: 8px 14px;
   font-size: 0.85rem;
   outline: none;
   font-family: inherit;
-  background: var(--bg-muted, #f9fafb);
+  background: var(--bg-muted);
   transition: border-color 0.15s;
 }
 
 .quote-card-comment-field:focus {
-  border-color: var(--color-primary, #2563eb);
-  background: #fff;
+  border-color: var(--color-primary);
+  background: var(--paper-light);
 }
 
 .quote-card-comment-send {
@@ -368,15 +368,15 @@
   height: 34px;
   border-radius: 50%;
   border: none;
-  background: var(--color-primary, #2563eb);
-  color: white;
+  background: var(--color-primary);
+  color: var(--paper-light);
   cursor: pointer;
   transition: background 0.15s, opacity 0.15s;
   flex-shrink: 0;
 }
 
 .quote-card-comment-send:hover:not(:disabled) {
-  background: #1d4ed8;
+  background: var(--ember-deep);
 }
 
 .quote-card-comment-send:disabled {
@@ -386,7 +386,7 @@
 
 .quote-card-no-comments {
   font-size: 0.82rem;
-  color: var(--text-muted, #9ca3af);
+  color: var(--text-muted);
   text-align: center;
   margin: 0;
   padding: 8px 0;
@@ -397,7 +397,7 @@
   flex-direction: column;
   gap: 4px;
   padding: 10px 12px;
-  background: var(--bg-muted, #f9fafb);
+  background: var(--bg-muted);
   border-radius: 10px;
 }
 
@@ -419,11 +419,11 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: var(--bg-muted, #e5e7eb);
+  background: var(--bg-muted);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-muted, #9ca3af);
+  color: var(--text-muted);
   font-size: 12px;
   flex-shrink: 0;
 }
@@ -431,7 +431,7 @@
 .quote-card-comment-username {
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--text-primary, #1a1a2e);
+  color: var(--text-primary);
   text-decoration: none;
 }
 
@@ -441,7 +441,7 @@
 
 .quote-card-comment-time {
   font-size: 0.72rem;
-  color: var(--text-muted, #9ca3af);
+  color: var(--text-muted);
   margin-left: auto;
 }
 
@@ -449,7 +449,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-muted, #9ca3af);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   padding: 2px;
@@ -459,12 +459,12 @@
 }
 
 .quote-card-comment-delete:hover {
-  color: #ef4444;
+  color: var(--danger);
 }
 
 .quote-card-comment-content {
   font-size: 0.85rem;
-  color: var(--text-primary, #1a1a2e);
+  color: var(--text-primary);
   margin: 0;
   padding-left: 30px;
   line-height: 1.5;
@@ -502,4 +502,63 @@
     gap: 6px;
   }
 }
-.quote-private-badge { display: inline-block; padding: 4px 9px; margin-bottom: 12px; border-radius: 12px; background: #edf2f7; color: #344054; font-size: .75rem; }
+.quote-private-badge { display: inline-block; padding: 4px 9px; margin-bottom: 12px; border-radius: 12px; background: var(--paper-deep); color: var(--ink-strong); font-size: .75rem; }
+
+/* =====================================================================
+   TASARIM KATMANI — alıntı kartı: dergi pull-quote'u
+   ===================================================================== */
+.quote-card {
+  position: relative;
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--ember);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  background-color: var(--paper-light);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-cinema);
+}
+
+.quote-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+}
+
+.quote-card-icon {
+  color: var(--ember);
+  opacity: 0.55;
+}
+
+.quote-card-text {
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--ink-strong);
+  text-wrap: pretty;
+}
+
+.quote-card-note {
+  border-left-color: var(--wine);
+  background: var(--paper);
+  font-family: var(--font-display);
+  color: var(--ink);
+}
+
+.quote-card-source {
+  border: 1px solid var(--rule);
+  background: var(--paper);
+}
+
+.quote-card-source:hover {
+  border-color: var(--rule-strong);
+  background: var(--wine-soft);
+}
+
+.quote-card-book-cover { box-shadow: var(--shadow-book); }
+
+.quote-card-book-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--wine);
+}
+
+.quote-card-footer { border-top-color: var(--rule); }

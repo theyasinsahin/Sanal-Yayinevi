@@ -1,19 +1,19 @@
 /* src/components/Quote/QuotePopup/QuotePopup.css */
 .quote-popup {
   position: fixed;
-  color: #f8fafc;
+  color: var(--paper);
   width: min(340px, calc(100vw - 24px));
   max-height: calc(100dvh - var(--navbar-height, 0px) - 16px);
   overflow-y: auto;
   z-index: 999;
-  background: #1a1a2e;
+  background: var(--ink-strong);
   border-radius: 10px;
   padding: 12px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.3);
   box-sizing: border-box;
   animation: popupFadeIn 0.15s ease;
 }
-.quote-selection-preview { margin: .75rem 0; padding: .5rem .75rem; border-left: 3px solid #93c5fd; background: rgba(255,255,255,.06); font-size: .85rem; line-height: 1.5; max-height: 6rem; overflow-y: auto; overflow-wrap: anywhere; }
+.quote-selection-preview { margin: .75rem 0; padding: .5rem .75rem; border-left: 3px solid var(--rule-strong); background: rgba(255,255,255,.06); font-size: .85rem; line-height: 1.5; max-height: 6rem; overflow-y: auto; overflow-wrap: anywhere; }
 @media (max-width: 768px) {
   .quote-popup { width: calc(100vw - 16px); border-radius: 16px; padding: 1rem; }
   .quote-popup-btn { min-height: 44px; }
@@ -38,7 +38,7 @@
 }
 
 .quote-spoiler-checkbox input {
-  accent-color: #f59e0b;
+  accent-color: var(--ember);
   width: 14px;
   height: 14px;
   cursor: pointer;
@@ -53,7 +53,7 @@
   transform: translateX(-50%);
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-top: 6px solid #1a1a2e;
+  border-top: 6px solid var(--ink-strong);
 }
 
 .quote-popup-actions {
@@ -64,7 +64,7 @@
 }
 
 .quote-popup p { font-size: .82rem; line-height: 1.5; }
-.quote-popup a { color: #93c5fd; }
+.quote-popup a { color: var(--wine); }
 .quote-popup-btn:disabled { cursor: default; opacity: .5; }
 
 .quote-popup-btn {
@@ -81,14 +81,14 @@
 }
 
 .quote-popup-btn.primary {
-  background: #2563eb;
-  color: white;
+  background: var(--ember);
+  color: var(--paper-light);
 }
-.quote-popup-btn.primary:hover { background: #1d4ed8; }
+.quote-popup-btn.primary:hover { background: var(--ember-deep); }
 
 .quote-popup-btn.ghost {
   background: rgba(255,255,255,0.1);
-  color: white;
+  color: var(--paper-light);
   padding: 6px;
 }
 .quote-popup-btn.ghost:hover { background: rgba(255,255,255,0.2); }
@@ -106,7 +106,7 @@
   background: rgba(255,255,255,0.08);
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: 6px;
-  color: white;
+  color: var(--paper-light);
   padding: 6px 8px;
   font-size: 0.78rem;
   resize: none;
@@ -115,13 +115,13 @@
 }
 
 .quote-note-input::placeholder { color: rgba(255,255,255,0.4); }
-.quote-note-input:focus { border-color: #2563eb; }
+.quote-note-input:focus { border-color: var(--wine); }
 
 .quote-popup-saved {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #4ade80;
+  color: var(--success);
   font-size: 0.82rem;
   font-weight: 600;
   padding: 4px 6px;
@@ -139,7 +139,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #f59e0b;
+  color: var(--ember-deep);
   font-size: 0.82rem;
   font-weight: 600;
 }
@@ -155,7 +155,24 @@
 
 .quote-popup-already-reposted {
   font-size: 0.78rem;
-  color: #4ade80;
+  color: var(--success);
   text-align: center;
   margin: 4px 0;
+}
+
+/* Tasarım katmanı: seçim penceresi bordo sinematik kart */
+.quote-popup {
+  background: var(--wine);
+  color: var(--on-wine);
+  border: 1px solid var(--on-wine-line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  animation-duration: var(--dur-base);
+}
+
+.quote-selection-preview {
+  border-left-color: var(--ember);
+  background: var(--on-wine-fill);
+  font-family: var(--font-display);
+  font-style: italic;
 }

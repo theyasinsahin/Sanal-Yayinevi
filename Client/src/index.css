@@ -40,6 +40,8 @@
   --wine-glow: rgba(120, 0, 56, 0.12);
   --wine-glow-soft: rgba(120, 0, 56, 0.08);
   --wine-scrim: rgba(85, 0, 42, 0.45); /* modal arka örtüsü */
+  --paper-glass: rgba(249, 245, 244, 0.86); /* buzlu cam çubuklar */
+  --shadow-panel: 12px 0 32px -28px rgba(85, 0, 42, 0.5);
   /* Kitap kapakları: gölge ve cilt kırığı ışığı */
   --shadow-book: 0 1px 1px rgba(58, 47, 47, 0.12), 0 14px 22px -14px rgba(85, 0, 42, 0.55);
   --shadow-book-lift: 0 2px 2px rgba(58, 47, 47, 0.1), 0 26px 36px -18px rgba(85, 0, 42, 0.6);
@@ -169,6 +171,38 @@
   --text-muted: var(--ink-soft);
   --text-subtle: var(--ink-faint);
   --text-heading: var(--wine);
+
+  /* Eski bileşenlerin yedek değerle kullandığı (hiç tanımlanmamış) adlar */
+  --bg-card: var(--paper-light);
+  --bg-hover: var(--wine-soft);
+  --bg-muted: var(--paper-deep);
+  --border-color: var(--rule);
+  --color-background-primary: var(--paper-light);
+  --color-background-secondary: var(--paper-deep);
+  --color-border-primary: var(--rule-strong);
+  --color-border-secondary: var(--rule);
+  --color-border-tertiary: var(--rule);
+  --color-primary: var(--wine);
+  --color-text-primary: var(--ink-strong);
+  --color-text-secondary: var(--ink-soft);
+  --text-primary: var(--ink-strong);
+  --text-secondary: var(--ink-soft);
+  --border-radius-lg: var(--radius-lg);
+  --border-radius-md: var(--radius-md);
+  --border-radius-xl: var(--radius-xl);
+  --bg-body: var(--paper);
+  --bg-input: var(--paper-light);
+  --paper-background: var(--paper);
+  --color-background-danger: var(--danger-soft);
+  --color-background-info: var(--wine-soft);
+  --color-text-danger: var(--danger);
+  --color-text-info: var(--wine);
+  --color-text-success: var(--success);
+  --color-text-tertiary: var(--ink-faint);
+  --color-warning: var(--warning);
+  --primary-color: var(--ember);
+  --text-default: var(--ink);
+  --font-main: var(--font-ui);
 
   --font-serif: var(--font-display);
   --font-sans: var(--font-ui);

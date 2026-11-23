@@ -5,13 +5,13 @@
   height: 100vh;
   height: var(--dashboard-measured-height, 100dvh);
   width: 100%;
-  background-color: #F9FAFB;
+  background-color: var(--paper);
   overflow: hidden;
 }
 .dashboard-sidebar {
   width: 300px;
-  background-color: white;
-  border-right: 1px solid #E5E7EB;
+  background-color: var(--paper-light);
+  border-right: 1px solid var(--rule);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -37,7 +37,7 @@
 .dashboard-sidebar .divider {
   flex-shrink: 0;
   height: 1px;
-  background-color: #E5E7EB;
+  background-color: var(--paper-deep);
   margin: 0 1rem;
 }
 .chapters-section {
@@ -49,8 +49,8 @@
 }
 .new-chapter-form {
   padding: 1rem;
-  background-color: #F9FAFB;
-  border-bottom: 1px solid #E5E7EB;
+  background-color: var(--paper);
+  border-bottom: 1px solid var(--rule);
   flex-shrink: 0;
 }
 .chapter-list-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 0.5rem; }
@@ -62,20 +62,20 @@
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.2s, color 0.2s;
-  color: #4B5563;
+  color: var(--ink);
   margin-bottom: 2px;
 }
 .chapter-row:hover { background-color: var(--bg-app); }
-.chapter-row.active { background-color: #EFF6FF; color: #2563EB; font-weight: 500; }
+.chapter-row.active { background-color: var(--wine-soft); color: var(--wine); font-weight: 500; }
 .chapter-row-content { display: flex; align-items: center; gap: 0.5rem; overflow: hidden; min-width: 0; }
-.folder-icon { color: #9CA3AF; flex-shrink: 0; }
-.chapter-row.active .folder-icon { color: #2563EB; }
+.folder-icon { color: var(--ink-soft); flex-shrink: 0; }
+.chapter-row.active .folder-icon { color: var(--wine); }
 .chapter-title-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.9rem; }
 .delete-btn {
   opacity: 0;
   background: none;
   border: none;
-  color: #EF4444;
+  color: var(--danger);
   cursor: pointer;
   transition: opacity 0.2s;
   padding: 0.3rem;
@@ -99,9 +99,9 @@
   gap: .5rem 1rem;
   flex-shrink: 0;
   padding: .65rem 1rem;
-  background: #eff6ff;
-  border-bottom: 1px solid #bfdbfe;
-  color: #1e3a8a;
+  background: var(--wine-soft);
+  border-bottom: 1px solid var(--rule);
+  color: var(--wine);
 }
 .dashboard-publish-summary { min-width: 0; }
 .dashboard-publish-bar strong { font-size: .875rem; }
@@ -111,8 +111,8 @@
 .dashboard-publish-mobile-status { display: none; }
 .editor-topbar {
   min-height: 56px;
-  background-color: white;
-  border-bottom: 1px solid #E5E7EB;
+  background-color: var(--paper-light);
+  border-bottom: 1px solid var(--rule);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -135,10 +135,10 @@
 .editor-save-status { min-width: 0; }
 .editor-topbar-actions { display: flex; gap: .5rem; align-items: center; justify-content: flex-end; flex-shrink: 0; }
 .editor-chapter-actions { position: relative; }
-.editor-chapter-actions > summary { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid #D1D5DB; border-radius: 6px; cursor: pointer; list-style: none; font: 700 1.5rem/1 var(--font-sans); }
+.editor-chapter-actions > summary { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--rule-strong); border-radius: 6px; cursor: pointer; list-style: none; font: 700 1.5rem/1 var(--font-sans); }
 .editor-chapter-actions > summary::-webkit-details-marker { display: none; }
-.editor-chapter-actions > summary:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
-.editor-chapter-actions-menu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 30; display: flex; flex-direction: column; gap: .5rem; width: 240px; max-width: calc(100vw - 32px); padding: .5rem; border: 1px solid #E5E7EB; border-radius: 8px; background: var(--bg-surface, #fff); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+.editor-chapter-actions > summary:focus-visible { outline: 2px solid var(--wine); outline-offset: 2px; }
+.editor-chapter-actions-menu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 30; display: flex; flex-direction: column; gap: .5rem; width: 240px; max-width: calc(100vw - 32px); padding: .5rem; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg-surface); box-shadow: var(--shadow-lg); }
 .editor-chapter-actions:not([open]) > .editor-chapter-actions-menu { display: none; }
 .editor-chapter-actions-menu .btn { width: 100%; min-height: 44px; text-transform: none; }
 .editor-save-status .ui-badge { white-space: normal; line-height: 1.4; }
@@ -163,8 +163,8 @@
 }
 .dashboard-main .ql-toolbar {
   border: none !important;
-  border-bottom: 1px solid #E5E7EB !important;
-  background-color: #fff;
+  border-bottom: 1px solid var(--rule) !important;
+  background-color: var(--paper-light);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -175,7 +175,7 @@
   flex: 1 1 auto;
   min-height: 260px;
   font-size: 1.1rem;
-  font-family: 'Merriweather', 'Georgia', serif;
+  font-family: var(--font-reading);
   line-height: 1.8;
 }
 .quill-wrapper .ql-snow .ql-picker.ql-header .ql-picker-label::before,
@@ -200,7 +200,7 @@
   min-height: 0;
   padding: 1.5rem;
   text-align: center;
-  color: #9CA3AF;
+  color: var(--ink-soft);
 }
 .dashboard-sidebar .status-management-panel { flex-shrink: 0; }
 
@@ -232,7 +232,7 @@
     inset: 0;
     border: 0;
     padding: 0;
-    background: rgba(15, 23, 42, 0.5);
+    background: var(--wine-scrim);
     z-index: 51;
     cursor: pointer;
   }
@@ -242,8 +242,8 @@
     justify-content: space-between;
     gap: 1rem;
     padding: 0.8rem 1rem;
-    background: #fff;
-    border-bottom: 1px solid #E5E7EB;
+    background: var(--paper-light);
+    border-bottom: 1px solid var(--rule);
     flex-shrink: 0;
   }
   .dashboard-mobile-icon-button {
@@ -253,7 +253,7 @@
     width: 40px;
     height: 40px;
     background: transparent;
-    border: 1px solid #D1D5DB;
+    border: 1px solid var(--rule-strong);
     border-radius: 6px;
     cursor: pointer;
   }
@@ -263,8 +263,8 @@
     gap: 0.75rem;
     min-height: 48px;
     padding: .25rem .75rem;
-    background: #fff;
-    border-bottom: 1px solid #E5E7EB;
+    background: var(--paper-light);
+    border-bottom: 1px solid var(--rule);
     flex-shrink: 0;
   }
   .dashboard-mobile-chapters-button,
@@ -275,10 +275,10 @@
     gap: 0.5rem;
     min-height: 40px;
     padding: .4rem .65rem;
-    border: 1px solid #D1D5DB;
+    border: 1px solid var(--rule-strong);
     border-radius: 6px;
-    color: #1F2937;
-    background: #fff;
+    color: var(--ink-strong);
+    background: var(--paper-light);
     font-weight: 600;
     cursor: pointer;
     flex-shrink: 0;
@@ -289,7 +289,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 0.9rem;
-    color: #6B7280;
+    color: var(--ink-soft);
   }
   .editor-topbar {
     min-height: 56px;
@@ -331,3 +331,71 @@
   .dashboard-sidebar { transition: none; }
 }
 .new-chapter-visibility { display: flex; align-items: center; gap: .5rem; margin-top: .75rem; font-size: .8rem; }
+
+/* Tasarım katmanı: yazı masası — editör bir kitap sayfası gibi */
+.dashboard-sidebar {
+  background-color: var(--paper-light);
+  border-right: 1px solid var(--rule-strong);
+}
+
+.book-cover-mini img { box-shadow: var(--shadow-book); }
+
+.chapter-row.active {
+  box-shadow: inset 3px 0 0 var(--ember);
+}
+
+.quill-wrapper {
+  background-color: var(--paper);
+}
+
+/* Sayfa: kağıt yüzey, ince gölge, ortalanmış okuma ölçüsü */
+.dashboard-main .quill {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  background: var(--paper-light);
+  box-shadow: var(--shadow-md);
+}
+
+.dashboard-main .ql-toolbar {
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  background-color: var(--paper-glass);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.dashboard-main .ql-container {
+  color: var(--ink-strong);
+  font-size: var(--reading-font-size, 1.1rem);
+  line-height: 1.85;
+}
+
+.dashboard-main .ql-editor {
+  padding: clamp(1.25rem, 4vw, 3rem) clamp(1.25rem, 5vw, 4rem);
+}
+
+.dashboard-main .ql-editor h1,
+.dashboard-main .ql-editor h2,
+.dashboard-main .ql-editor h3 {
+  font-family: var(--font-display);
+  color: var(--wine);
+}
+
+.dashboard-main .ql-editor.ql-blank::before {
+  font-family: var(--font-display);
+  color: var(--ink-faint);
+}
+
+.dashboard-main .ql-snow .ql-stroke { stroke: var(--wine); }
+.dashboard-main .ql-snow .ql-fill { fill: var(--wine); }
+.dashboard-main .ql-snow .ql-picker { color: var(--wine); }
+.dashboard-main .ql-snow button:hover .ql-stroke,
+.dashboard-main .ql-snow .ql-active .ql-stroke { stroke: var(--ember-deep); }
+.dashboard-main .ql-snow button:hover .ql-fill,
+.dashboard-main .ql-snow .ql-active .ql-fill { fill: var(--ember-deep); }
+
+.editor-topbar {
+  background: var(--paper-light);
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+.editor-chapter-actions-menu { box-shadow: var(--shadow-lg); }

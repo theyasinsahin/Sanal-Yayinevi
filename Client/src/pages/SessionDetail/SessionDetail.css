@@ -2,17 +2,17 @@
 
 /* --- TEMEL DEĞİŞKENLER & AYARLAR --- */
 :root {
-  --sd-bg-page: #f9fafb;
-  --sd-bg-card: #ffffff;
-  --sd-border: #e5e7eb;
-  --sd-text-main: #111827;
-  --sd-text-muted: #6b7280;
-  --sd-text-light: #9ca3af;
-  --sd-primary: #2563eb;
-  --sd-primary-hover: #1d4ed8;
-  --sd-danger: #ef4444;
-  --sd-danger-hover: #dc2626;
-  --sd-radius: 12px;
+  --sd-bg-page: var(--paper);
+  --sd-bg-card: var(--paper-light);
+  --sd-border: var(--rule-strong);
+  --sd-text-main: var(--ink-strong);
+  --sd-text-muted: var(--ink-soft);
+  --sd-text-light: var(--ink-soft);
+  --sd-primary: var(--wine);
+  --sd-primary-hover: var(--wine-deep);
+  --sd-danger: var(--danger);
+  --sd-danger-hover: var(--danger);
+  --sd-radius: var(--radius-lg);
   --sd-max-width: 800px; /* Okunabilirlik için ideal maksimum genişlik */
 }
 
@@ -76,7 +76,7 @@
 .session-detail-tag {
   font-size: 0.85rem;
   color: var(--sd-primary);
-  background: rgba(37, 99, 235, 0.1);
+  background: var(--wine-soft);
   padding: 4px 10px;
   border-radius: 6px;
   font-weight: 500;
@@ -175,7 +175,7 @@
 
 .entry-composer:focus-within {
   border-color: var(--sd-primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px var(--wine-soft);
 }
 
 .entry-composer-input {
@@ -213,8 +213,8 @@
 }
 
 .entry-composer-hint kbd {
-  background: #f3f4f6;
-  border: 1px solid #d1d5db;
+  background: var(--paper-deep);
+  border: 1px solid var(--rule-strong);
   border-bottom-width: 2px;
   border-radius: 4px;
   padding: 2px 6px;
@@ -300,7 +300,7 @@
 
 .entry-card-own-tag {
   background: var(--sd-primary);
-  color: white;
+  color: var(--paper-light);
   font-size: 0.7rem;
   padding: 2px 6px;
   border-radius: 4px;
@@ -332,7 +332,7 @@
 }
 
 .entry-card-menu-btn:hover {
-  background: #f3f4f6;
+  background: var(--paper-deep);
   color: var(--sd-text-main);
 }
 
@@ -340,7 +340,7 @@
   position: absolute;
   top: 100%;
   right: 0;
-  background: white;
+  background: var(--paper-light);
   border: 1px solid var(--sd-border);
   border-radius: 8px;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
@@ -366,14 +366,14 @@
 }
 
 .entry-card-menu-item--danger:hover {
-  background: #fef2f2;
+  background: var(--danger-soft);
 }
 
 /* Yazı İçeriği (Makale Görünümü) */
 .entry-card-content {
   font-size: 1.1rem;
   line-height: 1.8;
-  color: #374151; /* Daha yumuşak bir siyah, okuması kolay */
+  color: var(--ink); /* Daha yumuşak bir siyah, okuması kolay */
   white-space: pre-wrap; /* Paragraf boşluklarını korur */
   word-wrap: break-word;
   margin-bottom: 24px;
@@ -383,7 +383,7 @@
 .entry-card-footer {
   display: flex;
   align-items: center;
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid var(--rule);
   padding-top: 16px;
 }
 
@@ -403,7 +403,7 @@
 }
 
 .entry-card-like-btn:hover {
-  background: #fef2f2;
+  background: var(--danger-soft);
   color: var(--sd-danger);
 }
 
@@ -482,7 +482,7 @@
 /* --- YÜKLENİYOR & İSKELETLER (SKELETONS) --- */
 .entry-card-skeleton {
   height: 200px;
-  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background: linear-gradient(90deg, var(--paper-deep) 25%, var(--paper-deep) 50%, var(--paper-deep) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: var(--sd-radius);
@@ -492,7 +492,7 @@
 .session-detail-skeleton-header {
   height: 120px;
   max-width: 600px;
-  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background: linear-gradient(90deg, var(--paper-deep) 25%, var(--paper-deep) 50%, var(--paper-deep) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 8px;
@@ -525,10 +525,10 @@
 .session-closed-banner {
   margin-top: 40px;
   padding: 16px;
-  background: #f3f4f6;
+  background: var(--paper-deep);
   border-radius: 8px;
   text-align: center;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--rule);
 }
 
 /* --- RESPONSIVE TASARIM --- */
@@ -610,4 +610,77 @@
   .session-detail-title {
     font-size: 1.5rem;
   }
+}
+
+/* Tasarım katmanı: oturum bir dergi söyleşisi gibi */
+.session-detail {
+  padding-top: calc(var(--navbar-height) + 1.5rem);
+}
+
+.session-detail-back { color: var(--wine); font-weight: 600; }
+.session-detail-back:hover { color: var(--ember-deep); }
+
+.session-detail-cover { box-shadow: var(--shadow-lg); }
+
+.session-detail-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  color: var(--wine);
+}
+
+.session-detail-description {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--ink);
+}
+
+.session-detail-tag {
+  border-radius: var(--radius-full);
+  background: var(--wine-soft);
+  color: var(--wine);
+  font-weight: 600;
+}
+
+.session-detail-divider {
+  height: 4px;
+  border: 0;
+  border-top: 1px solid var(--wine);
+  border-bottom: 1px solid var(--rule);
+  background: none;
+}
+
+.entry-composer {
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-lg);
+  background: var(--paper-light);
+}
+
+.entry-composer:focus-within {
+  border-color: var(--ember-deep);
+  box-shadow: 0 0 0 4px var(--ember-focus);
+}
+
+.entry-composer-input { font-family: var(--font-reading); }
+
+.entry-card {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  background: var(--paper-light);
+  transition: box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-fast);
+}
+
+.entry-card:hover { border-color: var(--rule-strong); box-shadow: var(--shadow-md); }
+
+.entry-card--own { box-shadow: inset 3px 0 0 var(--ember); }
+
+.entry-card-name { color: var(--wine); }
+
+.entry-card-content {
+  font-family: var(--font-reading);
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: var(--ink-strong);
 }

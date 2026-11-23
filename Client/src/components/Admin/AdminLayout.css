@@ -49,12 +49,12 @@
 
 .admin-link:hover {
   background-color: #1F2937;
-  color: white;
+  color: var(--paper-light);
 }
 
 .admin-link.active {
   background-color: #2563EB;
-  color: white;
+  color: var(--paper-light);
 }
 
 .admin-link.logout:hover {
@@ -70,7 +70,7 @@
 
 .admin-header {
   height: 64px;
-  background-color: white;
+  background-color: var(--paper-light);
   border-bottom: 1px solid #E5E7EB;
   display: flex;
   align-items: center;

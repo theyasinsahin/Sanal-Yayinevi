@@ -32,7 +32,7 @@
 }
 
 .leaderboard-tab.active {
-  background: white;
+  background: var(--paper-light);
   color: var(--color-primary, #2563eb);
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);

@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { MainLayout } from '../../components/Layout/MainLayout';
+import { PageMasthead } from '../../components/UI/PageMasthead';
 import { Container } from '../../components/UI/Container';
 import { Typography } from '../../components/UI/Typography';
 import { Button } from '../../components/UI/Button';
@@ -96,7 +97,7 @@ export const CreateSessionModal = ({ onClose, onCreate, creating = false }) => {
 
         <div className="sessions-modal-header">
           <Typography variant="h5" weight="bold" id="create-session-title">Yeni Oturum Aç</Typography>
-          <button className="sessions-modal-close" disabled={creating} onClick={onClose}>✕</button>
+          <button type="button" className="sessions-modal-close" disabled={creating} onClick={onClose} aria-label="Kapat">✕</button>
         </div>
 
         <div className="sessions-modal-body">
@@ -283,13 +284,11 @@ const SessionsPage = () => {
       <div className="sessions-page">
         <Container maxWidth="4xl">
 
-          <div className="sessions-page-header">
-            <div>
-              <Typography variant="h3" weight="bold">Yazı Oturumları</Typography>
-              <Typography variant="body" color="muted">
-                Bir konuya katıl, düşüncelerini paylaş.
-              </Typography>
-            </div>
+          <PageMasthead
+            eyebrow="Oturumlar"
+            title={<>Yazı <em>oturumları</em></>}
+            description="Bir konuya katıl, düşüncelerini paylaş."
+          >
             {canCreate ? (
               <Button variant="primary" onClick={() => setShowModal(true)}>
                 + Oturum Aç
@@ -297,7 +296,7 @@ const SessionsPage = () => {
             ) : (
               <SessionAccessRequest key={user?.id || 'guest'} user={user} {...accessState} />
             )}
-          </div>
+          </PageMasthead>
 
           <div className="sessions-search-wrapper">
             <Input

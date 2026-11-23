@@ -12,15 +12,15 @@
 
 .page-header {
   margin-bottom: 2rem;
-  border-bottom: 1px solid #E5E7EB;
+  border-bottom: 1px solid var(--rule);
   padding-bottom: 1rem;
 }
 
 .create-book-card {
-  background: white;
+  background: var(--paper-light);
   border-radius: 16px;
   box-shadow: var(--shadow-md);
-  border: 1px solid #E5E7EB;
+  border: 1px solid var(--rule);
   overflow: hidden;
   padding: 2rem;
 }
@@ -36,16 +36,16 @@
 .create-book-errors {
   grid-column: 1 / -1;
   padding: 1rem 1.25rem;
-  border: 2px solid #dc2626;
+  border: 2px solid var(--danger);
   border-radius: 10px;
-  background: #fef2f2;
-  color: #991b1b;
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 .create-book-errors ul { margin: .5rem 0 0; padding-left: 1.25rem; }
 .create-book-errors button { border: 0; padding: .25rem 0; background: none; color: inherit; text-align: left; text-decoration: underline; cursor: pointer; font: inherit; }
 .create-book-page [data-field] { scroll-margin-top: calc(var(--navbar-height, 80px) + 24px); border-radius: 8px; }
 .create-book-page .create-field-error,
-.create-book-page .input-error-message { display: block; color: #b91c1c; font-weight: 600; margin: .5rem 0; }
+.create-book-page .input-error-message { display: block; color: var(--danger); font-weight: 600; margin: .5rem 0; }
 
 /* Sol Kolon (Görsel) */
 .form-left-col {
@@ -55,7 +55,7 @@
 
 .section-title {
   margin-bottom: 1rem;
-  color: #374151;
+  color: var(--ink);
   font-weight: 600;
 }
 
@@ -72,7 +72,7 @@
   aspect-ratio: 2 / 3;
   background-color: var(--bg-app);
   border-radius: var(--radius-md);
-  border: 2px dashed #D1D5DB;
+  border: 2px dashed var(--rule-strong);
   overflow: hidden;
   position: relative;
   
@@ -85,8 +85,8 @@
 }
 
 .cover-upload-wrapper:hover {
-  border-color: #2563EB; /* Hover olunca çerçeve mavi olsun */
-  background-color: #EFF6FF;
+  border-color: var(--wine); /* Hover olunca çerçeve mavi olsun */
+  background-color: var(--wine-soft);
 }
 
 /* --- KRİTİK KISIM: ImageUpload içindeki resim --- */
@@ -146,15 +146,15 @@
 
 .tag-remove-icon:hover {
   opacity: 1;
-  color: #DC2626;
+  color: var(--danger);
 }
 
 .error-banner {
-  background-color: #FEF2F2;
-  color: #991B1B;
+  background-color: var(--danger-soft);
+  color: var(--danger);
   padding: 1rem;
   border-radius: var(--radius-sm);
-  border: 1px solid #FECACA;
+  border: 1px solid var(--danger);
   font-size: 0.9rem;
 }
 
@@ -219,4 +219,34 @@
   .form-left-col {
     max-width: 200px;
   }
+}
+
+/* Tasarım katmanı: el yazması masası */
+.create-book-page {
+  padding-top: calc(var(--navbar-height) + clamp(1.5rem, 4vw, 3rem));
+}
+
+.create-book-card {
+  border-top: 3px solid var(--ember);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  background-color: var(--paper-light);
+  box-shadow: var(--shadow-md);
+}
+
+.create-book-page .section-title.typography {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--wine);
+}
+
+.cover-upload-wrapper {
+  border: 1.5px dashed var(--rule-strong);
+  background-color: var(--paper);
+  box-shadow: var(--shadow-inset);
+}
+
+.create-book-errors {
+  border-left: 4px solid var(--danger);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }

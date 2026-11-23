@@ -56,7 +56,7 @@
   position: fixed;
   left: 0;
   top: var(--navbar-height, 80px);
-  background-color: var(--paper-white);
+  background-color: var(--paper-var(--paper-light));
   border-right: 2px solid var(--fog);
   overflow-y: auto;
   z-index: 100;
@@ -178,7 +178,7 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  background-color: var(--paper-white);
+  background-color: var(--paper-var(--paper-light));
   margin-top: 2px;
 }
 
@@ -194,7 +194,7 @@
 }
 
 .chapter-checkbox.checked svg {
-  color: var(--paper-white);
+  color: var(--paper-var(--paper-light));
   font-size: 0.875rem;
 }
 
@@ -253,7 +253,7 @@
   justify-content: flex-end;
   flex-wrap: wrap;
   padding: .75rem 1.25rem;
-  background: var(--paper-white);
+  background: var(--paper-var(--paper-light));
   border-bottom: 1px solid var(--fog);
   transition: opacity 0.3s ease;
 }
@@ -265,7 +265,7 @@
 .control-btn {
   width: 44px;
   height: 44px;
-  background-color: var(--paper-white);
+  background-color: var(--paper-var(--paper-light));
   border: 2px solid var(--fog);
   border-radius: 50%;
   display: flex;
@@ -279,13 +279,13 @@
 .control-btn:hover {
   background-color: var(--ink-black);
   border-color: var(--ink-black);
-  color: var(--paper-white);
+  color: var(--paper-var(--paper-light));
   transform: scale(1.1);
 }
 
 .control-btn.active {
   background-color: var(--ink-black);
-  color: var(--paper-white);
+  color: var(--paper-var(--paper-light));
   border-color: var(--ink-black);
 }
 
@@ -435,7 +435,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background-color: var(--paper-white);
+  background-color: var(--paper-var(--paper-light));
   border: 2px solid var(--fog);
   border-radius: var(--radius-md);
   font-family: var(--font-sans);
@@ -448,7 +448,7 @@
 
 .chapter-nav-btn:hover:not(:disabled) {
   background-color: var(--ink-black);
-  color: var(--paper-white);
+  color: var(--paper-var(--paper-light));
   border-color: var(--ink-black);
   transform: translateY(-2px);
 }
@@ -499,10 +499,11 @@
   max-width: 750px;
   margin: 1.25rem auto 0;
   padding: 1rem 1.25rem;
-  border: 1px solid #b7c9bb;
-  border-radius: 12px;
-  background: #eef4ed;
-  color: #263e2d;
+  border: 1px solid var(--rule-strong);
+  border-left: 4px solid var(--ember);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  background: var(--paper-light);
+  color: var(--ink-strong);
   font-family: var(--font-sans);
   box-sizing: border-box;
 }
@@ -514,7 +515,7 @@
   border: 1px solid var(--fog);
   border-radius: 8px;
   color: var(--ink-black);
-  background: var(--paper-white);
+  background: var(--paper-var(--paper-light));
   font: 600 .85rem var(--font-sans);
   cursor: pointer;
 }
@@ -532,8 +533,8 @@
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  background: #1a1a2e;
-  color: white;
+  background: var(--ink-strong);
+  color: var(--paper-light);
   padding: 12px 24px;
   border-radius: 12px;
   display: flex;
@@ -551,8 +552,8 @@
 }
 
 .idle-warning-banner button {
-  background: #2563eb;
-  color: white;
+  background: var(--ember);
+  color: var(--paper-light);
   border: none;
   border-radius: 6px;
   padding: 6px 14px;
@@ -571,7 +572,7 @@
     overscroll-behavior: contain;
   }
   .book-reader .chapters-sidebar.is-open { visibility: visible; transform: translateX(0); }
-  .reader-sidebar-backdrop { display: block; position: fixed; inset: var(--navbar-height, 80px) 0 0; background: rgba(20, 25, 20, .45); z-index: 400; }
+  .reader-sidebar-backdrop { display: block; position: fixed; inset: var(--navbar-height, 80px) 0 0; background: var(--wine-scrim); z-index: 400; }
   .reader-sidebar-close { display: block; margin: .75rem 1.25rem 0 auto; }
   .book-reader .reading-area {
     margin-left: 0;
@@ -608,4 +609,308 @@
 
 .chapters-sidebar::-webkit-scrollbar-thumb:hover {
   background: var(--graphite);
+}
+
+/* =====================================================================
+   TASARIM KATMANI — "Sinematik edebi dergi" okuma deneyimi
+   Yerleşim kuralları yukarıda; bu bölüm yalnızca görünümü belirler.
+   ===================================================================== */
+
+.book-reader {
+  background: var(--paper);
+  font-family: var(--font-reading);
+}
+
+.book-reader::before { opacity: 0.05; }
+
+/* İlerleme: ince turuncu mürekkep çizgisi */
+.reading-progress-container { height: 3px; }
+
+.reading-progress-fill {
+  background-color: var(--ember);
+  box-shadow: 0 0 12px var(--ember-glow);
+}
+
+/* --- İçindekiler paneli --- */
+.chapters-sidebar {
+  background-color: var(--paper-light);
+  border-right: 1px solid var(--rule-strong);
+  box-shadow: var(--shadow-panel);
+}
+
+.sidebar-back-btn { color: var(--wine); }
+.sidebar-back-btn:hover { color: var(--ember-deep); }
+
+.sidebar-header {
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+.sidebar-header h3 {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--wine);
+}
+
+.book-progress {
+  font-family: var(--font-ui);
+  font-size: var(--fs-caption);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.progress-bar {
+  height: 4px;
+  background-color: var(--paper-deep);
+  border-radius: var(--radius-full);
+}
+
+.progress-fill {
+  background-color: var(--ember);
+  border-radius: var(--radius-full);
+  transition: width var(--dur-slow) var(--ease-cinema);
+}
+
+.chapter-item {
+  padding: 0.85rem 1.5rem;
+  border-left: 3px solid transparent;
+  transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+
+.chapter-item:hover { background-color: var(--paper); }
+
+.chapter-item.active {
+  background-color: var(--wine-soft);
+  border-left-color: var(--ember);
+}
+
+.chapter-item.completed { opacity: 0.65; }
+
+.chapter-checkbox {
+  border: 1.5px solid var(--rule-strong);
+  border-radius: 50%;
+  background-color: var(--paper-light);
+  transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+
+.chapter-checkbox:hover { border-color: var(--wine); }
+
+.chapter-checkbox.checked {
+  background-color: var(--ember);
+  border-color: var(--ember);
+}
+
+.chapter-checkbox.checked svg { color: var(--on-ember); }
+
+.chapter-number {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ember-deep);
+}
+
+.chapter-title {
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ink-strong);
+}
+
+.chapter-item.active .chapter-title {
+  font-weight: 600;
+  color: var(--wine);
+}
+
+/* --- Üst kontrol çubuğu --- */
+.reader-controls {
+  background: var(--paper-glass);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--rule);
+}
+
+.control-btn {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--rule-strong);
+  background-color: var(--paper-light);
+  color: var(--wine);
+  box-shadow: none;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), transform var(--dur-base) var(--ease-cinema);
+}
+
+.control-btn:hover {
+  background-color: var(--wine);
+  border-color: var(--wine);
+  color: var(--on-wine);
+  transform: translateY(-1px);
+}
+
+.control-btn.active {
+  background-color: var(--ember);
+  border-color: var(--ember);
+  color: var(--on-ember);
+}
+
+/* --- Kitap kapak sayfası: sinematik açılış --- */
+.title-page-section {
+  position: relative;
+  isolation: isolate;
+  animation: reader-title-in 1.4s var(--ease-cinema) both;
+}
+
+.title-page-section::before {
+  content: '';
+  position: absolute;
+  inset: 10% 0;
+  z-index: -1;
+  background: radial-gradient(ellipse 50% 45% at 50% 45%, var(--ember-glow-soft), transparent 70%);
+  pointer-events: none;
+}
+
+.title-page-ornament {
+  font-size: 2rem;
+  color: var(--ember);
+  opacity: 0.85;
+}
+
+.title-page-section h1 {
+  max-width: 16ch;
+  font-family: var(--font-display);
+  font-size: clamp(2.75rem, 7vw, 5rem);
+  font-weight: 600;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  color: var(--wine);
+  text-wrap: balance;
+}
+
+.title-page-author {
+  font-family: var(--font-display);
+  color: var(--ink-soft);
+}
+
+.title-page-author-name {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-style: italic;
+  font-weight: 500;
+  color: var(--ink-strong);
+}
+
+.title-page-genre {
+  border-top: 1px solid var(--wine);
+  border-bottom: 1px solid var(--wine);
+  font-family: var(--font-ui);
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  letter-spacing: var(--tracking-eyebrow);
+  color: var(--wine);
+}
+
+@keyframes reader-title-in {
+  from { opacity: 0; transform: translate3d(0, 24px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* --- Bölüm başlığı --- */
+.chapter-header {
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+.chapter-header h2 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  color: var(--wine);
+}
+
+.chapter-header::after {
+  content: '✦';
+  background-color: var(--paper);
+  color: var(--ember);
+  opacity: 1;
+  font-size: 1rem;
+}
+
+/* --- Metin: rahat okuma ölçüsü, mürekkep rengi --- */
+.chapter-content {
+  font-family: var(--font-reading);
+  color: var(--ink-strong);
+  font-optical-sizing: auto;
+  line-height: 1.85;
+  text-wrap: pretty;
+}
+
+.chapter-content p:first-of-type::first-letter {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--wine);
+}
+
+.chapter-content em { color: var(--ink-strong); }
+
+.chapter-content ::selection {
+  background: var(--ember-soft);
+  color: var(--wine-deep);
+}
+
+/* --- Bölüm geçişi --- */
+.chapter-navigation { border-top: 1px solid var(--rule-strong); }
+
+.chapter-nav-btn {
+  min-height: 46px;
+  border: 1px solid var(--wine);
+  border-radius: var(--radius-full);
+  background-color: transparent;
+  font-family: var(--font-ui);
+  color: var(--wine);
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), transform var(--dur-base) var(--ease-cinema);
+}
+
+.chapter-nav-btn:hover:not(:disabled) {
+  background-color: var(--wine);
+  border-color: var(--wine);
+  color: var(--on-wine);
+}
+
+.end-marker {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: 0.4rem;
+  color: var(--ember);
+}
+
+/* --- Bildirimler --- */
+.idle-warning-banner {
+  background: var(--wine);
+  color: var(--on-wine);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+}
+
+.idle-warning-banner button {
+  border-radius: var(--radius-full);
+  color: var(--on-ember);
+}
+
+.reader-chapters-toggle,
+.reader-quote-help-toggle,
+.reader-sidebar-close {
+  border-color: var(--rule-strong);
+  color: var(--wine);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .title-page-section { animation: none; }
 }

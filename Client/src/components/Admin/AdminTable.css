@@ -1,6 +1,6 @@
 .admin-table-container {
   overflow-x: auto;
-  background: white;
+  background: var(--paper-light);
   border-radius: var(--radius-md);
   border: 1px solid #E5E7EB;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);

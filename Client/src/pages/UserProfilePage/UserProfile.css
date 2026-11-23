@@ -376,7 +376,7 @@
 
 .draft-count-badge {
   background: var(--color-warning, #f59e0b);
-  color: white;
+  color: var(--paper-light);
   font-size: 0.62rem;
   font-weight: 700;
   padding: 1px 6px;

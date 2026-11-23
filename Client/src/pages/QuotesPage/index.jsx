@@ -3,6 +3,7 @@ import { useQuery, useLazyQuery } from '@apollo/client';
 import { FormatQuote, WhatshotOutlined, AccessTimeOutlined } from '@mui/icons-material';
 import { GET_QUOTES_FEED, SEARCH_QUOTES } from '../../graphql/queries/quote';
 import { MainLayout } from '../../components/Layout/MainLayout';
+import { PageMasthead } from '../../components/UI/PageMasthead';
 import { Container } from '../../components/UI/Container';
 import { Typography } from '../../components/UI/Typography';
 import QuoteCard from '../../components/Quote/QuoteCard';
@@ -114,17 +115,17 @@ const QuotesPage = () => {
       <div className="quotes-page">
         <Container maxWidth="3xl">
           {/* Header */}
+          <PageMasthead
+            eyebrow="Alıntılar"
+            title={<>Okurların <em>altını çizdikleri</em></>}
+            description="Okuyucuların kitaplardan derlediği en güzel alıntılar"
+          />
           <div className="quotes-page-header">
-            <div className="quotes-page-title">
-              <FormatQuote fontSize="large" />
-              <Typography variant="h3" weight="bold">Alıntılar</Typography>
-            </div>
-            <Typography variant="body" color="muted">
-              Okuyucuların kitaplardan derlediği en güzel alıntılar
-            </Typography>
-
             <div className="quotes-search-wrapper">
+              <FormatQuote className="quotes-search-icon" aria-hidden="true" />
               <input
+                type="search"
+                aria-label="Alıntı, kitap veya yazar ara"
                 className="quotes-search-input"
                 placeholder="Alıntı, kitap veya yazar ara..."
                 value={searchQuery}

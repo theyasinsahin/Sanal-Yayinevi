@@ -3,7 +3,7 @@ import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
 import { 
-  Add, Subject, Title
+  Subject, Title
 } from '@mui/icons-material';
 
 // --- DATA & GRAPHQL ---
@@ -11,6 +11,7 @@ import { CREATE_BOOK_MUTATION } from '../../graphql/mutations/book';
 
 // --- UI KIT IMPORTS ---
 import { MainLayout } from '../../components/Layout/MainLayout';
+import { PageMasthead } from '../../components/UI/PageMasthead';
 import { Container } from '../../components/UI/Container';
 import { Typography } from '../../components/UI/Typography';
 import { Button } from '../../components/UI/Button';
@@ -96,16 +97,11 @@ const CreateBookPage = () => {
       <div className="create-book-page">
         <Container maxWidth="4xl">
           
-          <div className="page-header">
-            <Typography variant="h4" weight="bold" className="flex items-center gap-2">
-              <Add fontSize="large" style={{ color: '#2563EB' }} /> 
-              Yeni Kitap Oluştur
-            </Typography>
-            <Typography variant="body" color="muted">
-              Kitabınızı taslak olarak kaydedin, bölümlerinizi yazın ve hazır olduğunuzda yayınlayın.
-            </Typography>
-          </div>
-
+          <PageMasthead
+            eyebrow="Yeni kitap"
+            title={<>Yeni bir <em>hikâye</em> başlat</>}
+            description="Kitabınızı taslak olarak kaydedin, bölümlerinizi yazın ve hazır olduğunuzda yayınlayın."
+          />
           <div className="create-book-card">
             <form ref={formRef} onSubmit={handleSubmit} className="book-form-grid" noValidate aria-busy={creating}>
               {Object.keys(errors).some(name => name !== 'submit' && errors[name]) && (

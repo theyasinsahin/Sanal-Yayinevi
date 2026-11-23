@@ -17,14 +17,14 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--color-primary, #2563eb);
+  color: var(--color-primary);
 }
 
 .quotes-sort-tabs {
   display: flex;
   gap: 8px;
   margin-top: 16px;
-  background: var(--bg-muted, #f3f4f6);
+  background: var(--bg-muted);
   padding: 4px;
   border-radius: 12px;
 }
@@ -40,18 +40,18 @@
   cursor: pointer;
   font-size: 0.88rem;
   font-weight: 500;
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted);
   transition: all 0.2s;
 }
 
 .sort-tab.active {
-  background: white;
-  color: var(--color-primary, #2563eb);
+  background: var(--paper-light);
+  color: var(--color-primary);
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-.sort-tab:hover:not(.active) { color: var(--text-primary, #1a1a2e); }
+.sort-tab:hover:not(.active) { color: var(--text-primary); }
 
 /* Tek Sütun Liste Yapısı (Masonry yerine) */
 .quotes-list {
@@ -73,7 +73,7 @@
   width: 100%;
   max-width: 680px;
   height: 200px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, var(--paper-deep) 25%, var(--paper) 50%, var(--paper-deep) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 16px;
@@ -112,15 +112,89 @@
 .quotes-search-input {
   width: 100%;
   padding: 10px 16px;
-  border: 1px solid var(--border-color, #e5e7eb);
+  border: 1px solid var(--border-color);
   border-radius: 999px;
   font-size: 0.9rem;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
-  background: var(--bg-card, #fff);
+  background: var(--bg-card);
 }
 
 .quotes-search-input:focus {
-  border-color: var(--color-primary, #2563eb);
-  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--wine-soft);
 }
+/* Tasarım katmanı: künye + hap arama + sekmeler */
+.quotes-page {
+  padding: calc(var(--navbar-height) + clamp(1.5rem, 4vw, 3rem)) 0 5rem;
+}
+
+.quotes-page-header {
+  align-items: stretch;
+  text-align: left;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.quotes-search-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.quotes-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 1.1rem;
+  transform: translateY(-50%);
+  color: var(--ember);
+  pointer-events: none;
+}
+
+.quotes-search-input {
+  width: 100%;
+  min-height: 54px;
+  padding: 0 1.25rem 0 3.25rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-full);
+  background: var(--paper-light);
+  color: var(--ink-strong);
+  font: inherit;
+  box-shadow: var(--shadow-md);
+  transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
+}
+
+.quotes-search-input:hover { border-color: var(--wine); }
+
+.quotes-search-input:focus {
+  outline: none;
+  border-color: var(--ember-deep);
+  box-shadow: var(--shadow-md), 0 0 0 4px var(--ember-focus);
+}
+
+.quotes-sort-tabs {
+  align-self: flex-start;
+  margin-top: 0;
+  padding: 0.3rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-full);
+  background: var(--paper-light);
+}
+
+.sort-tab {
+  min-height: 40px;
+  border-radius: var(--radius-full);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.sort-tab:hover { color: var(--wine); background: var(--wine-soft); }
+
+.sort-tab.active {
+  background: var(--wine);
+  color: var(--on-wine);
+  box-shadow: none;
+}
+
+.quotes-list { gap: 1.5rem; }

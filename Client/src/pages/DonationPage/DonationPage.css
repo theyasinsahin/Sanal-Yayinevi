@@ -37,7 +37,7 @@
 
 /* --- SOL KART (BİLGİ) --- */
 .donation-info-card {
-  background: white;
+  background: var(--paper-light);
   padding: 2rem;
   border-radius: 16px;
   border: 1px solid #E5E7EB;
@@ -89,7 +89,7 @@
 .amount-chip {
   flex: 1;
   padding: 0.5rem;
-  background-color: white;
+  background-color: var(--paper-light);
   border: 1px solid #D1D5DB;
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -130,7 +130,7 @@
 
 /* --- SAĞ KART (IYZICO) --- */
 .iyzico-wrapper {
-  background: white;
+  background: var(--paper-light);
   min-height: 500px;
   border-radius: 16px;
   border: 1px solid #E5E7EB;

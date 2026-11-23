@@ -130,7 +130,7 @@
 .notfound-stamp {
   display: inline-block;
   padding: 0.6rem 1.25rem;
-  background-color: var(--paper-white);
+  background-color: var(--paper-var(--paper-light));
   border: 3px double var(--ink-black);
   border-radius: 4px;
   font-family: var(--font-sans);

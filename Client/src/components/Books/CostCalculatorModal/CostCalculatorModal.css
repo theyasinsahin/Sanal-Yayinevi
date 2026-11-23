@@ -18,7 +18,7 @@
 
 /* --- MODAL KUTUSU --- */
 .modal-content {
-  background-color: white;
+  background-color: var(--paper-light);
   width: 90%;
   max-width: 500px; /* Çok geniş olmasın */
   padding: 2rem;
