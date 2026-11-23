@@ -131,11 +131,7 @@ const BookCard = ({ book: bookProp, bookId, skeleton, reason }) => {
             {title}
           </Typography>
 
-          {reason && (
-            <div style={{ marginBottom: '4px' }}>
-              <ReasonBadge reason={reason} />
-            </div>
-          )}
+          {reason && <div className="book-card-reason"><ReasonBadge reason={reason} /></div>}
 
           <div className="book-author">
             <Typography variant="caption" color="muted">Yazar:</Typography>

@@ -1,0 +1,81 @@
+/* PageMasthead — liste sayfalarının dergi künyesi */
+
+.page-masthead {
+  position: relative;
+  margin-bottom: clamp(1.75rem, 3vw, 2.5rem);
+  padding-bottom: 1.5rem;
+  animation: page-masthead-in var(--dur-cinema) var(--ease-cinema) both;
+}
+
+/* Alt çift çizgi */
+.page-masthead::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  border-top: 1px solid var(--wine);
+  border-bottom: 1px solid var(--rule);
+}
+
+.page-masthead__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+}
+
+.page-masthead__text { min-width: 0; max-width: 48rem; }
+
+.page-masthead__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--ember-deep);
+}
+
+.page-masthead__eyebrow::after {
+  content: '';
+  width: 2rem;
+  height: 1px;
+  background: currentColor;
+}
+
+.page-masthead__title {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 6vw, 4.75rem);
+  font-weight: 600;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  color: var(--wine);
+}
+
+.page-masthead__title em {
+  font-style: italic;
+  font-weight: 500;
+  color: var(--ember);
+}
+
+.page-masthead__description {
+  max-width: 52ch;
+  margin-top: 0.9rem;
+  font-family: var(--font-display);
+  font-size: var(--fs-lead);
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.page-masthead__aside { flex-shrink: 0; }
+
+@keyframes page-masthead-in {
+  from { opacity: 0; transform: translate3d(0, 16px, 0); }
+  to   { opacity: 1; transform: none; }
+}

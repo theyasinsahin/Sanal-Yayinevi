@@ -1,0 +1,15 @@
+.reason-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.reason-badge--ember   { background: var(--ember-soft); color: var(--ember-deep); border-color: var(--rule); }
+.reason-badge--wine    { background: var(--wine-soft);  color: var(--wine);       border-color: var(--rule); }
+.reason-badge--neutral { background: var(--paper-deep); color: var(--ink-strong); border-color: var(--rule); }

@@ -5,16 +5,18 @@
      BookCard.css'teki container query'ler sayesinde bu genişliklerde de
      sıkışmadan okunaklı kalıyor. */
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1.25rem;
+  gap: 1.75rem 1.25rem;
   width: 100%;
 }
 
 .book-grid-empty {
   text-align: center;
   padding: 3rem;
-  background-color: #F9FAFB;
-  border-radius: var(--radius-md);
-  border: 1px dashed #E5E7EB;
+  background-color: var(--paper-light);
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--rule-strong);
+  font-family: var(--font-display);
+  font-style: italic;
 }
 
 /* --- TABLET / KÜÇÜLEN SIDEBAR ALANI --- */

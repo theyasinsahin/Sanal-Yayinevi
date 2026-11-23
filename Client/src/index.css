@@ -39,6 +39,12 @@
   --ember-focus: rgba(230, 59, 17, 0.16);
   --wine-glow: rgba(120, 0, 56, 0.12);
   --wine-glow-soft: rgba(120, 0, 56, 0.08);
+  --wine-scrim: rgba(85, 0, 42, 0.45); /* modal arka örtüsü */
+  /* Kitap kapakları: gölge ve cilt kırığı ışığı */
+  --shadow-book: 0 1px 1px rgba(58, 47, 47, 0.12), 0 14px 22px -14px rgba(85, 0, 42, 0.55);
+  --shadow-book-lift: 0 2px 2px rgba(58, 47, 47, 0.1), 0 26px 36px -18px rgba(85, 0, 42, 0.6);
+  --shadow-book-feature: inset 6px 0 8px -4px rgba(0, 0, 0, 0.35), 0 2px 2px rgba(58, 47, 47, 0.12), 0 30px 44px -22px rgba(85, 0, 42, 0.6);
+  --book-sheen: linear-gradient(90deg, rgba(0, 0, 0, 0.3) 0, rgba(255, 255, 255, 0.18) 3%, transparent 7%), linear-gradient(120deg, rgba(255, 251, 251, 0.18) 0%, transparent 35%);
 
   /* === DURUM RENKLERİ (paletle uyumlu) === */
   --success: #2F6B4F;
@@ -301,6 +307,16 @@ code {
   white-space: nowrap;
   border: 0;
 }
+
+/* Küçük yardımcılar (birkaç sayfada kullanılıyor; önceden yalnızca
+   BookDetail.css içinde tanımlıydı ve o sayfa açılmadan çalışmıyordu) */
+.mb-4 { margin-bottom: 1rem; }
+.mt-2 { margin-top: 0.5rem; }
+.flex { display: flex; }
+.justify-end { justify-content: flex-end; }
+.no-underline { text-decoration: none; }
+.leading-relaxed { line-height: 1.8; }
+.capitalize { text-transform: capitalize; }
 
 /* Dergi etiketi: "01 / NASIL ÇALIŞIR" */
 .eyebrow {

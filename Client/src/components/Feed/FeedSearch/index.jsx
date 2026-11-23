@@ -13,7 +13,7 @@ const FeedSearch = () => {
   };
 
   return (
-    <div style={{ marginBottom: '2rem' }}>
+    <div className="feed-search">
       <Input
         name="search"
         type="search"

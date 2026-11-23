@@ -10,7 +10,7 @@
   scroll-snap-type: x mandatory;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE */
-  padding: 8px 4px 16px;
+  padding: 8px 4px 20px;
 }
 
 .carousel-track::-webkit-scrollbar {
@@ -31,26 +31,30 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 1px solid var(--border-color, #e2e8f0);
-  background: var(--bg-surface, #ffffff);
-  color: var(--text-default, #1a202c);
+  border: 1px solid var(--rule-strong);
+  background: var(--paper-light);
+  color: var(--wine);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: box-shadow 0.2s;
+  box-shadow: var(--shadow-md);
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
 }
 
 .carousel-btn:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  background: var(--wine);
+  color: var(--on-wine);
+  box-shadow: var(--shadow-lg);
 }
 
 .carousel-btn.prev { left: -20px; }
 .carousel-btn.next { right: -20px; }
 
 .carousel-empty {
-  color: var(--text-muted, #718096);
+  color: var(--ink-soft);
+  font-family: var(--font-display);
+  font-style: italic;
   padding: 2rem 0;
   text-align: center;
 }

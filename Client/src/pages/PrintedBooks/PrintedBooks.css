@@ -1,46 +1,264 @@
-.printed-page { padding: calc(var(--navbar-height) + 2.5rem) 0 4rem; min-height: 70vh; }
-.printed-heading { max-width: 760px; margin-bottom: 2.5rem; }
-.printed-heading h1 { margin: .75rem 0 1.25rem; font-size: clamp(2rem, 5vw, 3.25rem); line-height: 1.3; }
-.printed-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-top: 1.25rem; }
-.printed-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 140px), 1fr)); gap: 1.5rem; }
+/* PrintedBooks — "Basılı Kitaplar" rafı */
+
+.printed-page {
+  position: relative;
+  min-height: 70vh;
+  padding: calc(var(--navbar-height) + clamp(1.5rem, 4vw, 3rem)) 0 4rem;
+  isolation: isolate;
+}
+
+.printed-page::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 520px;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse 55% 70% at 90% 10%, var(--wine-glow-soft), transparent 70%);
+  /* Işık aşağıya doğru söner: sert kenar oluşmaz */
+  -webkit-mask-image: linear-gradient(to bottom, black 45%, transparent);
+  mask-image: linear-gradient(to bottom, black 45%, transparent);
+}
+
+/* Künye: dergi kapağı başlığı */
+.printed-heading {
+  position: relative;
+  max-width: none;
+  margin-bottom: 2.25rem;
+  padding-bottom: 1.5rem;
+  animation: page-masthead-in var(--dur-cinema) var(--ease-cinema) both;
+}
+
+.printed-heading::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  border-top: 1px solid var(--wine);
+  border-bottom: 1px solid var(--rule);
+}
+
+.printed-heading .typography.caption {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  letter-spacing: var(--tracking-eyebrow);
+  color: var(--ember-deep);
+}
+
+.printed-heading .typography.caption::after {
+  content: '';
+  width: 2rem;
+  height: 1px;
+  background: currentColor;
+}
+
+.printed-heading h1.typography {
+  margin: 0.75rem 0 1rem;
+  font-size: clamp(2.5rem, 6vw, 4.75rem);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+}
+
+.printed-heading .typography.body {
+  max-width: 56ch;
+  font-family: var(--font-display);
+  font-size: var(--fs-lead);
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.printed-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.printed-actions > a.btn { text-decoration: none; }
+
+/* === ARAMA VE FİLTRE === */
+.printed-isbn-row,
+.printed-search {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.printed-isbn-row .input-wrapper,
+.printed-search .input-wrapper { flex: 1; min-width: 0; }
+
+.printed-isbn-row > .btn,
+.printed-search > .btn { flex-shrink: 0; margin-bottom: 1.25rem; }
+
+.printed-search .form-input {
+  min-height: 54px;
+  border-radius: var(--radius-full);
+  padding-inline: 1.25rem;
+  box-shadow: var(--shadow-md);
+}
+
+.printed-count {
+  margin-bottom: 1.25rem;
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+/* === RAF IZGARASI === */
+.printed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
+  gap: 2rem 1.5rem;
+}
+
 .printed-catalog { min-width: 0; }
-.printed-catalog--paginated { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; gap: 1rem; align-items: start; }
-.printed-catalog-viewport { min-width: 0; opacity: 1; transition: opacity 180ms ease; }
-.printed-catalog-viewport.is-loading { opacity: .55; }
-.printed-grid--transition { animation: printed-page-enter 280ms ease-out both; }
+
+.printed-catalog--paginated {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  gap: 1rem;
+  align-items: start;
+}
+
+.printed-catalog-viewport {
+  min-width: 0;
+  opacity: 1;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+.printed-catalog-viewport.is-loading { opacity: 0.55; }
+
+.printed-grid--transition { animation: printed-page-enter var(--dur-slow) var(--ease-cinema) both; }
 .printed-grid-spacer { aspect-ratio: 2 / 3; visibility: hidden; }
-.printed-page-arrow { position: sticky; top: calc(50vh - 22px); display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: var(--border-medium); border-radius: 50%; background: var(--bg-surface); color: var(--text-main); box-shadow: var(--shadow-paper); cursor: pointer; transition: background 180ms ease, box-shadow 180ms ease, transform 180ms ease, opacity 180ms ease; }
+
+.printed-page-arrow {
+  position: sticky;
+  top: calc(50vh - 24px);
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 1px solid var(--rule-strong);
+  border-radius: 50%;
+  background: var(--paper-light);
+  color: var(--wine);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), transform var(--dur-base) var(--ease-cinema), opacity var(--dur-fast);
+}
+
 .printed-page-arrow svg { width: 24px; height: 24px; }
-.printed-page-arrow:hover:not(:disabled) { background: var(--aged-paper); box-shadow: var(--shadow-lg); transform: scale(1.08); }
-.printed-page-arrow:active:not(:disabled) { transform: scale(.96); }
-.printed-page-arrow:focus-visible { outline: 2px solid var(--text-main); outline-offset: 4px; }
-.printed-page-arrow:disabled { opacity: .3; cursor: default; }
-.printed-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
-@keyframes printed-page-enter { from { opacity: 0; transform: translateX(var(--printed-enter-x, 18px)); } to { opacity: 1; transform: translateX(0); } }
-.printed-panel { padding: 2rem; background: var(--bg-surface); border: var(--border-medium); border-radius: var(--radius-md); box-shadow: var(--shadow-paper); margin: 1.5rem 0; min-width: 0; }
-.printed-panel h2 { margin-bottom: 1rem; font-size: 1.5rem; }
-.printed-panel h3 { margin-bottom: .75rem; }
-.printed-panel .ui-notice, .printed-page > .ui-notice { margin-bottom: 1.5rem; }
-.printed-panel summary { cursor: pointer; font-weight: 600; }
-.printed-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1.25rem; }
-.printed-isbn-row, .printed-search { display: flex; gap: 1rem; align-items: flex-end; }
-.printed-isbn-row .input-wrapper, .printed-search .input-wrapper { flex: 1; min-width: 0; }
-.printed-isbn-row > .btn, .printed-search > .btn { margin-bottom: 1.5rem; flex-shrink: 0; }
-.printed-count { font-family: var(--font-sans); color: var(--text-muted); margin-bottom: 1rem; }
+
+.printed-page-arrow:hover:not(:disabled) {
+  background: var(--wine);
+  color: var(--on-wine);
+  transform: scale(1.08);
+}
+
+.printed-page-arrow:active:not(:disabled) { transform: scale(0.96); }
+.printed-page-arrow:focus-visible { outline: 2px solid var(--ember-deep); outline-offset: 4px; }
+.printed-page-arrow:disabled { opacity: 0.3; cursor: default; }
+
+.printed-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes printed-page-enter {
+  from { opacity: 0; transform: translateX(var(--printed-enter-x, 18px)); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* === PANELLER (filtre, katkılar, yorum, alıntı) === */
+.printed-panel {
+  min-width: 0;
+  margin: 1.5rem 0;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  background: var(--paper-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.printed-panel h2 {
+  margin-bottom: 1rem;
+  font-size: var(--fs-h3);
+}
+
+.printed-panel h3 { margin-bottom: 0.75rem; }
+
+.printed-panel .ui-notice,
+.printed-page > .ui-notice { margin-bottom: 1.5rem; }
+
+.printed-panel summary {
+  font-weight: 600;
+  color: var(--wine);
+  cursor: pointer;
+}
+
+.printed-panel summary:hover { color: var(--ember-deep); }
+
+.printed-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 1.25rem;
+}
+
 .printed-submissions { list-style: none; margin-top: 1rem; }
-.printed-submissions li { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; padding: .75rem 0; border-bottom: var(--border-light); }
-.printed-submissions li p { flex-basis: 100%; color: var(--text-muted); }
-.printed-empty { text-align: center; }
-@media (max-width: 400px) { .printed-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; } }
-@media (max-width: 640px) { .printed-panel { padding: 1.25rem; } .printed-form-grid { grid-template-columns: 1fr; } .printed-isbn-row, .printed-search { flex-direction: column; align-items: stretch; gap: 0; } .printed-actions > .btn { white-space: normal; } }
+
+.printed-submissions li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.printed-submissions li p { flex-basis: 100%; color: var(--ink-soft); }
+
+.printed-empty {
+  text-align: center;
+  border-style: dashed;
+}
+
+.printed-empty p {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 400px) {
+  .printed-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem 1rem; }
+}
+
 @media (max-width: 640px) {
-  .printed-catalog--paginated { grid-template-columns: 36px minmax(0, 1fr) 36px; gap: .375rem; }
-  .printed-catalog--paginated .printed-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  .printed-form-grid { grid-template-columns: minmax(0, 1fr); }
+  .printed-isbn-row, .printed-search { flex-direction: column; align-items: stretch; gap: 0; }
+  .printed-actions > .btn { white-space: normal; }
+  .printed-catalog--paginated { grid-template-columns: 36px minmax(0, 1fr) 36px; gap: 0.375rem; }
+  .printed-catalog--paginated .printed-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem 1rem; }
   .printed-page-arrow { width: 36px; height: 44px; border-radius: 18px; }
   .printed-page-arrow svg { width: 22px; height: 22px; }
 }
+
 @media (prefers-reduced-motion: reduce) {
   .printed-grid--transition { animation: none; }
-  .printed-catalog-viewport, .printed-page-arrow { transition: none; }
-  .printed-page-arrow:hover:not(:disabled), .printed-page-arrow:active:not(:disabled) { transform: none; }
+  .printed-page-arrow:hover:not(:disabled),
+  .printed-page-arrow:active:not(:disabled) { transform: none; }
 }

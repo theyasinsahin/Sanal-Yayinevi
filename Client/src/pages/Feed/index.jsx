@@ -19,6 +19,7 @@ import { MainLayout } from '../../components/Layout/MainLayout';
 import { Container } from '../../components/UI/Container';
 import { Typography } from '../../components/UI/Typography';
 import { Button } from '../../components/UI/Button';
+import { PageMasthead } from '../../components/UI/PageMasthead';
 
 import { useUserPreference, useRecommendations } from '../../hooks/useRecommendations';
 
@@ -51,7 +52,7 @@ const FeedOnboarding = ({ onComplete }) => {
   return (
     <div className="feed-onboarding">
       <Typography variant="h5" weight="bold">Hangi türleri seviyorsun?</Typography>
-      <Typography variant="body" color="muted" style={{ marginTop: '0.5rem' }}>
+      <Typography variant="body" color="muted">
         En az bir tür seç, sana özel kitap önerileri hazırlayalım.
       </Typography>
 
@@ -129,20 +130,38 @@ const FeedPage = () => {
   const { recommendations, loading: recLoading, loadMore } = useRecommendations(10, 0, activeTab === 'for-you' && onboardingCompleted, { fetchPolicy: 'cache-first' });
   const recommendedBooks = recommendations.map(r => r.book);
 
+  // Telefonda filtreler kapalı başlar; kitaplar ekrana daha önce gelir
+  const [filtersOpenInitially] = useState(() => !window.matchMedia?.('(max-width: 768px)').matches);
+  const filtersPanel = (
+    <details className="feed-filters-disclosure" open={filtersOpenInitially}>
+      <summary>Filtreler ve sıralama</summary>
+      <FeedFilters />
+    </details>
+  );
+
+  const masthead = (
+    <PageMasthead
+      eyebrow="Betik kataloğu"
+      title={<>Kitaplığı <em>keşfet</em></>}
+      description="Yazarların kaleminden okurların rafına: türlere göre süzün, destek bekleyen kitapları bulun."
+    />
+  );
+
   // Loading
   if (booksLoading && activeTab === 'all') {
     return (
       <MainLayout>
         <div className="feed-page-wrapper">
           <Container maxWidth="7xl">
+            {masthead}
             <div className="feed-layout-grid">
               <aside className="feed-sidebar">
                 <FeedSearch />
-                <FeedFilters />
+                {filtersPanel}
               </aside>
               <main className="feed-main-content">
                 <div className="feed-header">
-                  <Typography variant="h4" weight="bold">{catalogTitle}</Typography>
+                  <Typography variant="h4" tag="h2" weight="bold">{catalogTitle}</Typography>
                   <Typography variant="body" color="muted">Yükleniyor...</Typography>
                 </div>
                 <BookGrid loading={true} skeletonCount={9} />
@@ -160,22 +179,21 @@ const FeedPage = () => {
       <MainLayout>
         <div className="feed-page-wrapper">
           <Container maxWidth="7xl">
+            {masthead}
             <div className="feed-layout-grid">
               <aside className="feed-sidebar">
                 <FeedSearch />
-                <FeedFilters />
+                {filtersPanel}
               </aside>
               <main className="feed-main-content">
-                <div style={{ textAlign: 'center', padding: '4rem 1rem' }}>
-                  <Typography variant="h4" weight="bold">Kitaplar yüklenemedi</Typography>
-                  <Typography variant="body" color="muted" style={{ marginTop: '0.5rem' }}>
+                <div className="feed-error">
+                  <Typography variant="h4" tag="h2" weight="bold">Kitaplar yüklenemedi</Typography>
+                  <Typography variant="body" color="muted">
                     Geçici bir sorun olabilir. Lütfen biraz sonra tekrar deneyin.
                   </Typography>
-                  <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+                  <div className="feed-error-actions">
                     <Button variant="primary" onClick={() => refetch()}>Yenile</Button>
-                    <Link to="/" style={{ textDecoration: 'none' }}>
-                      <Button variant="outline">Ana Sayfaya Dön</Button>
-                    </Link>
+                    <Link to="/" className="btn btn-outline btn-medium">Ana Sayfaya Dön</Link>
                   </div>
                 </div>
               </main>
@@ -201,12 +219,13 @@ const FeedPage = () => {
     <MainLayout>
       <div className="feed-page-wrapper">
         <Container maxWidth="7xl">
+          {masthead}
           <div className="feed-layout-grid">
 
             {/* SIDEBAR */}
             <aside className="feed-sidebar">
               <FeedSearch />
-              <FeedFilters />
+              {filtersPanel}
               {!preferenceLoading && (
                 <PreferenceBox
                   preference={preference}
@@ -241,7 +260,7 @@ const FeedPage = () => {
               {activeTab === 'all' && (
                 <>
                   <div className="feed-header">
-                    <Typography variant="h4" weight="bold">{catalogTitle}</Typography>
+                    <Typography variant="h4" tag="h2" weight="bold">{catalogTitle}</Typography>
                     <Typography variant="body" color="muted">
                       {filteredBooks.length} kitap listeleniyor
                     </Typography>
@@ -260,7 +279,7 @@ const FeedPage = () => {
                     </div>
                   )}
                   {moreError && <p className="ui-notice" role="alert">Kitaplar yüklenemedi. Yeniden deneyebilirsiniz.</p>}
-                  {hasNextPage && <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+                  {hasNextPage && <div className="feed-more">
                     <Button variant="outline" disabled={loadingMore} onClick={loadMoreBooks}>
                       {loadingMore ? 'Yükleniyor...' : 'Daha fazla göster'}
                     </Button>
@@ -284,7 +303,7 @@ const FeedPage = () => {
                   ) : (
                     <>
                       <div className="feed-header">
-                        <Typography variant="h4" weight="bold">Senin için</Typography>
+                        <Typography variant="h4" tag="h2" weight="bold">Senin için</Typography>
                         <Typography variant="body" color="muted">
                           Tercihlerine göre seçildi
                         </Typography>
@@ -298,7 +317,7 @@ const FeedPage = () => {
                       />
 
                       {!recLoading && recommendedBooks.length > 0 && (
-                        <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'center' }}>
+                        <div className="feed-more">
                           <Button variant="outline" onClick={loadMore}>
                             Daha fazla göster
                           </Button>
@@ -308,7 +327,7 @@ const FeedPage = () => {
                       {!recLoading && recommendedBooks.length === 0 && (
                         <div className="no-results-box">
                           <Typography variant="h6" color="muted">Henüz öneri yok</Typography>
-                          <Typography variant="body" color="muted" style={{ marginTop: '0.5rem' }}>
+                          <Typography variant="body" color="muted">
                             Birkaç kitap beğen veya kaydet, sana özel öneriler hazırlayalım.
                           </Typography>
                         </div>

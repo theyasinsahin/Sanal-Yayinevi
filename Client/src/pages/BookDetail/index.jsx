@@ -44,6 +44,8 @@ import BookFundingPanel from '../../components/PrintFunding/BookFundingPanel';
 import PrintedBookDetail from '../../components/Books/PrintedBookDetail';
 import BookShareButton from '../../components/Books/BookShareButton';
 
+import { Book3D } from '../../components/UI/Book3D';
+import { getOptimizedImage } from '../../utils/ImageUtils';
 import './BookDetail.css';
 import { useRegistration, useRestoredRegistration } from '../../hooks/useRegistration';
 
@@ -64,7 +66,6 @@ const BookDetailPage = ({ resolvedId } = {}) => {
   const [optimisticLiked, setOptimisticLiked] = useState(null);
   const [optimisticSaved, setOptimisticSaved] = useState(null);
   const [optimisticLikeCount, setOptimisticLikeCount] = useState(null);
-  const [imgLoaded, setImgLoaded] = useState(false);
 
   useEffect(() => {
     setOptimisticLiked(null);
@@ -319,26 +320,14 @@ const BookDetailPage = ({ resolvedId } = {}) => {
             
             <aside className="left-panel">
               <div className="cover-wrapper">
-                <img 
-                  src={book.imageUrl} 
-                  alt={book.title} 
-                  className="book-cover-lg"
-                  style={{ display: imgLoaded ? 'block' : 'none' }}
-                  onLoad={() => setImgLoaded(true)}
-                  onError={(e) => { 
-                    e.target.src = 'https://via.placeholder.com/300x450?text=Resim+Yok';
-                    setImgLoaded(true);
-                  }}
+                <Book3D
+                  src={book.imageUrl ? getOptimizedImage(book.imageUrl, 480, 720) : ''}
+                  alt={book.title}
+                  size="lg"
+                  angle={-20}
+                  loading="eager"
+                  className="book-cover-3d"
                 />
-                {!imgLoaded && (
-                  <div style={{
-                    width: '100%',
-                    aspectRatio: '2/3',
-                    background: 'var(--skeleton-base)',
-                    borderRadius: 12,
-                    animation: 'shimmer 1.5s ease-in-out infinite'
-                  }} />
-                )}
               </div>
 
               <div className="meta-info-card">
@@ -364,7 +353,7 @@ const BookDetailPage = ({ resolvedId } = {}) => {
             <main className="right-panel">
               
               <div className="book-header">
-                <Typography variant="h2" weight="bold" className="book-title-lg">
+                <Typography variant="h1" weight="bold" className="book-title-lg">
                   {book.title}
                 </Typography>
                 <div className="author-link-wrapper">
@@ -378,31 +367,35 @@ const BookDetailPage = ({ resolvedId } = {}) => {
 
               <div className="action-toolbar">
                 <div className="primary-actions">
-                  <Link to={readerPath(book)} className="no-underline">
-                    <Button variant="primary" size="large" icon={<MenuBook />}>
-                      Kitabı Oku
-                    </Button>
+                  <Link to={readerPath(book)} className="btn btn-primary btn-large">
+                    <MenuBook aria-hidden="true" /> Kitabı Oku
                   </Link>
-                  <Link to={`/donate/${book.id}`} className="no-underline">
-                    <Button variant="success" size="large" icon={<CardGiftcard />}>
-                      Destek Ol
-                    </Button>
+                  <Link to={`/donate/${book.id}`} className="btn btn-outline btn-large">
+                    <CardGiftcard aria-hidden="true" /> Destek Ol
                   </Link>
                 </div>
 
                 <div className="secondary-actions">
-                   <Button 
-                     variant="ghost" 
+                   <button
+                     type="button"
                      id="book-like" onClick={handleLike}
-                     className={isLiked ? 'text-pink-600' : ''}
-                     icon={isLiked ? <Favorite /> : <FavoriteBorder />}
-                   />
-                   <Button 
-                     variant="ghost" 
+                     className={`book-icon-action${isLiked ? ' is-active' : ''}`}
+                     aria-label={isLiked ? 'Beğeniyi kaldır' : 'Beğen'}
+                     aria-pressed={isLiked}
+                     title={isLiked ? 'Beğeniyi kaldır' : 'Beğen'}
+                   >
+                     {isLiked ? <Favorite aria-hidden="true" /> : <FavoriteBorder aria-hidden="true" />}
+                   </button>
+                   <button
+                     type="button"
                      id="book-save" onClick={handleSave}
-                     className={isSaved ? 'text-blue-600' : ''}
-                     icon={isSaved ? <Bookmark /> : <BookmarkBorder />}
-                   />
+                     className={`book-icon-action${isSaved ? ' is-active' : ''}`}
+                     aria-label={isSaved ? 'Kayıtlılardan çıkar' : 'Kitaplığıma kaydet'}
+                     aria-pressed={isSaved}
+                     title={isSaved ? 'Kayıtlılardan çıkar' : 'Kitaplığıma kaydet'}
+                   >
+                     {isSaved ? <Bookmark aria-hidden="true" /> : <BookmarkBorder aria-hidden="true" />}
+                   </button>
                    {book.status !== 'DRAFT' && <BookShareButton book={book} variant="ghost" />}
                 </div>
               </div>
@@ -413,17 +406,15 @@ const BookDetailPage = ({ resolvedId } = {}) => {
                 </div>
                 <div className="book-publication-buttons">
                   <Button variant="danger" size="small" onClick={() => handlePublicationStatus('DRAFT')} disabled={deleting} isLoading={publishing}>Taslağa Çek</Button>
-                  {isCompleted ? <Link to={`/print/${book.id}`} className="no-underline"><Button variant="primary" size="small" disabled={deleting || publishing}>Destek Fonu İçin Başvur / Başvurumu Gör</Button></Link>
+                  {isCompleted ? <Link to={`/print/${book.id}`} className={`btn btn-primary btn-small${deleting || publishing ? ' is-disabled' : ''}`} aria-disabled={deleting || publishing || undefined}>Destek Fonu İçin Başvur / Başvurumu Gör</Link>
                     : <Button variant="primary" size="small" onClick={() => handlePublicationStatus('COMPLETED')} disabled={deleting || !hasContent} isLoading={publishing}>Yazımı Tamamla</Button>}
                 </div>
               </section>}
               {(isAuthor || isAdmin) && (
                 <div className="admin-actions">
                    {isAuthor && (
-                     <Link to={`/dashboard/${book.id}`} className="no-underline">
-                       <Button variant="outline" size="small" icon={<Edit fontSize="small"/>}>
-                         Yazmaya Devam Et
-                       </Button>
+                     <Link to={`/dashboard/${book.id}`} className="btn btn-outline btn-small">
+                       <Edit fontSize="small" aria-hidden="true" /> Yazmaya Devam Et
                      </Link>
                    )}
                    {isAuthor && (book.digitalStatus || (book.status === 'DRAFT' ? 'DRAFT' : 'PUBLISHED')) === 'DRAFT' && (
@@ -446,8 +437,8 @@ const BookDetailPage = ({ resolvedId } = {}) => {
               )}
 
               <div className="description-box">
-                <Typography variant="h5" weight="bold" className="mb-4">Hikaye Özeti</Typography>
-                <Typography variant="body" className="leading-relaxed">
+                <Typography variant="h5" tag="h2" weight="bold" className="detail-section-title">Hikaye Özeti</Typography>
+                <Typography variant="body" className="book-description-text">
                   {book.description}
                 </Typography>
               </div>
@@ -456,7 +447,7 @@ const BookDetailPage = ({ resolvedId } = {}) => {
               <BookFundingPanel bookId={book.id} />
 
               <div className="comments-wrapper" id="comments">
-                <Typography variant="h5" weight="bold" className="mb-4">
+                <Typography variant="h5" tag="h2" weight="bold" className="detail-section-title">
                   Yorumlar (<CompactNumber value={rawComments.length} />)
                 </Typography>
                 
@@ -468,7 +459,7 @@ const BookDetailPage = ({ resolvedId } = {}) => {
                     onChange={(e) => setCommentText(e.target.value)}
                     rows={3}
                   />
-                  <div className="flex justify-end mt-2">
+                  <div className="comment-submit-row">
                     <Button 
                       variant="primary" 
                       onClick={handleCommentSubmit} 
@@ -481,7 +472,7 @@ const BookDetailPage = ({ resolvedId } = {}) => {
                 </div>
 
                 {commentsLoading ? (
-                  <div className="p-4 text-center text-gray-500">Yorumlar yükleniyor...</div>
+                  <div className="comments-loading" role="status">Yorumlar yükleniyor...</div>
                 ) : (
                   <CommentList 
                     comments={rawComments}

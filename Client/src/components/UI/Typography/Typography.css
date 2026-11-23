@@ -85,14 +85,15 @@
 
 /* === RENKLER ===
    Seçici özgüllüğü varyantları ezsin diye .typography ile birlikte */
-.typography.color-default { color: var(--ink); }
+/* color-default bilinçli olarak tanımsız: başlıklar bordo, gövde mürekkep
+   rengini varyanttan alır. Tanımlansaydı tüm başlıkları griye ezerdi. */
 .typography.color-muted   { color: var(--ink-soft); }
 .typography.color-subtle  { color: var(--ink-faint); }
 .typography.color-primary { color: var(--wine); }
 .typography.color-accent  { color: var(--ember-deep); }
 .typography.color-danger  { color: var(--danger); }
-/* color="white" bilinçli olarak tanımsız: Footer eski bir prop olarak
-   geçiyor ve açık zeminde görünmez olurdu. Kabuk aşamasında ele alınacak. */
+/* color="white" tanımsız: açık zeminde metni görünmez yapar; koyu bantlar
+   (footer, kampanya) kendi açık renklerini CSS'te verir. */
 
 /* === AĞIRLIK ===
    Başlıklar kendi ağırlığını korur; yalnızca açıkça istenirse değişir */

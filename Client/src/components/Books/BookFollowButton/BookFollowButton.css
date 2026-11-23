@@ -1,29 +1,29 @@
-/* src/components/Books/BookFollowButton/BookFollowButton.css */
+/* BookFollowButton — kitabı takip et */
 .book-follow-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color, #e5e7eb);
-  background: none;
-  cursor: pointer;
+  gap: 0.4rem;
+  min-height: 38px;
+  padding: 0.45rem 1rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-full);
+  background: var(--paper-light);
+  color: var(--wine);
   font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text-primary, #1a1a2e);
-  transition: all 0.2s;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
 }
 
 .book-follow-btn:hover {
-  border-color: #2563eb;
-  color: #2563eb;
-  background: rgba(37,99,235,0.05);
+  border-color: var(--wine);
+  background: var(--wine-soft);
 }
 
 .book-follow-btn.following {
-  background: rgba(37,99,235,0.08);
-  border-color: #2563eb;
-  color: #2563eb;
+  border-color: var(--ember);
+  background: var(--ember-soft);
+  color: var(--ember-deep);
 }
 
 .book-follow-btn:disabled {

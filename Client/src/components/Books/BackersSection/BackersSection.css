@@ -74,7 +74,9 @@
 .backers-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--wine-scrim);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -83,7 +85,7 @@
 }
 
 .backers-modal {
-  background: var(--color-background-primary, #ffffff);
+  background: var(--paper-light);
   border-radius: var(--border-radius-lg, 12px);
   width: 100%;
   max-width: 400px;
@@ -104,7 +106,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.25rem;
-  border-bottom: 0.5px solid var(--color-border-tertiary, #e5e7eb);
+  border-bottom: 0.5px solid var(--rule);
   flex-shrink: 0;
 }
 
@@ -113,7 +115,7 @@
   border: none;
   font-size: 15px;
   cursor: pointer;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--ink-soft);
   padding: 4px 8px;
   border-radius: var(--border-radius-md, 6px);
   line-height: 1;
@@ -121,7 +123,7 @@
 }
 
 .backers-modal-close:hover {
-background: var(--color-background-secondary, #f3f4f6);
+background: var(--wine-soft);
 }
 
 .backers-modal-list {
@@ -139,20 +141,20 @@ background: var(--color-background-secondary, #f3f4f6);
 }
 
 .backers-modal-item:hover {
-  background: var(--color-background-secondary, #f3f4f6);
+  background: var(--wine-soft);
 }
 
 .backers-modal-avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--color-background-info, #e0e7ff);
+  background: var(--wine-soft);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text-info, #3730a3);
+  color: var(--wine);
   overflow: hidden;
   flex-shrink: 0;
 }

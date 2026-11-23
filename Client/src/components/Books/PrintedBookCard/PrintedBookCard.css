@@ -1,15 +1,123 @@
-.printed-book-card { display: flex; gap: 1.5rem; padding: 1.5rem; background: var(--bg-surface); color: var(--text-main); border: var(--border-medium); border-radius: var(--radius-md); box-shadow: var(--shadow-paper); text-decoration: none; min-width: 0; transition: box-shadow var(--transition-base); }
-.printed-book-card:hover { box-shadow: var(--shadow-lg); }
-.printed-book-card:focus-visible { outline: 2px solid var(--text-main); outline-offset: 4px; }
-.printed-book-cover { width: 108px; aspect-ratio: 2 / 3; align-self: flex-start; flex-shrink: 0; background: var(--aged-paper); border-radius: 3px 6px 6px 3px; box-shadow: var(--shadow-paper); border-left: 5px solid var(--sepia-dark); display: grid; place-items: center; overflow: hidden; }
+/* PrintedBookCard — raftaki basılı kitap */
+
+.printed-book-card {
+  display: flex;
+  gap: 1.5rem;
+  min-width: 0;
+  padding: 1.5rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  background: var(--paper-light);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+  transition: box-shadow var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-cinema), border-color var(--dur-fast);
+}
+
+.printed-book-card:hover {
+  border-color: var(--rule-strong);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+}
+
+.printed-book-card:focus-visible { outline: 2px solid var(--ember-deep); outline-offset: 4px; }
+
+/* Kapak: sırt gölgesi + üstten ışık; kitap gibi */
+.printed-book-cover {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  align-self: flex-start;
+  width: 108px;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: 2px 6px 6px 2px;
+  background: var(--wine);
+  box-shadow: var(--shadow-book);
+  transition: transform var(--dur-slow) var(--ease-cinema), box-shadow var(--dur-slow) var(--ease-cinema);
+}
+
+.printed-book-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--book-sheen);
+}
+
 .printed-book-cover img { width: 100%; height: 100%; object-fit: cover; }
-.printed-book-cover span { padding: .75rem; text-align: center; font-size: .8rem; overflow-wrap: anywhere; }
+
+/* Kapağı olmayan kitap: bordo cilt üzerine Fraunces başlık */
+.printed-book-cover span {
+  padding: 0.85rem;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--on-wine);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
 .printed-book-card-body { min-width: 0; }
-.printed-book-card-body h2 { font-size: 1.2rem; margin: .75rem 0 .4rem; line-height: 1.5; overflow-wrap: anywhere; }
-.printed-book-card-body p { font-family: var(--font-sans); font-size: .8rem; color: var(--text-muted); margin-bottom: .5rem; overflow-wrap: anywhere; }
-.printed-book-card-body .printed-book-author { color: var(--text-main); font-weight: 600; }
-.printed-book-card-body .ui-text-link { display: inline-block; margin-top: .5rem; font-size: .8rem; }
-@media (max-width: 400px) { .printed-book-card { gap: 1rem; padding: 1rem; } .printed-book-cover { width: 76px; } }
-.printed-book-card--cover-only { display: block; padding: 0; border: 0; background: transparent; border-radius: 3px 6px 6px 3px; }
-.printed-book-card--cover-only .printed-book-cover { width: 100%; border-left: 0; }
+
+.printed-book-card-body h2 {
+  margin: 0.75rem 0 0.4rem;
+  font-size: 1.25rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.printed-book-card-body p {
+  margin-bottom: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  overflow-wrap: anywhere;
+}
+
+.printed-book-card-body .printed-book-author {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-style: italic;
+  font-weight: 600;
+  color: var(--ink-strong);
+}
+
+.printed-book-card-body .ui-text-link { display: inline-block; margin-top: 0.5rem; font-size: 0.82rem; }
+
+/* Sadece kapak (katalog ızgarası) */
+.printed-book-card--cover-only {
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 2px 6px 6px 2px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.printed-book-card--cover-only:hover {
+  box-shadow: none;
+  transform: none;
+}
+
+.printed-book-card--cover-only .printed-book-cover {
+  width: 100%;
+}
+
+.printed-book-card--cover-only:hover .printed-book-cover {
+  transform: translateY(-6px) rotate(-1.5deg);
+  box-shadow: var(--shadow-book-lift);
+}
+
 .printed-book-card--cover-only .printed-book-cover img { display: block; }
+
+@media (max-width: 400px) {
+  .printed-book-card { gap: 1rem; padding: 1rem; }
+  .printed-book-cover { width: 76px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .printed-book-card:hover,
+  .printed-book-card--cover-only:hover .printed-book-cover { transform: none; }
+}

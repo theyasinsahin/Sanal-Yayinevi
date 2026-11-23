@@ -54,8 +54,8 @@ const BookCarousel = ({ books, loading, skeletonCount = 3 }) => {
   return (
     <div className="book-carousel">
       {books.length > 4 && (
-        <button className="carousel-btn prev" onClick={() => scroll('prev')}>
-          <ChevronLeft />
+        <button type="button" className="carousel-btn prev" onClick={() => scroll('prev')} aria-label="Önceki kitaplar">
+          <ChevronLeft aria-hidden="true" />
         </button>
       )}
 
@@ -68,8 +68,8 @@ const BookCarousel = ({ books, loading, skeletonCount = 3 }) => {
       </div>
 
       {books.length > 4 && (
-        <button className="carousel-btn next" onClick={() => scroll('next')}>
-          <ChevronRight />
+        <button type="button" className="carousel-btn next" onClick={() => scroll('next')} aria-label="Sonraki kitaplar">
+          <ChevronRight aria-hidden="true" />
         </button>
       )}
     </div>

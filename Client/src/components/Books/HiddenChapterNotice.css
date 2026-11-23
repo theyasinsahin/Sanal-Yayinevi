@@ -1,4 +1,4 @@
-.hidden-chapter-notice { padding: clamp(1rem, 4vw, 2rem); margin: 1rem 0; border: 1px solid var(--fog, #ddd); border-radius: 12px; background: var(--aged-paper, #f6f3ec); text-align: center; color: var(--ink-black, #222); }
-.hidden-chapter-notice h3 { font-size: 1.15rem; margin: 0 0 .75rem; }
-.hidden-chapter-notice p { line-height: 1.6; margin: .5rem 0 1rem; }
-.chapter-length, .chapter-visibility-label { display: block; font-size: .75rem; color: var(--graphite, #666); margin-top: .3rem; }
+.hidden-chapter-notice { margin: 1rem 0; padding: clamp(1.25rem, 4vw, 2.25rem); border: 1px dashed var(--rule-strong); border-radius: var(--radius-lg); background: var(--paper-light); color: var(--ink); text-align: center; }
+.hidden-chapter-notice h3 { margin: 0 0 0.75rem; font-size: var(--fs-h4); color: var(--wine); }
+.hidden-chapter-notice p { margin: 0.5rem 0 1rem; font-family: var(--font-display); font-style: italic; line-height: 1.6; }
+.chapter-length, .chapter-visibility-label { display: block; margin-top: 0.3rem; font-size: 0.75rem; color: var(--ink-soft); }

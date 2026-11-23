@@ -1,34 +1,19 @@
-// src/components/recommendation/ReasonBadge.jsx
+import './ReasonBadge.css';
 
+// Öneri nedeni etiketi. Tonlar paletle sınırlı: kişisel nedenler turuncu,
+// sosyal/genel nedenler bordo.
 const REASON_MAP = {
-  LIKED_GENRE:      { label: 'Beğendiğin türden',       color: '#7C3AED' },
-  SAVED_GENRE:      { label: 'Kaydettiğin türden',       color: '#0891B2' },
-  COMMENTED_GENRE:  { label: 'Yorum yaptığın türden',    color: '#059669' },
-  QUOTED_GENRE:     { label: 'Alıntı aldığın türden',    color: '#D97706' },
-  ONBOARDING_GENRE: { label: 'Tercih ettiğin türden',    color: '#7C3AED' },
-  SOCIAL:           { label: 'Takip ettiğin biri beğendi', color: '#DB2777' },
-  NEW:              { label: 'Yeni eklendi',              color: '#16A34A' },
-  POPULAR:          { label: 'Popüler',                   color: '#6B7280' },
+  LIKED_GENRE:      { label: 'Beğendiğin türden',          tone: 'ember' },
+  SAVED_GENRE:      { label: 'Kaydettiğin türden',          tone: 'ember' },
+  COMMENTED_GENRE:  { label: 'Yorum yaptığın türden',       tone: 'ember' },
+  QUOTED_GENRE:     { label: 'Alıntı aldığın türden',       tone: 'ember' },
+  ONBOARDING_GENRE: { label: 'Tercih ettiğin türden',       tone: 'ember' },
+  SOCIAL:           { label: 'Takip ettiğin biri beğendi',  tone: 'wine' },
+  NEW:              { label: 'Yeni eklendi',                tone: 'wine' },
+  POPULAR:          { label: 'Popüler',                     tone: 'neutral' },
 };
 
 export default function ReasonBadge({ reason }) {
   const meta = REASON_MAP[reason] ?? REASON_MAP.POPULAR;
-
-  return (
-    <span style={{
-      display:         'inline-flex',
-      alignItems:      'center',
-      gap:             '4px',
-      fontSize:        '11px',
-      fontWeight:      500,
-      padding:         '2px 8px',
-      borderRadius:    '999px',
-      backgroundColor: meta.color + '18',
-      color:           meta.color,
-      border:          `1px solid ${meta.color}30`,
-      whiteSpace:      'nowrap',
-    }}>
-      {meta.label}
-    </span>
-  );
+  return <span className={`reason-badge reason-badge--${meta.tone}`}>{meta.label}</span>;
 }

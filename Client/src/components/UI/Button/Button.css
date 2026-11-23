@@ -151,3 +151,10 @@
 @media (max-width: 640px) {
   .btn-large { padding: 0.85rem 1.5rem; font-size: 1rem; }
 }
+
+/* Buton gibi görünen bağlantılar için devre dışı durumu */
+.btn.is-disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.5;
+  pointer-events: none;
+}

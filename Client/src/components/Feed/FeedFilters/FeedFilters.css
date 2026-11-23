@@ -1,110 +1,105 @@
+/* FeedFilters — kağıt panel, bordo radyo düğmeleri */
+
 .feed-filters {
-  background-color: white;
-  padding: 1.5rem;
-  border-radius: 16px;
-  border: 1px solid #E5E7EB;
-  position: sticky;
-  top: calc(var(--navbar-height) + 2rem); /* Scroll yapınca yapışsın */
+  padding: 1.35rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  background-color: var(--paper-light);
+  box-shadow: var(--shadow-sm);
 }
 
 .filter-section {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--rule);
 }
 
 .filter-section:last-child {
   margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 
-.filter-title {
-  margin-bottom: 1rem;
+.feed-filters .filter-title {
   display: block;
-  color: var(--text-main);
-}
-
-/* Kategori Hapları (Pills) */
-.categories-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.category-pill {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: #4B5563;
-  width: 100%;
-  text-align: left;
-  font-family: var(--font-main);
-  font-size: 0.95rem;
-}
-
-.category-pill:hover {
-  background-color: var(--bg-app);
-  color: var(--text-main);
-}
-
-.category-pill.active {
-  background-color: #ffe5d2; /* Açık Mavi */
-  color: #8b4513; /* Primary Mavi */
+  margin-bottom: 0.85rem;
+  font-family: var(--font-ui);
+  font-size: var(--fs-caption);
   font-weight: 600;
-  border-color: #BFDBFE;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--wine);
 }
 
-.category-icon {
-  display: flex;
-  align-items: center;
-  color: inherit;
-}
-
-/* Sıralama Radyo Butonları */
 .sort-options {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  display: grid;
+  gap: 0.2rem;
 }
 
 .sort-option {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.65rem;
+  min-height: 38px;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  color: var(--ink);
   cursor: pointer;
-  color: #8b4513;
-  font-size: 0.95rem;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
 }
 
-/* Radio butonun varsayılan görünümünü kaldır */
+.sort-option:hover { background: var(--wine-soft); color: var(--wine); }
+
 .sort-option input[type="radio"] {
-  appearance: none;
-  -webkit-appearance: none;
+  position: relative;
+  flex-shrink: 0;
   width: 18px;
   height: 18px;
-  border: 2px solid #8b4513; /* Dış çizgi rengi */
+  margin: 0;
+  border: 1.5px solid var(--rule-strong);
   border-radius: 50%;
-  outline: none;
+  background: var(--paper-light);
+  appearance: none;
+  -webkit-appearance: none;
   cursor: pointer;
-  display: grid;
-  place-content: center;
+  transition: border-color var(--dur-fast) var(--ease-out);
 }
 
-/* Seçildiğinde ortasına nokta ekle */
 .sort-option input[type="radio"]::before {
-  content: "";
-  width: 10px;
-  height: 10px;
+  content: '';
+  position: absolute;
+  inset: 3px;
   border-radius: 50%;
+  background: var(--ember);
   transform: scale(0);
-  transition: 120ms transform ease-in-out;
-  background-color: #8b4513; /* İç nokta rengi */
+  transition: transform var(--dur-base) var(--ease-cinema);
 }
 
-.sort-option input[type="radio"]:checked::before {
-  transform: scale(1);
+.sort-option input[type="radio"]:checked {
+  border-color: var(--ember);
 }
-.funding-sort-hint { color: var(--text-muted); font-size: .8rem; line-height: 1.5; margin-top: 12px; }
+
+.sort-option input[type="radio"]:checked::before { transform: scale(1); }
+
+.sort-option:has(input:checked) {
+  color: var(--wine);
+  font-weight: 600;
+}
+
+.sort-option input[type="radio"]:focus-visible {
+  outline: 2px solid var(--ember-deep);
+  outline-offset: 2px;
+}
+
+.funding-sort-hint {
+  margin-top: 0.75rem;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/* Sınıflandırma filtreleri panelin içinde sade görünür */
+.feed-filters .classification-fields { margin-bottom: 1.5rem; }
