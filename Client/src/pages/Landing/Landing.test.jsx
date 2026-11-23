@@ -9,6 +9,9 @@ import { GET_BOOK_FEED } from '../../graphql/queries/book';
 jest.mock('../../components/Layout/MainLayout', () => ({ MainLayout: ({ children }) => <main>{children}</main> }));
 jest.mock('../../components/Landing/HowItWorks', () => () => null);
 jest.mock('../../components/Landing/TrustedPublishers', () => () => null);
+// 3D kitap ve kampanya vitrini kendi testlerinde; burada katalog davranışı ölçülür
+jest.mock('../../components/Landing/HeroBook3D', () => () => null);
+jest.mock('../../components/Landing/CampaignShowcase', () => () => null);
 jest.mock('../../components/Books/BookCard', () => ({ book, skeleton }) => skeleton
   ? <div data-testid="book-skeleton" />
   : <a href={book.publicPath} data-testid="book-card">{book.title}</a>);
@@ -36,7 +39,7 @@ const search = value => fireEvent.change(screen.getByRole('searchbox'), { target
 
 test('retains the introduction and requests a bounded page sorted by server popularity', async () => {
   show();
-  expect(screen.getByRole('heading', { level: 1, name: 'Fikriniz Kitaplaşsın' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { level: 1, name: 'Fikriniz kitaplaşsın.' })).toBeInTheDocument();
   expect(screen.getByText('Kaleminizden çıkan eserlerin gerçek bir kitaba dönüşme yolculuğuna tanık olun')).toBeInTheDocument();
   expect(screen.getByRole('searchbox', { name: 'Bir sonraki kitabını bul' })).toHaveAttribute('aria-controls', 'home-books');
   expect(screen.getByRole('searchbox')).toHaveAttribute('maxlength', '100');

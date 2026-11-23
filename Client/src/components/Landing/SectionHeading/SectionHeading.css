@@ -1,0 +1,109 @@
+/* SectionHeading — dergi bölüm başlığı */
+
+.section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  margin-bottom: clamp(1.75rem, 3vw, 2.5rem);
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+.section-heading__text { min-width: 0; max-width: 46rem; }
+
+.section-heading__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--wine);
+}
+
+.section-heading__number {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--ember-deep);
+  font-variant-numeric: tabular-nums;
+}
+
+.section-heading__number::after {
+  content: '';
+  width: 1.75rem;
+  height: 1px;
+  background: currentColor;
+}
+
+.section-heading__title {
+  font-size: var(--fs-h1);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  color: var(--wine);
+}
+
+.section-heading__title em {
+  font-style: italic;
+  font-weight: 500;
+  color: var(--ember);
+}
+
+.section-heading__description {
+  max-width: 52ch;
+  margin-top: 0.75rem;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+.section-heading__action { flex-shrink: 0; }
+
+/* Bordo bant içinde */
+.section-heading--light {
+  border-bottom-color: var(--on-wine-line);
+}
+
+.section-heading--light .section-heading__eyebrow,
+.section-heading--light .section-heading__description { color: var(--on-wine-strong); }
+.section-heading--light .section-heading__number { color: var(--ember-soft); }
+.section-heading--light .section-heading__title { color: var(--on-wine); }
+.section-heading--light .section-heading__title em { color: var(--ember-soft); }
+
+/* Ortalanmış varyant */
+.section-heading--center {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border-bottom: 0;
+}
+
+.section-heading--center .section-heading__eyebrow { justify-content: center; }
+.section-heading--center .section-heading__description { margin-inline: auto; }
+
+/* Bağlantı oku */
+.section-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  color: var(--wine);
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule-strong);
+  padding-bottom: 0.15rem;
+  transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+
+.section-link:hover {
+  color: var(--ember-deep);
+  border-bottom-color: currentColor;
+}
+
+.section-heading--light .section-link { color: var(--on-wine); border-bottom-color: var(--on-wine-border); }
+.section-heading--light .section-link:hover { color: var(--ember-soft); }

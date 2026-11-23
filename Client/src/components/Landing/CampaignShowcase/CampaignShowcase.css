@@ -1,0 +1,103 @@
+/* CampaignShowcase — bordo kampanya vitrini */
+
+.campaign-showcase {
+  padding: clamp(3.5rem, 7vw, 6rem) 0;
+  overflow: hidden;
+}
+
+.campaign-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+  list-style: none;
+}
+
+.campaign-card {
+  display: flex;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  border: 1px solid var(--on-wine-line);
+  border-radius: var(--radius-lg);
+  background: var(--on-wine-fill);
+  transition: background-color var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out);
+}
+
+.campaign-card:hover {
+  border-color: var(--on-wine-border);
+  background: var(--on-wine-fill-strong);
+  transform: translateY(-3px);
+}
+
+.campaign-cover {
+  flex-shrink: 0;
+  align-self: flex-start;
+  padding-top: 0.25rem;
+}
+
+.campaign-cover .book3d { --book-w: 92px; --book-depth: 14px; }
+
+.campaign-body {
+  display: grid;
+  align-content: start;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.campaign-deadline {
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--ember-soft);
+}
+
+.campaign-title {
+  font-size: 1.3rem;
+  line-height: 1.2;
+}
+
+.campaign-title a {
+  color: var(--on-wine);
+  text-decoration: none;
+}
+
+.campaign-title a:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+}
+
+.campaign-author {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--on-wine-strong);
+}
+
+.campaign-backers {
+  font-size: 0.85rem;
+  color: var(--on-wine-muted);
+}
+
+/* Ortak ilerleme bileşeni bordo zeminde */
+.campaign-card .book-funding-progress {
+  margin: 0.5rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--on-wine-line);
+  color: var(--on-wine-strong);
+}
+
+.campaign-card .book-funding-test {
+  color: var(--ember-soft);
+}
+
+.campaign-card .book-funding-percent { color: var(--on-wine-muted); }
+
+.campaign-card .book-funding-progress progress {
+  height: 6px;
+  accent-color: var(--ember);
+}
+
+.campaign-card :focus-visible { outline-color: var(--paper-light); }
+
+@media (max-width: 1024px) {
+  .campaign-list { grid-template-columns: minmax(0, 1fr); max-width: 40rem; }
+}

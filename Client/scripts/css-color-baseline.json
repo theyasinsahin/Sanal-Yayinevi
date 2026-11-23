@@ -11,8 +11,6 @@
   "components/Books/HiddenChapterNotice.css": 4,
   "components/Comments/CommentItem/CommentItem.css": 8,
   "components/Feed/FeedFilters/FeedFilters.css": 8,
-  "components/Landing/HowItWorks/HowItWorks.css": 4,
-  "components/Landing/TrustedPublishers/TrustedPublishers.css": 6,
   "components/Mentions/Mentions.css": 8,
   "components/Messaging/ChatWindow/ChatWindow.css": 2,
   "components/Messaging/ConversationList/ConversationList.css": 4,

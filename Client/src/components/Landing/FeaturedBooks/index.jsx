@@ -5,6 +5,7 @@ import { Typography } from '../../UI/Typography';
 import { Button } from '../../UI/Button';
 import { Container } from '../../UI/Container';
 import BookCard from '../../Books/BookCard';
+import SectionHeading from '../SectionHeading';
 import './FeaturedBooks.css';
 
 const BOOKS_PER_PAGE = 10;
@@ -19,19 +20,17 @@ const FeaturedBooks = ({ search = '', onClearSearch }) => {
   return (
     <section id="home-books" className="featured-books-section" aria-labelledby="home-books-title" aria-busy={isLoading}>
       <Container maxWidth="7xl">
-        <div className="featured-books-header">
-          <div>
-            <Typography id="home-books-title" variant="h2" weight="bold">
-              {term ? 'Arama Sonuçları' : 'En Popüler Kitaplar'}
-            </Typography>
-            <Typography variant="body" color="muted" className="featured-books-description" role="status">
-              {isLoading ? 'Kitaplar yükleniyor…' : error ? 'Kitaplar şu an yüklenemiyor.' : term
-                ? `${books.length}${hasNextPage ? '+' : ''} kitap listeleniyor.`
-                : 'Okurların en çok beğendiği kitapları keşfedin.'}
-            </Typography>
-          </div>
-          <Link to="/feed" className="featured-books-all">Tüm Kitapları Gör →</Link>
-        </div>
+        <SectionHeading
+          number="01"
+          eyebrow={term ? 'Arama' : 'Seçki'}
+          titleId="home-books-title"
+          title={term ? 'Arama Sonuçları' : 'En Popüler Kitaplar'}
+          description={isLoading ? 'Kitaplar yükleniyor…' : error ? 'Kitaplar şu an yüklenemiyor.' : term
+            ? `${books.length}${hasNextPage ? '+' : ''} kitap listeleniyor.`
+            : 'Okurların en çok beğendiği kitapları keşfedin.'}
+          descriptionProps={{ role: 'status' }}
+          action={<Link to="/feed" className="section-link">Tüm Kitapları Gör →</Link>}
+        />
 
         {isLoading ? (
           <div className="featured-books-grid">
@@ -44,8 +43,13 @@ const FeaturedBooks = ({ search = '', onClearSearch }) => {
           </div>
         ) : books.length ? (
           <>
-            <div className="featured-books-grid">
-              {books.map(book => <BookCard key={book.id} book={book} />)}
+            <div className={`featured-books-grid${term ? '' : ' featured-books-grid--ranked'}`}>
+              {books.map((book, index) => (
+                <div className="featured-book" key={book.id}>
+                  {!term && <span className="featured-book-rank" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>}
+                  <BookCard book={book} />
+                </div>
+              ))}
             </div>
             {moreError && <p role="alert">Diğer kitaplar yüklenemedi. Tekrar deneyin.</p>}
             {hasNextPage && (

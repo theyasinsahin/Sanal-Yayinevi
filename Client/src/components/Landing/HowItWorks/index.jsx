@@ -1,78 +1,60 @@
 import React from 'react';
-import './HowItWorks.css';
-import { 
+import {
   EditNoteRounded,
   VolunteerActivismRounded,
-  AutoStoriesRounded 
+  AutoStoriesRounded,
 } from '@mui/icons-material';
-
-// --- UI KIT IMPORTS ---
-import { Typography } from '../../UI/Typography';
 import { Container } from '../../UI/Container';
+import SectionHeading from '../SectionHeading';
+import { useReveal } from '../../../hooks/useReveal';
+import './HowItWorks.css';
 
 const steps = [
   {
-    icon: <EditNoteRounded style={{ fontSize: 48 }} />, // İkon boyutunu buradan veya CSS'ten verebiliriz
-    title: "Yazınızı Yayınlayın",
-    description: "Platformumuzda yazınızı zengin metin editörüyle oluşturun ve hedef bağış tutarınızı belirleyin."
+    Icon: EditNoteRounded,
+    title: 'Yazınızı Yayınlayın',
+    description: 'Platformumuzda yazınızı zengin metin editörüyle oluşturun ve hedef bağış tutarınızı belirleyin.',
   },
   {
-    icon: <VolunteerActivismRounded style={{ fontSize: 48 }} />,
-    title: "Topluluk Desteği",
-    description: "Okuyucular yazınıza bağış yaparak hedefinize ulaşmanıza yardımcı olsun."
+    Icon: VolunteerActivismRounded,
+    title: 'Topluluk Desteği',
+    description: 'Okuyucular yazınıza bağış yaparak hedefinize ulaşmanıza yardımcı olsun.',
   },
   {
-    icon: <AutoStoriesRounded style={{ fontSize: 48 }} />,
-    title: "Kitabınız Basılsın",
-    description: "Hedef tutara ulaştığınızda profesyonel yayınevleriyle kitabınızı bastırın."
-  }
+    Icon: AutoStoriesRounded,
+    title: 'Kitabınız Basılsın',
+    description: 'Hedef tutara ulaştığınızda profesyonel yayınevleriyle kitabınızı bastırın.',
+  },
 ];
 
-const HowItWorks = () => {
+const Step = ({ step, index }) => {
+  const reveal = useReveal();
+  const { Icon } = step;
   return (
-    <section className="how-it-works-section" id="how-it-works">
-      <Container maxWidth="7xl">
-        
-        {/* Bölüm Başlığı */}
-        <div className="section-header-center">
-          <Typography variant="h2" weight="bold" className="text-center">
-            Nasıl Çalışır?
-          </Typography>
-          <Typography variant="body" color="muted" className="text-center section-subtitle">
-            Hayalinizdeki kitabı 3 adımda gerçeğe dönüştürün
-          </Typography>
-        </div>
-
-        {/* Adımlar Grid Yapısı */}
-        <div className="steps-grid">
-          {steps.map((step, index) => (
-            <div className="step-card" key={index}>
-              
-              {/* Adım Numarası (Arka planda silik şekilde) */}
-              <div className="step-number-bg">{index + 1}</div>
-              
-              {/* İkon */}
-              <div className="step-icon-wrapper">
-                {step.icon}
-              </div>
-
-              {/* İçerik */}
-              <div className="step-content">
-                <Typography variant="h4" weight="medium" className="step-title">
-                  {step.title}
-                </Typography>
-                
-                <Typography variant="body" color="muted">
-                  {step.description}
-                </Typography>
-              </div>
-            </div>
-          ))}
-        </div>
-
-      </Container>
-    </section>
+    <li ref={reveal.ref} className={`how-step ${reveal.className}`} style={reveal.style(index * 140)}>
+      <span className="how-step-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+      <span className="how-step-icon" aria-hidden="true"><Icon /></span>
+      <h3 className="how-step-title">{step.title}</h3>
+      <p className="how-step-text">{step.description}</p>
+    </li>
   );
 };
+
+const HowItWorks = () => (
+  <section className="how-it-works-section" id="how-it-works" aria-labelledby="how-it-works-title">
+    <Container maxWidth="7xl">
+      <SectionHeading
+        number="02"
+        eyebrow="Nasıl çalışır"
+        titleId="how-it-works-title"
+        title={<>Taslaktan rafa <em>üç adım</em></>}
+        description="Hayalinizdeki kitabı 3 adımda gerçeğe dönüştürün."
+      />
+      <ol className="how-steps">
+        {steps.map((step, index) => <Step key={step.title} step={step} index={index} />)}
+      </ol>
+    </Container>
+  </section>
+);
 
 export default HowItWorks;

@@ -29,6 +29,9 @@ export const FiltersProvider = ({ children }) => {
   );
 };
 
+// Sağlayıcı dışında da güvenle çağrılabilir; yoksa null döner
+export const useOptionalFilters = () => useContext(FiltersContext) || null;
+
 export const useFilters = () => {
   const context = useContext(FiltersContext);
   if (!context) {

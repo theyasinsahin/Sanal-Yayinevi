@@ -1,0 +1,160 @@
+/* HeroBook3D — sahne, ışık halesi ve künye */
+
+.hero-book {
+  display: grid;
+  justify-items: center;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.hero-book-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1 / 1.05;
+  max-height: 560px;
+}
+
+/* Sahne arkası: sıcak spot ışığı + ince daire çizgisi */
+.hero-book-halo {
+  position: absolute;
+  inset: 6% 4%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 45%, var(--ember-glow), transparent 58%),
+    radial-gradient(circle at 50% 50%, var(--wine-glow), transparent 70%);
+  pointer-events: none;
+}
+
+.hero-book-halo::after {
+  content: '';
+  position: absolute;
+  inset: 8%;
+  border: 1px solid var(--rule-strong);
+  border-radius: 50%;
+}
+
+.hero-book-fallback {
+  position: relative;
+  z-index: 1;
+  transition: opacity var(--dur-slow) var(--ease-cinema);
+}
+
+.hero-book-css .book3d__body {
+  animation-duration: 9s;
+}
+
+/* Kitap değişince CSS kitap yeniden belirir */
+.hero-book-css {
+  animation: hero-book-enter var(--dur-cinema) var(--ease-cinema);
+}
+
+@keyframes hero-book-enter {
+  from { opacity: 0; transform: translate3d(0, 18px, 0) rotate(-2deg); }
+  to   { opacity: 1; transform: none; }
+}
+
+.hero-book-canvas {
+  position: absolute !important;
+  inset: 0;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity var(--dur-cinema) var(--ease-cinema);
+}
+
+.hero-book.is-webgl .hero-book-canvas { opacity: 1; }
+.hero-book.is-webgl .hero-book-fallback { opacity: 0; }
+
+/* === KÜNYE === */
+.hero-book-caption-slot {
+  display: grid;
+  justify-items: center;
+  width: 100%;
+  min-height: 8.75rem;
+}
+
+.hero-book-caption {
+  display: grid;
+  justify-items: center;
+  gap: 0.2rem;
+  max-width: 22rem;
+  text-align: center;
+}
+
+.hero-book-eyebrow {
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--ember-deep);
+}
+
+.hero-book-title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.hero-book-title a {
+  color: var(--wine);
+  text-decoration: none;
+}
+
+.hero-book-title a:hover {
+  color: var(--ember-deep);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+}
+
+.hero-book-author {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+.hero-book-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+
+.hero-book-controls button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 50%;
+  background: var(--paper-light);
+  color: var(--wine);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.hero-book-controls button:hover {
+  background: var(--wine);
+  color: var(--on-wine);
+}
+
+.hero-book-count {
+  margin-left: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 900px) {
+  .hero-book-stage {
+    max-width: 380px;
+    max-height: 400px;
+  }
+
+  .hero-book .book3d--xl { --book-w: 180px; --book-depth: 30px; }
+}

@@ -1,37 +1,28 @@
 import React from 'react';
-import './TrustedPublishers.css';
 import PublisherLogo from './PublisherLogo';
-
-// --- UI KIT IMPORTS ---
-import { Typography } from '../../UI/Typography';
 import { Container } from '../../UI/Container';
+import './TrustedPublishers.css';
 
-const TrustedPublishers = () => {
-  // Gerçek uygulamada bu veriler API'den veya bir config dosyasından gelebilir
-  const publishers = [
-    {
-      id: 1,
-      name: "Melekler Yayıncılık",
-      logo: "/images/publishers/melekler-yayincilik-logo.avif",
-      website: "https://www.melekleryayincilik.com/"
-    },
-  ];
+// Gerçek uygulamada bu veriler API'den veya bir config dosyasından gelebilir
+const publishers = [
+  {
+    id: 1,
+    name: 'Melekler Yayıncılık',
+    logo: '/images/publishers/melekler-yayincilik-logo.avif',
+    website: 'https://www.melekleryayincilik.com/',
+  },
+];
 
-  return (
-    <section className="trusted-publishers-section">
-      <Container maxWidth="7xl">
-        
-        {/* Başlık Alanı */}
-        <div className="section-header-center">
-          <Typography variant="h4" weight="bold" color="default" className="text-center">
-            İş Birliği
-          </Typography>
-          <Typography variant="body" color="muted" className="text-center section-subtitle">
-            Hedefe ulaşan eserlerimiz değerli Melekler Yayıncılık ile buluşuyor.
-          </Typography>
+const TrustedPublishers = () => (
+  <section className="trusted-publishers-section" aria-labelledby="publishers-title">
+    <Container maxWidth="7xl">
+      <div className="publishers-strip">
+        <div className="publishers-copy">
+          <p className="publishers-eyebrow">İş birliği</p>
+          <h2 id="publishers-title" className="publishers-title">
+            Hedefe ulaşan eserlerimiz değerli <em>Melekler Yayıncılık</em> ile buluşuyor.
+          </h2>
         </div>
-        
-        {/* Logolar Grid */}
         <div className="publishers-grid">
           {publishers.map(publisher => (
             <PublisherLogo
@@ -42,10 +33,9 @@ const TrustedPublishers = () => {
             />
           ))}
         </div>
-
-      </Container>
-    </section>
-  );
-};
+      </div>
+    </Container>
+  </section>
+);
 
 export default TrustedPublishers;

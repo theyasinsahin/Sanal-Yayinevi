@@ -1,336 +1,83 @@
+/* HowItWorks — "02 / Nasıl çalışır" */
+
 .how-it-works-section {
-  padding: 6rem 0;
-  background: linear-gradient(
-    180deg,
-    var(--aged-paper) 0%,
-    var(--parchment) 50%,
-    var(--aged-paper) 100%
-  );
   position: relative;
-  overflow: hidden;
+  padding: clamp(3.5rem, 7vw, 6rem) 0;
+  background-color: var(--paper-light);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  scroll-margin-top: var(--navbar-height);
 }
 
-/* Vintage ledger lines background */
-.how-it-works-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  opacity: 0.05;
-  pointer-events: none;
-  background-image: 
-    repeating-linear-gradient(
-      0deg,
-      transparent 0px,
-      transparent 2rem,
-      rgba(26, 26, 26, 0.1) 2rem,
-      rgba(26, 26, 26, 0.1) calc(2rem + 1px)
-    );
-}
-
-/* Decorative inkwell illustration (corner) */
-.how-it-works-section::after {
-  content: '✒';
-  position: absolute;
-  bottom: 3rem;
-  right: 3rem;
-  font-size: 6rem;
-  color: var(--ash-gray);
-  opacity: 0.1;
-  transform: rotate(-15deg);
-}
-
-/* Section Header - Centered */
-.section-header-center {
-  text-align: center;
-  margin-bottom: 4.5rem;
-  max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
-  position: relative;
-  z-index: 1;
-}
-
-.section-header-center h2 {
-  font-family: var(--font-serif);
-  font-size: 2.75rem;
-  font-weight: 700;
-  color: var(--ink-black);
-  margin-bottom: 1rem;
-  text-shadow: 2px 2px 0 rgba(26, 26, 26, 0.05);
-  position: relative;
-}
-
-/* Ornamental brackets around title */
-.section-header-center h2::before {
-  content: '[ ';
-  opacity: 0.3;
-  margin-right: 0.5rem;
-}
-
-.section-header-center h2::after {
-  content: ' ]';
-  opacity: 0.3;
-  margin-left: 0.5rem;
-}
-
-/* Decorative underline */
-.section-header-center h2 ~ * {
-  position: relative;
-}
-
-.section-header-center::after {
-  content: '';
-  position: absolute;
-  bottom: -1.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100px;
-  height: 3px;
-  background-color: var(--ink-black);
-  opacity: 0.3;
-}
-
-.section-subtitle {
-  font-family: var(--font-serif);
-  font-size: 1.125rem;
-  line-height: 1.8;
-  color: var(--graphite);
-  font-style: italic;
-  margin-top: 1rem;
-}
-
-/* Steps Grid */
-.steps-grid {
+.how-steps {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 3rem;
-  padding: 1rem 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  list-style: none;
+  counter-reset: none;
+}
+
+.how-step {
   position: relative;
-  z-index: 1;
+  display: grid;
+  align-content: start;
+  gap: 0.85rem;
+  padding: 0 clamp(1.25rem, 3vw, 2.5rem);
+  border-left: 1px solid var(--rule-strong);
 }
 
-/* Step Card - Vintage Paper Card */
-.step-card {
-  background-color: var(--paper-white);
-  padding: 2.5rem;
-  border-radius: 8px;
-  border: 2px solid var(--fog);
-  position: relative;
-  transition: all 0.4s ease;
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
+.how-step:first-child {
+  padding-left: 0;
+  border-left: 0;
 }
 
-/* Paper texture on card */
-.step-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 8px;
-  opacity: 0.1;
-  pointer-events: none;
-  background-image: 
-    url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E");
+/* Dev kontur numara */
+.how-step-number {
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 8vw, 6.5rem);
+  font-weight: 600;
+  font-style: italic;
+  line-height: 0.9;
+  letter-spacing: -0.05em;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--ember);
 }
 
-/* Hover effect - lift card */
-.step-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 
-    var(--shadow-lg),
-    0 0 0 1px var(--ash-gray);
-  border-color: var(--ink-black);
-}
-
-/* Icon Wrapper - Ink stamp style */
-.step-icon-wrapper {
-  width: 90px;
-  height: 90px;
-  border: 3px double var(--ink-black);
-  border-radius: 50%;
-  display: flex;
+.how-step-icon {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1.75rem;
-  background-color: var(--cream);
-  position: relative;
-  transition: all 0.4s ease;
-  box-shadow: 
-    inset 0 2px 4px rgba(26, 26, 26, 0.1),
-    var(--shadow-sm);
-}
-
-/* Inner circle for stamp effect */
-.step-icon-wrapper::before {
-  content: '';
-  position: absolute;
-  inset: 6px;
-  border: 1px solid var(--ink-black);
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  opacity: 0.5;
+  background: var(--wine);
+  color: var(--on-wine);
 }
 
-.step-icon-wrapper svg {
-  font-size: 2.5rem;
-  color: var(--ink-black);
-  position: relative;
-  z-index: 1;
+.how-step-icon svg { font-size: 1.6rem; }
+
+.how-step-title {
+  font-size: var(--fs-h3);
+  color: var(--wine);
 }
 
-.step-card:hover .step-icon-wrapper {
-  background-color: var(--ink-black);
-  transform: rotate(-5deg) scale(1.1);
-}
-
-.step-card:hover .step-icon-wrapper svg {
-  color: var(--paper-white);
-}
-
-/* Step Title */
-.step-title {
-  font-family: var(--font-serif);
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--ink-black);
-  margin-bottom: 1rem;
-  position: relative;
-  z-index: 1;
-}
-
-/* Small decorative line under title */
-.step-title::after {
-  content: '';
-  display: block;
-  width: 40px;
-  height: 2px;
-  background-color: var(--ash-gray);
-  margin: 0.75rem auto 0;
-  opacity: 0.5;
-}
-
-.step-card p {
-  font-family: var(--font-serif);
-  font-size: 1rem;
+.how-step-text {
+  max-width: 34ch;
+  color: var(--ink);
   line-height: 1.7;
-  color: var(--graphite);
-  position: relative;
-  z-index: 1;
 }
 
-/* Background Step Number - Watermark style */
-.step-number-bg {
-  position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
-  font-size: 6rem;
-  font-weight: 900;
-  font-family: var(--font-serif);
-  color: var(--fog);
-  opacity: 0.4;
-  z-index: 0;
-  line-height: 1;
-  pointer-events: none;
-  transition: all 0.4s ease;
-}
-
-.step-card:hover .step-number-bg {
-  opacity: 0.2;
-  transform: scale(1.1) rotate(-5deg);
-}
-
-/* Staggered card animations */
-.steps-grid > .step-card {
-  animation: stepFadeIn 0.8s ease-out backwards;
-}
-
-.steps-grid > .step-card:nth-child(1) { animation-delay: 0.1s; }
-.steps-grid > .step-card:nth-child(2) { animation-delay: 0.2s; }
-.steps-grid > .step-card:nth-child(3) { animation-delay: 0.3s; }
-.steps-grid > .step-card:nth-child(4) { animation-delay: 0.4s; }
-
-@keyframes stepFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(40px) scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Connecting line between steps (optional decorative) */
-.steps-grid::before {
-  content: '';
-  position: absolute;
-  top: 5rem;
-  left: 10%;
-  right: 10%;
-  height: 2px;
-  background: repeating-linear-gradient(
-    90deg,
-    var(--fog) 0px,
-    var(--fog) 10px,
-    transparent 10px,
-    transparent 20px
-  );
-  opacity: 0.5;
-  z-index: 0;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .how-it-works-section {
-    padding: 4rem 0;
-  }
-
-  .section-header-center h2 {
-    font-size: 2rem;
-  }
-
-  .steps-grid {
+@media (max-width: 860px) {
+  .how-steps {
+    grid-template-columns: minmax(0, 1fr);
     gap: 2.5rem;
   }
 
-  .steps-grid::before {
-    display: none;
+  .how-step,
+  .how-step:first-child {
+    padding: 1.75rem 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--rule-strong);
   }
 
-  .how-it-works-section::after {
-    display: none;
-  }
-}
-
-@media (max-width: 640px) {
-  .steps-grid {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-
-  .step-card {
-    padding: 2rem;
-  }
-
-  .step-icon-wrapper {
-    width: 75px;
-    height: 75px;
-  }
-
-  .step-icon-wrapper svg {
-    font-size: 2rem;
-  }
-
-  .step-number-bg {
-    font-size: 4.5rem;
-  }
-
-  .section-header-center h2 {
-    font-size: 1.75rem;
-  }
+  .how-step:first-child { border-top: 0; padding-top: 0; }
 }

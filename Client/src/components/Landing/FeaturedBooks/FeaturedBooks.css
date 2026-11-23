@@ -1,39 +1,51 @@
+/* FeaturedBooks — "01 / Seçki" */
+
 .featured-books-section {
-  padding: 1.75rem 0 3rem;
-  background-color: var(--paper-white);
-}
-
-.featured-books-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid var(--fog);
-}
-
-.featured-books-header h2 {
-  font-size: clamp(1.5rem, 2.5vw, 2rem);
-}
-
-.featured-books-description {
-  margin-top: 0.375rem;
-}
-
-.featured-books-all {
-  flex-shrink: 0;
-  color: var(--ink-black);
-  font-family: var(--font-sans);
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-underline-offset: 4px;
+  padding: clamp(3rem, 6vw, 5.5rem) 0;
+  scroll-margin-top: var(--navbar-height);
 }
 
 .featured-books-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 1.5rem;
+  gap: 2.25rem 1.5rem;
+}
+
+.featured-book {
+  position: relative;
+  min-width: 0;
+  animation: featured-in var(--dur-slow) var(--ease-cinema) both;
+}
+
+.featured-book:nth-child(2) { animation-delay: 60ms; }
+.featured-book:nth-child(3) { animation-delay: 120ms; }
+.featured-book:nth-child(4) { animation-delay: 180ms; }
+.featured-book:nth-child(5) { animation-delay: 240ms; }
+.featured-book:nth-child(n + 6) { animation-delay: 300ms; }
+
+/* Sıralı seçki: dergideki "ilk 10" listesi gibi numara */
+.featured-books-grid--ranked .featured-book {
+  padding-top: 1.75rem;
+}
+
+.featured-book-rank {
+  position: absolute;
+  top: 0;
+  left: 0.15rem;
+  z-index: 3;
+  font-family: var(--font-display);
+  font-size: 2.75rem;
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--ember);
+  pointer-events: none;
+}
+
+.featured-books-grid > .book-card,
+.featured-book > .book-card {
+  height: 100%;
 }
 
 .featured-books-message {
@@ -46,32 +58,33 @@
 }
 
 .featured-books-more {
-  margin-top: 2rem;
+  margin-top: 2.5rem;
   text-align: center;
 }
 
-@media (max-width: 960px) {
+@keyframes featured-in {
+  from { opacity: 0; transform: translate3d(0, 16px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (max-width: 1100px) {
+  .featured-books-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (max-width: 860px) {
   .featured-books-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
+    gap: 1.75rem 1rem;
   }
 }
 
 @media (max-width: 640px) {
-  .featured-books-section {
-    padding-top: 1.25rem;
-  }
-
-  .featured-books-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-
   .featured-books-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.85rem;
+    gap: 1.5rem 0.85rem;
   }
+
+  .featured-book-rank { font-size: 2.25rem; }
 }
 
 @media (max-width: 360px) {

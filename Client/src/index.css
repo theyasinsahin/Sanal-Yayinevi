@@ -33,6 +33,12 @@
   --on-wine-fill: rgba(255, 251, 251, 0.08);
   --on-wine-fill-strong: rgba(255, 251, 251, 0.14);
   --ember-ring: rgba(230, 59, 17, 0.45);
+  /* Sahne ışıkları (hero, halo) */
+  --ember-glow: rgba(230, 59, 17, 0.2);
+  --ember-glow-soft: rgba(230, 59, 17, 0.1);
+  --ember-focus: rgba(230, 59, 17, 0.16);
+  --wine-glow: rgba(120, 0, 56, 0.12);
+  --wine-glow-soft: rgba(120, 0, 56, 0.08);
 
   /* === DURUM RENKLERİ (paletle uyumlu) === */
   --success: #2F6B4F;
