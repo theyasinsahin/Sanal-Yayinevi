@@ -1,216 +1,153 @@
-/* Button.css */
+/* Button — sinematik edebi dergi dili.
+   primary: turuncu CTA · secondary: kağıt · outline: bordo çizgi
+   ghost: sessiz · danger: hata · link: bordo metin bağlantısı */
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border: none;
+  border: 1px solid transparent;
   cursor: pointer;
-  font-family: var(--font-sans);
+  font-family: var(--font-ui);
   font-weight: 600;
-  letter-spacing: 0.025em;
-  transition: all var(--transition-base);
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
   position: relative;
-  overflow: hidden;
-  text-transform: uppercase;
-  font-size: 0.875rem;
+  isolation: isolate;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
 }
 
-/* Ink stain hover effect — temayı takip eder */
-.btn::before {
-  content: '';
-  position: absolute;
-  top: 50%; left: 50%;
-  width: 0; height: 0;
-  border-radius: 50%;
-  background: rgba(128, 128, 128, 0.12);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s ease, height 0.6s ease;
+.btn > * { position: relative; z-index: 1; }
+.btn svg { font-size: 1.2em; flex-shrink: 0; }
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
-.btn:hover::before { width: 300px; height: 300px; }
 
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  filter: grayscale(50%);
+  transform: none;
+  box-shadow: none;
 }
-.btn:disabled::before { display: none; }
-.btn > * { position: relative; z-index: 1; }
 
-/* === PRIMARY === */
+/* === PRIMARY: turuncu, ışıklı === */
 .btn-primary {
-  background-color: var(--text-main);
-  color: var(--bg-surface);
-  border: 2px solid var(--text-main);
-  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.08);
+  background-color: var(--ember);
+  color: var(--on-ember);
+  border-color: var(--ember);
+  box-shadow: 0 1px 0 rgba(255, 251, 251, 0.25) inset, 0 8px 18px -10px rgba(194, 48, 12, 0.7);
 }
+
 .btn-primary:hover:not(:disabled) {
-  opacity: 0.88;
-  box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.12);
+  background-color: var(--ember-deep);
+  border-color: var(--ember-deep);
+  color: var(--on-ember);
   transform: translateY(-1px);
+  box-shadow: 0 1px 0 rgba(255, 251, 251, 0.25) inset, 0 14px 26px -12px rgba(194, 48, 12, 0.75);
 }
+
 .btn-primary:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: var(--shadow-sm);
-}
-.btn-primary::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  opacity: 0.04;
-  pointer-events: none;
-  background-image:
-    url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E");
+  box-shadow: 0 4px 10px -6px rgba(194, 48, 12, 0.7);
 }
 
-/* === SECONDARY === */
+/* === SECONDARY: kağıt yüzey === */
 .btn-secondary {
-  background-color: var(--bg-surface);
-  color: var(--text-main);
-  border: 2px solid var(--border-medium, rgba(26,26,26,0.15));
+  background-color: var(--paper-light);
+  color: var(--ink-strong);
+  border-color: var(--rule-strong);
   box-shadow: var(--shadow-sm);
 }
+
 .btn-secondary:hover:not(:disabled) {
-  background-color: var(--bg-elevated);
-  border-color: var(--text-subtle, rgba(26,26,26,0.3));
-  box-shadow: var(--shadow-md);
+  border-color: var(--wine);
+  color: var(--wine);
   transform: translateY(-1px);
-}
-.btn-secondary::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  opacity: var(--texture-opacity-light);
-  pointer-events: none;
-  background-image:
-    repeating-linear-gradient(
-      45deg,
-      transparent 0px, transparent 2px,
-      rgba(128,128,128,0.04) 2px, rgba(128,128,128,0.04) 4px
-    );
+  box-shadow: var(--shadow-md);
 }
 
-/* === OUTLINE === */
+/* === OUTLINE: bordo çizgi === */
 .btn-outline {
-  background: transparent;
-  color: var(--text-main);
-  border: 2px solid var(--text-main);
-  position: relative;
+  background-color: transparent;
+  color: var(--wine);
+  border-color: var(--wine);
 }
-.btn-outline::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border: 1px solid var(--text-main);
-  opacity: 0.25;
-  pointer-events: none;
-}
+
 .btn-outline:hover:not(:disabled) {
-  background-color: var(--text-main);
-  color: var(--bg-surface);
-  box-shadow: var(--shadow-md);
+  background-color: var(--wine);
+  color: var(--on-wine);
   transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
-.btn-outline:hover:not(:disabled)::after { opacity: 0; }
 
 /* === GHOST === */
 .btn-ghost {
-  background: transparent;
-  color: var(--text-muted);
-  border: none;
-  position: relative;
+  background-color: transparent;
+  color: var(--ink);
+  border-color: transparent;
 }
-.btn-ghost::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 50%;
-  width: 0; height: 1px;
-  background-color: var(--text-main);
-  transition: all var(--transition-base);
-  transform: translateX(-50%);
+
+.btn-ghost:hover:not(:disabled) {
+  background-color: var(--wine-soft);
+  color: var(--wine);
 }
-.btn-ghost:hover:not(:disabled) { color: var(--text-main); }
-.btn-ghost:hover:not(:disabled)::after { width: 100%; }
 
 /* === DANGER === */
 .btn-danger {
   background-color: transparent;
-  color: var(--color-danger-text);
-  border: 2px solid var(--color-danger-border);
+  color: var(--danger);
+  border-color: var(--danger);
 }
+
 .btn-danger:hover:not(:disabled) {
-  background-color: var(--color-danger-border);
-  color: var(--bg-surface);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
+  background-color: var(--danger);
+  color: var(--paper-light);
 }
 
 /* === LINK === */
 .btn-link {
   background: transparent;
-  color: var(--text-main);
-  border: none;
+  color: var(--wine);
+  border: 0;
+  padding: 0 !important;
   text-decoration: underline;
-  text-decoration-style: wavy;
   text-decoration-thickness: 1px;
-  text-underline-offset: 4px;
-  padding: 0;
+  text-underline-offset: 0.25em;
 }
+
 .btn-link:hover:not(:disabled) {
+  color: var(--ember-deep);
   text-decoration-thickness: 2px;
-  opacity: 0.7;
 }
 
-/* === SIZES === */
-.btn-small  { padding: 0.5rem 1rem;   font-size: 0.75rem; border-radius: var(--radius-sm); letter-spacing: 0.05em; }
-.btn-medium { padding: 0.75rem 1.5rem; font-size: 0.875rem; border-radius: var(--radius-md); }
-.btn-large  { padding: 1rem 2rem;     font-size: 1rem;    border-radius: var(--radius-md); }
+/* === BOYUTLAR (dokunma hedefi ≥ 40px) === */
+.btn-small  { min-height: 36px; padding: 0.45rem 0.95rem; font-size: 0.8125rem; border-radius: var(--radius-full); }
+.btn-medium { min-height: 44px; padding: 0.7rem 1.4rem;   font-size: 0.9375rem; border-radius: var(--radius-full); }
+.btn-large  { min-height: 52px; padding: 0.9rem 1.9rem;   font-size: 1.0625rem; border-radius: var(--radius-full); }
 
-/* === SPECIAL === */
-.btn-stamp {
-  position: relative;
-  border: 3px double var(--text-main) !important;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-.btn-stamp::before {
-  content: '';
-  position: absolute;
-  inset: 4px;
-  border: 1px solid var(--text-main);
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-/* Loading */
-.btn-loading {
-  position: relative;
-  color: transparent !important;
-  pointer-events: none;
-}
-.btn-loading::after {
-  content: '';
-  position: absolute;
-  top: 50%; left: 50%;
-  width: 16px; height: 16px;
-  margin-top: -8px; margin-left: -8px;
-  border: 2px solid transparent;
-  border-top-color: currentColor;
+/* Yükleniyor */
+.btn .spinner {
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
   border-radius: 50%;
+  font-size: 0;
   animation: btn-spin 0.8s linear infinite;
 }
-.btn-primary.btn-loading::after { border-top-color: var(--bg-surface); }
+
 @keyframes btn-spin { to { transform: rotate(360deg); } }
 
-.btn svg { font-size: 1.25em; }
-
-/* Button group */
-.btn-group { display: inline-flex; gap: 0; }
-.btn-group .btn { border-radius: 0; border-right-width: 1px; }
-.btn-group .btn:first-child { border-top-left-radius: var(--radius-md); border-bottom-left-radius: var(--radius-md); }
-.btn-group .btn:last-child  { border-top-right-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); border-right-width: 2px; }
-
 @media (max-width: 640px) {
-  .btn-large { padding: 0.875rem 1.5rem; font-size: 0.9rem; }
+  .btn-large { padding: 0.85rem 1.5rem; font-size: 1rem; }
 }

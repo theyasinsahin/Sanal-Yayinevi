@@ -34,7 +34,6 @@ export const Select = ({
           disabled={disabled}
           className="form-input custom-select"
           required={required}
-          style={{ appearance: 'none', backgroundColor: '#fff', cursor: 'pointer' }}
           {...props}
         >
             {/* Opsiyonel: Placeholder gibi davranan ilk seçenek */}
@@ -47,10 +46,7 @@ export const Select = ({
             ))}
         </select>
         
-        {/* Sağ tarafa küçük bir ok ikonu ekleyelim (CSS ile de yapılabilir ama basit olsun) */}
-        <div style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-muted)' }}>
-            ▼
-        </div>
+        <span className="select-arrow" aria-hidden="true" />
       </div>
       
       {error && <span className="input-error-message">{error}</span>}

@@ -1,88 +1,51 @@
-/* ProgressBar.css */
+/* ProgressBar — fonlama ilerlemesi (turuncu) */
 
 .progress-wrapper { width: 100%; margin-top: 0.75rem; }
 
 .progress-labels {
   display: flex;
   justify-content: space-between;
-  font-size: 0.75rem;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
   color: var(--color-progress-label);
-  margin-bottom: 8px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  font-family: var(--font-sans);
 }
-.progress-labels span:last-child { color: var(--text-main); }
+
+.progress-labels span:first-child { color: var(--ink-strong); }
 
 .progress-track {
+  position: relative;
   width: 100%;
-  height: 10px;
-  background: var(--color-progress-track-bg);
-  border-radius: 10px;
+  height: 8px;
   overflow: hidden;
-  position: relative;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.08);
+  border-radius: var(--radius-full);
+  background: var(--color-progress-track-bg);
+  box-shadow: var(--shadow-inset);
 }
 
-/* Gradient fill — semantic renkler (her temada çalışır) */
 .progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--text-main) 0%, var(--text-muted) 100%);
-  border-radius: 10px;
-  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
   position: relative;
+  height: 100%;
+  border-radius: inherit;
+  background-color: var(--ember);
+  transition: width var(--dur-cinema) var(--ease-cinema);
 }
 
-.progress-fill::before {
-  content: '';
-  position: absolute;
-  top: 0; left: -100%;
-  width: 100%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
-  animation: shimmer 2s infinite;
-}
-@keyframes shimmer {
-  0%   { left: -100%; }
-  100% { left: 200%; }
-}
-
-/* Pulse glow — daha hafif, her temada uyumlu */
+/* Işık süzmesi: dolu kısımda yavaş akan parıltı */
 .progress-fill::after {
   content: '';
   position: absolute;
   inset: 0;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(128,128,128,0.3);
-  opacity: 0;
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0; }
-  50%       { opacity: 1; }
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, rgba(255, 251, 251, 0.35), transparent);
+  background-size: 200% 100%;
+  animation: progress-sheen 2.8s var(--ease-cinema) infinite;
 }
 
-/* State variants — CSS token'larla */
-.progress-fill.progress-low {
-  background: linear-gradient(90deg, var(--color-strength-very-weak) 0%, #c0392b 100%);
-}
-.progress-fill.progress-medium {
-  background: linear-gradient(90deg, var(--color-strength-medium) 0%, #b7770d 100%);
-}
-.progress-fill.progress-high {
-  background: linear-gradient(90deg, var(--color-strength-good) 0%, var(--color-strength-strong) 100%);
-}
-
-.progress-fill.progress-striped {
-  background-image: linear-gradient(
-    45deg,
-    rgba(255,255,255,0.12) 25%, transparent 25%,
-    transparent 50%, rgba(255,255,255,0.12) 50%,
-    rgba(255,255,255,0.12) 75%, transparent 75%, transparent
-  );
-  background-size: 20px 20px;
-  animation: move-stripes 1s linear infinite;
-}
-@keyframes move-stripes {
-  0%   { background-position: 0 0; }
-  100% { background-position: 20px 0; }
+@keyframes progress-sheen {
+  from { background-position: 150% 0; }
+  to   { background-position: -50% 0; }
 }

@@ -14,27 +14,28 @@
   max-width: 420px;
   box-shadow: var(--shadow-xl);
   z-index: 2000;
-  animation: slideInToast 0.4s cubic-bezier(0.4,0,0.2,1);
-  color: var(--text-main);
-  background: var(--bg-surface);
-  font-size: 0.9rem;
-  font-weight: 600;
-  font-family: var(--font-sans);
-  border: 1px solid var(--fog);
-  border-left: 3px solid currentColor;
+  animation: slideInToast var(--dur-slow) var(--ease-cinema);
+  color: var(--ink-strong);
+  background: var(--paper-light);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  font-family: var(--font-ui);
+  border: 1px solid var(--rule);
+  border-left: 4px solid currentColor;
+  overflow: hidden;
 }
 
 @keyframes slideInToast {
-  from { transform: translateX(120%) scale(0.8); opacity: 0; }
-  to   { transform: translateX(0) scale(1);     opacity: 1; }
+  from { transform: translate3d(0, 24px, 0); opacity: 0; }
+  to   { transform: none; opacity: 1; }
 }
 
 .ui-toast.toast-exit {
   animation: slideOutToast 0.3s cubic-bezier(0.4,0,0.2,1) forwards;
 }
 @keyframes slideOutToast {
-  from { transform: translateX(0) scale(1);     opacity: 1; }
-  to   { transform: translateX(120%) scale(0.8); opacity: 0; }
+  from { transform: none; opacity: 1; }
+  to   { transform: translate3d(0, 16px, 0); opacity: 0; }
 }
 
 .toast-content { display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0; }
@@ -60,8 +61,7 @@
   flex-shrink: 0;
 }
 .toast-close-btn:hover {
-  background: var(--bg-elevated);
-  transform: scale(1.1);
+  background: var(--paper-deep);
 }
 
 /* Variants */
@@ -76,9 +76,9 @@
   border-color: var(--color-danger-border);
 }
 .toast-info {
-  background: var(--sepia-light);
-  color: var(--graphite);
-  border-color: var(--sepia-dark);
+  background: var(--wine-soft);
+  color: var(--wine);
+  border-color: var(--wine);
 }
 .toast-warning {
   background: var(--color-warning-bg);
@@ -93,7 +93,7 @@
   bottom: 0; left: 0;
   height: 4px;
   background: currentColor;
-  border-radius: 0 0 var(--radius-xl, 16px) var(--radius-xl, 16px);
+  opacity: 0.5;
   animation: shrink-progress 5s linear forwards;
 }
 @keyframes shrink-progress {

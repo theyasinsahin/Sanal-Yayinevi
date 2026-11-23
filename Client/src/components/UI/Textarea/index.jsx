@@ -36,7 +36,6 @@ export const Textarea = ({
           rows={rows}
           className="form-input form-textarea" // form-input Input.css'ten geliyor
           required={required}
-          style={{ resize: 'vertical', minHeight: '100px', fontFamily: 'inherit' }}
           {...props}
         />
       </div>

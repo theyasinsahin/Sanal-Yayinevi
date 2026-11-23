@@ -1,385 +1,478 @@
+/* =====================================================================
+   BETİK TASARIM DİLİ — "Sinematik edebi dergi"
+   Tek renk kaynağı bu dosyadır. Bileşen CSS'lerinde sabit hex/rgb
+   yerine aşağıdaki tokenları kullanın (scripts/checkCssColors.cjs).
+   ===================================================================== */
 :root {
   --navbar-height: 80px;
 
-  --skeleton-base: #e2e8f0; /* light mode */
+  /* === MARKA PALETİ === */
+  --ember: #E63B11;          /* ana renk: CTA, ilerleme, aktif durum */
+  --ember-deep: #C2300C;     /* hover/pressed ve küçük turuncu metin (AA) */
+  --ember-soft: #FCE6DE;     /* rozet ve vurgu zemini */
+  --wine: #780038;           /* derinlik: başlık, link, footer, bantlar */
+  --wine-deep: #55002A;
+  --wine-soft: #F3E4EA;
+  --ink: #574A4A;            /* gövde metni */
+  --ink-strong: #3A2F2F;     /* yoğun vurgu metni, koyu dolgular */
+  --ink-soft: #7D7070;       /* ikincil metin (kağıtta AA) */
+  --ink-faint: #A99D9B;      /* yalnızca dekor ve devre dışı durum */
+  --paper: #F9F5F4;          /* sayfa zemini */
+  --paper-light: #FFFBFB;    /* kart ve yüzey */
+  --paper-deep: #EFE6E3;     /* gömülü alan, kağıt kenarı */
+  --rule: rgba(120, 0, 56, 0.14);
+  --rule-strong: rgba(120, 0, 56, 0.28);
+  --on-ember: #FFFBFB;
+  --on-wine: #FFFBFB;
 
-  /* === VINTAGE LITERARY COLOR PALETTE === */
-  /* Blacks & Grays - Ink & Charcoal */
-  --ink-black: #1a1a1a;
-  --charcoal: #2d2d2d;
-  --graphite: #4a4a4a;
-  --ash-gray: #6b6b6b;
-  --silver-gray: #8e8e8e;
-  --light-smoke: #b8b8b8;
-  --fog: #d4d4d4;
-  
-  /* Whites & Creams - Paper Tones */
-  --paper-white: #fafaf8;
-  --cream: #f5f4f0;
-  --aged-paper: #ebe8e0;
-  --parchment: #e8e4d8;
-  --vintage-beige: #dcd7c8;
-  
-  /* Accent - Subtle sepia warmth for highlights only */
-  --sepia-light: #f4f1e8;
-  --sepia-medium: #d9d3c5;
-  --sepia-dark: #a89f8f;
-  
-  /* Primary palette - Pure B&W with paper warmth */
-  --primary: var(--ink-black);
-  --primary-hover: var(--charcoal);
-  --secondary: var(--graphite);
-  --accent: var(--ash-gray);
-  
-  /* Backgrounds */
-  --bg-app: var(--cream);
-  --bg-surface: var(--paper-white);
-  --bg-elevated: var(--aged-paper);
-  --text-main: var(--ink-black);
-  --text-muted: var(--ash-gray);
-  --text-subtle: var(--light-smoke);
-  
-  /* Borders - Vintage ink lines */
-  --border-light: 1px solid rgba(26, 26, 26, 0.08);
-  --border-medium: 1px solid rgba(26, 26, 26, 0.15);
-  --border-heavy: 2px solid rgba(26, 26, 26, 0.25);
-  --border-dashed: 2px dashed rgba(26, 26, 26, 0.2);
-  
-  /* Shadows - Soft, paper-like */
-  --shadow-sm: 0 2px 4px rgba(26, 26, 26, 0.06);
-  --shadow-md: 0 4px 8px rgba(26, 26, 26, 0.1);
-  --shadow-lg: 0 8px 16px rgba(26, 26, 26, 0.12);
-  --shadow-xl: 0 12px 24px rgba(26, 26, 26, 0.15);
-  --shadow-paper: 2px 4px 8px rgba(26, 26, 26, 0.08);
-  --shadow-inset: inset 0 2px 4px rgba(26, 26, 26, 0.06);
-  
-  /* Text shadows - Subtle ink bleed */
-  --text-shadow-subtle: 0 1px 2px rgba(26, 26, 26, 0.1);
-  --text-shadow-heading: 1px 1px 2px rgba(26, 26, 26, 0.08);
-  
-  /* Radius - Organic, hand-drawn feel */
+  /* === DURUM RENKLERİ (paletle uyumlu) === */
+  --success: #2F6B4F;
+  --success-soft: #E6F0EA;
+  --warning: #9A5B00;
+  --warning-soft: #FBF0DC;
+  --danger: #A3122A;
+  --danger-soft: #FBE7EA;
+  --info: #2F5A7A;
+  --info-soft: #E5EEF5;
+
+  /* === TİPOGRAFİ === */
+  --font-display: 'Fraunces', 'Iowan Old Style', 'Georgia', serif;
+  --font-ui: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-reading: 'Fraunces', 'Iowan Old Style', 'Georgia', serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+
+  --fs-display: clamp(3rem, 7vw, 6.5rem);
+  --fs-h1: clamp(2.25rem, 4.5vw, 3.75rem);
+  --fs-h2: clamp(1.75rem, 3vw, 2.5rem);
+  --fs-h3: clamp(1.375rem, 2vw, 1.75rem);
+  --fs-h4: 1.25rem;
+  --fs-lead: clamp(1.125rem, 1.6vw, 1.3rem);
+  --fs-body: 1rem;
+  --fs-small: 0.875rem;
+  --fs-caption: 0.75rem;
+  --tracking-eyebrow: 0.16em;
+
+  /* === YÜZEY, KENAR, GÖLGE === */
   --radius-sm: 4px;
   --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
   --radius-full: 9999px;
-  
-  /* Fonts - Literary & Classic */
-  --font-serif: 'Libre Baskerville', 'Crimson Text', 'Georgia', serif;
-  --font-sans: 'Inter', 'Helvetica Neue', system-ui, sans-serif;
-  --font-mono: 'Courier Prime', 'Courier New', monospace;
-  --font-handwriting: 'Caveat', 'Dancing Script', cursive;
-  
-  /* Transitions */
-  --transition-fast: 0.15s ease;
-  --transition-base: 0.3s ease;
-  --transition-slow: 0.5s ease;
-  
-  /* Paper texture opacity */
-  --texture-opacity: 0.15;
-  --texture-opacity-light: 0.08;
-  --texture-opacity-heavy: 0.25;
 
-   /* === Semantic: Badge / Button / Input durumları === */
-  --color-success-bg:      #f0f7f0;
-  --color-success-text:    #2d5016;
-  --color-success-border:  #2d5016;
- 
-  --color-warning-bg:      var(--sepia-light);
-  --color-warning-text:    #8b4513;
-  --color-warning-border:  #8b4513;
- 
-  --color-danger-bg:       var(--paper-white);
-  --color-danger-text:     #8b0000;
-  --color-danger-border:   #8b0000;
- 
-  /* === PasswordStrengthIndicator === */
-  --color-strength-very-weak: #ef4444;
-  --color-strength-weak:      #f97316;
-  --color-strength-medium:    #ca8a04;
-  --color-strength-good:      #16a34a;
-  --color-strength-strong:    #15803d;
-  --color-strength-track:     #e5e7eb;
-  --color-strength-text-muted:#6b7280;
-  --color-strength-rule-fail: #9ca3af;
-  --color-rule-pass-icon:     #16a34a;
-  --color-rule-fail-icon:     #d1d5db;
- 
-  /* === ProgressBar === */
-  --color-progress-track-bg: linear-gradient(135deg, #E2E8F0 0%, #F1F5F9 100%);
-  --color-progress-label:    #64748B;
- 
-  /* === Toast === */
-  --color-toast-success:     #059669;
-  --color-toast-success-end: #065f46;
-  --color-toast-error:       #dc2626;
-  --color-toast-error-end:   #991b1b;
-  --color-toast-info:        #2563eb;
-  --color-toast-info-end:    #1d4ed8;
-  --color-toast-warning:     #d97706;
-  --color-toast-warning-end: #b45309;
-  --color-toast-warning-fg:  #1a1a1a;
- 
-  /* === accent-start (ayraç rengi — UserProfile & UserSettings kullanıyor) === */
-  --accent-start: rgba(26, 26, 26, 0.12);
+  --border-light: 1px solid var(--rule);
+  --border-medium: 1px solid var(--rule-strong);
+  --border-heavy: 2px solid var(--wine);
+  --border-dashed: 1px dashed var(--rule-strong);
+
+  --shadow-sm: 0 1px 2px rgba(58, 47, 47, 0.06), 0 1px 1px rgba(58, 47, 47, 0.04);
+  --shadow-md: 0 6px 16px -6px rgba(58, 47, 47, 0.16), 0 2px 4px rgba(58, 47, 47, 0.05);
+  --shadow-lg: 0 18px 40px -16px rgba(85, 0, 42, 0.28), 0 4px 10px rgba(58, 47, 47, 0.06);
+  --shadow-xl: 0 32px 64px -24px rgba(85, 0, 42, 0.36);
+  --shadow-paper: 0 1px 0 rgba(255, 251, 251, 0.9) inset, 0 10px 24px -14px rgba(58, 47, 47, 0.25);
+  --shadow-inset: inset 0 1px 3px rgba(58, 47, 47, 0.08);
+  --focus-ring: 0 0 0 2px var(--paper-light), 0 0 0 4px var(--ember-deep);
+
+  /* === HAREKET === */
+  --ease-cinema: cubic-bezier(0.2, 0.7, 0.1, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 160ms;
+  --dur-base: 320ms;
+  --dur-slow: 700ms;
+  --dur-cinema: 1100ms;
+
+  /* === SEMANTİK BİLEŞEN TOKENLARI === */
+  --color-success-bg: var(--success-soft);
+  --color-success-text: var(--success);
+  --color-success-border: var(--success);
+  --color-warning-bg: var(--warning-soft);
+  --color-warning-text: var(--warning);
+  --color-warning-border: var(--warning);
+  --color-danger-bg: var(--danger-soft);
+  --color-danger-text: var(--danger);
+  --color-danger-border: var(--danger);
+
+  --color-strength-very-weak: var(--danger);
+  --color-strength-weak: var(--ember-deep);
+  --color-strength-medium: var(--warning);
+  --color-strength-good: var(--success);
+  --color-strength-strong: var(--success);
+  --color-strength-track: var(--paper-deep);
+  --color-strength-text-muted: var(--ink-soft);
+  --color-strength-rule-fail: var(--ink-faint);
+  --color-rule-pass-icon: var(--success);
+  --color-rule-fail-icon: var(--ink-faint);
+
+  --color-progress-track-bg: var(--paper-deep);
+  --color-progress-label: var(--ink-soft);
+
+  --color-toast-success: var(--success);
+  --color-toast-success-end: var(--success);
+  --color-toast-error: var(--danger);
+  --color-toast-error-end: var(--danger);
+  --color-toast-info: var(--wine);
+  --color-toast-info-end: var(--wine-deep);
+  --color-toast-warning: var(--warning-soft);
+  --color-toast-warning-end: var(--warning-soft);
+  --color-toast-warning-fg: var(--ink-strong);
+
+  --skeleton-base: var(--paper-deep);
+  --accent-start: var(--rule);
+
+  /* === GEÇİŞ KATMANI (eski adlar → yeni tokenlar) ===
+     Sayfalar yeni dile taşındıkça bu aliaslar kaldırılacak. */
+  --ink-black: var(--ink-strong);
+  --charcoal: var(--ink-strong);
+  --graphite: var(--ink);
+  --ash-gray: var(--ink-soft);
+  --silver-gray: var(--ink-faint);
+  --light-smoke: var(--ink-faint);
+  --fog: var(--paper-deep);
+  --paper-white: var(--paper-light);
+  --cream: var(--paper);
+  --aged-paper: var(--paper-deep);
+  --parchment: var(--paper-deep);
+  --vintage-beige: var(--paper-deep);
+  --sepia-light: var(--ember-soft);
+  --sepia-medium: var(--paper-deep);
+  --sepia-dark: var(--ink-soft);
+
+  --primary: var(--ember);
+  --primary-hover: var(--ember-deep);
+  --secondary: var(--wine);
+  --accent: var(--wine);
+
+  --bg-app: var(--paper);
+  --bg-surface: var(--paper-light);
+  --bg-elevated: var(--paper-deep);
+  --text-main: var(--ink);
+  --text-muted: var(--ink-soft);
+  --text-subtle: var(--ink-faint);
+  --text-heading: var(--wine);
+
+  --font-serif: var(--font-display);
+  --font-sans: var(--font-ui);
+  --font-handwriting: var(--font-display);
+
+  --text-shadow-subtle: none;
+  --text-shadow-heading: none;
+
+  --transition-fast: var(--dur-fast) var(--ease-out);
+  --transition-base: var(--dur-base) var(--ease-out);
+  --transition-slow: var(--dur-slow) var(--ease-cinema);
+
+  --texture-opacity: 0.12;
+  --texture-opacity-light: 0.05;
+  --texture-opacity-heavy: 0.2;
+
+  --paper-grain: url("data:image/svg+xml,%3Csvg width='160' height='160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.34 0 0 0 0 0.29 0 0 0 0 0.29 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+
+  color-scheme: light;
 }
 
+/* === TEMEL === */
 *, *::before, *::after {
-  transition:
-    background-color 0.3s ease,
-    border-color     0.2s ease,
-    color            0.2s ease,
-    box-shadow       0.3s ease;
-}
-
-/* === GLOBAL STYLES === */
-* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--navbar-height) + 1rem);
+}
+
 body {
   margin: 0;
-  font-family: var(--font-serif);
+  font-family: var(--font-ui);
+  font-size: var(--fs-body);
+  font-feature-settings: 'cv11', 'ss01';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--bg-app);
-  color: var(--text-main);
-  line-height: 1.7;
+  background-color: var(--paper);
+  color: var(--ink);
+  line-height: 1.65;
   position: relative;
   overflow-x: hidden;
 }
 
-/* Paper texture overlay on body */
+/* Kağıt greni: tüm sayfada çok ince, tıklamaları engellemez */
 body::before {
   content: '';
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   pointer-events: none;
   z-index: 9999;
   opacity: var(--texture-opacity-light);
-  background-image: 
-    repeating-linear-gradient(
-      0deg,
-      rgba(26, 26, 26, 0.03) 0px,
-      transparent 1px,
-      transparent 2px,
-      rgba(26, 26, 26, 0.03) 3px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      rgba(26, 26, 26, 0.03) 0px,
-      transparent 1px,
-      transparent 2px,
-      rgba(26, 26, 26, 0.03) 3px
-    );
-  background-size: 3px 3px;
+  background-image: var(--paper-grain);
+  background-size: 160px 160px;
 }
 
-/* Subtle vignette effect */
+/* Kenarlarda sıcak, sinematik vinyet */
 body::after {
   content: '';
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   pointer-events: none;
   z-index: 9998;
-  background: radial-gradient(
-    circle at center,
-    transparent 0%,
-    transparent 60%,
-    rgba(26, 26, 26, 0.03) 100%
-  );
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(85, 0, 42, 0.05) 100%);
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  color: var(--wine);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  font-optical-sizing: auto;
+  text-wrap: balance;
+}
+
+h5, h6 {
+  font-family: var(--font-ui);
+  color: var(--ink-strong);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--wine);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--ember-deep);
+}
+
+img, svg, video, canvas {
+  max-width: 100%;
+}
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ember-deep);
+  outline-offset: 3px;
+  border-radius: 2px;
 }
 
 code {
   font-family: var(--font-mono);
-  background-color: var(--aged-paper);
-  padding: 0.2em 0.4em;
+  background-color: var(--paper-deep);
+  padding: 0.15em 0.4em;
   border-radius: var(--radius-sm);
   font-size: 0.9em;
   border: var(--border-light);
 }
 
-/* === UTILITY CLASSES === */
+/* === YARDIMCI SINIFLAR === */
 
-/* Paper texture backgrounds */
-.paper-texture {
-  position: relative;
-  background-color: var(--paper-white);
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
-.paper-texture::before {
+/* Dergi etiketi: "01 / NASIL ÇALIŞIR" */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  font-family: var(--font-ui);
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--wine);
+}
+
+.eyebrow::before {
+  content: '';
+  width: 1.75rem;
+  height: 1px;
+  background: currentColor;
+}
+
+/* Turuncu italik vurgu: "Fikriniz <em class='accent-italic'>kitaplaşsın.</em>" */
+.accent-italic {
+  font-style: italic;
+  font-weight: 500;
+  color: var(--ember);
+}
+
+/* İnce dergi ayracı */
+.rule {
+  border: 0;
+  height: 1px;
+  background: var(--rule-strong);
+}
+
+.rule-double {
+  border: 0;
+  height: 4px;
+  border-top: 1px solid var(--wine);
+  border-bottom: 1px solid var(--wine);
+}
+
+/* Bordo sinematik bant */
+.cinema-band {
+  position: relative;
+  background-color: var(--wine);
+  color: var(--on-wine);
+  isolation: isolate;
+}
+
+.cinema-band::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
+  z-index: -1;
   pointer-events: none;
-  opacity: var(--texture-opacity);
-  background-image: 
-    url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E");
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(230, 59, 17, 0.22), transparent 55%),
+    radial-gradient(ellipse at 100% 100%, rgba(85, 0, 42, 0.9), transparent 60%);
 }
 
-/* Aged paper effect */
+.cinema-band :is(h1, h2, h3, h4) {
+  color: var(--on-wine);
+}
+
+.cinema-band a {
+  color: var(--on-wine);
+}
+
+/* Kağıt yüzey */
+.paper-texture,
+.paper-surface {
+  position: relative;
+  background-color: var(--paper-light);
+}
+
+.paper-texture::before,
+.paper-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: var(--texture-opacity);
+  background-image: var(--paper-grain);
+  background-size: 160px 160px;
+}
+
 .aged-paper {
-  background: linear-gradient(
-    135deg,
-    var(--aged-paper) 0%,
-    var(--parchment) 50%,
-    var(--aged-paper) 100%
-  );
+  background-color: var(--paper-deep);
   box-shadow: var(--shadow-paper);
 }
 
-/* Torn paper edge effect */
-.torn-edge-top {
-  position: relative;
+/* Kaydırınca beliren içerik (hooks/useReveal.js) */
+.reveal {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0);
+  transition:
+    opacity var(--dur-slow) var(--ease-cinema),
+    transform var(--dur-cinema) var(--ease-cinema);
+  transition-delay: var(--reveal-delay, 0ms);
 }
 
-.torn-edge-top::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 8px;
-  background-image: url("data:image/svg+xml,%3Csvg width='100' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,4 Q2,0 4,4 T8,4 T12,4 T16,4 T20,4 T24,4 T28,4 T32,4 T36,4 T40,4 T44,4 T48,4 T52,4 T56,4 T60,4 T64,4 T68,4 T72,4 T76,4 T80,4 T84,4 T88,4 T92,4 T96,4 T100,4' fill='%23fafaf8' stroke='none'/%3E%3C/svg%3E");
-  background-repeat: repeat-x;
-  background-size: 100px 8px;
+.reveal.is-revealed {
+  opacity: 1;
+  transform: none;
 }
 
-/* Ink splatter decoration */
-.ink-splatter {
-  position: relative;
+.drop-cap::first-letter {
+  float: left;
+  font-family: var(--font-display);
+  font-size: 4.2em;
+  line-height: 0.82;
+  margin: 0.08em 0.12em 0 0;
+  font-weight: 600;
+  color: var(--wine);
 }
 
-.ink-splatter::after {
-  content: '•';
-  position: absolute;
-  font-size: 0.5rem;
-  color: var(--ink-black);
-  opacity: 0.2;
-}
-
-/* Underline - hand-drawn style */
 .hand-underline {
-  position: relative;
-  display: inline-block;
+  text-decoration: underline;
+  text-decoration-color: var(--ember);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.25em;
 }
 
-.hand-underline::after {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background-image: repeating-linear-gradient(
-    90deg,
-    var(--ink-black) 0px,
-    var(--ink-black) 4px,
-    transparent 4px,
-    transparent 8px
-  );
-  opacity: 0.6;
-}
-
-/* Corner ornament */
+/* Eski süs sınıfları: son aşamada kaldırılacak, şimdilik sade */
+.torn-edge-top,
+.ink-splatter,
 .corner-ornament {
   position: relative;
 }
 
-.corner-ornament::before,
-.corner-ornament::after {
-  content: '❦';
-  position: absolute;
-  font-size: 1rem;
-  color: var(--ash-gray);
-  opacity: 0.3;
-  font-family: serif;
-}
-
-.corner-ornament::before {
-  top: 0.5rem;
-  left: 0.5rem;
-}
-
-.corner-ornament::after {
-  bottom: 0.5rem;
-  right: 0.5rem;
-  transform: rotate(180deg);
-}
-
-/* Bookmarks */
 .bookmark-ribbon {
   position: absolute;
   top: 0;
   right: 2rem;
-  width: 3px;
-  height: 100px;
-  background: linear-gradient(
-    to bottom,
-    var(--graphite) 0%,
-    var(--graphite) 80%,
-    transparent 100%
-  );
-  opacity: 0.3;
+  width: 14px;
+  height: 44px;
+  background: var(--ember);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
 }
 
-/* Text styles - Vintage typography */
-.drop-cap::first-letter {
-  float: left;
-  font-size: 4em;
-  line-height: 0.85;
-  margin: 0.1em 0.1em 0 0;
-  font-weight: bold;
-  font-family: var(--font-serif);
-}
-
-/* Selection style */
 ::selection {
-  background-color: var(--ink-black);
-  color: var(--paper-white);
+  background-color: var(--ember-soft);
+  color: var(--wine-deep);
 }
 
-::-moz-selection {
-  background-color: var(--ink-black);
-  color: var(--paper-white);
-}
-
-/* Scrollbar - Minimal, vintage style */
+/* Kaydırma çubuğu */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--aged-paper);
+  background: var(--paper);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--ash-gray);
-  border-radius: var(--radius-sm);
+  background: var(--ink-faint);
+  border: 2px solid var(--paper);
+  border-radius: var(--radius-full);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--graphite);
+  background: var(--wine);
 }
 
-/* Print-like styling for important sections */
+/* Hareket hassasiyeti: tüm animasyonları kapat */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @media print {
   body {
     background: white;
   }
-  
+
   body::before,
   body::after {
     display: none;

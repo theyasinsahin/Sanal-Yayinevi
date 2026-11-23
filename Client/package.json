@@ -36,6 +36,7 @@
   },
   "scripts": {
     "lint": "eslint src --ext .js,.jsx",
+    "lint:colors": "node scripts/checkCssColors.cjs",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "perf:bundle": "node scripts/checkBundleSize.cjs",
