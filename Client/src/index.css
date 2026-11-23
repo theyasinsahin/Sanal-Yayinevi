@@ -24,6 +24,15 @@
   --rule-strong: rgba(120, 0, 56, 0.28);
   --on-ember: #FFFBFB;
   --on-wine: #FFFBFB;
+  /* Bordo bant üzerindeki yarı saydam kağıt tonları */
+  --on-wine-strong: rgba(255, 251, 251, 0.82);
+  --on-wine-muted: rgba(255, 251, 251, 0.65);
+  --on-wine-line: rgba(255, 251, 251, 0.18);
+  --on-wine-border: rgba(255, 251, 251, 0.3);
+  --on-wine-hover: rgba(255, 251, 251, 0.55);
+  --on-wine-fill: rgba(255, 251, 251, 0.08);
+  --on-wine-fill-strong: rgba(255, 251, 251, 0.14);
+  --ember-ring: rgba(230, 59, 17, 0.45);
 
   /* === DURUM RENKLERİ (paletle uyumlu) === */
   --success: #2F6B4F;

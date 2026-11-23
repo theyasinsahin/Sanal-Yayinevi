@@ -1,29 +1,29 @@
 /* Shared text links and notices use the same paper/ink palette as the UI kit. */
 .ui-text-link {
-  color: var(--text-main);
-  font-family: var(--font-sans);
+  color: var(--wine);
+  font-family: var(--font-ui);
   font-weight: 600;
   text-decoration-line: underline;
-  text-decoration-color: var(--sepia-dark);
+  text-decoration-color: var(--rule-strong);
   text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
   overflow-wrap: anywhere;
 }
 
-.ui-text-link:visited { color: var(--text-main); }
-.ui-text-link:hover { color: var(--graphite); text-decoration-color: currentColor; }
+.ui-text-link:visited { color: var(--wine); }
+.ui-text-link:hover { color: var(--ember-deep); text-decoration-color: currentColor; }
 .ui-text-link:focus-visible {
-  outline: 2px solid var(--text-main);
+  outline: 2px solid var(--ember-deep);
   outline-offset: 4px;
   border-radius: 2px;
 }
 
 .ui-notice {
   padding: 1rem 1.125rem;
-  background: var(--sepia-light);
-  color: var(--graphite);
-  border: 1px solid var(--sepia-medium);
-  border-left: 3px solid var(--sepia-dark);
+  background: var(--paper-light);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--wine);
   border-radius: var(--radius-md);
   font-family: var(--font-sans);
   font-size: 0.875rem;

@@ -1,92 +1,84 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, NavLink } from 'react-router-dom';
 import { Menu, Close, Person } from '@mui/icons-material';
 import { FiMessageCircle } from 'react-icons/fi';
 
-// --- BİLEŞENLER & HOOKS ---
-import MobileMenu from '../MobileMenu'; // Bir sonraki adımda düzenleyeceğiz
+import MobileMenu from '../MobileMenu';
 import { useAuth } from '../../../context/AuthContext';
-
-// --- UI KIT ---
 import { Container } from '../../UI/Container';
-import { Button } from '../../UI/Button';
-import { Typography } from '../../UI/Typography';
-
 import NotificationBell from '../../Notification/NotificationBell';
 import { useUnreadMessageCount } from '../../../hooks/useMessages';
-
-
-import './NavigationBar.css';
 import Logo from '../../Logo';
 import { canAccessPublisherPortal } from '../../../utils/publisher';
 
+import './NavigationBar.css';
 
+// Dergi künyesindeki bölümler gibi sıralanan ana gezinme bağlantıları
+const SECTIONS = [
+  { to: '/feed', label: 'Keşfet' },
+  { to: '/quotes', label: 'Alıntılar' },
+  { to: '/printed-books', label: 'Basılı Kitaplar' },
+  { to: '/leaderboard', label: 'Aktiflik Tablosu' },
+  { to: '/sessions', label: 'Oturumlar' },
+];
 
+const navClass = ({ isActive }) => `nav-item${isActive ? ' active' : ''}`;
+
+// Sayfa kaydırıldığında masthead yoğunlaşır (gölge + buzlu cam)
+function useScrolled(offset = 8) {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const update = () => setScrolled(window.scrollY > offset);
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    return () => window.removeEventListener('scroll', update);
+  }, [offset]);
+  return scrolled;
+}
 
 const NavigationBar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user } = useAuth(); 
+  const { user } = useAuth();
+  const scrolled = useScrolled();
 
   // Okunmamış mesaj sayısı — sadece giriş yapılmışsa çalışır
   const unreadCount = useUnreadMessageCount();
 
   return (
-    <nav className="navigation-bar">
-      {/* İçeriği diğer sayfalarla hizalamak için Container kullanıyoruz */}
+    <nav className={`navigation-bar${scrolled ? ' scrolled' : ''}`} aria-label="Ana gezinme">
       <Container maxWidth="7xl" className="h-full">
         <div className="nav-content">
-          
-          {/* --- LOGO --- */}
+
           <Link to="/" className="nav-logo">
             <Logo />
-
-            <Typography
-              variant="h4"
-              weight="bold"
-              className="logo-text"
-            >
-              Betik
-            </Typography>
+            <span className="logo-wordmark">
+              <span className="logo-text">Betik</span>
+              <span className="logo-tagline" aria-hidden="true">Sanal Yayınevi</span>
+            </span>
           </Link>
 
-          {/* --- DESKTOP MENU --- */}
           <div className="desktop-menu">
             <div className="nav-links">
-              {/* Normal Link */}
-              <Link to="/feed" className="nav-item">
-                <Typography variant="body" weight="medium">Keşfet</Typography>
-              </Link>
-
-              <Link to="/quotes" className="nav-item">
-                <Typography variant="body" weight="medium">Alıntılar</Typography>
-              </Link>
-              <Link to="/printed-books" className="nav-item">
-                <Typography variant="body" weight="medium">Basılı Kitaplar</Typography>
-              </Link>
-
-              <Link to="/leaderboard" className="nav-item">
-                <Typography variant="body" weight="medium">Aktiflik Tablosu</Typography>
-              </Link>
-
-              <Link to="/sessions" className="nav-item">
-                <Typography variant="body" weight="medium">Oturumlar</Typography>
-              </Link>
+              {SECTIONS.map(section => (
+                <NavLink key={section.to} to={section.to} className={navClass}>
+                  {section.label}
+                </NavLink>
+              ))}
             </div>
+
             <div className="nav-actions">
-              {canAccessPublisherPortal(user) && <Link to="/publisher" className="nav-item">Yayınevi Portalı</Link>}
-              {/* KULLANICI KONTROLÜ */}
+              {canAccessPublisherPortal(user) && (
+                <NavLink to="/publisher" className={navClass}>Yayınevi Portalı</NavLink>
+              )}
+
               {user ? (
                 <>
-                  {/* Kitap Oluştur Butonu */}
-                  <Link to="/create-book" style={{ textDecoration: 'none' }}>
-                    <Button variant="primary" size="small">
-                      Kitap Oluştur
-                    </Button>
+                  <Link to="/create-book" className="btn btn-primary btn-small">
+                    Kitap Oluştur
                   </Link>
 
-                  {/* Mesaj ikonu */}
                   <Link to="/messages" className="nav-icon-btn" title="Mesajlar" aria-label="Mesajlar">
-                    <FiMessageCircle />
+                    <FiMessageCircle aria-hidden="true" />
                     {unreadCount > 0 && (
                       <span className="nav-icon-badge">
                         {unreadCount > 99 ? '99+' : unreadCount}
@@ -96,25 +88,19 @@ const NavigationBar = () => {
 
                   <NotificationBell />
 
-                  {/* Profil İkonu */}
-                  <Link to="/profile" className="profile-btn" title="Profilim">
-                    <Person />
+                  <Link to="/profile" className="profile-btn" title="Profilim" aria-label="Profilim">
+                    <Person aria-hidden="true" />
                   </Link>
-
                 </>
               ) : (
-                // --- GİRİŞ YAPMAMIŞSA ---
-                <Link to="/login" style={{ textDecoration: 'none' }}>
-                  <Button variant="secondary" size="small">
-                    Giriş Yap
-                  </Button>
+                <Link to="/login" className="btn btn-outline btn-small">
+                  Giriş Yap
                 </Link>
               )}
             </div>
           </div>
 
-          {/* --- MOBILE TOGGLE --- */}
-          <button 
+          <button
             type="button"
             className="mobile-toggle-btn"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -127,11 +113,10 @@ const NavigationBar = () => {
         </div>
       </Container>
 
-      {/* Mobile Menu */}
-      <MobileMenu 
-        isOpen={isMobileMenuOpen} 
-        onClose={() => setIsMobileMenuOpen(false)} 
-        user={user} 
+      <MobileMenu
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+        user={user}
       />
     </nav>
   );

@@ -1,18 +1,18 @@
+/* MobileMenu — dergi "içindekiler" çekmecesi */
 
-/* Overlay (Backdrop) */
 .mobile-menu-overlay {
   position: fixed;
   top: var(--navbar-height);
   left: 0;
   width: 100%;
-  height: calc(100vh - var(--navbar-height));
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(8px);
+  height: calc(100dvh - var(--navbar-height));
   z-index: 998;
-
+  background: rgba(85, 0, 42, 0.32);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity var(--dur-base) var(--ease-out), visibility var(--dur-base);
 }
 
 .mobile-menu-overlay.open {
@@ -20,367 +20,215 @@
   visibility: visible;
 }
 
-/* Drawer (Slide-in Menu) */
 .mobile-menu-drawer {
   position: fixed;
   top: var(--navbar-height);
-  right: -100%;
-  width: 85%;
-  max-width: 320px;
-  height: calc(100vh - var(--navbar-height));
-  background: linear-gradient(
-    180deg,
-    var(--bg-surface) 0%,
-    #F8FAFC 100%
-  );
+  right: 0;
   z-index: 999;
-  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.1);
-  transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-
   display: flex;
   flex-direction: column;
-  border-left: 1px solid rgba(99, 102, 241, 0.1);
+  width: min(88%, 360px);
+  height: calc(100dvh - var(--navbar-height));
+  border-left: 1px solid var(--rule-strong);
+  background-color: var(--paper-light);
+  box-shadow: -24px 0 48px -24px rgba(85, 0, 42, 0.35);
+  transform: translate3d(100%, 0, 0);
+  visibility: hidden;
+  transition:
+    transform var(--dur-slow) var(--ease-cinema),
+    visibility var(--dur-slow);
 }
 
 .mobile-menu-drawer.open {
-  right: 0;
+  transform: none;
+  visibility: visible;
 }
 
-/* Content Area */
+/* İnce kağıt greni (içeriğin altında) */
+.mobile-menu-drawer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--texture-opacity);
+  background-image: var(--paper-grain);
+  background-size: 160px 160px;
+}
+
 .mobile-menu-content {
-  padding: 1.75rem;
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: 0;
+  padding: 1.75rem 1.5rem 2rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.mobile-menu-eyebrow {
+  margin: 0.25rem 0 0.5rem;
+  font-family: var(--font-ui);
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* === NUMARALI BÖLÜMLER === */
+.mobile-sections {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
 }
 
-/* =========================================
-   MOBILE NAVIGATION ITEMS
-   Desktop ile uyumlu hover efekti
-   ========================================= */
+.mobile-section-link {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--rule);
+  color: var(--wine);
+  text-decoration: none;
+  opacity: 0;
+  transform: translate3d(16px, 0, 0);
+  transition:
+    opacity var(--dur-slow) var(--ease-cinema),
+    transform var(--dur-slow) var(--ease-cinema),
+    color var(--dur-fast) var(--ease-out);
+  transition-delay: calc(var(--item-index, 0) * 50ms + 120ms), calc(var(--item-index, 0) * 50ms + 120ms), 0ms;
+}
+
+.mobile-menu-drawer.open .mobile-section-link {
+  opacity: 1;
+  transform: none;
+}
+
+.mobile-section-number {
+  min-width: 1.6rem;
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ember-deep);
+}
+
+.mobile-section-label {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.mobile-section-link:hover .mobile-section-label,
+.mobile-section-link.active .mobile-section-label {
+  font-style: italic;
+}
+
+.mobile-section-link.active {
+  color: var(--ember-deep);
+}
+
+.mobile-menu-rule {
+  height: 4px;
+  margin: 1.25rem 0 0.75rem;
+  border-top: 1px solid var(--wine);
+  border-bottom: 1px solid var(--rule);
+}
+
+/* === HESAP SATIRLARI === */
+.mobile-cta {
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
 
 .mobile-nav-item {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1.125rem 1.25rem;
-  text-decoration: none;
-
-  font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--graphite);
-
-  border-radius: 4px;
-  background: transparent;
-
-  transition:
-    color var(--transition-base),
-    background-color var(--transition-base);
-
-  position: relative;
-  cursor: pointer;
-}
-
-/* Button olarak kullanılan menü öğeleri */
-.mobile-nav-item--button {
+  gap: 0.85rem;
   width: 100%;
-  border: none;
+  min-height: 48px;
+  padding: 0.65rem 0.75rem;
+  border: 0;
+  border-radius: var(--radius-md);
   background: transparent;
-  cursor: pointer;
+  color: var(--ink-strong);
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  font-weight: 500;
   text-align: left;
-  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
 }
 
-/* NotificationBell satırı da standart
-   mobile-nav-item stillerini kullanır. */
-
-/* Desktop navbar'daki kesikli alt çizgi.
-   Çizgi sadece metnin altında oluşur. */
-.mobile-nav-item span {
-  position: relative;
-  z-index: 1;
-}
-
-/* Metin altındaki kesikli çizgi */
-.mobile-nav-item span::after {
-  content: '';
-  position: absolute;
-  bottom: -5px;
-  left: 0;
-  width: 0;
-  height: 2px;
-
-  background: repeating-linear-gradient(
-    90deg,
-    var(--ink-black) 0px,
-    var(--ink-black) 4px,
-    transparent 4px,
-    transparent 8px
-  );
-
-  transition: width var(--transition-base);
-  pointer-events: none;
-}
-
-/* Hover efekti - Desktop ile aynı */
-@media (hover: hover) {
-  .mobile-nav-item:hover {
-    color: var(--ink-black);
-  }
-
-  .mobile-nav-item:hover span::after {
-    width: 100%;
-  }
-}
-
-/* Active State */
+.mobile-nav-item:hover,
 .mobile-nav-item.active {
-  color: var(--ink-black);
-  font-weight: 700;
-  background: transparent;
-  box-shadow: none;
+  background-color: var(--wine-soft);
+  color: var(--wine);
 }
-
-/* Aktif sayfada düz alt çizgi */
-.mobile-nav-item.active span::after {
-  width: 100%;
-  background: var(--ink-black);
-}
-
-/* Klavye ile erişilebilirlik */
-.mobile-nav-item:focus-visible {
-  outline: 2px solid var(--ink-black);
-  outline-offset: 3px;
-}
-
-/* =========================================
-   ICONS
-   ========================================= */
 
 .mobile-icon {
-  color: var(--graphite);
-  transition: color var(--transition-base);
-  position: relative;
-  z-index: 1;
-  font-size: 1.25rem;
   flex-shrink: 0;
+  font-size: 1.25rem !important;
+  color: var(--wine);
 }
 
-/* Desktop renk davranışı */
-@media (hover: hover) {
-  .mobile-nav-item:hover .mobile-icon {
-    color: var(--ink-black);
-  }
+/* NotificationBell satır varyantı (label verildiğinde) */
+.mobile-nav-item--bell {
+  padding: 0;
 }
 
-.mobile-nav-item.active .mobile-icon {
-  color: var(--ink-black);
+.mobile-nav-item--bell .notif-bell-btn--row {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.65rem 0.75rem;
+  color: var(--ink-strong);
 }
-
-/* =========================================
-   UNREAD MESSAGE BADGE
-   ========================================= */
 
 .mobile-nav-badge {
   margin-left: auto;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  border-radius: 99px;
-  background: #1D9E75;
-  color: #E1F5EE;
-  font-size: 11px;
-  font-weight: 700;
-
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-
-  position: relative;
-  z-index: 1;
-  flex-shrink: 0;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  background: var(--ember);
+  color: var(--on-ember);
+  font-size: 0.75rem;
+  font-weight: 700;
 }
-
-/* Rozetin altına çizgi eklenmesini engelle */
-.mobile-nav-badge::after {
-  display: none;
-}
-
-/* =========================================
-   DIVIDER
-   ========================================= */
-
-.divider {
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(99, 102, 241, 0.2),
-    transparent
-  );
-  margin: 0.75rem 0;
-}
-
-/* =========================================
-   ACTION AREA
-   ========================================= */
 
 .mobile-action-area {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--rule);
+}
+
+.mobile-logout {
+  justify-content: flex-start;
+  color: var(--danger);
+}
+
+.mobile-menu-colophon {
   margin-top: auto;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(99, 102, 241, 0.1);
+  padding-top: 2rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--ink-soft);
+  text-align: center;
 }
 
-/* =========================================
-   LOGOUT BUTTON
-   ========================================= */
+.w-full { width: 100%; }
 
-.mobile-nav-item.logout {
-  background: linear-gradient(
-    135deg,
-    #FEF2F2 0%,
-    #FEE2E2 100%
-  );
-  color: #DC2626;
-}
-
-/* Logout hover davranışı korunuyor */
-@media (hover: hover) {
-  .mobile-nav-item.logout:hover {
-    background: linear-gradient(
-      135deg,
-      #FEE2E2 0%,
-      #FECACA 100%
-    );
-    color: #DC2626;
-  }
-}
-
-/* Logout için kırmızı kesikli çizgi */
-.mobile-nav-item.logout span::after {
-  background: repeating-linear-gradient(
-    90deg,
-    #DC2626 0px,
-    #DC2626 4px,
-    transparent 4px,
-    transparent 8px
-  );
-}
-
-.mobile-nav-item.logout .mobile-icon {
-  color: #EF4444;
-}
-
-@media (hover: hover) {
-  .mobile-nav-item.logout:hover .mobile-icon {
-    color: #DC2626;
-  }
-}
-
-/* =========================================
-   SCROLLBAR
-   ========================================= */
-
-.mobile-menu-content::-webkit-scrollbar {
-  width: 6px;
-}
-
-.mobile-menu-content::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.mobile-menu-content::-webkit-scrollbar-thumb {
-  background: rgba(99, 102, 241, 0.2);
-  border-radius: 3px;
-}
-
-.mobile-menu-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(99, 102, 241, 0.4);
-}
-
-/* =========================================
-   HELPER CLASS
-   ========================================= */
-
-.w-full {
-  width: 100%;
-}
-
-/* =========================================
-   MENU OPEN ANIMATIONS
-   ========================================= */
-
-.mobile-menu-drawer.open .mobile-nav-item {
-  animation: slideInItem 0.4s ease-out backwards;
-}
-
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(1) {
-  animation-delay: 0.05s;
-}
-
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(2) {
-  animation-delay: 0.08s;
-}
-
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(3) {
-  animation-delay: 0.11s;
-}
-
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(4) {
-  animation-delay: 0.14s;
-}
-
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(5) {
-  animation-delay: 0.17s;
-}
-
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(6) {
-  animation-delay: 0.20s;
-}
-
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(7) {
-  animation-delay: 0.23s;
-}
-
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(8) {
-  animation-delay: 0.26s;
-}
-
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(9) {
-  animation-delay: 0.29s;
-}
-
-.mobile-menu-drawer.open .mobile-nav-item:nth-child(10) {
-  animation-delay: 0.32s;
-}
-
-@keyframes slideInItem {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-/* Hareket azaltma tercihi */
 @media (prefers-reduced-motion: reduce) {
-  .mobile-menu-drawer,
-  .mobile-menu-overlay,
-  .mobile-nav-item,
-  .mobile-nav-item span::after,
-  .mobile-icon {
-    transition-duration: 0.01ms;
-  }
-
-  .mobile-menu-drawer.open .mobile-nav-item {
-    animation: none;
+  .mobile-section-link {
+    opacity: 1;
+    transform: none;
   }
 }

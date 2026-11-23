@@ -1,10 +1,92 @@
-.registration-backdrop { position: fixed; inset: 0; z-index: 10000; display: grid; place-items: center; padding: 20px; background: rgba(0,0,0,.65); }
-.registration-dialog { width: min(100%, 480px); max-height: calc(100dvh - 40px); overflow: auto; }
-.registration-card { padding: 28px; border: 1px solid var(--fog, #ddd); border-radius: 18px; background: var(--aged-paper, #ebe8e0); color: var(--ink-black, #1a1a1a); }
-.registration-card h2 { margin: 0 0 14px; font-size: 1.5rem; }
-.registration-card p { line-height: 1.6; margin-bottom: 22px; }
-.registration-actions { display: flex; flex-direction: column; align-items: stretch; gap: 16px; text-align: center; }
-.registration-actions button { cursor: pointer; background: transparent; border: 0; font: inherit; }
-.registration-primary { display: block; padding: 12px 18px; border-radius: 10px; background: var(--ink-black, #1a1a1a); color: var(--paper-white, #fff); text-decoration: none; font-weight: 600; }
-.registration-actions :focus-visible { outline: 3px solid var(--graphite, #666); outline-offset: 4px; }
-@media (max-width: 600px) { .registration-backdrop { padding: 12px; align-items: end; } .registration-card { padding: 22px; } }
+/* RegistrationPrompt — kayıt davetiyesi */
+
+.registration-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(85, 0, 42, 0.45);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  animation: registration-fade var(--dur-base) var(--ease-out);
+}
+
+.registration-dialog {
+  width: min(100%, 480px);
+  max-height: calc(100dvh - 40px);
+  overflow: auto;
+  animation: registration-rise var(--dur-slow) var(--ease-cinema);
+}
+
+.registration-card {
+  position: relative;
+  padding: 2rem;
+  border: 1px solid var(--rule-strong);
+  border-top: 4px solid var(--ember);
+  border-radius: var(--radius-lg);
+  background-color: var(--paper-light);
+  background-image: var(--paper-grain);
+  background-size: 160px 160px;
+  color: var(--ink);
+  box-shadow: var(--shadow-xl);
+}
+
+.registration-card h2 {
+  margin: 0 0 0.85rem;
+  font-size: var(--fs-h3);
+}
+
+.registration-card p {
+  margin-bottom: 1.5rem;
+  line-height: 1.65;
+}
+
+.registration-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.9rem;
+  text-align: center;
+}
+
+.registration-actions button {
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.registration-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-full);
+  background: var(--ember);
+  color: var(--on-ember);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-base) var(--ease-out);
+}
+
+.registration-primary:hover {
+  background: var(--ember-deep);
+  color: var(--on-ember);
+  transform: translateY(-1px);
+}
+
+.registration-actions :focus-visible {
+  outline: 2px solid var(--ember-deep);
+  outline-offset: 3px;
+}
+
+@keyframes registration-fade { from { opacity: 0; } }
+@keyframes registration-rise { from { opacity: 0; transform: translate3d(0, 18px, 0); } }
+
+@media (max-width: 600px) {
+  .registration-backdrop { align-items: end; padding: 12px; }
+  .registration-card { padding: 1.5rem; }
+}
